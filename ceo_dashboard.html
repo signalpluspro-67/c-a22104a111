@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CEO Dashboard — 10-min view</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f9f5ee; --bg-toc: #ffffff;
+  --paper: #ffffff; --paper-soft: #efe7d6;
+  --gold: #8b5cf6; --accent: #555555;
+  --text: #1a1a1a; --text-muted: #6B5C2A;
+  --border: #d8cfbb;
+  --green: #2f6c46; --green-soft: #d6e4d2;
+  --amber: #d97a3d; --amber-soft: #fbe5be;
+  --red: #a73a1f; --red-soft: #f1d6c4;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: #ffffff;
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 14px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+
+.layout { display: flex; min-height: 100vh; }
+nav.toc {
+  position: sticky; top: 0; width: 260px; height: 100vh;
+  background: var(--bg-toc); border-right: 1px solid #d8cfbb;
+  padding: 24px 18px; overflow-y: auto; flex-shrink: 0; }
+nav.toc h1 { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 700;
+  font-size: 18px; color: #ffffff; letter-spacing: -0.3px; }
+nav.toc .sub { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic;
+  font-size: 11px; color: #888888; margin-bottom: 16px; }
+nav.toc .meta { font-size: 9.5px; color: #888888; letter-spacing: 1px;
+  text-transform: uppercase; margin-bottom: 16px;
+  padding-bottom: 12px; border-bottom: 1px solid #d8cfbb; }
+nav.toc h3 { font-size: 9.5px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--gold); margin: 16px 0 6px; }
+nav.toc a { display: block; font-size: 11.5px; color: #555555;
+  text-decoration: none; padding: 4px 0 4px 10px; margin-left: -10px;
+  border-left: 2px solid transparent; transition: all 0.15s ease; line-height: 1.4; }
+nav.toc a:hover { color: #ffffff; border-left-color: var(--gold); }
+nav.toc .verdict-mini { margin: 8px 0 12px; padding: 8px 10px; border-radius: 4px;
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 800;
+  font-size: 13px; text-align: center; letter-spacing: 0.4px; }
+nav.toc .verdict-mini.green { background: rgba(47,108,70,0.18); color: #8FCDA0; border-left: 3px solid var(--green); }
+nav.toc .verdict-mini.amber-soft { background: rgba(139,92,246,0.18); color: #DBC678; border-left: 3px solid var(--gold); }
+nav.toc .verdict-mini.amber { background: rgba(217,122,61,0.18); color: #F0A570; border-left: 3px solid var(--amber); }
+nav.toc .verdict-mini.red { background: rgba(167,58,31,0.18); color: #E8967B; border-left: 3px solid var(--red); }
+
+main { flex: 1; padding: 28px 38px 60px; max-width: 1280px; min-width: 0; }
+
+header.intro { background: var(--paper); color: var(--text);
+  padding: 28px 38px; border-radius: 6px; margin-bottom: 16px;
+  box-shadow: 0 6px 26px rgba(0,0,0,0.4); }
+header.intro .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 2.4px;
+  text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+header.intro h1 { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 900; font-size: 28px;
+  letter-spacing: -0.3px; line-height: 1.15; max-width: 900px; }
+header.intro .deck { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic; font-size: 15px;
+  color: var(--accent); margin-top: 10px; max-width: 820px; }
+header.intro .meta { margin-top: 14px; font-size: 11px; color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace; letter-spacing: 0.4px; }
+
+.alerts-bar { margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px; }
+.alert { padding: 11px 18px; border-radius: 5px;
+  display: flex; align-items: center; gap: 12px;
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 600; }
+.alert.critical { background: #2a1614; color: #F0A088; border-left: 4px solid var(--red); }
+.alert.warn { background: #2a2014; color: #DBC678; border-left: 4px solid var(--amber); }
+.alert .lvl { font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 700;
+  letter-spacing: 1.2px; padding: 3px 8px; border-radius: 3px;
+  background: rgba(255,255,255,0.08); }
+
+.verdict-headline { background: var(--paper); color: var(--text);
+  padding: 30px 38px; border-radius: 6px; margin-bottom: 16px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.32);
+  display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: center; }
+.verdict-headline .big { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 900;
+  font-size: 44px; padding: 12px 28px; border-radius: 6px;
+  letter-spacing: -0.5px; line-height: 1; }
+.verdict-headline .big.green { background: var(--green-soft); color: var(--green); }
+.verdict-headline .big.amber-soft { background: #f7e9bf; color: var(--accent); }
+.verdict-headline .big.amber { background: var(--amber-soft); color: var(--amber); }
+.verdict-headline .big.red { background: var(--red-soft); color: var(--red); }
+.verdict-headline .action { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-size: 18px;
+  color: var(--text); line-height: 1.4; font-weight: 600; }
+.verdict-headline .action small { display: block; font-style: italic; font-weight: 400;
+  font-size: 12px; color: var(--text-muted); margin-top: 6px;
+  font-family: 'JetBrains Mono', monospace; }
+
+.exec-summary { background: var(--paper); color: var(--text);
+  padding: 24px 32px; border-radius: 6px; margin-bottom: 16px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.32); border-left: 5px solid var(--gold); }
+.exec-summary h2 { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 700; font-size: 18px;
+  color: var(--text); margin-bottom: 14px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--border); }
+.exec-summary h2 .eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 1.6px;
+  text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 4px; }
+.exec-summary ul { list-style: none; padding: 0; margin: 0; }
+.exec-summary li { padding: 9px 0; border-bottom: 1px dashed rgba(200,184,120,0.4);
+  font-size: 13.5px; line-height: 1.55; color: var(--text);
+  display: grid; grid-template-columns: 80px 1fr; gap: 14px; align-items: start; }
+.exec-summary li:last-child { border-bottom: 0; }
+.exec-summary li .icon { font-family: 'Inter', sans-serif; font-size: 9px;
+  font-weight: 700; letter-spacing: 1.4px; color: var(--gold);
+  background: rgba(139,92,246,0.12); padding: 4px 8px; border-radius: 3px;
+  text-align: center; text-transform: uppercase; }
+
+.alpha-panel { background: linear-gradient(180deg, #efe3c0 0%, var(--paper) 100%);
+  color: var(--text); padding: 24px 32px; border-radius: 6px; margin-bottom: 16px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.32); border-left: 5px solid var(--green); }
+.alpha-panel h2 { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 700; font-size: 18px;
+  color: var(--text); margin-bottom: 6px; }
+.alpha-panel .deck { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic;
+  font-size: 13px; color: var(--accent); margin-bottom: 14px;
+  padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.alpha-list { display: flex; flex-direction: column; gap: 12px; }
+.alpha-item { display: grid; grid-template-columns: 140px 1fr; gap: 16px;
+  padding: 12px 0; border-bottom: 1px dashed rgba(200,184,120,0.4); }
+.alpha-item:last-child { border-bottom: 0; }
+.alpha-item .kind {
+  font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 700;
+  letter-spacing: 1.4px; color: #fff; background: var(--accent);
+  padding: 6px 10px; border-radius: 3px; text-align: center;
+  text-transform: uppercase; align-self: start; height: fit-content;
+}
+.alpha-item.kind-options .kind { background: var(--green); }
+.alpha-item.kind-attention .kind { background: var(--gold); color: var(--text); }
+.alpha-item.kind-persistence .kind { background: var(--accent); }
+.alpha-item.kind-rotation .kind { background: var(--amber); }
+.alpha-item.kind-institutional .kind { background: #4a3a8a; }
+.alpha-headline { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 700;
+  font-size: 14.5px; color: var(--text); margin-bottom: 4px; line-height: 1.35; }
+.alpha-narrative { font-size: 12.5px; color: var(--text); line-height: 1.5; }
+.alpha-source { font-size: 10px; color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace; margin-top: 4px; letter-spacing: 0.3px; }
+
+.freshness { margin-bottom: 18px; padding: 12px 18px; border-radius: 6px;
+  display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+  background: #ffffff; color: var(--text); }
+.freshness.green { border: 2px solid var(--green); }
+.freshness.amber { border: 2px solid var(--amber); }
+.freshness.red { border: 2px solid var(--red); }
+.freshness .badge { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 900; font-size: 13px;
+  padding: 3px 10px; border-radius: 3px; color: #fff; }
+.freshness.green .badge { background: var(--green); }
+.freshness.amber .badge { background: var(--amber); }
+.freshness.red .badge { background: var(--red); }
+.freshness .chip { font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  padding: 3px 9px; background: var(--paper); border-radius: 3px;
+  border: 1px solid var(--border); }
+
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-wide { grid-column: 1 / -1; }
+
+section.panel { background: var(--paper); color: var(--text);
+  padding: 22px 26px; border-radius: 6px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.32); scroll-margin-top: 16px; }
+section.panel .num { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 700; font-size: 22px;
+  color: var(--gold); line-height: 1; margin-right: 10px; }
+section.panel .eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 1.6px;
+  text-transform: uppercase; color: var(--text-muted); }
+section.panel h2 { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 700; font-size: 18px;
+  color: var(--text); margin-top: 2px; margin-bottom: 12px;
+  padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+
+.verdict { display: inline-block; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 900;
+  font-size: 22px; padding: 6px 16px; border-radius: 4px; letter-spacing: -0.2px; }
+.verdict.green { background: var(--green-soft); color: var(--green); border-left: 4px solid var(--green); }
+.verdict.amber { background: var(--amber-soft); color: var(--amber); border-left: 4px solid var(--amber); }
+.verdict.amber-soft { background: #f7e9bf; color: var(--accent); border-left: 4px solid var(--gold); }
+.verdict.red { background: var(--red-soft); color: var(--red); border-left: 4px solid var(--red); }
+.verdict.neutral { background: #efefef; color: #555; }
+
+.narrative { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic;
+  font-size: 13px; color: var(--accent);
+  margin: 10px 0 14px; line-height: 1.5; }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px; margin-top: 12px; }
+.kpi { background: #ffffff; border: 1px solid var(--border); border-radius: 4px;
+  padding: 10px 12px; }
+.kpi .k { font-size: 9.5px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+.kpi .v { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 17px;
+  color: var(--text); display: flex; align-items: center; gap: 4px; }
+.kpi .v.green { color: var(--green); }
+.kpi .v.amber { color: var(--amber); }
+.kpi .v.red { color: var(--red); }
+.kpi .delta { font-size: 10.5px; color: var(--text-muted); margin-left: auto;
+  font-weight: 500; }
+.kpi .delta.up { color: var(--green); }
+.kpi .delta.down { color: var(--red); }
+
+table.t { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 6px; }
+table.t th { background: rgba(139,92,246,0.18); color: var(--accent);
+  font-weight: 700; font-size: 10.5px; text-transform: uppercase;
+  letter-spacing: 0.5px; padding: 6px 8px; text-align: left;
+  border-bottom: 1px solid var(--border); }
+table.t td { padding: 7px 8px; border-bottom: 1px solid rgba(200,184,120,0.4);
+  vertical-align: top; }
+table.t tr:last-child td { border-bottom: 0; }
+table.t td.mono { font-family: 'JetBrains Mono', monospace; }
+table.t td .tag, .tag { display: inline-block; font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 3px; letter-spacing: 0.4px; }
+.tag.green { background: var(--green-soft); color: var(--green); }
+.tag.amber { background: var(--amber-soft); color: var(--amber); }
+.tag.red { background: var(--red-soft); color: var(--red); }
+.tag.gold { background: #f7e9bf; color: var(--accent); }
+.tag.mega { background: #1a1a1a; color: #ffffff; }
+.tag.magic { background: #2f6c46; color: #fff; }
+.tag.high { background: var(--gold); color: #fff; }
+.tag.standard { background: rgba(139,92,246,0.18); color: var(--accent); }
+.tag.eom { background: var(--accent); color: var(--paper); }
+
+ul.bullets { list-style: none; padding: 0; margin: 0; }
+ul.bullets li { padding: 6px 0 6px 18px; position: relative;
+  font-size: 13px; color: var(--text); border-bottom: 1px dashed rgba(200,184,120,0.5); }
+ul.bullets li:last-child { border-bottom: 0; }
+ul.bullets li::before { content: "›"; position: absolute; left: 0; top: 6px;
+  color: var(--gold); font-weight: 700; }
+ul.bullets li.done::before { content: "✓"; color: var(--green); }
+ul.bullets li code { font-family: 'JetBrains Mono', monospace; font-size: 11.5px;
+  background: rgba(139,92,246,0.18); padding: 1px 5px; border-radius: 2px; }
+ul.bullets li strong { color: var(--accent); }
+
+.reasons { margin-top: 8px; font-size: 12px; color: var(--text-muted); font-style: italic; }
+.reasons li { padding: 3px 0; }
+
+footer { margin-top: 32px; padding: 18px 24px; border-radius: 6px;
+  background: var(--accent); color: #efe7d6; font-size: 11px;
+  font-family: 'JetBrains Mono', monospace; text-align: center; }
+footer a { color: var(--gold); text-decoration: none; }
+
+.data-cert {
+  background: #ffffff; border-left: 3px solid var(--green); border-radius: 3px;
+  padding: 8px 14px; margin: 0 0 12px;
+  font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--accent);
+}
+
+.trade-cards { display: flex; flex-direction: column; gap: 14px; margin-top: 12px; }
+.trade-card { background: #ffffff; border-radius: 6px; padding: 16px 20px;
+  border-left: 4px solid var(--gold); }
+.trade-card.tier-magic { border-left-color: var(--green); background: linear-gradient(180deg, #ebf3e9 0%, #ffffff 60%); }
+.trade-card.tier-strong { border-left-color: var(--gold); }
+.trade-card.tier-standard { border-left-color: var(--text-muted); }
+.trade-card.tier-mixed { border-left-color: var(--amber); background: linear-gradient(180deg, #fbe9d4 0%, #ffffff 60%); }
+.trade-card.tier-weak { border-left-color: var(--red); opacity: 0.7; }
+
+.tc-head { display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 8px; flex-wrap: wrap; gap: 10px; }
+.tc-ticker { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 900;
+  font-size: 24px; color: var(--text); letter-spacing: -0.3px; }
+.tc-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.tc-why { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic;
+  font-size: 12.5px; color: var(--accent); margin-bottom: 14px;
+  padding-bottom: 10px; border-bottom: 1px dashed rgba(200,184,120,0.5); }
+
+.tc-body { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+.tc-col { font-size: 12px; }
+.tc-col-h { font-size: 9.5px; font-weight: 700; letter-spacing: 1.2px;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+.tc-detail { font-size: 12.5px; color: var(--text); line-height: 1.5; }
+.tc-detail strong { color: var(--accent); }
+
+table.t-mini { width: 100%; border-collapse: collapse; font-size: 12px; }
+table.t-mini td { padding: 4px 0; border-bottom: 1px dotted rgba(200,184,120,0.4); }
+table.t-mini td:first-child { font-size: 9.5px; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--text-muted); width: 40%; font-weight: 600; }
+table.t-mini td:last-child { font-family: 'JetBrains Mono', monospace;
+  font-weight: 600; color: var(--text); }
+.t-mini .dim { font-size: 10.5px; color: var(--text-muted); font-weight: 400; }
+.t-mini .up { color: var(--green); }
+
+@media (max-width: 1100px) {
+  nav.toc { display: none; }
+  .grid { grid-template-columns: 1fr; }
+  main { padding: 20px 18px 40px; }
+  .verdict-headline { grid-template-columns: 1fr; text-align: center; }
+  .exec-summary li { grid-template-columns: 1fr; }
+  .tc-body { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="toc">
+  <h1>CEO Dashboard</h1>
+  <div class="sub">10-min view · trader-CEO</div>
+  <div class="meta">EOD 2026-05-18</div>
+  <div class="verdict-mini amber">DEFENSIVE</div>
+  <h3>Executive briefing</h3>
+  <a href="#summary">→ Executive summary</a>
+  <a href="#alpha">→ Alpha insights</a>
+  <h3>Panels</h3>
+  <a href="#regime">01 · Macro regime</a>
+  <a href="#crash">02 · Crash radar (live)</a>
+  <a href="#trades">03 · Top trades (confluence)</a>
+  <a href="#options">04 · Options flow</a>
+  <a href="#screeners">05 · Live screeners</a>
+  <a href="#track">07 · Live track record</a>
+  <a href="#calendar">08 · 7-day calendar</a>
+  <a href="#pipeline">06 · Research pipeline</a>
+  <a href="#sanity">09 · Data sanity</a>
+  <h3>Cockpit & Macro</h3>
+  <a href="cockpit/index.html">→ Cockpit (102 sections)</a>
+  <a href="kerberos_dashboard.html">→ Kerberos macro</a>
+  <a href="reports/macro_dashboard.html">→ Macro dashboard</a>
+  <a href="reports/philosopher_world.html">→ Philosopher world</a>
+  <h3>Screeners & Trades</h3>
+  <a href="screeners_overview.html">→ Screeners overview</a>
+  <a href="retail_scanner.html">→ Retail scanner</a>
+  <a href="themes_hub.html">→ Themes hub</a>
+  <h3>Newsletter & Writing</h3>
+  <a href="newsletter_v6.html">→ Newsletter v6</a>
+  <a href="newsletter-studio.html">→ Newsletter studio</a>
+  <a href="visuals_page.html">→ Visuals page</a>
+  <h3>Explainers</h3>
+  <a href="kerberos_cheat_sheet.html">→ Kerberos cheat sheet</a>
+  <a href="vix_spike_detector_explainer.html">→ VIX spike detector</a>
+</nav>
+
+<main>
+
+<header class="intro">
+  <div class="eyebrow">CEO Dashboard · 10-minute view</div>
+  <h1>Engine state — regime, setups, live performance, pipeline.</h1>
+  <div class="deck">One glance and you know what to do. Not a 50-metric tableau: global verdict + AI executive summary + 9 focused panels.</div>
+  <div class="meta">GENERATED 2026-05-18 22:52 · EOD DATA 2026-05-18 · DAILY REGEN ~22:45 PARIS</div>
+</header>
+
+
+
+<div class="verdict-headline">
+  <div class="big amber">DEFENSIVE</div>
+  <div class="action">
+    Cut size 50%, skip lotteries, focus mean-revert + confluence only.
+    <small>Composite score -1 · aggregates regime, crash, sanity, screeners, P&L</small>
+  </div>
+</div>
+
+<section class="exec-summary" id="summary">
+  <h2><span class="eyebrow">CEO briefing · rule-based intelligence</span>Executive summary</h2>
+  <ul>
+    
+    <li>
+      <span class="icon">MACRO</span>
+      <span><strong>Regime ELEVATED</strong> · VIX 18.43 (p67) ↗ +1.2 over 5d · Breadth net-SoS +53.3% → +0.0 · SPY +7.4% vs SMA50.</span>
+    </li>
+    
+    <li>
+      <span class="icon">RISK</span>
+      <span><strong>Crash radar Tier 2 (ALERT)</strong> — live-computed. 61% prob VIX+50% in 60d (+24pts vs base). SKEW 145.8, backwardation 1.159.</span>
+    </li>
+    
+    <li>
+      <span class="icon">SETUPS</span>
+      <span><strong>No multi-screener setup today</strong>. Solo picks REJECT after adversarial. Stand aside.</span>
+    </li>
+    
+    <li>
+      <span class="icon">P&L</span>
+      <span><strong>Live P&L: $8,424 MTD</strong> · $8,505 30d · WR 78% on 23 closed — strong momentum.</span>
+    </li>
+    
+    <li>
+      <span class="icon">CALENDAR</span>
+      <span>3 mega-cap earnings this week.</span>
+    </li>
+    
+    <li>
+      <span class="icon">ACTION</span>
+      <span><strong>DEFENSIVE</strong> — Cut size 50%, skip lotteries, focus mean-revert + confluence only.</span>
+    </li>
+    
+    <li>
+      <span class="icon">CAVEAT</span>
+      <span>Watch out: options flow 2026-05-15 (T+1 lag normal).</span>
+    </li>
+    
+  </ul>
+</section>
+
+
+<section class="alpha-panel" id="alpha">
+  <h2>Alpha insights — statistical anomalies you might miss</h2>
+  <div class="deck">Cross-table computations on today's live data. Each row is a z-score outlier, a multi-screener persistence, a sector-rotation mismatch, or an institutional flow. Top 7 sorted by importance.</div>
+  <div class="alpha-list">
+  
+    <div class="alpha-item kind-options-flow">
+      <div class="kind">OPTIONS FLOW</div>
+      <div>
+        <div class="alpha-headline">Call premium <strong>z=+13.0σ</strong> on GH (CALL-heavy)</div>
+        <div class="alpha-narrative">$1.1M today vs $0.07M 30d mean (2026-05-15). Institutional positioning surge — check upcoming catalysts on GH.</div>
+        <div class="alpha-source">source: options_daily_flow 2026-05-15 · importance 5/5</div>
+      </div>
+    </div>
+  
+    <div class="alpha-item kind-persistence">
+      <div class="kind">PERSISTENCE</div>
+      <div>
+        <div class="alpha-headline"><strong>AMD</strong> fired by <strong>6 distinct screeners</strong> in 30d</div>
+        <div class="alpha-narrative">Pattern persistence — IV_HV_FEAR · PEAD · BLOCK_TRADERS · BREAKOUT · IV_SKEW · SECTOR_PICKS. Setup reasserts across regimes; last seen 2026-05-14.</div>
+        <div class="alpha-source">source: signal_archive 30d window · importance 5/5</div>
+      </div>
+    </div>
+  
+    <div class="alpha-item kind-attention">
+      <div class="kind">ATTENTION</div>
+      <div>
+        <div class="alpha-headline"><strong>PURR</strong> wiki+reddit z=+4.6σ — narrative emerging</div>
+        <div class="alpha-narrative">Retail/social attention spike. Not yet in our signals — watch for late confirmation.</div>
+        <div class="alpha-source">source: attention_composite · importance 4/5</div>
+      </div>
+    </div>
+  
+    <div class="alpha-item kind-institutional">
+      <div class="kind">INSTITUTIONAL</div>
+      <div>
+        <div class="alpha-headline"><strong>AMZN</strong>: 6 whales added <strong>$5468M</strong> last 13F</div>
+        <div class="alpha-narrative">Multi-fund accumulation (filing 2026-02-17, ~90d lag). Cross-check current price action vs filing levels.</div>
+        <div class="alpha-source">source: whale_13f_changes filing 2026-02-17 · importance 3/5</div>
+      </div>
+    </div>
+  
+    <div class="alpha-item kind-options-flow">
+      <div class="kind">OPTIONS FLOW</div>
+      <div>
+        <div class="alpha-headline">Call premium <strong>z=+11.6σ</strong> on ENPH (CALL-heavy)</div>
+        <div class="alpha-narrative">$4.4M today vs $0.35M 30d mean (2026-05-15). Institutional positioning surge — check upcoming catalysts on ENPH.</div>
+        <div class="alpha-source">source: options_daily_flow 2026-05-15 · importance 5/5</div>
+      </div>
+    </div>
+  
+    <div class="alpha-item kind-options-flow">
+      <div class="kind">OPTIONS FLOW</div>
+      <div>
+        <div class="alpha-headline">Call premium <strong>z=+6.4σ</strong> on ON (CALL-heavy)</div>
+        <div class="alpha-narrative">$2.6M today vs $0.29M 30d mean (2026-05-15). Institutional positioning surge — check upcoming catalysts on ON.</div>
+        <div class="alpha-source">source: options_daily_flow 2026-05-15 · importance 5/5</div>
+      </div>
+    </div>
+  
+    <div class="alpha-item kind-persistence">
+      <div class="kind">PERSISTENCE</div>
+      <div>
+        <div class="alpha-headline"><strong>AOSL</strong> fired by <strong>5 distinct screeners</strong> in 30d</div>
+        <div class="alpha-narrative">Pattern persistence — BLOCK_TRADERS · BLOWOFF · PEAD · SECTOR_PICKS · PULLBACK. Setup reasserts across regimes; last seen 2026-05-15.</div>
+        <div class="alpha-source">source: signal_archive 30d window · importance 5/5</div>
+      </div>
+    </div>
+  
+  </div>
+</section>
+
+
+<div class="freshness green">
+  <span class="badge">FRESH</span>
+  <span class="chip">OHLCV 2026-05-18</span>
+  <span class="chip">Signals 2026-05-18</span>
+  <span class="chip">Options 2026-05-15</span>
+  <span class="chip">Breadth 2026-05-15</span>
+  <span class="chip">Health 2026-05-16</span>
+</div>
+
+<div class="grid">
+
+  <section class="panel" id="regime">
+    <div><span class="num">01</span><span class="eyebrow">Macro regime</span></div>
+    <h2>Market state</h2>
+    <div class="verdict amber">ELEVATED</div>
+    <div class="narrative">Vol elevated + breadth weakening. Reduce size, skip-elevated filter active.</div>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="k">VIX</div><div class="v">18.43<svg viewBox="0 0 80 22" width="80" height="22" style="display:inline-block;vertical-align:middle;margin-left:6px;"><polyline fill="none" stroke="#555555" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" points="2.0,6.9 6.0,3.0 10.0,6.6 14.0,4.2 18.0,7.8 22.0,12.1 26.0,13.2 30.0,7.2 34.0,19.0 38.0,18.4 42.0,10.4 46.0,16.0 50.0,15.9 54.0,17.8 58.0,17.2 62.0,9.9 66.0,12.3 70.0,13.0 74.0,16.7 78.0,9.6"/></svg><span class="delta down">+1.2 5d</span></div></div>
+      <div class="kpi"><div class="k">SPY vs SMA50</div><div class="v green">7.4%<svg viewBox="0 0 80 22" width="80" height="22" style="display:inline-block;vertical-align:middle;margin-left:6px;"><polyline fill="none" stroke="#2f6c46" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" points="2.0,17.3 6.0,19.0 10.0,16.4 14.0,17.4 18.0,15.4 22.0,15.0 26.0,16.2 30.0,16.3 34.0,13.7 38.0,13.0 42.0,13.9 46.0,11.9 50.0,8.2 54.0,9.0 58.0,6.8 62.0,6.2 66.0,6.6 70.0,5.1 74.0,3.0 78.0,6.3"/></svg><span class="delta up">+0.2% 5d</span></div></div>
+      <div class="kpi"><div class="k">Breadth (net SoS)</div><div class="v green">53.3%<svg viewBox="0 0 80 22" width="80" height="22" style="display:inline-block;vertical-align:middle;margin-left:6px;"><polyline fill="none" stroke="#555555" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" points="2.0,11.0 7.1,11.0 12.1,11.0 17.2,11.0 22.3,11.0 27.3,11.0 32.4,3.0 37.5,3.0 42.5,11.0 47.6,11.0 52.7,19.0 57.7,19.0 62.8,19.0 67.9,19.0 72.9,19.0 78.0,19.0"/></svg><span class="delta down">+0.0 5d</span></div></div>
+      <div class="kpi"><div class="k">VIX pct 252d</div><div class="v">p67</div></div>
+      <div class="kpi"><div class="k">TLT 20d</div><div class="v">-3.9%</div></div>
+      <div class="kpi"><div class="k">GLD 20d</div><div class="v">-5.6%</div></div>
+    </div>
+  </section>
+
+  <section class="panel" id="crash">
+    <div><span class="num">02</span><span class="eyebrow">Crash radar (live)</span></div>
+    <h2>VIX spike detector</h2>
+    <div class="verdict amber">Tier 2 · ALERT</div>
+    <div class="narrative">Tier 2 MEDIUM — backwardation. VIX>25 quasi-certain within 120d. <strong>Live-computed.</strong></div>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="k">Tier</div><div class="v">2/4</div></div>
+      <div class="kpi"><div class="k">SKEW</div><div class="v">145.8</div></div>
+      <div class="kpi"><div class="k">VIX3M/VIX</div><div class="v">1.159</div></div>
+      <div class="kpi"><div class="k">Hist. prob</div><div class="v" style="font-size:12px">61% prob VIX+50% in 60d (+24pts vs base)</div></div>
+    </div>
+    
+    <ul class="bullets reasons" style="margin-top:12px;">
+      <li>SKEW 146 (z -0.05)</li><li>VIX3M/VIX 1.159 > 1.05 (backwardation)</li>
+    </ul>
+    
+  </section>
+
+  <section class="panel grid-wide" id="trades">
+    <div><span class="num">03</span><span class="eyebrow">Top trades — actionable plans</span></div>
+    <h2>Today's setups</h2>
+    <div class="data-cert">
+      ✓ Signal data <strong>2026-05-18</strong> (0d old) — FRESH, safe to act.
+    </div>
+    <div class="narrative">These cards are the top 0 setups from <strong>3 tickers</strong> that fired ≥1 screener with score ≥65 today (signal_archive 2026-05-18, 0d ago). Ranking: (1) MAGIC combos validated by adversarial 20k (SMART_FLOW×UNUSUAL_V3 only), (2) STRONG = all-VALID screener overlap (PULLBACK live Sharpe 5.33 + BOTTOM 4.41), (3) STANDARD = ≥1 VALID + WEAK, (4) MIXED downgraded when one leg is REJECT (BREAKOUT, UNUSUAL solo, KERBEROS_RSI). Within tier: sort by VALID screener count then by max score.</div>
+
+    
+    <div style="padding:18px;background:#ffffff;border-radius:4px;color:var(--text-muted);font-style:italic;">No multi-screener confluence today. Solo-screener setups are REJECT after adversarial 20k testing — stand aside or paper-trade only.</div>
+    
+  </section>
+
+  <section class="panel" id="options">
+    <div><span class="num">04</span><span class="eyebrow">Options flow</span></div>
+    <h2>Options market</h2>
+    <div class="verdict amber-soft">SPY BALANCED · PCR 1.0</div>
+    <div class="narrative">PCR &gt;1.3 = put-heavy (fear). PCR &lt;0.7 = call-heavy (greed). Top 5 by total premium 2026-05-15.</div>
+    <table class="t">
+      <thead><tr><th>Ticker</th><th>Premium ($M)</th><th>Skew</th><th>Call %</th></tr></thead>
+      <tbody>
+      
+      <tr>
+        <td class="mono"><strong>SMH</strong></td>
+        <td class="mono">20.8</td>
+        <td><span class="tag gold">MIX</span></td>
+        <td class="mono">49%</td>
+      </tr>
+      
+      <tr>
+        <td class="mono"><strong>SOXL</strong></td>
+        <td class="mono">18.0</td>
+        <td><span class="tag red">PUT</span></td>
+        <td class="mono">9%</td>
+      </tr>
+      
+      <tr>
+        <td class="mono"><strong>MSTR</strong></td>
+        <td class="mono">17.4</td>
+        <td><span class="tag gold">MIX</span></td>
+        <td class="mono">61%</td>
+      </tr>
+      
+      <tr>
+        <td class="mono"><strong>ASTS</strong></td>
+        <td class="mono">16.5</td>
+        <td><span class="tag green">CALL</span></td>
+        <td class="mono">96%</td>
+      </tr>
+      
+      <tr>
+        <td class="mono"><strong>SLV</strong></td>
+        <td class="mono">14.4</td>
+        <td><span class="tag red">PUT</span></td>
+        <td class="mono">9%</td>
+      </tr>
+      
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel" id="screeners">
+    <div><span class="num">05</span><span class="eyebrow">Live screener health</span></div>
+    <h2>Screeners — live Sharpe vs claim</h2>
+    <div class="narrative">Top by live Sharpe (last 12 months). gap = live − claim. Large gap = overfit. Source signal_outcome.db 2026-05-16.</div>
+    <table class="t">
+      <thead><tr><th>Screener</th><th>H</th><th>N</th><th>WR</th><th>Sharpe live</th><th>Gap</th><th>Status</th></tr></thead>
+      <tbody>
+      
+      <tr>
+        <td class="mono"><strong>PULLBACK</strong></td>
+        <td class="mono">20d</td>
+        <td class="mono">314</td>
+        <td class="mono">61.5%</td>
+        <td class="mono">5.33</td>
+        <td class="mono" style="color:var(--text-muted)">2.98</td>
+        <td><span class="tag green">HEALTHY</span></td>
+      </tr>
+      
+      <tr>
+        <td class="mono"><strong>BOTTOM</strong></td>
+        <td class="mono">5d</td>
+        <td class="mono">153</td>
+        <td class="mono">58.2%</td>
+        <td class="mono">4.41</td>
+        <td class="mono" style="color:var(--text-muted)">3.41</td>
+        <td><span class="tag green">HEALTHY</span></td>
+      </tr>
+      
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel" id="track">
+    <div><span class="num">07</span><span class="eyebrow">Live IBKR track record</span></div>
+    <h2>My real P&L</h2>
+    
+    <div class="verdict green">IN PROFIT · MTD $8,424</div>
+    <div class="narrative">Source trade_journal.db (IBKR pull). Realized P&L only, excluding open positions. Last trade 2026-05-14.</div>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="k">P&L 30d</div><div class="v green">$8,505</div></div>
+      <div class="kpi"><div class="k">P&L 90d</div><div class="v green">$57,157</div></div>
+      <div class="kpi"><div class="k">WR 30d</div><div class="v green">78.3%</div></div>
+      <div class="kpi"><div class="k">Trades 30d</div><div class="v">23</div></div>
+      <div class="kpi"><div class="k">Open positions</div><div class="v">12</div></div>
+    </div>
+    
+    <table class="t" style="margin-top:14px;">
+      <thead><tr><th>Symbol</th><th>Position</th><th>P&L %</th></tr></thead>
+      <tbody>
+      
+      <tr>
+        <td class="mono"><strong>AAWH</strong></td>
+        <td class="mono">7000</td>
+        <td class="mono"><span class="tag red">-6.4%</span></td>
+      </tr>
+      
+      </tbody>
+    </table>
+    
+    
+  </section>
+
+  <section class="panel grid-wide" id="watchlist">
+    <div><span class="num">07b</span><span class="eyebrow">Curated watchlist</span></div>
+    <h2>Watchlist — manually added picks with thesis</h2>
+    <div class="narrative">Tickers added manually with full thesis (theme, levels, options play). Stored in <code>ceo_watchlist</code> table. Add new via SQL or future UI.</div>
+    
+    <div class="narrative" style="font-style:normal;">No active picks in watchlist. Add via SQL: <code>INSERT INTO ceo_watchlist(ticker, thesis, theme, ...) VALUES (...)</code></div>
+    
+  </section>
+
+  <section class="panel" id="calendar">
+    <div><span class="num">08</span><span class="eyebrow">7-day calendar</span></div>
+    <h2>Upcoming catalysts</h2>
+    <div class="narrative">Earnings mega-caps + OpEx + FOMC + macro events (CPI/NFP/Fed/ECB) + IPOs + geopolitical headlines (Iran/oil/Trump/war) + Polymarket movers — next 7d.</div>
+    
+    <table class="t">
+      <thead><tr><th>Date</th><th>Ticker</th><th>Type</th></tr></thead>
+      <tbody>
+      
+      <tr>
+        <td class="mono">2026-05-19</td>
+        <td class="mono"><strong>HD</strong></td>
+        <td><span class="tag mega">MEGA-CAP</span></td>
+      </tr>
+      
+      <tr>
+        <td class="mono">2026-05-20</td>
+        <td class="mono"><strong>NVDA</strong></td>
+        <td><span class="tag mega">MEGA-CAP</span></td>
+      </tr>
+      
+      <tr>
+        <td class="mono">2026-05-21</td>
+        <td class="mono"><strong>WMT</strong></td>
+        <td><span class="tag mega">MEGA-CAP</span></td>
+      </tr>
+      
+      <tr>
+        <td class="mono">2026-05-19</td>
+        <td class="mono"><strong>KEYS</strong></td>
+        <td><span class="tag gold">EARNINGS</span></td>
+      </tr>
+      
+      <tr>
+        <td class="mono">2026-05-20</td>
+        <td class="mono"><strong>INTU</strong></td>
+        <td><span class="tag gold">EARNINGS</span></td>
+      </tr>
+      
+      <tr>
+        <td class="mono">2026-05-20</td>
+        <td class="mono"><strong>LOW</strong></td>
+        <td><span class="tag gold">EARNINGS</span></td>
+      </tr>
+      
+      <tr>
+        <td class="mono">2026-05-20</td>
+        <td class="mono"><strong>TJX</strong></td>
+        <td><span class="tag gold">EARNINGS</span></td>
+      </tr>
+      
+      <tr>
+        <td class="mono">2026-05-21</td>
+        <td class="mono"><strong>DE</strong></td>
+        <td><span class="tag gold">EARNINGS</span></td>
+      </tr>
+      
+      </tbody>
+    </table>
+    
+    <div style="margin-top:8px;font-size:11px;color:var(--text-muted);font-style:italic;">+ 3 other earnings this week</div>
+    
+
+    
+    <h3 style="margin:18px 0 6px 0;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);">Macro events (high impact)</h3>
+    <table class="t">
+      <thead><tr><th>Date</th><th>Country</th><th>Event</th><th>Est.</th></tr></thead>
+      <tbody>
+      
+      <tr>
+        <td class="mono">2026-05-18</td>
+        <td class="mono">CN</td>
+        <td>Industrial Production YoY</td>
+        <td class="mono" style="color:var(--text-muted);">5.9</td>
+      </tr>
+      
+      <tr>
+        <td class="mono">2026-05-18</td>
+        <td class="mono">CN</td>
+        <td>Retail Sales YoY</td>
+        <td class="mono" style="color:var(--text-muted);">2</td>
+      </tr>
+      
+      <tr>
+        <td class="mono">2026-05-18</td>
+        <td class="mono">CN</td>
+        <td>Unemployment Rate</td>
+        <td class="mono" style="color:var(--text-muted);">5.3</td>
+      </tr>
+      
+      <tr>
+        <td class="mono">2026-05-18</td>
+        <td class="mono">EU</td>
+        <td>ECB Elderson Speech</td>
+        <td class="mono" style="color:var(--text-muted);">—</td>
+      </tr>
+      
+      <tr>
+        <td class="mono">2026-05-18</td>
+        <td class="mono">GB</td>
+        <td>BoE Greene Speech</td>
+        <td class="mono" style="color:var(--text-muted);">—</td>
+      </tr>
+      
+      <tr>
+        <td class="mono">2026-05-18</td>
+        <td class="mono">GB</td>
+        <td>BoE L Mann Speech</td>
+        <td class="mono" style="color:var(--text-muted);">—</td>
+      </tr>
+      
+      <tr>
+        <td class="mono">2026-05-18</td>
+        <td class="mono">US</td>
+        <td>Fed Venable Speech</td>
+        <td class="mono" style="color:var(--text-muted);">—</td>
+      </tr>
+      
+      <tr>
+        <td class="mono">2026-05-18</td>
+        <td class="mono">US</td>
+        <td>NY Fed Services Activity Index</td>
+        <td class="mono" style="color:var(--text-muted);">—</td>
+      </tr>
+      
+      <tr>
+        <td class="mono">2026-05-18</td>
+        <td class="mono">EU</td>
+        <td>ECB Montagner Speech</td>
+        <td class="mono" style="color:var(--text-muted);">—</td>
+      </tr>
+      
+      <tr>
+        <td class="mono">2026-05-18</td>
+        <td class="mono">JP</td>
+        <td>GDP Capital Expenditure QoQ Prel</td>
+        <td class="mono" style="color:var(--text-muted);">0.2</td>
+      </tr>
+      
+      <tr>
+        <td class="mono">2026-05-18</td>
+        <td class="mono">JP</td>
+        <td>GDP External Demand QoQ Prel</td>
+        <td class="mono" style="color:var(--text-muted);">0.2</td>
+      </tr>
+      
+      <tr>
+        <td class="mono">2026-05-18</td>
+        <td class="mono">JP</td>
+        <td>GDP Growth Annualized Prel</td>
+        <td class="mono" style="color:var(--text-muted);">1.7</td>
+      </tr>
+      
+      </tbody>
+    </table>
+    
+
+    
+    <h3 style="margin:18px 0 6px 0;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);">IPOs this week</h3>
+    <table class="t">
+      <thead><tr><th>Date</th><th>Symbol</th><th>Name</th><th>Size (M$)</th></tr></thead>
+      <tbody>
+      
+      <tr>
+        <td class="mono">2026-05-20</td>
+        <td class="mono"><strong>LCLN</strong></td>
+        <td>Lincoln International, Inc.</td>
+        <td class="mono">378.9</td>
+      </tr>
+      
+      <tr>
+        <td class="mono">2026-05-19</td>
+        <td class="mono"><strong>APURU</strong></td>
+        <td>Aperture AC</td>
+        <td class="mono">90.0</td>
+      </tr>
+      
+      <tr>
+        <td class="mono">2026-05-21</td>
+        <td class="mono"><strong>CNXU</strong></td>
+        <td>Conexeu Sciences Inc.</td>
+        <td class="mono">—</td>
+      </tr>
+      
+      </tbody>
+    </table>
+    
+
+    
+    <h3 style="margin:18px 0 6px 0;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);">Geopolitique / macro shocks (36h)</h3>
+    <div>
+      
+      <div style="padding:7px 12px;background:#fff5f5;border-left:3px solid #c84a4a;border-radius:3px;margin-bottom:5px;font-size:12px;">
+        <span class="tag" style="background:#c84a4a;color:#fff;font-size:9px;padding:2px 6px;border-radius:2px;">RUSSIA</span>
+        <a href="https://news.google.com/rss/articles/CBMiuwFBVV95cUxNcms1UU9KdDZ1SkNQY0tsbC1QdUx3cU1oR25mZFI4RHBCQ2RIWVZ4RjVGeFFyTENjMXFvMW5TRzN4TmZaMHNIYVJiZzRyNmx0bngxazBBSHFvcWxERDAxOF9HR0ZHaE51LTNxVE5NVkdKWE9xQ2Q2d29iajRxYmNneVFCdWZtY0l1dDJYTXppdUo3WTc3X1JJVGtVQ3Y5TzhjcVJEbXItMmswaTNhOUxMZ21seGZLYjZvOUQ0?oc=5" target="_blank" style="color:var(--text);text-decoration:none;">US Treasury extends sanction waiver on Russian seaborne oil to aid vulnerable countries - Reuters</a>
+        <span style="color:var(--text-muted);font-size:10px;"> · Reuters</span>
+      </div>
+      
+      <div style="padding:7px 12px;background:#fff5f5;border-left:3px solid #c84a4a;border-radius:3px;margin-bottom:5px;font-size:12px;">
+        <span class="tag" style="background:#c84a4a;color:#fff;font-size:9px;padding:2px 6px;border-radius:2px;">IRAN</span>
+        <a href="https://news.google.com/rss/articles/CBMivAFBVV95cUxNZFBBZjR0U0ZPbGpGeHRNOS1SSV8zNXF2RktPek00SVd6aDVyNjlXZzZXTEdJdmN6OWcwN0dMTVhiOHEzQkVnaGRrSVJvOWoyRzFrV0JCNFRpMVE4V2wydUhwMXZtVURXbHNwRlRqWDZoUmo2dWlxRHhMR0ZJQXUtaGc5MEl3WEhjQnh6eWhLSGxldEdtRGR0YWoyMUk2aE9HUzhFSy1rMUVheXFZMXJtUmR6SjVwTnJXb0wwVw?oc=5" target="_blank" style="color:var(--text);text-decoration:none;">Romanians stabbed journalist in London at behest of Iran, UK court told - Reuters</a>
+        <span style="color:var(--text-muted);font-size:10px;"> · Reuters</span>
+      </div>
+      
+      <div style="padding:7px 12px;background:#fff5f5;border-left:3px solid #c84a4a;border-radius:3px;margin-bottom:5px;font-size:12px;">
+        <span class="tag" style="background:#c84a4a;color:#fff;font-size:9px;padding:2px 6px;border-radius:2px;">IRAN</span>
+        <a href="https://news.google.com/rss/articles/CBMirAFBVV95cUxNcDZKdU5Cb2tFNmNsTnFKeWlKRFJnZ3lHdGVMRnVBOUR5NnlLaW01eldjcG1YcHZjbndUamVLbV9QWlRhczB6TEt2cDY2bkJqdXB4QlhkQV9nd3dvamF2NnpDU0ptdUZxQXdOQlF5ODB2M0VKbmc4U0xFMVFuWW5Cb0VOeGVYaVA2amRzZ3JGejBGenBGUzh5dlcwM252T2R0cFY0U0U3MEc3Q2t3?oc=5" target="_blank" style="color:var(--text);text-decoration:none;">Pakistan sends new Iranian peace proposal to US - Reuters</a>
+        <span style="color:var(--text-muted);font-size:10px;"> · Reuters</span>
+      </div>
+      
+      <div style="padding:7px 12px;background:#fff5f5;border-left:3px solid #c84a4a;border-radius:3px;margin-bottom:5px;font-size:12px;">
+        <span class="tag" style="background:#c84a4a;color:#fff;font-size:9px;padding:2px 6px;border-radius:2px;">IRAN</span>
+        <a href="https://news.google.com/rss/articles/CBMiygFBVV95cUxPZXQ0ZGZRZEVoWXNYN1ExempBZ1Ata245ellOQ0JVNTdnNTRyc2oxZWUzakNEZWllaEs1T0F2cktHVUVqUGJWeW80LU5LT3g1LVJZY3RaMDBsNnpyX09sRXRQOENWZktYT0dCRC02R1o2LTBxV2dEcldNT1V1TXpRRjNQcWFHSkE2Y0tRX0V4NDBfdVpoXzRvSXlrdVNVMk9IeDVTaVRRSDhLZFl2Q3dGa0VfVGlMOTk1VjdHd3lzUzd2OVBwOVQ0VnlB?oc=5" target="_blank" style="color:var(--text);text-decoration:none;">Exclusive: Pakistan deploys jet squadron, thousands of troops to Saudi Arabia during Iran war - Reuters</a>
+        <span style="color:var(--text-muted);font-size:10px;"> · Reuters</span>
+      </div>
+      
+      <div style="padding:7px 12px;background:#fff5f5;border-left:3px solid #c84a4a;border-radius:3px;margin-bottom:5px;font-size:12px;">
+        <span class="tag" style="background:#c84a4a;color:#fff;font-size:9px;padding:2px 6px;border-radius:2px;">IRAN</span>
+        <a href="https://news.google.com/rss/articles/CBMiwgFBVV95cUxOakpsZkRTa3dDcTltOXJiUktHZEJsQTNYWlppMzl3Q3lzV01WN01FVC1xaEdfUVdndHV3UTgzc2JlSTQzUmFMR0ZPX2E5b1pRaEQ2Tk9PdEtFTmFCcWtJdTRZNUo2cFFkYWViOWppUGlreWF5SEpVUnFEbG1OMkdZdWZXVk54cTM1eUtVMnBjSFJuWjdlNXpvdDR1WG8zSERTZS14bXd2VWRGWmU4ZlJuTU5pRHo4QWE3WlNhS2pYVGxmdw?oc=5" target="_blank" style="color:var(--text);text-decoration:none;">Revised Iranian proposal to end war shared with US, Pakistani source says - Reuters</a>
+        <span style="color:var(--text-muted);font-size:10px;"> · Reuters</span>
+      </div>
+      
+      <div style="padding:7px 12px;background:#fff5f5;border-left:3px solid #c84a4a;border-radius:3px;margin-bottom:5px;font-size:12px;">
+        <span class="tag" style="background:#c84a4a;color:#fff;font-size:9px;padding:2px 6px;border-radius:2px;">IRAN</span>
+        <a href="https://news.google.com/rss/articles/CBMiuAFBVV95cUxNb0RFdENpZERLMzdIZWdtZTZJaVF3cFdlcVdPbWxLbnp0NjdBN0tUTmhNMVhBUHFnX2tCVlJRaWpnZWxJa1FPcDRUSnFSSlh0V053amdicFlCNDU0Vnk3a1YxNnRoei1xX2F0Tl9YODhsa3V1LWdHb2cxSzE3TmxpNjdVMkhwbTFPUTYyNW1abG84c0k2WW1QZU8zaC0zeEZ1NWNLRWNLUEdSY0N6azMxM0NfbktXS3lV?oc=5" target="_blank" style="color:var(--text);text-decoration:none;">Iranian Nobel laureate discharged from hospital and sent home, family say - Reuters</a>
+        <span style="color:var(--text-muted);font-size:10px;"> · Reuters</span>
+      </div>
+      
+    </div>
+    
+
+    
+    <h3 style="margin:18px 0 6px 0;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);">Polymarket — markets moving (24h)</h3>
+    <table class="t">
+      <thead><tr><th>Question</th><th>Prob</th><th>Δ24h</th><th>Vol (k$)</th></tr></thead>
+      <tbody>
+      
+      <tr>
+        <td><a href="https://polymarket.com/event/bitcoin-up-or-down-on-may-18-2026" target="_blank" style="color:var(--text);text-decoration:none;">Bitcoin Up or Down on May 18?</a></td>
+        <td class="mono">0.1%</td>
+        <td class="mono" style="color:#c84a4a;">-56.5pp</td>
+        <td class="mono">390.1</td>
+      </tr>
+      
+      <tr>
+        <td><a href="https://polymarket.com/event/bitcoin-up-or-down-may-18-2026-1pm-et" target="_blank" style="color:var(--text);text-decoration:none;">Bitcoin Up or Down - May 18, 1PM ET</a></td>
+        <td class="mono">99.9%</td>
+        <td class="mono" style="color:#1b8a4a;">+50.0pp</td>
+        <td class="mono">269.3</td>
+      </tr>
+      
+      <tr>
+        <td><a href="https://polymarket.com/event/microstrategy-sells-any-bitcoin-by-may-31-2026" target="_blank" style="color:var(--text);text-decoration:none;">MicroStrategy sells any Bitcoin by May 31, 2026?</a></td>
+        <td class="mono">42.0%</td>
+        <td class="mono" style="color:#1b8a4a;">+14.0pp</td>
+        <td class="mono">284.7</td>
+      </tr>
+      
+      <tr>
+        <td><a href="https://polymarket.com/event/iran-closes-its-airspace-by-may-24" target="_blank" style="color:var(--text);text-decoration:none;">Iran closes its airspace by May 24?</a></td>
+        <td class="mono">42.0%</td>
+        <td class="mono" style="color:#1b8a4a;">+11.5pp</td>
+        <td class="mono">388.9</td>
+      </tr>
+      
+      <tr>
+        <td><a href="https://polymarket.com/event/iran-closes-its-airspace-by-may-31-434-443-672-526-188" target="_blank" style="color:var(--text);text-decoration:none;">Iran closes its airspace by May 31?</a></td>
+        <td class="mono">54.0%</td>
+        <td class="mono" style="color:#1b8a4a;">+13.0pp</td>
+        <td class="mono">291.4</td>
+      </tr>
+      
+      <tr>
+        <td><a href="https://polymarket.com/event/iran-closes-its-airspace-by-may-21" target="_blank" style="color:var(--text);text-decoration:none;">Iran closes its airspace by May 21?</a></td>
+        <td class="mono">27.0%</td>
+        <td class="mono" style="color:#1b8a4a;">+12.5pp</td>
+        <td class="mono">304.7</td>
+      </tr>
+      
+      <tr>
+        <td><a href="https://polymarket.com/event/will-bitcoin-reach-85k-in-may-2026" target="_blank" style="color:var(--text);text-decoration:none;">Will Bitcoin reach $85,000 in May?</a></td>
+        <td class="mono">12.0%</td>
+        <td class="mono" style="color:#c84a4a;">-7.0pp</td>
+        <td class="mono">367.4</td>
+      </tr>
+      
+      <tr>
+        <td><a href="https://polymarket.com/event/will-wti-reach-110-in-may-2026-116-472" target="_blank" style="color:var(--text);text-decoration:none;">Will WTI Crude Oil (WTI) hit (HIGH) $110 in May?</a></td>
+        <td class="mono">66.0%</td>
+        <td class="mono" style="color:#1b8a4a;">+6.5pp</td>
+        <td class="mono">340.4</td>
+      </tr>
+      
+      </tbody>
+    </table>
+    
+
+    
+  </section>
+
+  <section class="panel grid-wide" id="pipeline">
+    <div><span class="num">06</span><span class="eyebrow">Research pipeline</span></div>
+    <h2>In-flight projects · Robustness + Risk + Live Loop</h2>
+    <div class="narrative">Pulled from Wiki Kanban, "En cours" section. Check items in Obsidian to remove them.</div>
+    <div class="grid" style="gap:18px;margin-top:8px;">
+      <div>
+        <div class="eyebrow" style="margin-bottom:6px;">To do</div>
+        <ul class="bullets">
+          <li><strong>S1.C/E</strong> — NAAIM fetcher + intégration sidebar kerberos_dashboard  (subagent en cours)</li><li><strong>S1.D</strong> — Injecter §99 Robustness Lab dans screeners_overview.html  (subagent en cours)</li><li><strong>Backfill 30j</strong> — <code>lib/signal_outcome_pipeline.py</code> (subagent en cours)</li><li><strong>S2</strong> — Purged K-Fold + Triple Barrier + SADF sur screeners_overview</li><li><strong>S3</strong> — Risk Cockpit (VaR/CVaR/stress) + Execution Log dans cockpit/index</li><li><strong>S4</strong> — SSVI Skew + VRP per ticker + Meta-Labeling reboot + Live vs Backtest Gap</li>
+          
+        </ul>
+      </div>
+      <div>
+        <div class="eyebrow" style="margin-bottom:6px;">Recently shipped</div>
+        <ul class="bullets">
+          <li class="done"><strong>Prereq 2</strong> — <code>signal_outcome.db</code> schema créé (3 tables : events, outcomes, health)</li><li class="done"><strong>Prereq 3</strong> — <code>tracking.html</code> scaffold + doctrine Obsidian <code>Signal-Outcome-Tracking.md</code></li><li class="done"><strong>S1.A</strong> — <code>lab/compute_robustness_metrics.py</code> calcule DSR/MinTRL sur 29 setups → JSON+MD</li><li class="done"><strong>S1.B</strong> — Kelly Criterion column dans cockpit Best Trades (lib/kelly.py + cockpit_loaders.py)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<section class="panel" id="sanity" style="margin-top:16px;">
+  <div><span class="num">09</span><span class="eyebrow">Data sanity</span></div>
+  <h2>Source freshness + auto-refresh</h2>
+  <div class="verdict green">FRESH</div>
+  <div class="narrative">Max age = lag of the most-delayed source. 3d since last update. Auto-refresh runs at every dashboard regen.</div>
+  <div class="kpi-grid">
+    <div class="kpi"><div class="k">OHLCV</div><div class="v" style="font-size:13px">2026-05-18</div></div>
+    <div class="kpi"><div class="k">Signal archive</div><div class="v" style="font-size:13px">2026-05-18</div></div>
+    <div class="kpi"><div class="k">Options flow</div><div class="v" style="font-size:13px">2026-05-15</div></div>
+    <div class="kpi"><div class="k">Breadth</div><div class="v" style="font-size:13px">2026-05-15</div></div>
+    <div class="kpi"><div class="k">Screener health</div><div class="v" style="font-size:13px">2026-05-16</div></div>
+  </div>
+  
+  <div class="eyebrow" style="margin-top:18px;margin-bottom:6px;">Auto-refresh log (this run)</div>
+  <table class="t">
+    <thead><tr><th>Source</th><th>Status</th></tr></thead>
+    <tbody>
+    
+    <tr>
+      <td class="mono"><strong>options</strong></td>
+      <td style="font-size:12px;">
+        <span class="tag green">REFRESHED</span>
+        refreshed (3d→3d): 2026-05-15
+      </td>
+    </tr>
+    
+    <tr>
+      <td class="mono"><strong>attention</strong></td>
+      <td style="font-size:12px;">
+        <span class="tag green">FRESH</span>
+        fresh (1d, 2026-05-17)
+      </td>
+    </tr>
+    
+    <tr>
+      <td class="mono"><strong>screener_health</strong></td>
+      <td style="font-size:12px;">
+        <span class="tag green">FRESH</span>
+        fresh (2d, 2026-05-16)
+      </td>
+    </tr>
+    
+    </tbody>
+  </table>
+  
+</section>
+
+<footer>
+  Regenerated nightly after EOD pipeline · Sources: market_data.db, signal_outcome.db, trade_journal.db, lib.vix_spike_detector, Wiki/Kanban.md
+</footer>
+
+</main>
+</div>
+</body>
+</html>
