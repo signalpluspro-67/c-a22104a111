@@ -1,0 +1,158 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How The System Works — methodology, not magic</title>
+<style>
+:root{--sepia-bg:#FAF6E8;--sepia-card:#FBF7E0;--sepia-border:#C8B878;--sepia-text:#2A2516;
+--sepia-text-muted:#6B5C2A;--sepia-accent:#5C4F1A;--sepia-gold:#B89A3A;--sepia-hr:#D8C8A8;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--sepia-bg);color:var(--sepia-text);
+font-family:'Iowan Old Style','Georgia',serif;font-size:15px;line-height:1.6;}
+header.sticky{position:sticky;top:0;z-index:100;background:var(--sepia-accent);color:#fff;
+padding:16px 28px;border-bottom:2px solid var(--sepia-gold);}
+header.sticky h1{margin:0;font-size:22px;font-weight:600;}
+header.sticky .meta{font-size:12px;opacity:.85;margin-top:2px;}
+main{padding:24px 28px 90px;max-width:860px;margin:0 auto;}
+.lede{font-size:16px;color:var(--sepia-text-muted);font-style:italic;margin:6px 0 26px;}
+section.block{background:var(--sepia-card);border:1px solid var(--sepia-border);
+border-radius:6px;padding:20px 24px;margin-bottom:24px;}
+section.block h2{margin:0 0 10px;font-size:19px;color:var(--sepia-accent);
+border-bottom:1px solid var(--sepia-hr);padding-bottom:6px;}
+section.block .intro{margin-bottom:10px;}
+.method{background:rgba(184,154,58,.10);border-left:3px solid var(--sepia-gold);
+padding:8px 14px;font-size:13.5px;margin:12px 0;border-radius:3px;}
+.caveat{background:rgba(184,58,58,.08);border-left:3px solid #B83A3A;
+padding:8px 14px;font-size:13.5px;margin:12px 0;border-radius:3px;}
+pre.ascii{background:#F3EFE0;border:1px solid var(--sepia-border);border-radius:4px;
+padding:14px 16px;overflow-x:auto;font-family:'SF Mono','Menlo','Monaco','Courier New',monospace;
+font-size:12.5px;line-height:1.35;color:var(--sepia-accent);}
+table{width:100%;border-collapse:collapse;font-size:13.5px;background:rgba(255,255,255,.4);margin:6px 0;}
+th,td{padding:7px 9px;text-align:left;border-bottom:1px solid rgba(200,184,120,.5);}
+th{background:rgba(184,154,58,.2);color:var(--sepia-accent);font-size:11.5px;
+text-transform:uppercase;letter-spacing:.3px;}
+footer{margin-top:40px;padding:20px 28px;background:var(--sepia-accent);color:#FBF7E0;
+font-size:12.5px;text-align:center;}
+footer a{color:var(--sepia-gold);}
+</style></head><body>
+<header class="sticky"><h1>How The System Works</h1>
+<div class="meta">Methodology, not magic · generated 2026-05-25 · The Philosopher Investor</div>
+</header><main>
+<div class="lede">Most "backtested edges" are noise wearing a suit. This is the gauntlet
+every signal runs before it earns a dollar of size — and the honest scoreboard of what survived.</div>
+<section class="block"><h2>1 · How we separate edge from noise</h2>
+<div class="intro">A profitable backtest proves nothing — a coin-flipper gets lucky too.
+So every screener runs an eight-step statistical gauntlet. The hardest gate is the
+<b>block bootstrap</b>: it shuffles returns in 5-day blocks, so a signal that only looked
+good because a handful of winning days clustered together gets exposed as luck.</div>
+<pre class="ascii">┌─ THE 8-STEP GAUNTLET ─────────────────────────────────────────┐
+│ 1. Sign-flip permutation x5000  (is the mean return real?)    │
+│    |                                                          │
+│    v                                                          │
+│ 2. Bonferroni correction  (penalize for testing many signals) │
+│    |                                                          │
+│    v                                                          │
+│ 3. Block bootstrap, len=5  (is it edge, or clustered luck?)   │
+│    |                                                          │
+│    v                                                          │
+│ 4. Deflated Sharpe ratio  (correct for the number of trials)  │
+│    |                                                          │
+│    v                                                          │
+│ 5. Walk-forward OOS  (does train carry to unseen test?)       │
+│    |                                                          │
+│    v                                                          │
+│ 6. Crash cross-check  (did it warn before the big drops?)     │
+│    |                                                          │
+│    v                                                          │
+│ 7. Verdict: CONFIRMED / MARGINAL / REJECTED                   │
+│                                                               │
+│ -&gt; fail one gate early and the signal is out                  │
+└───────────────────────────────────────────────────────────────┘</pre><pre class="ascii">┌─ WHAT SURVIVED, OF 20 SCREENERS ─────────────┐
+│ CONFIRMED  ████ 2                            │
+│ MARGINAL   ████████████████████ 11           │
+│ REJECTED   █████████████ 7                   │
+│                                              │
+│ -&gt; block bootstrap is where most &#x27;edges&#x27; die │
+└──────────────────────────────────────────────┘</pre>
+<div class="method"><b>Why it matters:</b> at the Bonferroni level
+(2 VALID / 6 MARGINAL /
+12 REJECT) several screeners look fine. Run the block bootstrap and
+the picture collapses — only the ones below stay standing.</div></section><section class="block"><h2>2 · Two engines: momentum vs mean-reversion</h2>
+<div class="intro">A stock is either trending or chopping, and the same trade loses in the wrong
+mode. So we run two engines. <b>Momentum</b> buys strength: PULLBACK enters a dip inside an
+uptrend (price &gt; SMA50 &gt; SMA200), BREAKOUT buys fresh highs out of a tight base.
+<b>Mean-reversion</b> buys panic: BOTTOM catches deep capitulation (≥ −40% off the 52-week high)
+with a reversal candle. Different math, different hold.</div>
+<pre class="ascii">┌─ TYPICAL HOLD, IN TRADING DAYS ───────────────────────┐
+│ PULLBACK (momentum)      ██████ 10d                   │
+│ BREAKOUT (momentum)      ██████ 10d                   │
+│ SMART_FLOW (flow)        █████████ 15d                │
+│ BOTTOM (mean-reversion)  ████████████████████████ 40d │
+│                          0                    40d     │
+│                                                       │
+│ -&gt; momentum is fast; reversion needs room             │
+└───────────────────────────────────────────────────────┘</pre>
+<table><tr><th>Engine</th><th>Catches</th><th>Screeners</th></tr>
+<tr><td>Momentum / trend</td><td>continuation of strength</td><td>PULLBACK, BREAKOUT</td></tr>
+<tr><td>Mean-reversion</td><td>snap-back from extremes</td><td>BOTTOM, SMART_FLOW confluence</td></tr></table>
+<div class="method"><b>Lesson:</b> a screener isn't "good" or "bad" in the abstract — it's good for
+the market state it was built for. Forcing a reversion trade in a runaway trend is how accounts bleed.</div></section><section class="block"><h2>3 · Confluence: when two weak signals beat one strong</h2>
+<div class="intro">No single screener is a holy grail. The edge lives in <b>agreement</b>: when an
+oversold BOTTOM lines up with institutional options flow (SMART_FLOW) within a day, the combination
+is far more selective than either alone — fewer trades, higher conviction.</div>
+<pre class="ascii">┌─ APPARENT SHARPE — SOLO VS STACKED ────────────────┐
+│ BOTTOM solo          █████ 1.40                    │
+│ BOTTOM x SMART_FLOW  ████████████████████████ 6.17 │
+│                      0                   6.17      │
+│                                                    │
+│ -&gt; tempting... but read the caveat below           │
+└────────────────────────────────────────────────────┘</pre>
+<div class="caveat"><b>The honest part:</b> stack two signals and the apparent Sharpe explodes past 6.
+We almost shipped that. Then the block bootstrap and the deflated Sharpe ratio (DSR went
+<b>negative</b>) said it plainly: with only ~71 trades, that 6.17 is clustered luck, not edge.
+Confluence genuinely sharpens selection — but the flashy number is a trap, and the discipline is to
+kill it anyway.</div></section><section class="block"><h2>4 · Regime-aware: the same signal is a different trade</h2>
+<div class="intro">A dip-buy in a calm tape and a dip-buy in a VIX-30 panic are not the same bet.
+Sliced by volatility regime, the same screener's risk-adjusted return swings hard — strongest when
+the market is either very calm or genuinely stressed, weakest in the murky "normal" middle.</div>
+<pre class="ascii">┌─ SAME SIGNAL, SHARPE BY VIX REGIME ─────┐
+│ CALM      ██████████████ 2.14           │
+│ NORMAL    ██████ 0.94                   │
+│ ELEVATED  ████████████ 1.84             │
+│ STRESS    ████████████████████████ 3.64 │
+│           0                   3.64      │
+│                                         │
+│ -&gt; calm vs stress are different worlds  │
+└─────────────────────────────────────────┘</pre>
+<div class="method"><b>How we use it:</b> we tried to turn this into a hard "skip elevated VIX"
+filter — it only helped marginally (≈ +0.3 Sharpe), so regime stays <b>context, not a trigger</b>.
+It tells us how much to size and what to expect, not whether to pull the trigger.</div></section><section class="block"><h2>5 · What actually survived</h2>
+<div class="intro">This is the scoreboard that matters, refreshed from the live validation table.
+Out of ~20 screeners and variants tested, the ones below are the only ones that cleared every gate
+including the block bootstrap: <b>SMART_FLOW, PULLBACK_V6</b>. Everything else is marginal or rejected and carries
+zero allocation weight.</div>
+<pre class="ascii">┌─ SURVIVED THE FULL GAUNTLET — NET SHARPE ──┐
+│ SMART_FLOW   ████████████████████████ 2.63 │
+│ PULLBACK_V6  ███████████ 1.19              │
+│              0                   2.63      │
+│                                            │
+│ -&gt; block-bootstrap confirmed, live         │
+└────────────────────────────────────────────┘</pre>
+<div class="method"><b>The point of publishing this:</b> a system you can trust is one that tells you
+what <i>didn't</i> work. Most of our ideas die in testing — that's the feature, not the bug.</div></section><section class="block"><h2>6 · The Kerberos story</h2>
+<div class="intro">A lot of this system started by reverse-engineering <b>@kerberos007</b>, a
+cult quant whose threads describe momentum factors, regression-slope ranking, and breadth "Jaws"
+divergences. We rebuilt them — and then did the thing the threads never do: ran each one through
+the same block bootstrap.</div>
+<pre class="ascii">┌─ KERBEROS007 IDEAS, PUT THROUGH THE GAUNTLET ──┐
+│ Already existed    ████████████████████ 3      │
+│ Rebuilt + kept     ███████ 1                   │
+│ Tested + rejected  █████████████ 2             │
+│                                                │
+│ -&gt; a cult quant&#x27;s playbook, audited honestly   │
+└────────────────────────────────────────────────┘</pre>
+<div class="method"><b>What we learned:</b> most of the famous narrative signals were already
+built here, and the rigorous ones (a Clenow-style momentum factor, breadth/Jaws indicators) stand
+as context; the flashy "parabolic" and overlay tricks did not survive. Borrowing a smart trader's
+ideas is cheap. Auditing them honestly is the actual edge.</div></section></main><footer>
+The Philosopher Investor · methodology page · generated 2026-05-25 11:07
+· numbers are live from our validation tables, not curated.
+</footer></body></html>
