@@ -1,0 +1,329 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>System Architecture — how the whole machine fits together</title>
+<style>
+:root{--sepia-bg:#FAF6E8;--sepia-card:#FBF7E0;--sepia-border:#C8B878;--sepia-text:#2A2516;
+--sepia-text-muted:#6B5C2A;--sepia-accent:#5C4F1A;--sepia-gold:#B89A3A;--sepia-hr:#D8C8A8;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--sepia-bg);color:var(--sepia-text);
+font-family:'Iowan Old Style','Georgia',serif;font-size:15px;line-height:1.6;}
+header.sticky{position:sticky;top:0;z-index:100;background:var(--sepia-accent);color:#fff;
+padding:16px 28px;border-bottom:2px solid var(--sepia-gold);}
+header.sticky h1{margin:0;font-size:22px;font-weight:600;}
+header.sticky .meta{font-size:12px;opacity:.85;margin-top:2px;}
+main{padding:24px 28px 90px;max-width:880px;margin:0 auto;}
+.lede{font-size:16px;color:var(--sepia-text-muted);font-style:italic;margin:6px 0 22px;}
+nav.toc{background:var(--sepia-card);border:1px solid var(--sepia-border);border-radius:6px;
+padding:12px 16px;margin-bottom:24px;}
+nav.toc b{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.3px;
+color:var(--sepia-text-muted);margin-bottom:6px;}
+nav.toc a{display:inline-block;font-size:12.5px;color:var(--sepia-accent);text-decoration:none;
+background:rgba(184,154,58,.12);border:1px solid var(--sepia-border);border-radius:12px;
+padding:3px 10px;margin:3px 4px 3px 0;}
+nav.toc a:hover{background:rgba(184,154,58,.28);}
+section.block{background:var(--sepia-card);border:1px solid var(--sepia-border);
+border-radius:6px;padding:20px 24px;margin-bottom:24px;scroll-margin-top:64px;}
+section.block h2{margin:0 0 10px;font-size:19px;color:var(--sepia-accent);
+border-bottom:1px solid var(--sepia-hr);padding-bottom:6px;}
+section.block h2 .num{opacity:.5;}
+section.block .intro{margin-bottom:10px;}
+.method{background:rgba(184,154,58,.10);border-left:3px solid var(--sepia-gold);
+padding:8px 14px;font-size:13.5px;margin:12px 0;border-radius:3px;}
+.caveat{background:rgba(184,58,58,.08);border-left:3px solid #B83A3A;
+padding:8px 14px;font-size:13.5px;margin:12px 0;border-radius:3px;}
+pre.ascii{background:#F3EFE0;border:1px solid var(--sepia-border);border-radius:4px;
+padding:14px 16px;overflow-x:auto;font-family:'SF Mono','Menlo','Monaco','Courier New',monospace;
+font-size:12.5px;line-height:1.35;color:var(--sepia-accent);}
+table{width:100%;border-collapse:collapse;font-size:13.5px;background:rgba(255,255,255,.4);margin:6px 0;}
+th,td{padding:7px 9px;text-align:left;border-bottom:1px solid rgba(200,184,120,.5);vertical-align:top;}
+th{background:rgba(184,154,58,.2);color:var(--sepia-accent);font-size:11.5px;
+text-transform:uppercase;letter-spacing:.3px;}
+code{font-family:'SF Mono','Menlo','Monaco',monospace;font-size:12.5px;
+background:rgba(184,154,58,.12);padding:1px 5px;border-radius:3px;color:var(--sepia-accent);}
+.tag{display:inline-block;font-size:11px;font-family:'SF Mono','Menlo',monospace;
+padding:1px 6px;border-radius:4px;border:1px solid var(--sepia-border);
+background:rgba(184,154,58,.15);color:var(--sepia-accent);margin:2px 2px 2px 0;}
+.tag-vps{background:rgba(92,79,26,.18);}
+.tag-gh{background:rgba(58,90,138,.12);border-color:#9ab;color:#3a5a8a;}
+.pill{display:inline-block;font-size:12px;background:rgba(184,154,58,.12);
+border:1px solid var(--sepia-border);border-radius:10px;padding:2px 9px;margin:3px 4px 3px 0;
+color:var(--sepia-accent);}
+footer{margin-top:40px;padding:20px 28px;background:var(--sepia-accent);color:#FBF7E0;
+font-size:12.5px;text-align:center;}
+footer a{color:var(--sepia-gold);}
+</style></head><body>
+<header class="sticky"><h1>System Architecture</h1>
+<div class="meta">How the whole machine fits together · generated 2026-05-27 · The Philosopher Investor</div>
+</header><main>
+<div class="lede">Not the trading methodology (that's "How the system works") — this is the wiring
+diagram. Where data enters, what computes on it, what runs on a schedule, and where every artifact lives.
+The map you reach for when something breaks.</div>
+
+<nav class="toc"><b>Jump to</b>
+<a href="#overview">Overview</a>
+<a href="#dataflow">Data flow</a>
+<a href="#ingest">1 · Ingest</a>
+<a href="#store">2 · Storage</a>
+<a href="#compute">3 · Compute</a>
+<a href="#screen">4 · Screeners</a>
+<a href="#orchestrate">5 · Orchestration</a>
+<a href="#surface">6 · Surfaces</a>
+<a href="#validation">7 · Validation</a>
+<a href="#skills">Skills</a>
+<a href="#map">Where it lives</a>
+<a href="#guardrails">Guardrails</a>
+</nav>
+
+<section class="block" id="overview"><h2><span class="num">·</span> The seven layers</h2>
+<div class="intro">Everything is a pipe. Market data enters at the top, gets stored once in a canonical
+SQLite hub, gets transformed by a library of pure modules, screened into signals, scheduled by cron,
+and finally rendered onto surfaces you actually read. Validation cuts across all of it.</div>
+<pre class="ascii">┌──────────────────────────────────────────────────────────────────────┐
+│                  THE PHILOSOPHER INVESTOR — full stack                 │
+│        data in  →  signals  →  validated edge  →  surfaces  →  you      │
+└──────────────────────────────────────────────────────────────────────┘
+
+   ┌─ 1. INGEST ──┐   Polygon REST (primary) · Polygon S3 flat-files
+   │  data_cache  │   (backfill) · yfinance (VIX family only) · Finnhub
+   │ provider_mgr │   (off) · OpenInsider · SEC EDGAR · FMP
+   └──────┬───────┘
+          v
+   ┌─ 2. STORE ───┐   market_data.db  (canonical hub, 120+ tables)
+   │   SQLite     │   + lottery_lab · signal_outcome · trade_journal · naaim
+   └──────┬───────┘
+          v
+   ┌─ 3. COMPUTE ─┐   ~150 lib/ modules : Kerberos signals · vol/options ·
+   │    lib/      │   macro/regime · breadth/sentiment · quant · insiders
+   └──────┬───────┘
+          v
+   ┌─ 4. SCREEN ──┐   ~40 screeners → signal_archive (95k rows, score>=50)
+   │  screeners   │   pullback · bottom · breakout · unusual · smart_flow ...
+   └──────┬───────┘
+          v
+   ┌─ 5. ORCHEST ─┐   run_all.py (5 phases) · crontab VPS root@72.61.98.39
+   │  scheduling  │   · GitHub Actions (4 live) · Night Agent v2
+   └──────┬───────┘
+          v
+   ┌─ 6. SURFACE ─┐   CEO dashboard · Streamlit (12 pages) · Marimo cockpit
+   │  dashboards  │   · 40+ HTML pages · newsletter v6 · Telegram alerts
+   └──────────────┘
+
+   ╔═ VALIDATION  (cuts across every layer) ══════════════════════════╗
+   ║  8-step doctrine · lopez_de_prado (DSR/PBO/MinTRL) · block        ║
+   ║  bootstrap · screener_validity (Bonferroni) · signal_outcome loop ║
+   ╚═══════════════════════════════════════════════════════════════════╝</pre>
+<div class="method"><b>The one rule that explains everything:</b> the <b>VPS is canonical, the Mac is a
+read-only mirror</b>. The VPS runs the pipeline, owns the database, and publishes to GitHub Pages on its
+own — the Mac can be asleep or off. Every "stale dashboard" and "corrupted DB" bug traces back to
+something on the Mac fighting that rule.</div></section>
+
+<section class="block" id="dataflow"><h2><span class="num">·</span> The data flow — one EOD run</h2>
+<div class="intro"><code>run_all.py</code> is the conductor. One nightly run moves raw Polygon bars all
+the way to a published dashboard and a Telegram alert, in five phases plus a publish step.</div>
+<pre class="ascii">┌─ run_all.py — ONE EOD RUN  (~50 min on the VPS) ─────────────────────┐
+│                                                                       │
+│ PHASE 0  prefetch_data.py   → OHLCV + caps + fundamentals + chains    │
+│             │                 (~3000 tickers → market_data.db)        │
+│             v                                                         │
+│ PHASE 1  ~40 screeners ║║║  → signal_archive + Google Sheets          │
+│             │                 (8 parallel workers)                    │
+│             v                                                         │
+│ PHASE 2  post-process      → validity (Bonferroni) · best_trades      │
+│             │                 (Kerberos confluence) · cockpit · deep   │
+│             v                                                         │
+│ PHASE 3  daily             → daily_pulse · macro memo · marketing ·   │
+│             │                 newsletter brief                        │
+│             v                                                         │
+│ PHASE 4  notify            → Telegram   [GREEN] [AMBER] [RED] alerts   │
+│             │                                                         │
+│             v                                                         │
+│ POST  publish_dashboards_to_github.sh → GitHub Pages (public)         │
+│       check_pages_freshness.sh        → staleness guard → Telegram     │
+│       signal_outcome_pipeline.py      → forward P&L (ground-truth loop)│
+└───────────────────────────────────────────────────────────────────────┘</pre>
+<div class="method"><b>Two writes per screener.</b> Each screener writes <i>twice</i>: to
+<code>signal_archive</code> (SQLite — feeds backtests + confluence) and to a Google Sheets tab (feeds the
+Streamlit dashboard). Intraday runs (<code>--intraday</code>) touch only the options-flow screeners; the
+full 40 run at EOD.</div></section>
+
+<section class="block" id="ingest"><h2><span class="num">1 ·</span> Ingestion — where data enters</h2>
+<div class="intro">One low-level module, <code>data_cache.py</code>, owns all ingestion and routes through
+<code>provider_manager.py</code>. Polygon is exclusive for equities/options; yfinance survives only for the
+VIX family the Starter plan doesn't cover.</div>
+<table>
+<tr><th>Source</th><th>Role</th><th>What it pulls</th></tr>
+<tr><td>Polygon REST</td><td>primary</td><td>grouped daily bars, all-ticker snapshot, options snapshot, ticker details, splits/dividends, forex + index aggregates</td></tr>
+<tr><td>Polygon S3 flat-files</td><td>backfill</td><td><code>us_options_opra/</code> + <code>us_stocks_sip/</code> day-aggs (2022-01-18 onward on this plan)</td></tr>
+<tr><td>yfinance</td><td>fallback only</td><td>^VIX / ^VVIX / ^GSPC family — disable everything else with <code>POLYGON_ONLY=1</code></td></tr>
+<tr><td>Finnhub</td><td>off in prod</td><td>news sentiment (disabled 2026-05 for timeouts)</td></tr>
+<tr><td>OpenInsider / SEC EDGAR / FMP</td><td>secondary</td><td>Form 4 insiders, 13F holdings, earnings calendar</td></tr>
+</table>
+<div class="caveat"><b>Polygon-exclusive is doctrine.</b> No silent yfinance fallback on equities. If a
+series is missing, the answer is "backfill from Polygon S3", not "grab it from yahoo".</div></section>
+
+<section class="block" id="store"><h2><span class="num">2 ·</span> Storage — the SQLite hub</h2>
+<div class="intro">One database is canonical: <code>~/.screener_cache/market_data.db</code> (~120 tables,
+mirrored to <code>/opt/screeners/.screener_cache/</code> on the VPS). Research and journals live in separate
+files so a heavy backtest never locks production.</div>
+<table>
+<tr><th>Database</th><th>Holds</th><th>Key tables</th></tr>
+<tr><td><code>market_data.db</code></td><td>the hub — everything production reads</td><td><code>ohlcv</code>, <code>signal_archive</code> (95k rows), <code>options_daily_flow</code>, <code>screener_validity</code>, <code>hrhr_ranked</code>, <code>breadth_history</code>, <code>iv_history</code>, macro/regime/correlation/whale tables, <code>ceo_watchlist</code></td></tr>
+<tr><td><code>lottery_lab.db</code></td><td>deep research backtests (isolated)</td><td><code>rebacktest_results</code>, <code>hrhr_exit_lab_results</code>, <code>screener_confluence_results</code></td></tr>
+<tr><td><code>signal_outcome.db</code></td><td>forward P&L — the ground-truth loop</td><td><code>signal_events/outcomes</code>, <code>confluence_*</code>, <code>screener_health</code></td></tr>
+<tr><td><code>trade_journal.db</code></td><td>real IBKR statements</td><td><code>Trades</code>, <code>OpenPositions</code>, <code>CashReport</code></td></tr>
+<tr><td><code>naaim.db</code> · <code>attention.db</code> · <code>lab.db</code></td><td>niche caches</td><td>NAAIM exposure, Wiki/Reddit attention, ML tuning runs</td></tr>
+</table>
+<div class="caveat"><b>Never write <code>market_data.db</code> from two processes at once.</b> Concurrent
+writers (parallel backfills, a Mac refresh fighting the VPS sync) have truncated it to "disk image is
+malformed" more than once. Backfills run <code>--workers 1</code>; the Mac never regenerates dashboards
+during the US session.</div></section>
+
+<section class="block" id="compute"><h2><span class="num">3 ·</span> Compute — the <code>lib/</code> library</h2>
+<div class="intro">~150 pure modules under <code>scripts-screener/lib/</code>. Screeners and dashboards import
+these; the logic lives here, not in the scripts. Grouped by family:</div>
+<table>
+<tr><th>Family</th><th>Representative modules</th></tr>
+<tr><td>Kerberos signals</td><td><code>kerberos_confluence_score</code>, <code>kerberos_max_optimism</code>, <code>kerberos_xly_wmt</code>, <code>kerberos_vrp_edge</code>, <code>kerb_strategies</code>, <code>multi_regression_slopes</code></td></tr>
+<tr><td>Volatility &amp; options</td><td><code>dealer_gex</code>, <code>gex_weighted</code>, <code>vvix_climax_detector</code>, <code>options_optimizer</code>, <code>vol_surface</code>, <code>vix_spike_detector</code>, <code>skew_tail_risk</code></td></tr>
+<tr><td>Macro &amp; regimes</td><td><code>macro_regime</code>, <code>mega_macro_regime</code>, <code>financial_stress_index</code>, <code>credit_panic</code>, <code>fx_jaws</code>, <code>intermarket_regime</code></td></tr>
+<tr><td>Breadth &amp; sentiment</td><td><code>pmo_breadth</code>, <code>renko_indicators</code>, <code>cboe_pcr_zones</code>, <code>cnn_fear_greed</code>, <code>naaim_exposure</code>, <code>jaws_divergence_detector</code></td></tr>
+<tr><td>Quant strategies</td><td><code>basket_backtest</code>, <code>lopez_de_prado</code>, <code>bootstrap_methods</code>, <code>kelly</code>, <code>portfolio_hrp</code>, <code>clenow_momentum</code>, <code>connors_setups</code></td></tr>
+<tr><td>Insiders &amp; fundamentals</td><td><code>insider_composite_score</code>, <code>openinsider_fetcher</code>, <code>sec_edgar</code>, <code>schilit_shenanigans</code>, <code>shiller_cape_scraper</code></td></tr>
+<tr><td>Infrastructure</td><td><code>telegram_send</code>, <code>newsletter_card_builder</code>, <code>ascii_charts</code>, <code>universe_loaders</code>, <code>risk_cockpit</code>, <code>ibkr_flex</code></td></tr>
+</table>
+<div class="method"><b>Grep before you build.</b> With ~150 modules already here, most "new" ideas already
+exist. The signal-scoring entry point is <code>lib/kerberos_confluence_score.py</code> (regime gate →
+validated base screener → conviction tier); the rigor toolkit is <code>lib/lopez_de_prado.py</code>.</div></section>
+
+<section class="block" id="screen"><h2><span class="num">4 ·</span> Screeners — signals into the archive</h2>
+<div class="intro">~40 screeners run each cycle. Every one writes rows to the central
+<code>signal_archive</code> table (date, screener, ticker, score 0–100, direction, <code>extra_json</code>).
+The core directional set:</div>
+<table>
+<tr><th>Screener</th><th>Sheet</th><th>Catches</th></tr>
+<tr><td><code>pullback_screener</code></td><td>BTFD_RESULTS</td><td>LONG — dip on EMA in an uptrend</td></tr>
+<tr><td><code>bottom_screener</code></td><td>BOTTOM_RESULTS</td><td>LONG — capitulation reversal + volume</td></tr>
+<tr><td><code>breakout_screener</code></td><td>BREAKOUT_SCREENER</td><td>LONG — momentum breakout (VIX-gated)</td></tr>
+<tr><td><code>unusual_options_screener</code></td><td>UNUSUAL_OPTIONS</td><td>LONG/SHORT — institutional sweeps (V3 hard filters)</td></tr>
+<tr><td><code>smart_flow_screener</code></td><td>SMART_FLOW</td><td>LONG/SHORT — enriched options flow</td></tr>
+<tr><td><code>kerberos_rsi_screener</code></td><td>KERBEROS_RSI</td><td>LONG — RSI crossover + candle + zone</td></tr>
+<tr><td><code>vsa_screener</code></td><td>VSA_SIGNALS</td><td>LONG — volume spread analysis</td></tr>
+<tr><td><code>hrhr_put_buyer_screener</code></td><td>HRHR_PUT_BUYER</td><td>SHORT — naked puts, short term</td></tr>
+<tr><td><code>blowoff_screener</code></td><td>(archive)</td><td>SHORT — parabolic exhaustion</td></tr>
+</table>
+<div class="caveat"><b><code>signal_archive</code> is polluted by design.</b> Screeners archive WATCH-level
+rows from score 50. Real triggers start at <b>score ≥ 65</b> — always filter <code>score &gt;= 65</code>
+before any cross-screener confluence ranking, or you rank noise. If BOTTOM + BLOWOFF + PULLBACK all fire
+on the same name, that's a contradiction (a threshold bug), not confluence.</div></section>
+
+<section class="block" id="orchestrate"><h2><span class="num">5 ·</span> Orchestration — what runs, and when</h2>
+<div class="intro">Three schedulers. The <b>VPS crontab</b> does the heavy lifting (everything in UTC).
+<b>GitHub Actions</b> handle a few cloud jobs. <b>Night Agent v2</b> does autonomous overnight research
+and the morning recap.</div>
+<pre class="ascii">┌─ A DAY ON THE VPS  (UTC · root@72.61.98.39 · /opt/screeners) ─────────┐
+│ 01:00  night agent — research (pulls 1 chantier from the queue)       │
+│ 01:15  night agent — themes scan (Polymarket / Substack / Reddit)     │
+│ 04:00  daily deep dives                                               │
+│ 06:00  ceo_morning_publish · morning screeners · pead tracker         │
+│ 06:30  daily picks -> Telegram · marketing content board              │
+│ 08:00  night agent — morning RECAP -> Telegram   (Mon-Fri)            │
+│ 15:00-22:00  intraday : OHLCV /15m · options /2h · positions /5m      │
+│ 15:31 / 17:31 / 21:01  best_trades  (open / mid / power hour)         │
+│ 22:30  EOD BATCH — run_screeners.sh full (~50 min) -> publish         │
+│ 23:00-23:55  macro · insiders · pead · backups · freshness guard      │
+│ -- weekly --  Sat 06:30 newsletter pipeline · Sun 22:00 purged k-fold │
+└───────────────────────────────────────────────────────────────────────┘</pre>
+<table>
+<tr><th>Scheduler</th><th>Runs</th><th>Notes</th></tr>
+<tr><td><span class="tag tag-vps">VPS cron</span></td><td>the full pipeline + ~30 alert scripts</td><td>UTC (ignores <code>CRON_TZ</code>); <code>flock</code> per mode prevents pile-ups; generated by <code>deploy_screeners.sh</code></td></tr>
+<tr><td><span class="tag tag-gh">GitHub Actions</span></td><td>4 live workflows</td><td><code>trade-alert-check</code> (hourly), <code>preclose-brief</code> (20:30 Paris), <code>newsletter-metrics</code> (Sat), <code>weekly-screener-report</code> (Sun) — 3 others disabled, migrated to the VPS</td></tr>
+<tr><td><span class="tag tag-vps">Night Agent v2</span></td><td>research · themes · recap</td><td><code>lab/night_agent_v2.sh</code> → <code>research_runner.py</code> works the <code>research_queue.md</code>; <code>morning_recap.py</code> → Telegram. Telegram-only, no email.</td></tr>
+</table>
+<div class="method"><b>Deploy = rsync, not git on the box.</b> <code>deploy_screeners.sh</code> mirrors the Mac
+to <code>/opt/screeners</code> (<code>rsync --delete-after</code>, with <code>protect</code> filters for
+output dirs like <code>Wiki/</code> and <code>logs/</code>), then regenerates the VPS crontab with a
+dedup safety net (<code>awk '!seen[$0]++'</code>) so alert lines can't pile up.</div></section>
+
+<section class="block" id="surface"><h2><span class="num">6 ·</span> Surfaces — what you actually read</h2>
+<div class="intro">The pipeline's whole point is these. The canonical hub is the <b>CEO dashboard</b>,
+published to GitHub Pages by the VPS.</div>
+<table>
+<tr><th>Surface</th><th>What</th><th>Where</th></tr>
+<tr><td>CEO dashboard</td><td>10-minute engine view — regime, setups, live perf, 9 panels + this page in "Explainers"</td><td><code>ceo_dashboard.py</code> → <span class="tag tag-gh">GitHub Pages</span></td></tr>
+<tr><td>Standalone HTML (40+)</td><td>cockpit, kerberos router + 4 funnels, best_trades, screeners_deep, retail_scanner, SPX/QQQ/IWM levels, options lab, newsletter v6, this map</td><td><code>PI/Visuals/*.html</code></td></tr>
+<tr><td>Streamlit (12 pages)</td><td>interactive cockpit — Regime, Market Health, Ideas, Options, Macro, FX, Portfolio, Backtests</td><td><code>dashboard/Home.py</code> <span class="tag">:8501</span></td></tr>
+<tr><td>Marimo cockpit V2</td><td>notebook cockpit + BREADTH tab, PNG via kaleido</td><td><code>dashboard_marimo/</code> <span class="tag">:2718</span></td></tr>
+<tr><td>Newsletter</td><td>v6 weekly draft (EB Garamond) + Substack-ready trade cards</td><td><code>build_newsletter_v6.py</code></td></tr>
+<tr><td>Telegram</td><td>~30 scripts: trade alerts, morning recap, position stops, macro tier, freshness warnings</td><td>via <code>lib/telegram_send.py</code></td></tr>
+</table>
+<div class="method"><b>Publish path:</b> a Python script writes to <code>PI/Visuals/</code> →
+<code>publish_dashboards_to_github.sh</code> does <code>git reset --hard</code> + copy + push →
+<code>signalpluspro-67.github.io/c-a22104a111/</code>. Any generator feeding the public site
+<b>must</b> write to <code>/Users/tao/PI/Visuals</code>, never <code>PI_DIR=/opt/pi_data</code>.</div></section>
+
+<section class="block" id="validation"><h2><span class="num">7 ·</span> Validation — the gauntlet across it all</h2>
+<div class="intro">No signal earns size without surviving the 8-step doctrine. The decisive gate is the
+<b>block bootstrap</b> — it exposes "edges" that were really just a few winning days clustered together.
+This is what keeps the live system thin and honest. (Full scoreboard in
+<a href="system_guide.html" style="color:var(--sepia-accent);">How the system works</a>.)</div>
+<pre class="ascii">┌─ THE 8-STEP GAUNTLET ─────────────────────────────────────────┐
+│ 1. Sign-flip permutation x5000   (is the mean return real?)   │
+│ 2. Bonferroni correction         (penalize many tests)        │
+│ 3. Block bootstrap, len>=horizon (edge, or clustered luck?)   │
+│ 4. Deflated Sharpe ratio         (correct for # of trials)    │
+│ 5. Walk-forward OOS              (does train carry to test?)  │
+│ 6. Crash cross-check             (did it warn before drops?)  │
+│ 7. Verdict: CONFIRMED / MARGINAL / REJECTED                   │
+│                                                               │
+│  -> fail one gate early and the signal is out                 │
+└───────────────────────────────────────────────────────────────┘</pre>
+<div class="caveat"><b>The recurring trap:</b> Bonferroni-OK but block-bootstrap-KO = temporal clustering,
+not a stationary edge. Mechanical confluence makes the apparent Sharpe rise while the proof collapses
+(rare = a handful of glued-together episodes). Live truth comes from <code>signal_outcome.db</code>
+(forward P&L) and <code>screener_validity</code> — re-checked, never assumed.</div></section>
+
+<section class="block" id="skills"><h2><span class="num">·</span> Claude skills (27)</h2>
+<div class="intro">Domain skills under <code>~/.claude/skills/</code> — one folder + <code>SKILL.md</code> each.
+They wrap repeatable analyses (screens, regime reads, options management) and the end-of-session workflow.</div>
+<div>
+<span class="pill">backtest-expert</span><span class="pill">market-regime-detector</span><span class="pill">market-top-detector</span><span class="pill">ftd-detector</span><span class="pill">market-breadth-analyzer</span><span class="pill">uptrend-analyzer</span><span class="pill">sector-analyst</span><span class="pill">technical-analyst</span><span class="pill">position-sizer</span><span class="pill">options-manage</span><span class="pill">options-flow</span><span class="pill">options-strategy-advisor</span><span class="pill">institutional-flow-tracker</span><span class="pill">vcp-screener</span><span class="pill">pead-screener</span><span class="pill">earnings-trade-analyzer</span><span class="pill">earnings-calendar</span><span class="pill">economic-calendar-fetcher</span><span class="pill">market-news-analyst</span><span class="pill">last30days</span><span class="pill">signal-postmortem</span><span class="pill">marketing-daily</span><span class="pill">humanizer</span><span class="pill">remotion</span><span class="pill">planning-with-files</span><span class="pill">kaizen</span><span class="pill">go</span>
+</div></section>
+
+<section class="block" id="map"><h2><span class="num">·</span> Where everything lives</h2>
+<div class="intro">Four homes, one direction of flow. The Mac develops, the VPS runs and publishes, GitHub
+Pages serves the public hub, Google Sheets feeds Streamlit, Telegram delivers.</div>
+<pre class="ascii">  MAC (develop)                 VPS root@72.61.98.39 (run + own)
+  /Users/tao/                   /opt/screeners/  (prod, autonomous, 24/7)
+   ├ scripts-screener/   ──┐     ├ run_all.py + ~40 screeners + crontab
+   ├ PI/Visuals/*.html     │     └ ~/.screener_cache/market_data.db  (canonical)
+   ├ Wiki/  (Obsidian)     │            │
+   ├ ~/.claude/skills/     │  rsync     │  publish
+   └ ~/.screener_cache/  <─┘  (deploy)  v  (VPS pushes itself)
+        (mirror, synced from VPS)   ┌────────────────────────────────────┐
+                                    │ GitHub Pages (public hub)           │
+   Google Sheets (1 book, 33 tabs)  │ signalpluspro-67.github.io/c-a221.. │
+        feeds Streamlit dashboard   └────────────────────────────────────┘
+   Telegram  @philosopherinvestor_bot — alerts, recaps, warnings</pre>
+<div class="method"><b>Direction is one-way.</b> <code>deploy_screeners.sh</code> pushes Mac → VPS;
+<code>sync_db_from_vps.sh</code> pulls the database VPS → Mac. The Mac is never the source of truth for
+data. For a trade decision, query the VPS DB directly (single writer, always fresh).</div></section>
+
+<section class="block" id="guardrails"><h2><span class="num">·</span> Guardrails &amp; hard lessons</h2>
+<div class="intro">Each of these is a scar. They're wired into the pipeline now so the same failure can't
+ship silently twice.</div>
+<table>
+<tr><th>Guardrail</th><th>Why it exists</th></tr>
+<tr><td><code>check_db_freshness.py</code> gate</td><td>a silent "restore backup" once propagated stale data for days — now stale data can't be published without a Telegram scream + non-zero exit</td></tr>
+<tr><td><code>check_pages_freshness.sh</code></td><td>alerts if any of 7 published pages drifts &gt; 3 days (the CEO/deep/themes staleness bug, 2026-05)</td></tr>
+<tr><td>crontab dedup (<code>awk</code>)</td><td>deploy used to append alert lines un-stripped → 398-line crontab, the same Telegram fired 18–47×</td></tr>
+<tr><td>single-writer DB rule</td><td>concurrent writers truncated <code>market_data.db</code> to "malformed" repeatedly; a Mac <code>*/15</code> refresh was the chronic culprit (disabled 2026-05-27)</td></tr>
+<tr><td>Polygon-exclusive</td><td>no silent yfinance fallback on equities — backfill from Polygon S3 instead</td></tr>
+<tr><td><code>score &gt;= 65</code> on confluence</td><td><code>signal_archive</code> stores WATCH rows from 50; ranking on them surfaces noise as "4 screeners agree"</td></tr>
+<tr><td>block bootstrap mandatory</td><td>Bonferroni-OK signals routinely fail it — clustering, not edge; required before any new signal goes live</td></tr>
+</table>
+</section>
+
+<footer>The Philosopher Investor · system architecture · generated 2026-05-27 ·
+<a href="ceo_dashboard.html">← CEO dashboard</a> · <a href="system_guide.html">How the system works →</a>
+</footer>
+</main></body></html>
