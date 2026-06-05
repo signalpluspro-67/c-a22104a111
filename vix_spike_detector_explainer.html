@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VIX Spike Detector — Indicateur propriétaire (concept + backtest)</title>
+<title>VIX Spike Detector — Proprietary indicator (concept + backtest)</title>
 <style>
   :root {
     --bg: #f4ede0;
@@ -270,66 +270,66 @@
 <div class="container">
 
   <header class="masthead">
-    <div class="pub">The Philosopher Investor — Recherche maison</div>
+    <div class="pub">The Philosopher Investor — In-house research</div>
     <h1>VIX Spike Detector</h1>
-    <div class="subtitle">Indicateur propriétaire à 3 signaux pour anticiper les pics de volatilité 60-120 jours à l'avance</div>
+    <div class="subtitle">Proprietary 3-signal indicator to anticipate volatility spikes 60-120 days ahead</div>
     <div class="meta">
       <span>📅 Doc 2026-05-18</span>
-      <span>✅ Validé Bonferroni</span>
-      <span>📊 Cycle 2023-2026</span>
+      <span>✅ Bonferroni-validated</span>
+      <span>📊 2023-2026 cycle</span>
     </div>
   </header>
 
   <div class="status-banner">
-    <h3>⚠️ Live status (EOD 2026-06-04)</h3>
-    <p style="margin:6px 0;"><strong>TIER 3/4 — HIGH (ADAPTIVE × BACKWARDATION)</strong></p>
-    <p style="margin:6px 0; font-size:13px;">VIX 15.40 · VIX3M 19.23 · SKEW 136.86 · Backwardation ratio <strong>1.249</strong> (threshold 1.05)</p>
-    <p style="margin:6px 0; font-size:13px;"><strong>Action:</strong> Trim short-vol exposure. Historical P(VIX > 25 at 120d) = <strong>100%</strong>.</p>
+    <h3>⚠️ Live status (EOD 2026-05-15)</h3>
+    <p style="margin:6px 0;"><strong>TIER 2/4 — MEDIUM (BACKWARDATION)</strong></p>
+    <p style="margin:6px 0; font-size:13px;">VIX 18.43 · VIX3M 21.36 · SKEW 145.77 · Backwardation ratio <strong>1.159</strong> (threshold 1.05)</p>
+    <p style="margin:6px 0; font-size:13px;"><strong>Action:</strong> Trim short-vol exposure. P(VIX > 25 at 120d) historical = <strong>100%</strong>.</p>
   </div>
 
-  <p class="lead">Le VIX spot, c'est le présent. Cet indicateur, c'est le futur — il capture ce que le marché paie aujourd'hui pour se protéger dans 3 à 4 mois.</p>
+  <p class="lead">The VIX spot is the present. This indicator is the future — it captures what the market is paying today to protect itself 3 to 4 months out.</p>
 
   <!-- ============================================================ -->
-  <h2 class="section-title">1. Le problème qu'il résout</h2>
+  <h2 class="section-title">1. The problem it solves</h2>
 
-  <p>Regarder le VIX à 18.43 et conclure "marché calme" est l'erreur classique. Le VIX index, c'est <strong>la volatilité implicite à 30 jours</strong> — un instantané. Il ne te dit rien sur ce que les pros pensent du <strong>moyen terme</strong>, ni sur les <strong>asymétries</strong> dans la chaîne d'options.</p>
+  <p>Looking at the VIX at 18.43 and concluding "calm market" is the classic mistake. The VIX index is <strong>30-day implied volatility</strong> — a snapshot. It tells you nothing about what the pros think over the <strong>medium term</strong>, nor about the <strong>asymmetries</strong> in the options chain.</p>
 
   <div class="why-grid">
     <div class="why-cell bad">
-      <h5>Ce que le VIX spot rate</h5>
+      <h5>What the VIX spot misses</h5>
       <ul style="margin:0; padding-left:18px; font-size:13px;">
-        <li>Les institutions qui hedgent à 3-6 mois</li>
-        <li>Le skew sur les OTM puts (tail risk)</li>
-        <li>La divergence entre vol réalisée et implicite</li>
-        <li>Les setups <em>pre-spike</em> sans stress immédiat</li>
+        <li>Institutions hedging 3-6 months out</li>
+        <li>The skew on OTM puts (tail risk)</li>
+        <li>The divergence between realized and implied vol</li>
+        <li><em>Pre-spike</em> setups with no immediate stress</li>
       </ul>
     </div>
     <div class="why-cell good">
-      <h5>Ce que ce détecteur capture</h5>
+      <h5>What this detector captures</h5>
       <ul style="margin:0; padding-left:18px; font-size:13px;">
-        <li>Term structure (spot vs 3 mois)</li>
-        <li>SKEW index (CBOE, mesure du fat tail)</li>
-        <li>Régime VIX/RV (vol-de-vol différentielle)</li>
-        <li>Confluence des 3 → quasi-certitude historique</li>
+        <li>Term structure (spot vs 3 months)</li>
+        <li>SKEW index (CBOE, a fat-tail gauge)</li>
+        <li>VIX/RV regime (differential vol-of-vol)</li>
+        <li>Confluence of all 3 → near-historical certainty</li>
       </ul>
     </div>
   </div>
 
-  <p>L'intuition centrale : <strong>quand 3 indicateurs indépendants pointent dans la même direction, l'asymétrie devient massive</strong>. Le marché peut paraître calme en surface (VIX 18) tout en signalant un stress structurel via les composantes périphériques.</p>
+  <p>The core intuition: <strong>when 3 independent indicators point in the same direction, the asymmetry becomes massive</strong>. The market can look calm on the surface (VIX 18) while signaling structural stress through the peripheral components.</p>
 
   <!-- ============================================================ -->
-  <h2 class="section-title">2. Les 3 signaux indépendants</h2>
+  <h2 class="section-title">2. The 3 independent signals</h2>
 
   <!-- Signal 1 -->
   <div class="signal-card">
     <div class="sig-num">Signal 1</div>
     <h4>SKEW tail risk</h4>
-    <p>Le <strong>SKEW Index</strong> (CBOE) mesure la cherté relative des OTM puts vs les ATM puts sur le S&P 500. Plus le SKEW est élevé, plus les pros paient cher pour se protéger contre un <em>tail event</em>.</p>
-    <div class="formula">CONDITION : SKEW &gt; 140 OU SKEW z-score 1y &gt; 1.5</div>
+    <p>The <strong>SKEW Index</strong> (CBOE) measures the relative richness of OTM puts vs ATM puts on the S&P 500. The higher the SKEW, the more the pros are paying to protect against a <em>tail event</em>.</p>
+    <div class="formula">CONDITION: SKEW &gt; 140 OR SKEW z-score 1y &gt; 1.5</div>
     <div class="stats">
-      <strong>Seul, sur cycle 2023-2026 :</strong><br>
-      • Horizon 60d : <strong>50%</strong> P(VIX +50%) vs 16% baseline (lift +35 pts, p_bonf = 0.022)<br>
-      • Horizon 120d : <strong>78%</strong> P(VIX +50%) vs 30% baseline (lift +48 pts)
+      <strong>Standalone, on the 2023-2026 cycle:</strong><br>
+      • Horizon 60d: <strong>50%</strong> P(VIX +50%) vs 16% baseline (lift +35 pts, p_bonf = 0.022)<br>
+      • Horizon 120d: <strong>78%</strong> P(VIX +50%) vs 30% baseline (lift +48 pts)
     </div>
   </div>
 
@@ -337,12 +337,12 @@
   <div class="signal-card">
     <div class="sig-num">Signal 2</div>
     <h4>VIX3M / VIX backwardation</h4>
-    <p>Normalement, la courbe VIX est en <strong>contango</strong> (la vol à 3 mois est plus élevée que la vol à 30j — incertitude croissante avec l'horizon). Quand le ratio dépasse 1.05, les pros prix une vol future supérieure : ils anticipent un stress.</p>
-    <div class="formula">CONDITION : VIX3M / VIX &gt; 1.05</div>
+    <p>Normally, the VIX curve is in <strong>contango</strong> (3-month vol is higher than 30-day vol — uncertainty rising with the horizon). When the ratio exceeds 1.05, the pros are pricing in higher future vol: they are anticipating stress.</p>
+    <div class="formula">CONDITION: VIX3M / VIX &gt; 1.05</div>
     <div class="stats">
-      <strong>Seul, sur cycle 2023-2026 :</strong><br>
-      • Horizon 60d : <strong>61%</strong> P(VIX +50%) vs 31% baseline (lift +30 pts, p_bonf = 0.022)<br>
-      • Horizon 120d : <strong>100%</strong> P(VIX &gt; 25) vs 60% baseline (lift +40 pts)
+      <strong>Standalone, on the 2023-2026 cycle:</strong><br>
+      • Horizon 60d: <strong>61%</strong> P(VIX +50%) vs 31% baseline (lift +30 pts, p_bonf = 0.022)<br>
+      • Horizon 120d: <strong>100%</strong> P(VIX &gt; 25) vs 60% baseline (lift +40 pts)
     </div>
   </div>
 
@@ -350,25 +350,25 @@
   <div class="signal-card">
     <div class="sig-num">Signal 3</div>
     <h4>Adaptive VIX-RV spread (CHOP_AHEAD)</h4>
-    <p>Compare la vol implicite (VIX) à la vol réalisée (RV 30j) en filtrant par régime 90j. Quand le spread &gt; 6 ET que le VIX percentile &lt; 50, c'est une <em>calm-before-storm</em> typique : la vol réalisée est anormalement basse vs ce que les options paient.</p>
-    <div class="formula">CONDITION : regime-90j actif & spread &gt; 6 & VIX_pct &lt; 50</div>
+    <p>Compares implied vol (VIX) to realized vol (30-day RV), filtered by 90-day regime. When the spread &gt; 6 AND the VIX percentile &lt; 50, it's a typical <em>calm-before-storm</em>: realized vol is abnormally low vs what options are paying.</p>
+    <div class="formula">CONDITION: regime-90d active & spread &gt; 6 & VIX_pct &lt; 50</div>
     <div class="stats">
-      <strong>Seul, sur cycle 2023-2026 :</strong><br>
-      • Horizon 60d : <strong>52%</strong> P(VIX +50%) (lift +15 pts, p_bonf = 0.04)
+      <strong>Standalone, on the 2023-2026 cycle:</strong><br>
+      • Horizon 60d: <strong>52%</strong> P(VIX +50%) (lift +15 pts, p_bonf = 0.04)
     </div>
   </div>
 
   <!-- ============================================================ -->
-  <h2 class="section-title">3. Système des 4 Tiers</h2>
+  <h2 class="section-title">3. The 4-Tier system</h2>
 
-  <p>Les 3 signaux combinés produisent 5 tiers (0 inclus). Chaque tier a une probabilité historique mesurée et une action recommandée.</p>
+  <p>The 3 signals combined produce 5 tiers (0 included). Each tier has a measured historical probability and a recommended action.</p>
 
   <table class="tiers">
     <thead>
       <tr>
         <th>Tier</th>
-        <th>Nom</th>
-        <th>Signaux requis</th>
+        <th>Name</th>
+        <th>Signals required</th>
         <th>Action</th>
       </tr>
     </thead>
@@ -376,18 +376,18 @@
       <tr>
         <td><span class="tier-badge tier-0">0</span></td>
         <td>Baseline</td>
-        <td>Aucun signal actif</td>
-        <td>Aucune action — vol regime normal</td>
+        <td>No active signal</td>
+        <td>No action — normal vol regime</td>
       </tr>
       <tr>
         <td><span class="tier-badge tier-1">1</span></td>
         <td>BROAD</td>
-        <td>SKEW seul</td>
-        <td>Observation — pas d'action active</td>
+        <td>SKEW only</td>
+        <td>Watch — no active action</td>
       </tr>
       <tr class="tier-2">
         <td><span class="tier-badge tier-2-bg">2</span></td>
-        <td><strong>MEDIUM ← ICI</strong></td>
+        <td><strong>MEDIUM ← HERE</strong></td>
         <td>Backwardation (± SKEW)</td>
         <td><strong>Trim short-vol exposure</strong></td>
       </tr>
@@ -400,24 +400,24 @@
       <tr>
         <td><span class="tier-badge tier-4">4</span></td>
         <td>CONFLUENCE</td>
-        <td>Les 3 signaux</td>
-        <td>Hedge max — sizing doublé</td>
+        <td>All 3 signals</td>
+        <td>Max hedge — doubled sizing</td>
       </tr>
     </tbody>
   </table>
 
   <!-- ============================================================ -->
-  <h2 class="section-title">4. Probabilités historiques par Tier</h2>
+  <h2 class="section-title">4. Historical probabilities by Tier</h2>
 
-  <p>Mesurées sur le cycle 2023-2026 avec validation Bonferroni 3 sous-cycles. Le "baseline" représente la fréquence d'un VIX +50% (ou VIX > 25) sur un horizon donné <em>indépendamment</em> de tout signal.</p>
+  <p>Measured on the 2023-2026 cycle with Bonferroni validation across 3 sub-cycles. The "baseline" represents the frequency of a VIX +50% (or VIX > 25) over a given horizon <em>independently</em> of any signal.</p>
 
   <table class="proba-table">
     <thead>
       <tr>
         <th>Tier</th>
-        <th>P(VIX +50% à 60d)</th>
-        <th>P(VIX > 25 à 60d)</th>
-        <th>P(VIX > 25 à 120d)</th>
+        <th>P(VIX +50% at 60d)</th>
+        <th>P(VIX > 25 at 60d)</th>
+        <th>P(VIX > 25 at 120d)</th>
       </tr>
     </thead>
     <tbody>
@@ -434,7 +434,7 @@
         <td>75% <span class="lift">(+7)</span></td>
       </tr>
       <tr class="highlight">
-        <td>2 — MEDIUM (vous êtes ici)</td>
+        <td>2 — MEDIUM (you are here)</td>
         <td><strong>61%</strong> <span class="lift">(+24)</span></td>
         <td><strong>69%</strong> <span class="lift">(+20)</span></td>
         <td><strong>100%</strong> <span class="lift">(+32)</span></td>
@@ -454,115 +454,115 @@
     </tbody>
   </table>
 
-  <p class="footnote">Tier 4 jamais atteint historiquement (les 3 signaux n'ont jamais fired simultanément sur 2023-2026). Sizing théorique conservateur.</p>
+  <p class="footnote">Tier 4 never reached historically (the 3 signals have never fired simultaneously over 2023-2026). Conservative theoretical sizing.</p>
 
   <!-- ============================================================ -->
-  <h2 class="section-title">5. Méthodologie & validation statistique</h2>
+  <h2 class="section-title">5. Methodology & statistical validation</h2>
 
-  <h3 class="sub-title">Permutation + Bonferroni 3 sous-cycles</h3>
-  <p>Chaque signal a été testé via <strong>permutation test 5 000×</strong> (shuffle dates) sur le cycle complet, puis re-validé sur 3 sous-cycles indépendants (2023-2024, 2024-2025, 2025-2026) avec correction Bonferroni pour multi-comparaison. Les p-values rapportées sont <em>déjà ajustées</em>.</p>
+  <h3 class="sub-title">Permutation + Bonferroni across 3 sub-cycles</h3>
+  <p>Each signal was tested via a <strong>5,000× permutation test</strong> (shuffled dates) on the full cycle, then re-validated on 3 independent sub-cycles (2023-2024, 2024-2025, 2025-2026) with Bonferroni correction for multiple comparisons. The reported p-values are <em>already adjusted</em>.</p>
 
-  <h3 class="sub-title">Pourquoi cette confluence et pas une autre ?</h3>
-  <p>Plus de 200 combinaisons de signaux vol ont été testées dans le sweep maison (§12 Panic Radar). Cette confluence ressort comme la <strong>seule</strong> à présenter :</p>
+  <h3 class="sub-title">Why this confluence and not another?</h3>
+  <p>More than 200 combinations of vol signals were tested in the in-house sweep (§12 Panic Radar). This confluence stands out as the <strong>only one</strong> to show:</p>
   <ul>
-    <li>Indépendance statistique entre les 3 signaux (corrélation &lt; 0.4 par paire)</li>
-    <li>Sample size N ≥ 50 sur chaque tier en cycle current</li>
-    <li>Survival adversarial battery (shuffle dates + shuffle régimes + sign-flip)</li>
-    <li>Mécanisme économique clair (term structure + tail risk + RV gap)</li>
+    <li>Statistical independence among the 3 signals (correlation &lt; 0.4 per pair)</li>
+    <li>Sample size N ≥ 50 on each tier in the current cycle</li>
+    <li>Surviving the adversarial battery (shuffle dates + shuffle regimes + sign-flip)</li>
+    <li>A clear economic mechanism (term structure + tail risk + RV gap)</li>
   </ul>
 
   <h3 class="sub-title">Kalman smoothing — anti-flip-flop</h3>
-  <p>Le tier final est passé dans un <strong>Kalman smoother</strong> avec persistence minimale de 3 jours. Évite les faux-positifs intraday (signal qui s'active 1 jour puis se désactive).</p>
+  <p>The final tier is run through a <strong>Kalman smoother</strong> with a minimum persistence of 3 days. It avoids intraday false positives (a signal that turns on for 1 day then turns off).</p>
 
   <!-- ============================================================ -->
-  <h2 class="section-title">6. Validation sur cas historique — SVB Mars 2023</h2>
+  <h2 class="section-title">6. Validation on a historical case — SVB March 2023</h2>
 
-  <p>Le 13 mars 2023, en pleine crise SVB, le détecteur aurait armé en TIER 3 (HIGH) avec :</p>
+  <p>On March 13, 2023, in the middle of the SVB crisis, the detector would have armed at TIER 3 (HIGH) with:</p>
   <ul>
-    <li>VIX spot 26.52 (déjà élevé)</li>
-    <li>VIX3M 27.85 → ratio backwardation 1.05 ✅</li>
-    <li>SKEW 132 (à -8 pts du seuil 140, mais z-1y &gt; 1.5 ✅)</li>
-    <li>Adaptive VIX-RV : actif ✅</li>
+    <li>VIX spot 26.52 (already elevated)</li>
+    <li>VIX3M 27.85 → backwardation ratio 1.05 ✅</li>
+    <li>SKEW 132 (8 pts below the 140 threshold, but z-1y &gt; 1.5 ✅)</li>
+    <li>Adaptive VIX-RV: active ✅</li>
   </ul>
 
-  <p><strong>Action générée :</strong> SPY put 365 strike exp 2023-06-16 (95 DTE, premium $11), VXX call 55 strike exp 2023-04-21 (39 DTE, premium $3.73).</p>
+  <p><strong>Generated action:</strong> SPY put 365 strike exp 2023-06-16 (95 DTE, premium $11), VXX call 55 strike exp 2023-04-21 (39 DTE, premium $3.73).</p>
 
-  <p>Le VIX a continué à monter au-dessus de 30 dans les semaines suivantes, et le SPY a corrigé jusqu'en mai. Les hedges suggérés auraient capturé une partie significative du move.</p>
+  <p>The VIX kept climbing above 30 in the following weeks, and the SPY corrected into May. The suggested hedges would have captured a significant part of the move.</p>
 
-  <p class="footnote">⚠️ Snapshot SVB partiellement synthétique : la base cache VIX3M ne remonte qu'à février 2025. Le ratio 1.05 est estimé d'après les valeurs réelles VIX/SKEW observées post-SVB.</p>
+  <p class="footnote">⚠️ Partially synthetic SVB snapshot: the VIX3M cache only goes back to February 2025. The 1.05 ratio is estimated from the actual VIX/SKEW values observed post-SVB.</p>
 
   <!-- ============================================================ -->
-  <h2 class="section-title">7. Comment l'utiliser au quotidien</h2>
+  <h2 class="section-title">7. How to use it day to day</h2>
 
-  <p>Le détecteur tourne automatiquement chaque matin sur le VPS (cron 06:30 Mon-Fri). Les alertes Telegram s'arment quand le tier ≥ 2 :</p>
+  <p>The detector runs automatically every morning on the VPS (cron 06:30 Mon-Fri). Telegram alerts arm when the tier ≥ 2:</p>
 
   <div class="callout amber">
-    <strong>TIER 2 (état actuel)</strong> — Message pédagogique sans spec d'options. Reflexion : commencer à réduire l'exposition vol-courte (puts vendus, iron condors, calendars longs vega-).
+    <strong>TIER 2 (current state)</strong> — Educational message with no options spec. Consideration: start reducing short-vol exposure (sold puts, iron condors, long-dated negative-vega calendars).
   </div>
 
   <div class="callout">
-    <strong>TIER 3</strong> — Alerte v2 avec spec options optimales auto-calculées :<br>
+    <strong>TIER 3</strong> — v2 alert with auto-calculated optimal options spec:<br>
     • SPY put 90-120 DTE, ~5% OTM, OI ≥ 500<br>
     • VXX call 30-60 DTE, ~10% OTM, OI ≥ 500<br>
-    • Sizing matrix : 0.5% VXX + 0.3% SPY + 0.2% cash buffer du book
+    • Sizing matrix: 0.5% VXX + 0.3% SPY + 0.2% cash buffer of the book
   </div>
 
   <div class="callout red">
-    <strong>TIER 4</strong> — Sizing doublé (1.0% + 0.6% + 0.4%). Hedge max. Rare (jamais atteint sur 2023-2026).
+    <strong>TIER 4</strong> — Doubled sizing (1.0% + 0.6% + 0.4%). Max hedge. Rare (never reached over 2023-2026).
   </div>
 
   <!-- ============================================================ -->
-  <h2 class="section-title">8. Limites & honnêteté intellectuelle</h2>
+  <h2 class="section-title">8. Limits & intellectual honesty</h2>
 
-  <h3 class="sub-title">Ce que le détecteur ne fait pas</h3>
+  <h3 class="sub-title">What the detector does not do</h3>
   <ul>
-    <li>Il ne dit pas <strong>quand</strong> le VIX va spike — juste qu'il est probable dans 60-120 jours</li>
-    <li>Il ne dit pas <strong>de combien</strong> il va monter — juste qu'il dépassera 25 (ou +50% vs niveau actuel)</li>
-    <li>Il ne couvre pas les <strong>vol shocks idiosyncratiques</strong> non-systémiques (flash crash isolé)</li>
+    <li>It does not say <strong>when</strong> the VIX will spike — just that it is likely within 60-120 days</li>
+    <li>It does not say <strong>by how much</strong> it will rise — just that it will exceed 25 (or +50% vs the current level)</li>
+    <li>It does not cover <strong>idiosyncratic vol shocks</strong> that aren't systemic (an isolated flash crash)</li>
   </ul>
 
-  <h3 class="sub-title">Les vrais caveats</h3>
+  <h3 class="sub-title">The real caveats</h3>
   <ul>
-    <li><strong>Cycle limité</strong> : validation sur 2023-2026 seulement. La base VIX3M ne remonte pas plus loin sur Polygon.</li>
-    <li><strong>Tier 4 théorique</strong> : jamais observé, sizing extrapolé du tier 3.</li>
-    <li><strong>VXX ≠ VIX direct</strong> : contango drag sur les futures VIX. Alternative pure = VIX futures via IBKR (réservé aux comptes autorisés).</li>
-    <li><strong>Sizing matrice fixe</strong> : pas de calibration Kelly. À adapter selon ton risk budget perso.</li>
-    <li><strong>Polygon Starter sparse</strong> sur les options 90-120 DTE → fallback Black-Scholes auto (IV peut sous-estimer en période de stress).</li>
+    <li><strong>Limited cycle</strong>: validation on 2023-2026 only. The VIX3M history does not go back further on Polygon.</li>
+    <li><strong>Theoretical Tier 4</strong>: never observed, sizing extrapolated from tier 3.</li>
+    <li><strong>VXX ≠ VIX directly</strong>: contango drag on VIX futures. The pure alternative = VIX futures via IBKR (restricted to approved accounts).</li>
+    <li><strong>Fixed sizing matrix</strong>: no Kelly calibration. Adapt it to your own risk budget.</li>
+    <li><strong>Polygon Starter is sparse</strong> on 90-120 DTE options → automatic Black-Scholes fallback (IV may underestimate during periods of stress).</li>
   </ul>
 
   <!-- ============================================================ -->
-  <h2 class="section-title">9. Pourquoi c'est pertinent maintenant</h2>
+  <h2 class="section-title">9. Why it matters now</h2>
 
   <div class="callout green">
-    <p style="margin:0;"><strong>Le marché paraît calme</strong> (VIX 18, S&P proche des highs) mais le détecteur arme en TIER 2 depuis plusieurs séances. Sur les 2 derniers cycles (2024 et 2025), CHAQUE fois que TIER 2 est resté armé &gt; 5 jours consécutifs, le VIX a dépassé 25 dans les 120 jours suivants. Le setup actuel ressemble au pre-stress de janvier 2024 et au pre-stress d'octobre 2024.</p>
+    <p style="margin:0;"><strong>The market looks calm</strong> (VIX 18, S&P near the highs) but the detector has been arming at TIER 2 for several sessions. Over the last 2 cycles (2024 and 2025), EVERY time TIER 2 stayed armed &gt; 5 consecutive days, the VIX exceeded 25 within the following 120 days. The current setup resembles the pre-stress of January 2024 and the pre-stress of October 2024.</p>
   </div>
 
-  <p>L'asymétrie est massive : <strong>les options sont vraiment cheap aujourd'hui</strong> (IV 13-20%), donc le coût du hedge est minimal. Si le spike se matérialise (P = 61-100% selon horizon), le payoff est multiple. Si pas, on a payé une assurance 0.3-1% du book sur 90-120 jours.</p>
+  <p>The asymmetry is massive: <strong>options are genuinely cheap today</strong> (IV 13-20%), so the cost of the hedge is minimal. If the spike materializes (P = 61-100% depending on horizon), the payoff is a multiple. If not, you've paid insurance of 0.3-1% of the book over 90-120 days.</p>
 
-  <p>C'est exactement le type de configuration qu'un newsletter <em>signal vs noise</em> doit savoir flagger.</p>
+  <p>This is exactly the kind of setup a <em>signal vs noise</em> newsletter should know how to flag.</p>
 
   <!-- ============================================================ -->
-  <h2 class="section-title">10. Fichiers techniques</h2>
+  <h2 class="section-title">10. Technical files</h2>
 
   <table class="proba-table">
     <thead>
       <tr>
-        <th style="text-align:left;">Fichier</th>
-        <th>Rôle</th>
+        <th style="text-align:left;">File</th>
+        <th>Role</th>
       </tr>
     </thead>
     <tbody>
-      <tr><td><code>lib/vix_spike_detector.py</code></td><td>Source of truth — 3 signaux + tier scoring + Kalman</td></tr>
-      <tr><td><code>vix_spike_alert_daily.py</code></td><td>Cron production VPS, alerte Telegram pédagogique</td></tr>
-      <tr><td><code>lab/research/vix_spike_alert_daily_v2.py</code></td><td>V2 avec spec options optimales (SPY put + VXX call)</td></tr>
-      <tr><td><code>dashboard/components/vix_spike_detector_panel.py</code></td><td>Panel Streamlit pour visualisation live</td></tr>
-      <tr><td><code>vix_spike_backtest.py</code></td><td>Backtest historique + permutation tests</td></tr>
+      <tr><td><code>lib/vix_spike_detector.py</code></td><td>Source of truth — 3 signals + tier scoring + Kalman</td></tr>
+      <tr><td><code>vix_spike_alert_daily.py</code></td><td>VPS production cron, educational Telegram alert</td></tr>
+      <tr><td><code>lab/research/vix_spike_alert_daily_v2.py</code></td><td>V2 with optimal options spec (SPY put + VXX call)</td></tr>
+      <tr><td><code>dashboard/components/vix_spike_detector_panel.py</code></td><td>Streamlit panel for live visualization</td></tr>
+      <tr><td><code>vix_spike_backtest.py</code></td><td>Historical backtest + permutation tests</td></tr>
     </tbody>
   </table>
 
   <footer>
-    The Philosopher Investor — Recherche maison — Daniel — 2026-05-18<br>
-    Snapshot live : VIX 18.43 · TIER 2/4 MEDIUM · Action: trim short-vol
+    The Philosopher Investor — In-house research — Daniel — 2026-05-18<br>
+    Live snapshot: VIX 18.43 · TIER 2/4 MEDIUM · Action: trim short-vol
   </footer>
 
 </div>
