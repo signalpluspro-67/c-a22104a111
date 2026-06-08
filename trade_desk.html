@@ -24,6 +24,10 @@ h1{font:800 28px/1.1 Georgia,serif;margin:0 0 2px}
 .ib-phase.pre{background:#eef3fa;color:var(--blue)}
 .ib-phase.post{background:#f6efda;color:var(--amber)}
 .ib-phase.closed{background:#eee;color:var(--mut)}
+.ib-fresh{font-weight:700;margin-left:auto}
+.ib-fresh.ok{color:var(--green)}
+.ib-fresh.wait{color:var(--amber)}
+.ib-fresh.stale{color:#c62828}
 .ib-clock{font-weight:800;color:var(--ink)}
 .ib-built,.ib-eod{font-size:11px}
 .ib-eod{margin-left:auto;background:#f3eee2;padding:3px 9px;border-radius:20px}
@@ -163,8 +167,9 @@ h1{font:800 28px/1.1 Georgia,serif;margin:0 0 2px}
 <div id="intraday-banner" class="intraday-banner">
 <span class="ib-phase" id="ib-phase">SESSION</span>
 <span class="ib-clock" id="ib-clock">--:--:-- NY</span>
-<span class="ib-built">page built 2026-06-08 18:55 CEST</span>
+<span class="ib-built">page built 2026-06-08 19:06 CEST</span>
 <span class="ib-eod">data through EOD 2026-06-05</span>
+<span class="ib-fresh" id="ib-fresh"></span>
 </div>
 <h1>Trade Desk</h1>
 <div class=sub>The one page to decide what to trade. Every idea the system finds, split by trade type, ranked by a transparent conviction score, with a plain-English playbook under each ticker. This is the single source — all trades come from here.</div>
@@ -189,6 +194,7 @@ Same data → same page. No AI in the ranking — AI only writes the plain-Engli
 <script>
 (function(){
   var b=document.getElementById('intraday-banner'); if(!b) return;
+  var SESSION="2026-06-05";
   function p(n){return (n<10?'0':'')+n;}
   function tick(){
     var now=new Date();
@@ -202,6 +208,18 @@ Same data → same page. No AI in the ranking — AI only writes the plain-Engli
     else{phase='CLOSED';cls='closed';}
     var ph=document.getElementById('ib-phase'); ph.textContent=phase; ph.className='ib-phase '+cls;
     document.getElementById('ib-clock').textContent=p(h)+':'+p(m)+':'+p(s)+' NY';
+    var fr=document.getElementById('ib-fresh');
+    if(fr&&SESSION&&SESSION.indexOf('_')<0){
+      var nyDate=ny.getFullYear()+'-'+p(ny.getMonth()+1)+'-'+p(ny.getDate());
+      var diff=Math.round((new Date(nyDate+'T00:00:00')-new Date(SESSION+'T00:00:00'))/86400000);
+      var ft,fc;
+      if(diff>4){ft='⚠ data may be stale — last EOD '+SESSION;fc='stale';}
+      else if(dow===0||dow===6){ft='✓ up to date — last close '+SESSION+' · markets closed';fc='ok';}
+      else if(SESSION===nyDate){ft='✓ up to date — today’s EOD';fc='ok';}
+      else if(mins<960){ft='✓ up to date — showing last close ('+SESSION+') · today’s data lands tonight after the 4pm ET close';fc='ok';}
+      else{ft='⏳ market closed — tonight’s EOD ('+nyDate+') publishing shortly';fc='wait';}
+      fr.textContent=ft; fr.className='ib-fresh '+fc;
+    }
   }
   tick(); setInterval(tick,1000);
 })();
