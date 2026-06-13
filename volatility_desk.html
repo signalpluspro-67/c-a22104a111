@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Volatility Desk</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: auto; }
+body { background: #f9f5ee; color: #1a1a1a; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+
+.layout { display: flex; min-height: 100vh; }
+nav.toc {
+  position: sticky; top: 0; width: 280px; height: 100vh;
+  background: #ffffff; border-right: 1px solid #d8cfbb;
+  padding: 28px 22px; overflow-y: auto; flex-shrink: 0;
+}
+nav.toc h1 { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-size: 18px; font-weight: 700; color: #1a1a1a; letter-spacing: -0.3px; }
+nav.toc .sub { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic; font-size: 11px; color: #888888; margin-bottom: 14px; }
+nav.toc .meta { font-size: 9.5px; color: #888888; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid #d8cfbb; }
+nav.toc h3 { font-size: 9.5px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #8b5cf6; margin: 14px 0 5px; }
+nav.toc a { display: block; font-size: 11px; color: #555555; text-decoration: none; padding: 3px 0 3px 8px; margin-left: -10px; border-left: 2px solid transparent; transition: all 0.15s ease; }
+nav.toc a:hover { color: #1a1a1a; border-left-color: #8b5cf6; background: #efe7d6; }
+nav.toc a .badge { font-size: 9px; padding: 1px 4px; border-radius: 2px; margin-left: 6px; color: #fff; }
+
+main { flex: 1; padding: 32px 44px 80px; max-width: 1280px; }
+
+header.intro {
+  background: #ffffff; color: #1a1a1a; padding: 36px 48px 44px;
+  border-radius: 6px; margin-bottom: 28px; box-shadow: 0 6px 26px rgba(0,0,0,0.4);
+}
+header.intro .eyebrow {
+  font-size: 11px; font-weight: 600; letter-spacing: 2.4px; text-transform: uppercase;
+  color: #8b5cf6; margin-bottom: 10px;
+}
+header.intro h1 {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 900; font-size: 28px;
+  letter-spacing: -0.3px; line-height: 1.15; color: #1a1a1a; max-width: 920px;
+}
+header.intro .deck {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic; font-size: 16px;
+  color: #555555; margin-top: 10px; max-width: 820px; line-height: 1.45;
+}
+header.intro .meta-line {
+  margin-top: 16px; font-size: 11px; color: #888888;
+  font-family: 'JetBrains Mono', monospace; letter-spacing: 0.4px;
+}
+
+/* === Data Freshness Banner === */
+.freshness-banner {
+  margin: 18px 0 24px; padding: 18px 22px; border-radius: 6px;
+  background: #fff; border: 3px solid #2a8a2a;
+  box-shadow: 0 2px 8px rgba(42,138,42,0.15);
+}
+.freshness-headline {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 900; font-size: 20px;
+  letter-spacing: 0.3px; margin-bottom: 14px;
+}
+.freshness-details {
+  display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;
+}
+.freshness-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 14px; border-radius: 4px;
+  background: #efe7d6; border: 1.5px solid #2a8a2a;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  color: #1a1a1a;
+}
+.freshness-chip .freshness-icon { font-size: 14px; }
+.freshness-chip .freshness-label {
+  text-transform: uppercase; font-size: 10px; letter-spacing: 0.6px;
+  color: #555555; font-weight: 700;
+}
+.freshness-chip .freshness-value { font-weight: 800; color: #1a1a1a; }
+.freshness-chip .freshness-suffix { color: #888888; font-size: 10px; font-style: italic; margin-left: 2px; }
+.freshness-intraday {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #1a1a1a;
+  padding: 8px 0 2px; margin-bottom: 8px;
+}
+.freshness-explain {
+  font-size: 12px; color: #555555; line-height: 1.5;
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic;
+  border-top: 1px solid rgba(184,154,58,0.3); padding-top: 10px;
+}
+
+/* Sidebar mini status — single line, matches menu typography */
+.toc .meta-fresh-mini {
+  margin: 8px 0 14px; padding: 0;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+  font-family: 'Inter', sans-serif;
+}
+.toc .meta-fresh-mini.fresh { color: #4ade80; }
+.toc .meta-fresh-mini.stale { color: #ef4444; }
+
+section.section {
+  background: #ffffff; color: #1a1a1a; padding: 28px 32px 32px;
+  border-radius: 6px; margin-bottom: 22px; box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+  scroll-margin-top: 16px;
+}
+nav.toc a.active { color: #ffffff; border-left-color: #8b5cf6; background: rgba(184, 154, 58, 0.15); }
+section.section .card-meta {
+  display: flex; gap: 14px; align-items: flex-start; margin-bottom: 16px;
+  padding-bottom: 12px; border-bottom: 1px solid #d8cfbb;
+}
+section.section .card-num {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 700; font-size: 26px;
+  color: #8b5cf6; letter-spacing: -0.3px; line-height: 1; flex-shrink: 0;
+}
+section.section .card-eyebrow {
+  font-size: 10px; font-weight: 600; letter-spacing: 1.6px; text-transform: uppercase;
+  color: #888888; margin-bottom: 3px;
+}
+section.section .card-title {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 700; font-size: 18px;
+  color: #1a1a1a; line-height: 1.25;
+}
+.status-badge {
+  display: inline-block; font-family: 'Inter', sans-serif; font-size: 9px;
+  font-weight: 600; letter-spacing: 1px; padding: 2px 7px; border-radius: 3px;
+  color: #fff; margin-left: 8px; vertical-align: middle; text-transform: uppercase;
+}
+
+table.data-table {
+  width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px; background: #ffffff; margin-bottom: 14px;
+}
+table.data-table thead th {
+  background: #1a1a1a; color: #ffffff; padding: 9px 7px; text-align: right;
+  font-weight: 600; letter-spacing: 0.4px; font-size: 10px; font-family: 'Inter', sans-serif;
+  text-transform: uppercase; border-right: 1px solid #3a3322;
+}
+table.data-table thead th:first-child { text-align: left; }
+table.data-table tbody td {
+  padding: 6px 7px; text-align: right; border-bottom: 1px solid #e5e0d0;
+  border-right: 1px solid #f1e6b8; color: #1a1a1a;
+}
+table.data-table tbody td:first-child {
+  text-align: left; font-weight: 700; background: #1a1a1a; color: #ffffff; font-size: 12px;
+}
+.table-caption {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic; font-size: 13px;
+  color: #6B5C2A; margin-bottom: 8px;
+}
+
+td.hot-1 { background: #fbe5be; color: #4d3c00; }
+td.hot-2 { background: #f7d39a; color: #4d3c00; }
+td.hot-3 { background: #f1bb70; color: #2e2200; }
+td.hot-4 { background: #d97a3d; color: #fff; }
+td.hot-5 { background: #a73a1f; color: #fff; font-weight: 600; }
+td.cool-1 { background: #d6e4d2; color: #1f3024; }
+td.cool-2 { background: #b6d2b1; color: #1f3024; }
+td.cool-3 { background: #8cba85; color: #fff; }
+td.cool-4 { background: #5d9e63; color: #fff; }
+td.cool-5 { background: #2f6c46; color: #fff; font-weight: 600; }
+td.neutral { background: #ffffff; }
+
+.gauge { background: #ffffff; padding: 18px 22px; border-radius: 4px; border: 1px solid #e5e0d0; margin-bottom: 14px; }
+.gauge-track { position: relative; height: 8px; background: #e5e0d0; border-radius: 4px; overflow: hidden; }
+.gauge-fill { height: 100%; transition: width 0.3s ease; }
+.gauge-marker { position: absolute; top: -3px; width: 2px; height: 14px; background: #1a1a1a; }
+.gauge-meta { display: flex; justify-content: space-between; align-items: baseline; margin-top: 8px; }
+.gauge-value { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700; color: #1a1a1a; }
+.gauge-tier { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-size: 18px; font-weight: 700; }
+.gauge-desc { margin-top: 6px; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic; font-size: 13px; color: #6B5C2A; }
+.gauge-na { padding: 18px 22px; }
+
+.brick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 14px; }
+.brick { background: #ffffff; padding: 14px 16px; border-radius: 4px; border: 1px solid #e5e0d0; text-align: center; }
+.brick-on { background: #d6e4d2; border-color: #5d9e63; }
+.brick-off { background: #ffffff; }
+.brick-light { font-size: 18px; margin-bottom: 4px; }
+.brick-name { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 700; font-size: 13px; color: #1a1a1a; margin-bottom: 4px; }
+.brick-detail { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #6B5C2A; }
+
+.interp {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-size: 14.5px; line-height: 1.55;
+  color: #1a1a1a; padding: 14px 18px; background: #ffffff; border-left: 3px solid #8b5cf6;
+  border-radius: 0 4px 4px 0; margin-bottom: 12px;
+}
+.interp ul { margin: 8px 0 8px 0; padding-left: 22px; }
+.interp li { margin: 5px 0; line-height: 1.5; }
+.interp li strong { color: #555555; }
+.interp p { margin: 6px 0; }
+.interp p + p { margin-top: 10px; }
+.ai-take { background: #f6f1e7; border-left: 3px solid #2f6c46; border-radius: 0 4px 4px 0; padding: 12px 18px; margin-top: 10px; }
+.ai-take-label { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: #2f6c46; margin-bottom: 5px; }
+.ai-take-text { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-size: 13.5px; line-height: 1.55; color: #1a1a1a; }
+.ai-take-text p { margin: 0 0 8px; }
+.ai-take-text p:last-child { margin-bottom: 0; }
+.top-nav { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.4px; margin-bottom: 14px; }
+.top-nav a { color: #555555; text-decoration: none; padding: 2px 0; }
+.top-nav a:hover { color: #8b5cf6; }
+.top-nav .nav-sep { color: #d8cfbb; margin: 0 7px; }
+.top-nav .nav-here { color: #8b5cf6; font-weight: 700; }
+.how-to-read { background: #1a1a1a; color: #ffffff; padding: 14px 18px; border-radius: 4px; }
+.how-to-read-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
+  color: #8b5cf6; margin-bottom: 5px;
+}
+.how-to-read-text { font-size: 12.5px; line-height: 1.55; }
+
+.narrative-head {
+  background: #ffffff; padding: 18px 24px; border-radius: 4px;
+  margin-bottom: 18px;
+}
+.narrative-headline {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-size: 28px; font-weight: 900;
+  letter-spacing: -0.3px; line-height: 1.15;
+}
+.narrative-para {
+  background: #ffffff; padding: 18px 22px; border-radius: 4px; margin-bottom: 14px;
+  border-left: 3px solid #d8cfbb;
+}
+.narrative-para-title {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 700; font-size: 24px;
+  color: #1a1a1a; margin-bottom: 14px; letter-spacing: -0.3px;
+  line-height: 1.25; text-transform: none;
+}
+.trade-title {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 12px;
+  padding: 8px 0; margin-bottom: 8px;
+  border-bottom: 2px solid #8b5cf6;
+}
+.trade-num { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 700; font-size: 22px; color: #8b5cf6; }
+.trade-ticker {
+  font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 32px;
+  letter-spacing: -0.5px; line-height: 1;
+}
+.trade-ticker-long { color: #2f6c46; }
+.trade-ticker-short { color: #a73a1f; }
+.trade-ticker-rotation { color: #5d9e63; }
+.trade-side {
+  font-family: 'Inter', sans-serif; font-weight: 700; font-size: 12px;
+  letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 9px;
+  border-radius: 3px; color: #fff;
+}
+.trade-side-long { background: #2f6c46; }
+.trade-side-short { background: #a73a1f; }
+.trade-side-rotation { background: #5d9e63; }
+.trade-conv {
+  font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600;
+  color: #555555; padding: 3px 8px; background: #fbe5be; border-radius: 3px;
+}
+.trade-setup {
+  width: 100%; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic;
+  font-size: 14px; color: #6B5C2A; margin-top: 4px;
+}
+.narrative-para-body {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-size: 15.5px; line-height: 1.6;
+  color: #1a1a1a;
+}
+.narrative-para-body strong { font-weight: 700; color: #555555; }
+.narrative-para-body em { font-style: italic; color: #6B5C2A; }
+.data-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.data-chip {
+  display: inline-flex; align-items: baseline; gap: 7px; padding: 6px 12px;
+  border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  border: 1px solid rgba(0,0,0,0.15);
+}
+.data-chip.chip-light { color: #1a1a1a; }
+.data-chip.chip-dark { color: #ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+.chip-light .chip-label { color: #1a1a1a; opacity: 0.65; font-weight: 500; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+.chip-light .chip-value { color: #1a1a1a; font-weight: 800; }
+.chip-dark .chip-label { color: rgba(255,255,255,0.85); font-weight: 500; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+.chip-dark .chip-value { color: #ffffff; font-weight: 800; }
+.unavailable { padding: 22px; background: #ffffff; border: 1px dashed #8b5cf6; border-radius: 4px; text-align: center; }
+.unav-icon { font-size: 22px; margin-bottom: 6px; color: #8b5cf6; }
+.unav-text { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic; color: #6B5C2A; font-size: 14px; }
+.unav-tag { display: inline-block; font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 2px 8px; border-radius: 3px; background: #8b5cf6; color: #fff; margin-bottom: 8px; }
+.unav-eta { margin-top: 6px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #888888; }
+
+/* Compact signal-group table: small monospace sub-line under each signal name */
+.data-table td .sig-sub { display: block; font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: #888888; font-weight: 400; margin-top: 2px; line-height: 1.3; white-space: normal; }
+.data-table td .sig-na { color: #a73a1f; font-style: italic; }
+
+/* Collapsible TOC groups (menu folds by theme) */
+nav.toc details.toc-group { margin: 12px 0 4px; }
+nav.toc details.toc-group > summary { font-size: 9.5px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #8b5cf6; cursor: pointer; list-style: none; padding: 5px 0; border-bottom: 1px solid #d8cfbb; outline: none; }
+nav.toc details.toc-group > summary::-webkit-details-marker { display: none; }
+nav.toc details.toc-group > summary::before { content: '▸ '; }
+nav.toc details.toc-group[open] > summary::before { content: '▾ '; }
+nav.toc details.toc-group > a { margin-top: 2px; }
+
+/* Collapsible section bodies (drill-down scans) */
+section.section details.sec-collapse { margin-top: 4px; }
+section.section details.sec-collapse > summary { cursor: pointer; list-style: none; color: #8b5cf6; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; padding: 4px 0; outline: none; }
+section.section details.sec-collapse > summary::-webkit-details-marker { display: none; }
+section.section details.sec-collapse > summary::before { content: '▸ Show detail'; }
+section.section details.sec-collapse[open] > summary::before { content: '▾ Hide detail'; }
+
+footer.page-footer {
+  margin-top: 36px; padding: 20px 0; border-top: 1px solid #d8cfbb; color: #888888;
+  font-size: 11px; font-family: 'JetBrains Mono', monospace; text-align: center;
+}
+
+@media (max-width: 1024px) {
+  .layout { flex-direction: column; }
+  nav.toc { position: relative; width: 100%; height: auto; max-height: 50vh; }
+  main { padding: 20px 14px 60px; }
+  header.intro h1 { font-size: 22px; }
+  .brick-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head><body>
+<div class="layout">
+  <nav class="toc">
+    <h1>Volatility Desk</h1>
+    <div class="sub">Editorial cockpit</div>
+    <div class="meta">EOD 2026-06-12</div>
+    <div class="meta-fresh-mini">Vol 2026-06-12</div>
+    <a href="#regime">Vol Regime</a><a href="#vix">VIX & Term Structure</a><a href="#skew">SKEW Tail Scan</a><a href="#vrp">Variance Premium</a><a href="#vvix">VVIX Signal</a>
+  </nav>
+  <main>
+    <header class="intro">
+      <div class="top-nav"><a href="ceo_dashboard.html">CEO</a><span style="opacity:.4;margin:0 8px">&middot;</span><a href="trade_desk.html">Trade Desk</a><span style="opacity:.4;margin:0 8px">&middot;</span><a href="flow.html">Money Flow</a><span style="opacity:.4;margin:0 8px">&middot;</span><a href="kerberos_dashboard.html">Kerberos</a><span style="opacity:.4;margin:0 8px">&middot;</span><a href="screeners_deep.html">Screeners</a></div>
+      <div class="eyebrow">EOD 2026-06-12</div>
+      <div class="data-freshness">EOD <strong>2026-06-12</strong> (last full-volume close)</div>
+      <h1>Volatility Desk</h1>
+      <div class="deck">The market vol regime in one place: VIX, SKEW, term structure, variance premium.</div>
+    </header>
+    <div class="interp"><strong>How this page is built.</strong> Every read here comes from the data the system already has: the VIX Spike Detector (live, validated in confluence), the SKEW tail composite, daily VIX options stats, per-name SKEW, and the variance-premium tertiles. It is the market vol regime in one place. It is a sizing and attention guide, not a single-name trade trigger.</div><section id="regime">
+<div class="card-meta">
+  <span class="card-num">01</span>
+  <div class="card-text">
+    <div class="card-eyebrow">Where vol regime stands</div>
+    <div class="card-title">Vol Regime </div>
+  </div>
+</div>
+<div style="font-size:15px;margin:6px 0 12px"><span style="font-weight:800;color:#b7791f">TIER 1 &middot; BROAD ALERT (SKEW)</span> &nbsp; VIX <strong>17.68</strong></div><div class="brick-grid">
+<div class="brick brick-on">
+  <div class="brick-light">🟢</div>
+  <div class="brick-name">SKEW tail</div>
+  <div class="brick-detail">SKEW 143 / z1y -0.63</div>
+</div>
+
+<div class="brick brick-on">
+  <div class="brick-light">🟢</div>
+  <div class="brick-name">Backwardation</div>
+  <div class="brick-detail">VIX3M/VIX 1.160</div>
+</div>
+
+<div class="brick brick-off">
+  <div class="brick-light">⚪</div>
+  <div class="brick-name">Adaptive (chop)</div>
+  <div class="brick-detail">VIX-RV calm-before-storm</div>
+</div>
+</div>
+
+<table class="data-table">
+  <thead><tr><th>Historical (cycle 2023-26)</th><th>Probability</th></tr></thead>
+  <tbody>
+    <tr><td>P(VIX +50% in 60d)</td><td>50%</td></tr><tr><td>P(VIX &gt; 25 in 60d)</td><td>56%</td></tr><tr><td>P(VIX &gt; 25 in 120d)</td><td>75%</td></tr>
+  </tbody>
+</table>
+<div class="interp"><strong>Playbook.</strong> BROAD ALERT ,  increase tail hedge sizing, watch for tier-up confirmation SKEW tail composite: <strong>📊 Neutral-haut</strong> (score 1, SKEW 142.6). This is a regime gauge, not a single-name trigger. Tier 3+ is the validated long-vol directive (do not dismiss it as noise).</div>
+<div class="how-to-read">
+  <div class="how-to-read-label">How to read</div>
+  <div class="how-to-read-text">The detector lights when independent vol signals align (SKEW tail, VIX term-structure backwardation, calm-before-storm spread). The probabilities are measured on the current 2023-26 cycle. Confluence (Tier 3-4) is the edge, single lights are weaker.</div>
+</div>
+</section><section id="vix">
+<div class="card-meta">
+  <span class="card-num">02</span>
+  <div class="card-text">
+    <div class="card-eyebrow">VIX level, implied vs realized, put/call</div>
+    <div class="card-title">VIX &amp; Term Structure </div>
+  </div>
+</div>
+
+
+<table class="data-table">
+  <thead><tr><th>Metric</th><th>Value</th><th>Read</th></tr></thead>
+  <tbody>
+    <tr><td>VIX</td><td>17.68</td><td><span style="color:#b23b2e">n/a</span></td></tr><tr><td>Implied 30d (IVX30)</td><td>93.8</td><td>—</td></tr><tr><td>Realized 30d (HV30)</td><td>20.5</td><td>—</td></tr><tr><td>IV - HV spread</td><td>73.3 pts</td><td>rich</td></tr><tr><td>Volume PCR</td><td>n/a</td><td>—</td></tr><tr><td>OI PCR</td><td>n/a</td><td>—</td></tr>
+  </tbody>
+</table>
+<div class="interp"><strong>VIX 17.68</strong> as of 2026-06-12. Implied above realized: the market is paying up for protection (sell-premium leaning).</div>
+<div class="how-to-read">
+  <div class="how-to-read-label">How to read</div>
+  <div class="how-to-read-text">IVX30 is the implied 30-day vol, HV30 the realized. A positive IV-HV spread means options are richly priced. PCR above 1 leans defensive.</div>
+</div>
+</section><section id="skew">
+<div class="card-meta">
+  <span class="card-num">03</span>
+  <div class="card-text">
+    <div class="card-eyebrow">Most put-skewed single names</div>
+    <div class="card-title">SKEW Tail Scan </div>
+  </div>
+</div>
+
+
+<table class="data-table">
+  <thead><tr><th>Ticker</th><th>25d skew</th><th>IV30</th><th>IV rank</th></tr></thead>
+  <tbody>
+    <tr><td>GS</td><td>8.5%</td><td>35%</td><td>38</td></tr><tr><td>MS</td><td>7.8%</td><td>32%</td><td>64</td></tr><tr><td>JPM</td><td>6.7%</td><td>26%</td><td>47</td></tr><tr><td>DIS</td><td>5.9%</td><td>24%</td><td>1</td></tr><tr><td>PFE</td><td>5.4%</td><td>21%</td><td>1</td></tr><tr><td>GOOG</td><td>5.4%</td><td>32%</td><td>44</td></tr><tr><td>C</td><td>5.1%</td><td>32%</td><td>13</td></tr><tr><td>UNH</td><td>4.8%</td><td>28%</td><td>1</td></tr><tr><td>MRK</td><td>4.7%</td><td>27%</td><td>5</td></tr><tr><td>GE</td><td>4.7%</td><td>36%</td><td>2</td></tr><tr><td>JNJ</td><td>4.2%</td><td>22%</td><td>11</td></tr><tr><td>SBUX</td><td>3.9%</td><td>30%</td><td>13</td></tr>
+  </tbody>
+</table>
+<div class="interp">As of 2026-06-12, these names carry the steepest 25-delta put skew (most demand for downside protection). High skew plus high IV rank can mean fear is already priced, watch for fade.</div>
+<div class="how-to-read">
+  <div class="how-to-read-label">How to read</div>
+  <div class="how-to-read-text">25-delta skew = IV(25d put) minus IV(25d call). A high positive value means puts are bid relative to calls, the classic crash-hedge tell.</div>
+</div>
+</section><section id="vrp">
+<div class="card-meta">
+  <span class="card-num">04</span>
+  <div class="card-text">
+    <div class="card-eyebrow">Implied vs realized, sell-premium candidates</div>
+    <div class="card-title">Variance Premium </div>
+  </div>
+</div>
+
+
+<table class="data-table">
+  <thead><tr><th>Tertile</th><th>Names</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td>HIGH</td><td>529</td><td>rich premium, sell-vol leaning (VALID OOS)</td></tr><tr><td>MID</td><td>530</td><td>best risk-adjusted tertile historically</td></tr><tr><td>LOW</td><td>529</td><td>avoid selling, premium too thin</td></tr>
+  </tbody>
+</table>
+
+
+<table class="data-table">
+  <thead><tr><th>Ticker</th><th>Close</th><th>Implied</th><th>HV20</th><th>VRP</th></tr></thead>
+  <tbody>
+    <tr><td>KLAC</td><td>241.16</td><td>11385</td><td>825</td><td>10560</td></tr><tr><td>SFNC</td><td>22.19</td><td>8867</td><td>23</td><td>8844</td></tr><tr><td>ZNTL</td><td>3.52</td><td>8847</td><td>71</td><td>8776</td></tr><tr><td>VTS</td><td>16.81</td><td>7880</td><td>36</td><td>7843</td></tr><tr><td>FMNB</td><td>14.56</td><td>6699</td><td>19</td><td>6680</td></tr><tr><td>CION</td><td>7.00</td><td>6038</td><td>28</td><td>6010</td></tr><tr><td>IAG</td><td>16.14</td><td>5540</td><td>73</td><td>5467</td></tr><tr><td>PRME</td><td>2.82</td><td>5156</td><td>93</td><td>5063</td></tr><tr><td>PAYS</td><td>6.69</td><td>5039</td><td>60</td><td>4979</td></tr><tr><td>CABA</td><td>3.01</td><td>4936</td><td>60</td><td>4876</td></tr><tr><td>MNKD</td><td>3.75</td><td>4851</td><td>61</td><td>4790</td></tr><tr><td>EDIT</td><td>2.44</td><td>4727</td><td>114</td><td>4613</td></tr>
+  </tbody>
+</table>
+<div class="interp">As of 2026-06-11, the HIGH-VRP names above carry the widest implied-over-realized gap (premium-selling candidates). The variance-premium tertile is STRICT_VALID out of sample; the MID tertile had the best risk-adjusted Sharpe.</div>
+<div class="how-to-read">
+  <div class="how-to-read-label">How to read</div>
+  <div class="how-to-read-text">VRP = implied vol proxy minus realized HV20. HIGH tertile = options expensive vs actual moves. Pair with liquidity and a defined-risk structure before selling.</div>
+</div>
+</section><section id="vvix">
+<div class="card-meta">
+  <span class="card-num">05</span>
+  <div class="card-text">
+    <div class="card-eyebrow">Vol-of-vol regime (Sinclair)</div>
+    <div class="card-title">VVIX Signal </div>
+  </div>
+</div>
+<div style="font-size:15px;margin:6px 0 10px"><span style="font-weight:800;color:#2f6c46">SELL VOL</span> &nbsp; composite <strong>1.95</strong> &nbsp; <span style="opacity:.6">2026-06-12</span></div><div class="interp">Moderate sell vol signal. Consider selling premium with defined risk (spreads preferred over naked).</div>
+<div class="how-to-read">
+  <div class="how-to-read-label">How to read</div>
+  <div class="how-to-read-text">VVIX is the vol of VIX. A high VVIX percentile with rising VIX is the long-vol setup; a low VVIX with calm VIX favors selling premium.</div>
+</div>
+</section>
+    <footer class="page-footer">Volatility desk built 2026-06-13 12:48 UTC. Sources: vix_spike_detector, skew_tail_risk, vix_options_daily, skew_history, variance_premium_daily, signal_archive. Vol regime is a sizing guide, not a trigger.</footer>
+  </main>
+</div>
+<script>
+(function() {
+  // Highlight the active TOC link based on visible section, no scroll animation on click
+  function setActive(id) {
+    document.querySelectorAll('nav.toc a').forEach(a => {
+      const href = a.getAttribute('href') || '';
+      a.classList.toggle('active', href === '#' + id);
+    });
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('nav.toc a').forEach(a => {
+      a.addEventListener('click', function(e) {
+        const href = this.getAttribute('href') || '';
+        const id = href.replace(/^#/, '');
+        if (!id) return;
+        e.preventDefault();
+        const target = document.getElementById(id);
+        if (target) {
+          // Instant jump (no scroll animation)
+          target.scrollIntoView({ behavior: 'auto', block: 'start' });
+          history.replaceState(null, '', '#' + id);
+          setActive(id);
+        }
+      });
+    });
+    // Initial highlight from hash
+    const initial = (window.location.hash || '').replace(/^#/, '');
+    if (initial) setActive(initial);
+  });
+})();
+</script>
+</body></html>
