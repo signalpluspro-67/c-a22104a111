@@ -1,0 +1,1 @@
+window.BG_FILES=["philo1.jpg", "philo2.jpg", "philo3.jpg", "philo17.jpg", "philo18.jpg", "philo19.jpg", "philo20.jpg", "philo31.jpg", "philo35.jpg", "philo37.jpg", "philo40.jpg", "philo44.jpg", "philo48.jpg"];

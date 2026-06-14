@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cover Studio — The Philosopher Investor</title>
+<style>
+  :root{ --bg:#F3EEDD; --card:#FBF7E0; --border:#C8B878; --text:#241F12;
+    --muted:#6B5C2A; --accent:#5C4F1A; --gold:#8A6E2A; --red:#B0392B; --cream:250,246,232; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:'Iowan Old Style','Georgia',serif;text-align:center}
+  header{background:var(--accent);color:#fff;padding:10px 20px;border-bottom:2px solid var(--gold)}
+  header h1{margin:0;font-size:15px;font-weight:600;letter-spacing:.3px}
+  .strip{display:flex;gap:8px;overflow-x:auto;padding:12px 16px;background:var(--card);
+    border-bottom:1px solid var(--border);justify-content:center;flex-wrap:wrap}
+  .sw{width:58px;height:32px;border-radius:4px;border:2px solid transparent;cursor:pointer;
+    background-size:cover;background-position:center;flex:0 0 auto;filter:grayscale(.15)}
+  .sw.on{border-color:var(--red)}
+  .stage{padding:26px 16px 8px}
+  .card{position:relative;display:inline-block;width:820px;max-width:95vw;aspect-ratio:2/1;
+    background:#EDE7D6;background-size:cover;background-position:center;overflow:hidden;
+    box-shadow:0 12px 36px rgba(0,0,0,.26);text-align:left;vertical-align:top}
+  .scrim{position:absolute;left:0;right:0;bottom:0;height:62%;pointer-events:none;
+    background:linear-gradient(to bottom,rgba(var(--cream),0) 0%,rgba(var(--cream),.72) 48%,rgba(var(--cream),.94) 100%)}
+  .rule{position:absolute;top:8%;bottom:8%;left:6.5%;width:3px;background:var(--red)}
+  .layer{position:absolute;inset:0;padding:7% 7.5%;display:flex;flex-direction:column;justify-content:flex-end}
+  .kicker{font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:.7em}
+  .title{font-weight:700;color:var(--text);line-height:1.06;margin:0}
+  .sub{font-style:italic;color:var(--muted);margin-top:.5em}
+  [contenteditable]{outline:none;cursor:text}
+  [contenteditable]:hover{box-shadow:0 0 0 2px rgba(176,57,43,.22);border-radius:2px}
+  [contenteditable]:focus{box-shadow:0 0 0 2px rgba(176,57,43,.55);border-radius:2px}
+  .bar{padding:4px 16px 22px}
+  .seg{display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;vertical-align:middle}
+  .seg button{border:0;background:#fff;padding:8px 14px;cursor:pointer;font-family:inherit;font-size:13px;color:var(--text)}
+  .seg button.on{background:var(--accent);color:#fff}
+  .btn{margin-left:10px;padding:9px 20px;border:0;border-radius:6px;cursor:pointer;
+    font-family:inherit;font-weight:700;font-size:14px;background:var(--red);color:#fff;vertical-align:middle}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:11px}
+  canvas{display:none}
+</style>
+</head>
+<body>
+<header><h1>The Philosopher Investor — Cover Studio</h1></header>
+
+<div class="strip" id="strip"></div>
+
+<div class="stage">
+  <div class="card" id="card">
+    <div class="scrim"></div>
+    <div class="rule"></div>
+    <div class="layer">
+      <div class="kicker" id="kicker" contenteditable="true">THE PHILOSOPHER INVESTOR</div>
+      <div class="title"  id="title"  contenteditable="true">Market Recap — May 31st 2026</div>
+      <div class="sub"    id="sub"     contenteditable="true"></div>
+    </div>
+  </div>
+</div>
+
+<div class="bar">
+  <div class="seg" id="fmt">
+    <button data-w="1200" data-h="600" class="on">Hero</button>
+    <button data-w="1200" data-h="675">16:9</button>
+    <button data-w="1080" data-h="1080">Carré</button>
+    <button data-w="1080" data-h="1350">Portrait</button>
+  </div>
+  <button class="btn" id="dl">⬇ Export PNG</button>
+  <div class="hint">Clique un fond, puis clique sur le texte pour l'éditer. Très sobre par défaut.</div>
+</div>
+
+<canvas id="cv"></canvas>
+
+<!-- backgrounds inlined as base64 data-URIs (built by build_bg_data.py) so PNG
+     export works from file:// — a canvas drawn from a file:// image is tainted -->
+<script src="bg/bg_data.js"></script>
+<script>
+const card=document.getElementById('card'), strip=document.getElementById('strip');
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+const elK=document.getElementById('kicker'), elT=document.getElementById('title'), elS=document.getElementById('sub');
+const bgImages={}; let bg=null; let fmt={w:1200,h:600};
+
+function applyBg(url,thumb){ bg=url; card.style.backgroundImage=`url('${url}')`;
+  document.querySelectorAll('.sw').forEach(s=>s.classList.remove('on')); if(thumb) thumb.classList.add('on'); }
+
+const FILES=window.BG_FILES||[]; const BGD=window.BG_DATA||{};
+if(FILES.length) applyBg(BGD[FILES[0]]);
+FILES.forEach((name)=>{ const url=BGD[name]; if(!url) return; const im=new Image();
+  im.onload=()=>{ bgImages[url]=im; const d=document.createElement('div'); d.className='sw';
+    d.style.backgroundImage=`url('${url}')`; d.onclick=()=>applyBg(url,d); strip.appendChild(d);
+    if(url===bg) d.classList.add('on'); };
+  im.src=url; });
+
+function sizeCard(){ const h=card.clientHeight||410;
+  elT.style.fontSize=(h*0.082)+'px'; elK.style.fontSize=(h*0.024)+'px'; elS.style.fontSize=(h*0.030)+'px'; }
+new ResizeObserver(sizeCard).observe(card); window.addEventListener('load',sizeCard); sizeCard();
+
+document.querySelectorAll('#fmt button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#fmt button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  fmt={w:+b.dataset.w,h:+b.dataset.h}; card.style.aspectRatio=`${fmt.w}/${fmt.h}`; sizeCard(); });
+
+function wrap(text,font,maxW){ ctx.font=font; const out=[];
+  (text||'').split('\n').forEach(p=>{ const ws=p.split(' '); let ln='';
+    ws.forEach(w=>{ const t=ln?ln+' '+w:w; if(ctx.measureText(t).width>maxW&&ln){out.push(ln);ln=w;} else ln=t; }); out.push(ln); });
+  return out; }
+
+function draw(){
+  const W=fmt.w,H=fmt.h; cv.width=W; cv.height=H;
+  if(bg&&bgImages[bg]){ const im=bgImages[bg],r=Math.max(W/im.width,H/im.height);
+    ctx.drawImage(im,(W-im.width*r)/2,(H-im.height*r)/2,im.width*r,im.height*r); }
+  else { ctx.fillStyle='#EDE7D6'; ctx.fillRect(0,0,W,H); }
+  // cream scrim bottom for legibility
+  const sc=ctx.createLinearGradient(0,H*0.38,0,H);
+  sc.addColorStop(0,'rgba(250,246,232,0)'); sc.addColorStop(0.55,'rgba(250,246,232,.72)'); sc.addColorStop(1,'rgba(250,246,232,.95)');
+  ctx.fillStyle=sc; ctx.fillRect(0,H*0.38,W,H*0.62);
+  // thin red rule left
+  ctx.fillStyle='#B0392B'; ctx.fillRect(Math.round(W*0.065),Math.round(H*0.08),3,Math.round(H*0.84));
+  // text block, bottom-left
+  const padX=W*0.075, padB=H*0.085, maxW=W-padX*2;
+  const tS=H*0.082, kS=H*0.024, sS=H*0.030;
+  const tF=`700 ${tS}px "Iowan Old Style",Georgia,serif`;
+  const kF=`700 ${kS}px "Iowan Old Style",Georgia,serif`;
+  const sF=`italic 400 ${sS}px "Iowan Old Style",Georgia,serif`;
+  const kicker=(elK.innerText||'').trim().toUpperCase();
+  const titleLines=wrap((elT.innerText||'').trim(),tF,maxW);
+  const sub=(elS.innerText||'').trim();
+  const lh=tS*1.12;
+  const blockH=(kicker?kS*2.0:0)+titleLines.length*lh+(sub?sS*1.7:0);
+  let y=H-padB-blockH; ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+  if(kicker){ ctx.font=kF; ctx.fillStyle='#8A6E2A';
+    ctx.save(); ctx.letterSpacing='2.5px'; ctx.fillText(kicker,padX,y+kS); ctx.restore(); y+=kS*2.0; }
+  ctx.font=tF; ctx.fillStyle='#241F12';
+  titleLines.forEach(ln=>{ ctx.fillText(ln,padX,y+tS*0.85); y+=lh; });
+  if(sub){ ctx.font=sF; ctx.fillStyle='#6B5C2A'; ctx.fillText(sub,padX,y+sS*0.9); }
+}
+document.getElementById('dl').onclick=()=>{ draw(); cv.toBlob(b=>{ const a=document.createElement('a');
+  const safe=((elT.innerText||'cover').trim().replace(/[^a-z0-9]+/gi,'-').toLowerCase().slice(0,40))||'cover';
+  a.href=URL.createObjectURL(b); a.download=`cover-${safe}.png`; a.click(); },'image/png'); };
+</script>
+</body>
+</html>
