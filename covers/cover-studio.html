@@ -28,6 +28,7 @@
   .scrim{position:absolute;left:0;right:0;bottom:0;height:62%;pointer-events:none;
     background:linear-gradient(to bottom,rgba(var(--cream),0) 0%,rgba(var(--cream),.72) 48%,rgba(var(--cream),.94) 100%)}
   .panel{display:none}
+  .band{display:none}
   .rule{position:absolute;top:8%;bottom:8%;left:6.5%;width:3px;background:var(--red)}
   .layer{position:absolute;inset:0;padding:7% 7.5%;display:flex;flex-direction:column;justify-content:flex-end}
 
@@ -77,6 +78,34 @@
   .preset-split .kicker{font-size:2.2cqh}
   .preset-split .sub{font-size:2.8cqh}
 
+  /* ── Band (solid bottom bar) ─────────────────────────────── */
+  .preset-band .scrim,.preset-band .rule{display:none}
+  .preset-band .band{display:block;position:absolute;left:0;right:0;bottom:0;height:38%;
+    background:rgba(var(--cream),.96);border-top:3px solid var(--gold)}
+  .preset-band .layer{padding:6% 7.5%}
+  .preset-band .title{font-size:7cqh}
+
+  /* ── Tag (filled badge) ──────────────────────────────────── */
+  .preset-tag .rule{display:none}
+  .preset-tag .kicker{display:inline-block;align-self:flex-start;background:var(--red);color:#fff;
+    padding:.45em .85em;border-radius:3px;letter-spacing:1.5px;margin-bottom:.7em}
+  .preset-tag .title{font-size:7.2cqh}
+
+  /* ── Boxed (framed card on image) ────────────────────────── */
+  .preset-boxed .scrim,.preset-boxed .rule{display:none}
+  .preset-boxed .layer{inset:auto;left:6%;bottom:8%;max-width:62%;
+    background:rgba(var(--cream),.92);border:2px solid var(--gold);padding:3% 3.5%}
+  .preset-boxed .title{font-size:6cqh}
+
+  /* ── Poster (oversized caps, centered) ───────────────────── */
+  .preset-poster .rule{display:none}
+  .preset-poster .scrim{top:0;height:100%;
+    background:linear-gradient(to bottom,rgba(var(--cream),.18) 0%,rgba(var(--cream),.5) 55%,rgba(var(--cream),.92) 100%)}
+  .preset-poster .kicker{display:none}
+  .preset-poster .layer{align-items:center;text-align:center;padding:7% 7%}
+  .preset-poster .title{font-size:10cqh;text-transform:uppercase;letter-spacing:1px;line-height:1.02}
+  .preset-poster .sub{text-align:center}
+
   [contenteditable]{outline:none;cursor:text}
   [contenteditable]:hover{box-shadow:0 0 0 2px rgba(176,57,43,.22);border-radius:2px}
   [contenteditable]:focus{box-shadow:0 0 0 2px rgba(176,57,43,.55);border-radius:2px}
@@ -102,6 +131,7 @@
   <div class="card preset-classic" id="card">
     <div class="scrim"></div>
     <div class="panel"></div>
+    <div class="band"></div>
     <div class="rule"></div>
     <div class="layer">
       <div class="kicker" id="kicker" contenteditable="true">THE PHILOSOPHER INVESTOR</div>
@@ -122,6 +152,10 @@
       <button data-preset="quote">Quote</button>
       <button data-preset="minimal">Minimal</button>
       <button data-preset="split">Split</button>
+      <button data-preset="band">Band</button>
+      <button data-preset="tag">Tag</button>
+      <button data-preset="boxed">Boxed</button>
+      <button data-preset="poster">Poster</button>
     </div>
   </div>
   <div class="segrow">
@@ -267,6 +301,71 @@ function draw(){
     ctx.font=fB(tS); ctx.fillStyle='#241F12';
     titleLines.forEach(ln=>{ ctx.fillText(ln,innerX,y+tS*0.85); y+=lh; });
     if(sub){ ctx.font=fI(sS); ctx.fillStyle='#6B5C2A'; ctx.fillText(sub,innerX,y+sS*1.1); }
+  }
+
+  else if(preset==='band'){
+    const bh=H*0.38, top=H-bh;
+    ctx.fillStyle=`rgba(${CR},.96)`; ctx.fillRect(0,top,W,bh);
+    ctx.fillStyle='#8A6E2A'; ctx.fillRect(0,top,W,3);
+    const maxW=W-padX*2, kS=H*0.024, tS=H*0.07, sS=H*0.030;
+    const titleLines=wrap(title,fB(tS),maxW), lh=tS*1.12;
+    const blockH=(kicker?kS*2.0:0)+titleLines.length*lh+(sub?sS*1.7:0);
+    let y=H-H*0.06-blockH;
+    if(kicker){ kickerAt(kicker,padX,y+kS,kS); y+=kS*2.0; }
+    ctx.font=fB(tS); ctx.fillStyle='#241F12';
+    titleLines.forEach(ln=>{ ctx.fillText(ln,padX,y+tS*0.85); y+=lh; });
+    if(sub){ ctx.font=fI(sS); ctx.fillStyle='#6B5C2A'; ctx.fillText(sub,padX,y+sS*0.9); }
+  }
+
+  else if(preset==='tag'){
+    bottomScrim(W,H);
+    const maxW=W-padX*2, kS=H*0.024, tS=H*0.072, sS=H*0.030;
+    const titleLines=wrap(title,fB(tS),maxW), lh=tS*1.12;
+    ctx.font=fB(kS); const kw=kicker?ctx.measureText(kicker).width:0;
+    const padP=kS*0.7, ph=kS*1.85, pw=kw+padP*2, gap=H*0.022;
+    const blockH=(kicker?ph+gap:0)+titleLines.length*lh+(sub?sS*1.7:0);
+    let y=H-padB-blockH;
+    if(kicker){ ctx.fillStyle='#B0392B'; ctx.beginPath(); ctx.roundRect(padX,y,pw,ph,4); ctx.fill();
+      ctx.font=fB(kS); ctx.fillStyle='#fff'; ctx.save(); ctx.letterSpacing='1.5px'; ctx.textBaseline='middle';
+      ctx.fillText(kicker,padX+padP,y+ph/2); ctx.restore(); ctx.textBaseline='alphabetic'; y+=ph+gap; }
+    ctx.font=fB(tS); ctx.fillStyle='#241F12';
+    titleLines.forEach(ln=>{ ctx.fillText(ln,padX,y+tS*0.85); y+=lh; });
+    if(sub){ ctx.font=fI(sS); ctx.fillStyle='#6B5C2A'; ctx.fillText(sub,padX,y+sS*0.9); }
+  }
+
+  else if(preset==='boxed'){
+    const kS=H*0.024, tS=H*0.06, sS=H*0.028, innerMax=W*0.52;
+    const titleLines=wrap(title,fB(tS),innerMax), lh=tS*1.14;
+    let tw=0;
+    ctx.font=fB(kS); if(kicker) tw=Math.max(tw,ctx.measureText(kicker).width);
+    ctx.font=fB(tS); titleLines.forEach(l=>tw=Math.max(tw,ctx.measureText(l).width));
+    ctx.font=fI(sS); if(sub) tw=Math.max(tw,ctx.measureText(sub).width);
+    const padBox=H*0.04;
+    const textH=(kicker?kS*1.9:0)+titleLines.length*lh+(sub?sS*1.7:0);
+    const boxW=Math.min(tw+padBox*2,W*0.66), boxH=textH+padBox*2;
+    const boxX=W*0.06, boxY=H-H*0.08-boxH;
+    ctx.fillStyle=`rgba(${CR},.92)`; ctx.fillRect(boxX,boxY,boxW,boxH);
+    ctx.strokeStyle='#8A6E2A'; ctx.lineWidth=2; ctx.strokeRect(boxX+1,boxY+1,boxW-2,boxH-2);
+    let x=boxX+padBox, y=boxY+padBox;
+    if(kicker){ kickerAt(kicker,x,y+kS,kS); y+=kS*1.9; }
+    ctx.font=fB(tS); ctx.fillStyle='#241F12';
+    titleLines.forEach(ln=>{ ctx.fillText(ln,x,y+tS*0.82); y+=lh; });
+    if(sub){ ctx.font=fI(sS); ctx.fillStyle='#6B5C2A'; ctx.fillText(sub,x,y+sS*0.9); }
+  }
+
+  else if(preset==='poster'){
+    const sc=ctx.createLinearGradient(0,0,0,H);
+    sc.addColorStop(0,`rgba(${CR},.18)`); sc.addColorStop(.55,`rgba(${CR},.5)`); sc.addColorStop(1,`rgba(${CR},.92)`);
+    ctx.fillStyle=sc; ctx.fillRect(0,0,W,H);
+    const maxW=W*0.86, tS=H*0.10, sS=H*0.032;
+    const titleLines=wrap(title.toUpperCase(),fB(tS),maxW), lh=tS*1.02;
+    const blockH=titleLines.length*lh+(sub?sS*1.9:0);
+    let y=H-padB-blockH; const cx=W/2; ctx.textAlign='center';
+    ctx.font=fB(tS); ctx.fillStyle='#241F12'; ctx.save(); ctx.letterSpacing='1px';
+    titleLines.forEach(ln=>{ ctx.fillText(ln,cx,y+tS*0.82); y+=lh; });
+    ctx.restore();
+    if(sub){ ctx.font=fI(sS); ctx.fillStyle='#6B5C2A'; ctx.fillText(sub,cx,y+sS*1.1); }
+    ctx.textAlign='left';
   }
 }
 
