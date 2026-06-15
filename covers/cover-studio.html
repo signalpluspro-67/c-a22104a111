@@ -106,13 +106,45 @@
   .preset-poster .title{font-size:10cqh;text-transform:uppercase;letter-spacing:1px;line-height:1.02}
   .preset-poster .sub{text-align:center}
 
+  /* ── Masthead (top brand bar) ────────────────────────────── */
+  .preset-masthead .rule{display:none}
+  .preset-masthead .kicker{position:absolute;top:0;left:0;right:0;margin:0;background:var(--accent);
+    color:#fff;text-align:center;padding:1.6% 0;letter-spacing:3px;font-size:2.4cqh}
+  .preset-masthead .layer{padding:7% 7.5%}
+  .preset-masthead .title{font-size:7.6cqh}
+
+  /* ── Sidebar (vertical brand strip) ──────────────────────── */
+  .preset-sidebar .rule{display:none}
+  .preset-sidebar .kicker{position:absolute;left:0;top:0;bottom:0;width:8%;margin:0;
+    background:var(--accent);color:#fff;writing-mode:vertical-rl;transform:rotate(180deg);
+    display:flex;align-items:center;justify-content:center;letter-spacing:3px;font-size:2.2cqh}
+  .preset-sidebar .layer{left:8%;padding:7% 6%}
+  .preset-sidebar .title{font-size:7cqh}
+
+  /* ── Headline (hairline rules above + below) ─────────────── */
+  .preset-headline .rule{display:none}
+  .preset-headline .scrim{top:0;height:100%;
+    background:linear-gradient(to bottom,rgba(var(--cream),0) 0%,rgba(var(--cream),.58) 35%,
+      rgba(var(--cream),.80) 50%,rgba(var(--cream),.58) 65%,rgba(var(--cream),0) 100%)}
+  .preset-headline .layer{justify-content:center;align-items:center;text-align:center;padding:7% 9%}
+  .preset-headline .kicker{font-size:2.4cqh}
+  .preset-headline .title{border-top:2px solid var(--gold);border-bottom:2px solid var(--gold);
+    padding:.35em .25em;font-size:6.8cqh}
+  .preset-headline .sub{text-align:center}
+
+  /* ── Frame (thin gold border) ────────────────────────────── */
+  .preset-frame .rule{display:none}
+  .preset-frame .band{display:block;position:absolute;inset:4%;border:2px solid var(--gold);pointer-events:none}
+  .preset-frame .layer{padding:9% 8.5%}
+
   [contenteditable]{outline:none;cursor:text}
   [contenteditable]:hover{box-shadow:0 0 0 2px rgba(176,57,43,.22);border-radius:2px}
   [contenteditable]:focus{box-shadow:0 0 0 2px rgba(176,57,43,.55);border-radius:2px}
 
   .bar{padding:4px 16px 22px}
   .segrow{margin:8px 0}
-  .seg{display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;vertical-align:middle}
+  .seg{display:inline-flex;flex-wrap:wrap;justify-content:center;max-width:96vw;
+    border:1px solid var(--border);border-radius:6px;overflow:hidden;vertical-align:middle}
   .seg button{border:0;background:#fff;padding:8px 14px;cursor:pointer;font-family:inherit;font-size:13px;color:var(--text)}
   .seg button.on{background:var(--accent);color:#fff}
   .lbl{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-right:8px;vertical-align:middle}
@@ -156,6 +188,10 @@
       <button data-preset="tag">Tag</button>
       <button data-preset="boxed">Boxed</button>
       <button data-preset="poster">Poster</button>
+      <button data-preset="masthead">Masthead</button>
+      <button data-preset="sidebar">Sidebar</button>
+      <button data-preset="headline">Headline</button>
+      <button data-preset="frame">Frame</button>
     </div>
   </div>
   <div class="segrow">
@@ -366,6 +402,72 @@ function draw(){
     ctx.restore();
     if(sub){ ctx.font=fI(sS); ctx.fillStyle='#6B5C2A'; ctx.fillText(sub,cx,y+sS*1.1); }
     ctx.textAlign='left';
+  }
+
+  else if(preset==='masthead'){
+    bottomScrim(W,H);
+    const mbH=H*0.10; ctx.fillStyle='#5C4F1A'; ctx.fillRect(0,0,W,mbH);
+    if(kicker){ ctx.fillStyle='#fff'; ctx.font=fB(H*0.026); ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.save(); ctx.letterSpacing='3px'; ctx.fillText(kicker,W/2,mbH/2); ctx.restore();
+      ctx.textAlign='left'; ctx.textBaseline='alphabetic'; }
+    const maxW=W-padX*2, tS=H*0.078, sS=H*0.030;
+    const titleLines=wrap(title,fB(tS),maxW), lh=tS*1.12;
+    const blockH=titleLines.length*lh+(sub?sS*1.7:0);
+    let y=H-padB-blockH;
+    ctx.font=fB(tS); ctx.fillStyle='#241F12';
+    titleLines.forEach(ln=>{ ctx.fillText(ln,padX,y+tS*0.85); y+=lh; });
+    if(sub){ ctx.font=fI(sS); ctx.fillStyle='#6B5C2A'; ctx.fillText(sub,padX,y+sS*0.9); }
+  }
+
+  else if(preset==='sidebar'){
+    bottomScrim(W,H);
+    const sw=W*0.08; ctx.fillStyle='#5C4F1A'; ctx.fillRect(0,0,sw,H);
+    if(kicker){ ctx.save(); ctx.translate(sw/2,H/2); ctx.rotate(-Math.PI/2);
+      ctx.fillStyle='#fff'; ctx.font=fB(H*0.024); ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.save(); ctx.letterSpacing='3px'; ctx.fillText(kicker,0,0); ctx.restore(); ctx.restore();
+      ctx.textAlign='left'; ctx.textBaseline='alphabetic'; }
+    const sx=sw+W*0.04, maxW=W-sx-W*0.06, tS=H*0.072, sS=H*0.030;
+    const titleLines=wrap(title,fB(tS),maxW), lh=tS*1.12;
+    const blockH=titleLines.length*lh+(sub?sS*1.7:0);
+    let y=H-padB-blockH;
+    ctx.font=fB(tS); ctx.fillStyle='#241F12';
+    titleLines.forEach(ln=>{ ctx.fillText(ln,sx,y+tS*0.85); y+=lh; });
+    if(sub){ ctx.font=fI(sS); ctx.fillStyle='#6B5C2A'; ctx.fillText(sub,sx,y+sS*0.9); }
+  }
+
+  else if(preset==='headline'){
+    const sc=ctx.createLinearGradient(0,0,0,H);
+    sc.addColorStop(0,`rgba(${CR},0)`); sc.addColorStop(.35,`rgba(${CR},.58)`);
+    sc.addColorStop(.5,`rgba(${CR},.80)`); sc.addColorStop(.65,`rgba(${CR},.58)`); sc.addColorStop(1,`rgba(${CR},0)`);
+    ctx.fillStyle=sc; ctx.fillRect(0,0,W,H);
+    const maxW=W*0.82, kS=H*0.024, tS=H*0.068, sS=H*0.030, rpad=H*0.03;
+    const titleLines=wrap(title,fB(tS),maxW), lh=tS*1.1;
+    let tw=0; ctx.font=fB(tS); titleLines.forEach(l=>tw=Math.max(tw,ctx.measureText(l).width));
+    const ruleW=Math.min(tw+H*0.08,W*0.86);
+    const titleH=titleLines.length*lh;
+    const blockH=(kicker?kS*1.8:0)+rpad+2+titleH+rpad+2+(sub?sS*1.9:0);
+    let y=(H-blockH)/2; const cx=W/2; ctx.textAlign='center';
+    if(kicker){ ctx.font=fB(kS); ctx.fillStyle='#8A6E2A'; ctx.save(); ctx.letterSpacing='2.5px';
+      ctx.fillText(kicker,cx,y+kS); ctx.restore(); y+=kS*1.8; }
+    ctx.fillStyle='#8A6E2A'; ctx.fillRect(cx-ruleW/2,y,ruleW,2); y+=2+rpad;
+    ctx.font=fB(tS); ctx.fillStyle='#241F12';
+    titleLines.forEach(ln=>{ ctx.fillText(ln,cx,y+tS*0.82); y+=lh; });
+    y+=rpad; ctx.fillStyle='#8A6E2A'; ctx.fillRect(cx-ruleW/2,y,ruleW,2); y+=2;
+    if(sub){ ctx.font=fI(sS); ctx.fillStyle='#6B5C2A'; ctx.fillText(sub,cx,y+sS*1.4); }
+    ctx.textAlign='left';
+  }
+
+  else if(preset==='frame'){
+    bottomScrim(W,H);
+    ctx.strokeStyle='#8A6E2A'; ctx.lineWidth=2; ctx.strokeRect(W*0.04,H*0.04,W*0.92,H*0.92);
+    const px=W*0.085, pb=H*0.10, maxW=W-px*2, kS=H*0.024, tS=H*0.072, sS=H*0.030;
+    const titleLines=wrap(title,fB(tS),maxW), lh=tS*1.12;
+    const blockH=(kicker?kS*2.0:0)+titleLines.length*lh+(sub?sS*1.7:0);
+    let y=H-pb-blockH;
+    if(kicker){ kickerAt(kicker,px,y+kS,kS); y+=kS*2.0; }
+    ctx.font=fB(tS); ctx.fillStyle='#241F12';
+    titleLines.forEach(ln=>{ ctx.fillText(ln,px,y+tS*0.85); y+=lh; });
+    if(sub){ ctx.font=fI(sS); ctx.fillStyle='#6B5C2A'; ctx.fillText(sub,px,y+sS*0.9); }
   }
 }
 
