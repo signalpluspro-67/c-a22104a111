@@ -1,0 +1,238 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Data Center Pivot Behind the Bitcoin Miner — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Data Center Pivot Behind the Bitcoin Miner</h1>
+<div class="subtitle">IREN is selling power as compute, and the pullback hands you a cleaner entry than the chase.</div>
+<div class="meta">EOD 2026-06-18 · IREN · written from the desk · model claude-opus-4-8</div>
+<div class="chips"><span class="chip">IREN</span>
+<span class="chip">Financial Services</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-06-18: entry <b>$60.09</b> &rarr; <b>$59.11</b> (as of 2026-06-22) · <span class="neg">-1.6%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>The real trade in crypto right now is power, and IREN sits on the right side of it. The market keeps pricing these companies as bitcoin miners, but the smarter read is that they are merchant data center operators who happen to own cheap, scaled electrical infrastructure. That infrastructure is the scarce asset. Bitcoin is one way to monetize it. High-density compute is another.</p>
+<p>The theme is hot, and that cuts both ways. Crypto is one of the strongest momentum trades on the board, and IREN beats the broad market by <strong>+31.2%</strong> over the last three months. Strength like that pulls capital in fast. It also means the name moves with bitcoin sentiment and with the broader financials complex, so the same flow that lifted it can reverse it.</p>
+<p>Here is the caution flag you cannot ignore. The sector this name screens into, Financial Services, is reading EXHAUSTED with NEUTRAL acceleration. That is not a reason to avoid the trade. It is a reason to size it for what it is: a momentum dip-buy inside a tired sector, where the move higher carries less tailwind from the group than it did a quarter ago.</p>
+<p>A backdrop like this rewards the operator with the lowest power cost and the most flexible deployment. You want the company that can shift watts between bitcoin and AI compute as the economics change. IREN is built for exactly that, and the recent pullback gives you a shot at owning it without paying the top tick.</p>
+<h2>Introducing $IREN</h2>
+<p>IREN Limited runs a vertically integrated data center business across Australia and Canada. The company owns the electrical infrastructure, owns the computing hardware, and operates the facilities directly. It started life as Iris Energy and rebranded to IREN in November 2024, a name change that hints at the wider ambition beyond a single use case.</p>
+<p>The core operation today is bitcoin mining. The company runs a fleet of machines that secure the bitcoin network and earn block rewards. That business throws off real cash when bitcoin holds up, and it is the reason the stock trades with crypto as a primary driver.</p>
+<p>The more interesting layer is the data center footprint itself. Owning the power contracts and the buildings means IREN can pivot capacity toward high-density compute, the kind of workload that AI demand is starving for. The market is slowly waking up to the idea that these power-rich sites are worth more than their mining output alone. With <strong>257</strong> employees running over <strong>21 billion</strong> dollars of market value, this is a capital-heavy, lean-headcount operation where the assets do the work.</p>
+<h2>The Thesis</h2>
+<p>The call is straightforward: buy the dip, not the chase. IREN has pulled back <strong>21.4%</strong> from its 52-week high while holding above a rising long-term trend line. The stock is up <strong>25.9%</strong> over the last month and <strong>44.2%</strong> over the last three, and it still beats the market by <strong>+31.2%</strong> over that span. You have strength that took a breather, not strength that broke.</p>
+<p>The reward case is the gap back toward the prior high. From the <strong>60.09</strong> entry, the path to the <strong>77.31</strong> target is <strong>+28.7%</strong>, and a stretch run to <strong>85.92</strong> is <strong>+43.0%</strong>. That <strong>21.4%</strong> of open air between here and the old high is the cleanest part of this setup. You are buying a name that already proved it can trade at those levels, so the upside is a return trip, not a leap into new territory.</p>
+<p>Conviction here is MEDIUM, and you should treat it that way. The dip-buy is the part of this setup you trust. Chasing the same name on a breakout is the part you do not. Size it as a momentum position inside a tired sector, with a hard line in the sand below. This is a trade you take with a defined stop and a willingness to be wrong cheaply.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-06-18-IREN.png" alt="IREN weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=IREN&interval=1W" target="_blank" rel="noopener">📈 Open the IREN weekly chart on TradingView ↗</a><figcaption>IREN weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $77.31 · mark support near $48.61.</figcaption></figure>
+<p>The trend structure is intact and that is what earns the entry. IREN trades above its 30-week trend line, and that line is sloping up at <strong>2.0%</strong>, so the longer arc still points higher. The last close of <strong>59.11</strong> sits <strong>21.4%</strong> below the <strong>76.87</strong> high, which is exactly the pullback depth that lets you buy strength on sale rather than on the high.</p>
+<p>Momentum has cooled to neutral, which is the point. RSI sits at <strong>53.3</strong>, right in the middle of the range, neither overbought nor washed out. That tells you the stock burned off its near-term excess without breaking the larger uptrend. The price holds in the upper third of its one-year range, closer to the high than the low, with a violent <strong>+575.9%</strong> distance from the <strong>9.52</strong> floor that shows you how far this name has already run.</p>
+<p>The levels do the talking. Entry is <strong>60.09</strong>. The stop is <strong>48.61</strong>, which is <strong>19.1%</strong> of downside and sits below the structure that has supported the recent advance. The first target is <strong>77.31</strong>, just under the prior high, for <strong>+28.7%</strong>. With an average true range of <strong>5.74</strong>, daily swings of five to six dollars are normal, so the <strong>48.61</strong> stop gives the trade room to breathe without getting shaken out on noise.</p>
+<p>Volume is the confirmation you want to watch. A push back toward <strong>77.31</strong> on rising volume validates the dip-buy. A drift higher on thinning participation is the warning that the bounce is running out of buyers.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$21.43B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$23.18B</td></tr><tr><td class="k">52-week range</td><td class="v">$9.52 - $76.87</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">4.23</td></tr><tr><td class="k">Trailing P/E</td><td class="v">77.9</td></tr><tr><td class="k">Forward P/E</td><td class="v">-63.8</td></tr><tr><td class="k">Price / sales</td><td class="v">28.3</td></tr><tr><td class="k">Price / book</td><td class="v">7.7</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$757M  (+0.0% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$2.65</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$158M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">0.77 / -0.94</td></tr><tr><td class="k">Gross margin</td><td class="v">68.4%</td></tr><tr><td class="k">Operating margin</td><td class="v">-64.5%</td></tr><tr><td class="k">Profit margin</td><td class="v">20.9%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$1.10</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$-6.47</td></tr><tr><td class="k">Total cash / share</td><td class="v">$6.19</td></tr><tr><td class="k">Debt / equity</td><td class="v">1.49</td></tr><tr><td class="k">Current ratio</td><td class="v">3.72</td></tr><tr><td class="k">Return on equity</td><td class="v">7.7%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">buy - mean target $80.93 (15 analysts)</td></tr></tbody></table>
+<p>The profitability picture is genuinely split, and you need to hold both halves in your head. Those numbers say the mining business converts to real cash when the cycle cooperates.</p>
+<p>Then you hit the build-out. That is the cost of constructing data center capacity at scale. The company is plowing cash into infrastructure, and the forward earnings estimate of <strong>-0.94</strong> per share tells you the street expects that spending to weigh on reported profit near term. This is the honest weak spot: you are paying up for an asset base that is not yet earning its full return.</p>
+<p>The balance sheet can carry it, with a caveat. The current ratio is <strong>3.72</strong> and the quick ratio is <strong>3.50</strong>, so near-term liquidity is healthy, and cash per share sits at <strong>6.19</strong> dollars. Against that, total debt is <strong>3.96 billion</strong> dollars and debt to equity is <strong>1.49</strong>, so the financing is real and the trade is sensitive to capital markets staying open and friendly.</p>
+<p>Valuation leaves no margin for error. Price to sales is <strong>28.3</strong> and price to book is <strong>7.7</strong>, rich multiples that only make sense if the data center pivot pays off. The trailing P/E of <strong>77.9</strong> prices in growth, not the present. The fifteen analysts covering it land on a buy with a mean target of <strong>80.93</strong>, above both the <strong>77.31</strong> first target and the current price, which lines the street up with the upside case. The beta of <strong>4.23</strong> is the number that should size your position: this stock moves more than four times the market, so a small position here behaves like a large one anywhere else.</p>
+<h2>Why Now</h2>
+<p>The timing rests on the chart, not on an event. There is no near-term catalyst in the window. Earnings sit <strong>70</strong> days out, well outside the holding period for this trade, so you are not buying ahead of a print. The reason to act is the technical reset: a strong name that pulled back <strong>21.4%</strong>, held its rising trend line, and cooled its momentum to neutral. That combination is the setup, and it expires if the stock either breaks down or runs away.</p>
+<p>The macro tailwind is the crypto theme itself, which remains one of the leading momentum trades. As long as bitcoin sentiment holds and the AI-compute demand story keeps drawing attention to power-rich operators, IREN stays in the spotlight. The risk-adjusted attraction is that you are entering after a cooldown, so you are not paying the premium that a fresh breakout would demand.</p>
+<p>Options flow is mixed and worth reading honestly. But the dollars tell a different story: call premium of <strong>37.65 million</strong> topped put premium of <strong>24.58 million</strong>. More money paid for upside, more contracts bought for protection. That is a market split between traders positioning for a move back toward the high and others paying for downside insurance, exactly the two-sided posture you expect after a sharp pullback.</p>
+<h2>Risk Factors</h2>
+<p>The theme that lifts this stock is the same one that can sink it. IREN rides crypto sentiment and trades inside the financials complex. A bitcoin selloff or a rollover in the broader group takes it down fast, and the beta of <strong>4.23</strong> means it falls harder than the market on the way out. This is the dominant risk, and it is not one you can hedge away inside the position.</p>
+<p>The sector signal is already flashing yellow. The Financial Services group reads EXHAUSTED with NEUTRAL acceleration, so the group tailwind that powered the last leg has faded. A momentum dip-buy works best when the sector is pushing with you. Here it is not, which is the single biggest reason conviction is MEDIUM and not higher.</p>
+<p>The fundamental risk is the cash burn. With <strong>3.96 billion</strong> dollars of debt and a <strong>1.49</strong> debt-to-equity ratio, a tighter financing environment would hit this name harder than a debt-light peer.</p>
+<p>The invalidation is clean and you should respect it. The line is <strong>48.61</strong>. A close below it means the dip-buy thesis is wrong, the rising trend line has failed, and you are out for a <strong>19.1%</strong> loss. That is the cost of being wrong, defined in advance. Timing risk is low in one sense, since there is no catalyst to gap against, but high in another: with no event to force the move, the trade can simply chop and tie up capital while the sector exhaustion plays out.</p>
+<h2>Bringing It All Together</h2>
+<p>- <strong>Dual focus:</strong> a bitcoin miner sitting on power-rich data center assets it can pivot toward high-density compute, with <strong>68.4%</strong> gross margins on the core operation.<br>- <strong>Market need:</strong> the energy-to-compute trade rewards operators with cheap, scaled electrical infrastructure, and IREN owns it outright across Australia and Canada.</p>
+<p>- <strong>Setup:</strong> a <strong>21.4%</strong> pullback held above a rising trend line that slopes up <strong>2.0%</strong>, with RSI reset to a neutral <strong>53.3</strong> and <strong>+31.2%</strong> outperformance over three months still intact.<br>- <strong>Levels:</strong> enter <strong>60.09</strong>, stop <strong>48.61</strong> for <strong>19.1%</strong> of risk, first target <strong>77.31</strong> for <strong>+28.7%</strong>, stretch to <strong>85.92</strong> for <strong>+43.0%</strong>, against a <strong>15</strong>-analyst mean target of <strong>80.93</strong>.</p>
+<h2>Conclusion</h2>
+<p>You buy this one as a momentum dip-buy with a hard stop, and you keep the size honest. The reward case is real: <strong>21.4%</strong> of open room back toward the <strong>76.87</strong> high, a rising trend line under price, and a street that targets <strong>80.93</strong> above where it trades today. The setup is clean enough to act on at <strong>60.09</strong>.</p>
+<p>The reasons to stay disciplined are just as concrete. That mix is why this is a MEDIUM conviction trade, sized for a stock that swings hard, with the exit pre-set at <strong>48.61</strong>. Own the pullback, define the loss, and let the <strong>77.31</strong> target prove or break the thesis.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;IREN Limited (IREN) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $21.43B; 52-week range $10-$77; Revenue $757M +0% YoY; Net income $158M; Free cash flow/share $-6.47; Debt-to-equity 1.49; Return on equity 8%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for IREN Limited (IREN) inside the Financial Services space, specifically the &quot;Crypto&quot; theme. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): IREN pulled back **21.4%** from its high while staying above a rising 30-week trend line, and it beats SPY by **+31.2%** over three months. The valid signal is the dip-buy (a proprietary desk read, risk-adjusted return **1.10**, tested); th. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Data Center Pivot Behind the Bitcoin Miner
+
+*IREN is selling power as compute, and the pullback hands you a cleaner entry than the chase.*
+
+## The Big Picture
+
+The real trade in crypto right now is power, and IREN sits on the right side of it. The market keeps pricing these companies as bitcoin miners, but the smarter read is that they are merchant data center operators who happen to own cheap, scaled electrical infrastructure. That infrastructure is the scarce asset. Bitcoin is one way to monetize it. High-density compute is another.
+
+The theme is hot, and that cuts both ways. Crypto is one of the strongest momentum trades on the board, and IREN beats the broad market by **+31.2%** over the last three months. Strength like that pulls capital in fast. It also means the name moves with bitcoin sentiment and with the broader financials complex, so the same flow that lifted it can reverse it.
+
+Here is the caution flag you cannot ignore. The sector this name screens into, Financial Services, is reading EXHAUSTED with NEUTRAL acceleration. That is not a reason to avoid the trade. It is a reason to size it for what it is: a momentum dip-buy inside a tired sector, where the move higher carries less tailwind from the group than it did a quarter ago.
+
+A backdrop like this rewards the operator with the lowest power cost and the most flexible deployment. You want the company that can shift watts between bitcoin and AI compute as the economics change. IREN is built for exactly that, and the recent pullback gives you a shot at owning it without paying the top tick.
+
+## Introducing $IREN
+
+IREN Limited runs a vertically integrated data center business across Australia and Canada. The company owns the electrical infrastructure, owns the computing hardware, and operates the facilities directly. It started life as Iris Energy and rebranded to IREN in November 2024, a name change that hints at the wider ambition beyond a single use case.
+
+The core operation today is bitcoin mining. The company runs a fleet of machines that secure the bitcoin network and earn block rewards. That business throws off real cash when bitcoin holds up, and it is the reason the stock trades with crypto as a primary driver.
+
+The more interesting layer is the data center footprint itself. Owning the power contracts and the buildings means IREN can pivot capacity toward high-density compute, the kind of workload that AI demand is starving for. The market is slowly waking up to the idea that these power-rich sites are worth more than their mining output alone. With **257** employees running over **21 billion** dollars of market value, this is a capital-heavy, lean-headcount operation where the assets do the work.
+
+## The Thesis
+
+The call is straightforward: buy the dip, not the chase. IREN has pulled back **21.4%** from its 52-week high while holding above a rising long-term trend line. The stock is up **25.9%** over the last month and **44.2%** over the last three, and it still beats the market by **+31.2%** over that span. You have strength that took a breather, not strength that broke.
+
+The reward case is the gap back toward the prior high. From the **60.09** entry, the path to the **77.31** target is **+28.7%**, and a stretch run to **85.92** is **+43.0%**. That **21.4%** of open air between here and the old high is the cleanest part of this setup. You are buying a name that already proved it can trade at those levels, so the upside is a return trip, not a leap into new territory.
+
+Conviction here is MEDIUM, and you should treat it that way. The dip-buy is the part of this setup you trust. Chasing the same name on a breakout is the part you do not. Size it as a momentum position inside a tired sector, with a hard line in the sand below. This is a trade you take with a defined stop and a willingness to be wrong cheaply.
+
+## Technical Analysis
+
+&gt; 📈 Insert the IREN weekly chart here (TradingView): IREN weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $77.31 · mark support near $48.61.
+
+The trend structure is intact and that is what earns the entry. IREN trades above its 30-week trend line, and that line is sloping up at **2.0%**, so the longer arc still points higher. The last close of **59.11** sits **21.4%** below the **76.87** high, which is exactly the pullback depth that lets you buy strength on sale rather than on the high.
+
+Momentum has cooled to neutral, which is the point. RSI sits at **53.3**, right in the middle of the range, neither overbought nor washed out. That tells you the stock burned off its near-term excess without breaking the larger uptrend. The price holds in the upper third of its one-year range, closer to the high than the low, with a violent **+575.9%** distance from the **9.52** floor that shows you how far this name has already run.
+
+The levels do the talking. Entry is **60.09**. The stop is **48.61**, which is **19.1%** of downside and sits below the structure that has supported the recent advance. The first target is **77.31**, just under the prior high, for **+28.7%**. With an average true range of **5.74**, daily swings of five to six dollars are normal, so the **48.61** stop gives the trade room to breathe without getting shaken out on noise.
+
+Volume is the confirmation you want to watch. A push back toward **77.31** on rising volume validates the dip-buy. A drift higher on thinning participation is the warning that the bounce is running out of buyers.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $21.43B |
+| Enterprise value | $23.18B |
+| 52-week range | $9.52 - $76.87 |
+| Dividend yield | None |
+| Beta | 4.23 |
+| Trailing P/E | 77.9 |
+| Forward P/E | -63.8 |
+| Price / sales | 28.3 |
+| Price / book | 7.7 |
+| Revenue (TTM) | $757M  (+0.0% YoY) |
+| Revenue / share | $2.65 |
+| Net income (TTM) | $158M |
+| EPS (TTM / fwd) | 0.77 / -0.94 |
+| Gross margin | 68.4% |
+| Operating margin | -64.5% |
+| Profit margin | 20.9% |
+| Operating cash flow / share | $1.10 |
+| Free cash flow / share | $-6.47 |
+| Total cash / share | $6.19 |
+| Debt / equity | 1.49 |
+| Current ratio | 3.72 |
+| Return on equity | 7.7% |
+| Analyst consensus | buy - mean target $80.93 (15 analysts) |
+
+The profitability picture is genuinely split, and you need to hold both halves in your head. Those numbers say the mining business converts to real cash when the cycle cooperates.
+
+Then you hit the build-out. That is the cost of constructing data center capacity at scale. The company is plowing cash into infrastructure, and the forward earnings estimate of **-0.94** per share tells you the street expects that spending to weigh on reported profit near term. This is the honest weak spot: you are paying up for an asset base that is not yet earning its full return.
+
+The balance sheet can carry it, with a caveat. The current ratio is **3.72** and the quick ratio is **3.50**, so near-term liquidity is healthy, and cash per share sits at **6.19** dollars. Against that, total debt is **3.96 billion** dollars and debt to equity is **1.49**, so the financing is real and the trade is sensitive to capital markets staying open and friendly.
+
+Valuation leaves no margin for error. Price to sales is **28.3** and price to book is **7.7**, rich multiples that only make sense if the data center pivot pays off. The trailing P/E of **77.9** prices in growth, not the present. The fifteen analysts covering it land on a buy with a mean target of **80.93**, above both the **77.31** first target and the current price, which lines the street up with the upside case. The beta of **4.23** is the number that should size your position: this stock moves more than four times the market, so a small position here behaves like a large one anywhere else.
+
+## Why Now
+
+The timing rests on the chart, not on an event. There is no near-term catalyst in the window. Earnings sit **70** days out, well outside the holding period for this trade, so you are not buying ahead of a print. The reason to act is the technical reset: a strong name that pulled back **21.4%**, held its rising trend line, and cooled its momentum to neutral. That combination is the setup, and it expires if the stock either breaks down or runs away.
+
+The macro tailwind is the crypto theme itself, which remains one of the leading momentum trades. As long as bitcoin sentiment holds and the AI-compute demand story keeps drawing attention to power-rich operators, IREN stays in the spotlight. The risk-adjusted attraction is that you are entering after a cooldown, so you are not paying the premium that a fresh breakout would demand.
+
+Options flow is mixed and worth reading honestly. But the dollars tell a different story: call premium of **37.65 million** topped put premium of **24.58 million**. More money paid for upside, more contracts bought for protection. That is a market split between traders positioning for a move back toward the high and others paying for downside insurance, exactly the two-sided posture you expect after a sharp pullback.
+
+## Risk Factors
+
+The theme that lifts this stock is the same one that can sink it. IREN rides crypto sentiment and trades inside the financials complex. A bitcoin selloff or a rollover in the broader group takes it down fast, and the beta of **4.23** means it falls harder than the market on the way out. This is the dominant risk, and it is not one you can hedge away inside the position.
+
+The sector signal is already flashing yellow. The Financial Services group reads EXHAUSTED with NEUTRAL acceleration, so the group tailwind that powered the last leg has faded. A momentum dip-buy works best when the sector is pushing with you. Here it is not, which is the single biggest reason conviction is MEDIUM and not higher.
+
+The fundamental risk is the cash burn. With **3.96 billion** dollars of debt and a **1.49** debt-to-equity ratio, a tighter financing environment would hit this name harder than a debt-light peer.
+
+The invalidation is clean and you should respect it. The line is **48.61**. A close below it means the dip-buy thesis is wrong, the rising trend line has failed, and you are out for a **19.1%** loss. That is the cost of being wrong, defined in advance. Timing risk is low in one sense, since there is no catalyst to gap against, but high in another: with no event to force the move, the trade can simply chop and tie up capital while the sector exhaustion plays out.
+
+## Bringing It All Together
+
+- **Dual focus:** a bitcoin miner sitting on power-rich data center assets it can pivot toward high-density compute, with **68.4%** gross margins on the core operation.
+- **Market need:** the energy-to-compute trade rewards operators with cheap, scaled electrical infrastructure, and IREN owns it outright across Australia and Canada.
+
+- **Setup:** a **21.4%** pullback held above a rising trend line that slopes up **2.0%**, with RSI reset to a neutral **53.3** and **+31.2%** outperformance over three months still intact.
+- **Levels:** enter **60.09**, stop **48.61** for **19.1%** of risk, first target **77.31** for **+28.7%**, stretch to **85.92** for **+43.0%**, against a **15**-analyst mean target of **80.93**.
+
+## Conclusion
+
+You buy this one as a momentum dip-buy with a hard stop, and you keep the size honest. The reward case is real: **21.4%** of open room back toward the **76.87** high, a rising trend line under price, and a street that targets **80.93** above where it trades today. The setup is clean enough to act on at **60.09**.
+
+The reasons to stay disciplined are just as concrete. That mix is why this is a MEDIUM conviction trade, sized for a stock that swings hard, with the exit pre-set at **48.61**. Own the pullback, define the loss, and let the **77.31** target prove or break the thesis.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

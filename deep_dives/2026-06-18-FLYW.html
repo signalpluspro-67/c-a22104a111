@@ -1,0 +1,236 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Plumbing Behind Cross-Border Money — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Plumbing Behind Cross-Border Money</h1>
+<div class="subtitle">A profitable payments small cap pulls back into a rising trend while the rest of tech runs out of breath.</div>
+<div class="meta">EOD 2026-06-18 · FLYW · written from the desk · model claude-opus-4-8</div>
+<div class="chips"><span class="chip">FLYW</span>
+<span class="chip">Technology</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-06-18: entry <b>$15.45</b> &rarr; <b>$15.54</b> (as of 2026-06-22) · <span class="pos">+0.6%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>The money behind a foreign tuition bill, a medical procedure abroad, or a business invoice across two currencies has to move through pipes that most people never see. Those pipes are getting rebuilt. Legacy bank wires are slow, opaque, and expensive, and the verticals that lean on them the hardest (education, healthcare, travel, B2B) are exactly where a software-led payment network can take share.</p>
+<p>This is a structural shift, not a cycle. Cross-border volume keeps growing, the payers keep demanding the same checkout experience they get from a consumer app, and the institutions on the other side want reconciliation that closes itself. A network that sits inside the existing workflow and clears the payment, the FX, and the bookkeeping in one motion earns a toll on a rising tide.</p>
+<p>Yet the tape around it is tired. The Technology sector reads <strong>EXHAUSTED</strong> on momentum, the late-cycle phase where the strongest move is already behind the broad market. That backdrop punishes generic chasing. It rewards a different thing: a profitable, cash-generative name that already pulled back, already proved its trend, and now offers you a defined entry instead of a moonshot.</p>
+<p>That is the setup in front of you here.</p>
+<h2>Introducing $FLYW</h2>
+<p>Flywire Corporation is a payment enablement and software company headquartered in Boston. It runs a platform that drops into an institution&#x27;s existing apps and workflows and handles tailored invoicing, settlement, reconciliation, single sign-on checkout, recurring payments, and split payouts. The point is to make a complicated cross-border payment feel like a normal one.</p>
+<p>Underneath sits a payment network with direct connections to banks, third-party processors, digital wallets, and alternative methods like Alipay, Boleto, PayPal, Venmo, and Trustly. On top sits vertical-specific software with industry workflows, real-time access, and predictive analytics. Flywire serves four verticals it knows deeply: education, healthcare, travel, and B2B.</p>
+<p>The edge is the combination. Plenty of firms move money. Flywire moves it AND embeds the software that the institution uses to bill, collect, and reconcile, which raises switching costs and turns a one-time processor into recurring plumbing.</p>
+<h2>The Thesis</h2>
+<p>You are buying a clean pullback in a name that already earned its trend. Flywire trades <strong>12.9%</strong> below its 52-week high, holds above a rising 30-week trend line whose slope reads <strong>+3.8%</strong>, and has beaten the broad market by <strong>+16.9%</strong> over the last three months. Over 63 sessions the stock is up <strong>+29.9%</strong> in absolute terms. That is leadership, then a controlled breather, not a breakdown.</p>
+<p>The read on momentum is mid-range, which is the part that matters. A relative-strength reading of <strong>53.7</strong> sits in the middle of its band, neither stretched at the top nor washed out at the bottom. That is the spot where a dip into a live uptrend tends to resolve back up rather than roll over. You get the trend on your side and the entry price below the recent peak.</p>
+<p>Conviction here is MEDIUM, and you should size it that way. The read is genuine but it is one read, not a stack of confirmations. The reward-to-risk is <strong>1.5</strong>, decent rather than spectacular. This earns a starter-sized position with a hard line in the sand, not a full swing.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-06-18-FLYW.png" alt="FLYW weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=FLYW&interval=1W" target="_blank" rel="noopener">📈 Open the FLYW weekly chart on TradingView ↗</a><figcaption>FLYW weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $17.70 · mark support near $13.95.</figcaption></figure>
+<p>The trend structure is intact and the chart is doing the work. Price closed at <strong>15.54</strong>, holding above a 30-week line that is rising at <strong>+3.8%</strong>, so the long-term tape is up and the recent dip is happening inside that uptrend. The stock sits at <strong>86.1%</strong> of its 52-week high and <strong>68.5%</strong> of the way up its yearly range, which tells you it pulled back from strength rather than collapsing from a top.</p>
+<p>The reference levels frame the trade. Entry is <strong>15.45</strong>, the stop is <strong>13.95</strong>, and the first target is <strong>17.70</strong>, with a stretch objective at <strong>18.82</strong>. That puts your risk to the stop at <strong>9.7%</strong> and your reward to the first target at <strong>14.6%</strong>, <strong>21.8%</strong> if the stretch level prints. The <strong>13.95</strong> stop is the whole thesis in one number: a daily close beneath it says the pullback became a downtrend and you are wrong.</p>
+<p>The <strong>15.45</strong> to <strong>17.70</strong> band is your working zone, and the <strong>18.05</strong> prior high is the lid that needs to give way for the stretch case. Average true range is <strong>0.75</strong>, so a normal day moves the stock about three quarters of a point, and the <strong>9.7%</strong> distance to your stop is roughly two of those ranges. That is enough room to survive noise without inviting a slow bleed.</p>
+<p>Relative strength against the market at <strong>+16.9%</strong> over three months is the signal underneath the price, and it is the one to watch. As long as Flywire keeps outperforming a tired tech tape on the way back up, the dip-buy stays valid. The reading that flips this is simple: lose <strong>13.95</strong> on a close and the structure breaks.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$1.96B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$1.63B</td></tr><tr><td class="k">52-week range</td><td class="v">$10.09 - $18.05</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">1.34</td></tr><tr><td class="k">Trailing P/E</td><td class="v">66.0</td></tr><tr><td class="k">Forward P/E</td><td class="v">12.6</td></tr><tr><td class="k">Price / sales</td><td class="v">2.9</td></tr><tr><td class="k">Price / book</td><td class="v">2.3</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$678M  (+41.0% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$5.55</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$30M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">0.24 / 1.25</td></tr><tr><td class="k">Gross margin</td><td class="v">60.6%</td></tr><tr><td class="k">Operating margin</td><td class="v">6.4%</td></tr><tr><td class="k">Profit margin</td><td class="v">4.5%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$1.36</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$1.32</td></tr><tr><td class="k">Total cash / share</td><td class="v">$2.63</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.0</td></tr><tr><td class="k">Current ratio</td><td class="v">1.75</td></tr><tr><td class="k">Return on equity</td><td class="v">3.7%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">buy - mean target $19.00 (13 analysts)</td></tr></tbody></table>
+<p>The business is growing fast and, rare for a payments small cap, it already makes money on a cash basis. That growth rate is the headline. A network compounding north of <strong>40%</strong> while holding sixty-cent gross margins is doing exactly what the cross-border thesis requires.</p>
+<p>Cash generation is the quieter strength. This company is not one capital raise away from trouble.</p>
+<p>The weak spot is the bottom line and the multiple you pay for it. Net income is <strong>$30.18M</strong> on a <strong>4.5%</strong> profit margin, with operating margin at <strong>6.4%</strong> and return on equity a thin <strong>3.7%</strong>. The trailing price-to-earnings sits at <strong>66.0</strong>, which looks expensive until you see the forward figure of <strong>12.6</strong> as the Street models earnings per share jumping from <strong>0.24</strong> trailing to <strong>1.25</strong> forward. You are paying up for growth and trusting that operating leverage shows up. Thirteen analysts rate it a buy with a mean target of <strong>19.0</strong>.</p>
+<h2>Why Now</h2>
+<p>The timing is a technical pullback, not an event trade, and you should treat it that way. The next earnings report is roughly <strong>42</strong> days out in early August, well outside any near-term window, so there is no scheduled catalyst pulling the stock in the next two weeks. Web checks turned up no downgrade, no offering, and no guidance cut. The recent analyst flow has been positive.</p>
+<p>That absence of a catalyst is a feature for this kind of setup. You are not paying for an event. You are buying a name that already moved <strong>+29.9%</strong> over three months, gave back <strong>2.4%</strong> over the last month, and now offers entry below its high while the 30-week trend keeps rising. The edge is the price location, not a headline.</p>
+<p>Options flow is light and offers little to lean on. The most recent session printed <strong>279</strong> call contracts against <strong>0</strong> puts, with call premium of just <strong>$0.07M</strong>. That is a small, one-sided footprint, mildly constructive but too thin to call positioning. The macro backdrop is the live tailwind and the live tension at once: a broadly bullish market gives the trade a tape to work in, while the Technology sector&#x27;s <strong>EXHAUSTED</strong> momentum is the reason you keep the size modest.</p>
+<h2>Risk Factors</h2>
+<p>The cleanest way this loses money is a tech pullback dragging a high-beta payments name down with it. Flywire carries a beta of <strong>1.34</strong>, so it amplifies market moves, and it sits inside a sector that already reads <strong>EXHAUSTED</strong>. When the leaders that drove the tape finally rest, a small cap like this rarely escapes the gravity.</p>
+<p>The second risk is the thinness of the read itself. This is one desk signal, not a stack, and the reward-to-risk is only <strong>1.5</strong>. A single confirmation can fail, and when it does you want the loss small. Liquidity is modest too, with about <strong>2.31M</strong> shares trading daily, so a fast exit can cost you slippage in a stress move.</p>
+<p>Insider behavior is the flag worth respecting. Recent filings show multiple insiders selling rather than buying, including a director and the general counsel. That is not a sell signal on its own, executives sell for many reasons, but it does remove the comfort of insiders adding alongside you into the dip.</p>
+<p>The invalidation is one number. A daily close below <strong>13.95</strong> ends the thesis, because that level is where the controlled pullback would confirm itself as a fresh downtrend. There is no earnings event to gap you through before then, so the risk is orderly and the stop is the discipline.</p>
+<h2>Bringing It All Together</h2>
+<p>- Dual focus: a cross-border payment network plus embedded vertical software, raising switching costs in education, healthcare, travel, and B2B.<br>- Market need: cross-border volume keeps growing and institutions want self-closing reconciliation, which is exactly what Flywire sells.</p>
+<p>- Trend: above a 30-week line rising <strong>+3.8%</strong>, <strong>12.9%</strong> below the high, beating the market by <strong>+16.9%</strong> over three months.<br>- Catalyst: none imminent, next earnings near <strong>42</strong> days out, so the edge is price location, not an event.<br>- Levels: enter <strong>15.45</strong>, stop <strong>13.95</strong>, target <strong>17.70</strong>, stretch <strong>18.82</strong>, reward-to-risk <strong>1.5</strong>, risk to stop <strong>9.7%</strong>.</p>
+<h2>Conclusion</h2>
+<p>Flywire is a profitable, cash-generative payments network pulling back into a rising trend while the broad tech tape runs out of momentum. The chart hands you a defined entry at <strong>15.45</strong>, a hard stop at <strong>13.95</strong>, and a first target at <strong>17.70</strong>.</p>
+<p>The honest count is MEDIUM conviction. This is one read, the sector is exhausted, insiders are trimming, and the reward-to-risk is a workmanlike <strong>1.5</strong>. That argues for a starter position, not a full swing, with the <strong>13.95</strong> line non-negotiable. Take the trend while it pays you and respect the stop the moment it does not.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Flywire Corporation (FLYW) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $1.96B; 52-week range $10-$18; Revenue $678M +41% YoY; Net income $30M; Free cash flow/share $1.32; Debt-to-equity 0.0; Return on equity 4%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Flywire Corporation (FLYW) inside the Technology space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): FLYW trades **12.9%** below its high, holds above a rising 30-week trend line, and beats SPY by **+16.9%** over three months. RSI at **53.7** sits mid-range, the clean profile for the validated dip-buy (a proprietary desk read, risk-adjuste. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Plumbing Behind Cross-Border Money
+
+*A profitable payments small cap pulls back into a rising trend while the rest of tech runs out of breath.*
+
+## The Big Picture
+
+The money behind a foreign tuition bill, a medical procedure abroad, or a business invoice across two currencies has to move through pipes that most people never see. Those pipes are getting rebuilt. Legacy bank wires are slow, opaque, and expensive, and the verticals that lean on them the hardest (education, healthcare, travel, B2B) are exactly where a software-led payment network can take share.
+
+This is a structural shift, not a cycle. Cross-border volume keeps growing, the payers keep demanding the same checkout experience they get from a consumer app, and the institutions on the other side want reconciliation that closes itself. A network that sits inside the existing workflow and clears the payment, the FX, and the bookkeeping in one motion earns a toll on a rising tide.
+
+Yet the tape around it is tired. The Technology sector reads **EXHAUSTED** on momentum, the late-cycle phase where the strongest move is already behind the broad market. That backdrop punishes generic chasing. It rewards a different thing: a profitable, cash-generative name that already pulled back, already proved its trend, and now offers you a defined entry instead of a moonshot.
+
+That is the setup in front of you here.
+
+## Introducing $FLYW
+
+Flywire Corporation is a payment enablement and software company headquartered in Boston. It runs a platform that drops into an institution&#x27;s existing apps and workflows and handles tailored invoicing, settlement, reconciliation, single sign-on checkout, recurring payments, and split payouts. The point is to make a complicated cross-border payment feel like a normal one.
+
+Underneath sits a payment network with direct connections to banks, third-party processors, digital wallets, and alternative methods like Alipay, Boleto, PayPal, Venmo, and Trustly. On top sits vertical-specific software with industry workflows, real-time access, and predictive analytics. Flywire serves four verticals it knows deeply: education, healthcare, travel, and B2B.
+
+The edge is the combination. Plenty of firms move money. Flywire moves it AND embeds the software that the institution uses to bill, collect, and reconcile, which raises switching costs and turns a one-time processor into recurring plumbing.
+
+## The Thesis
+
+You are buying a clean pullback in a name that already earned its trend. Flywire trades **12.9%** below its 52-week high, holds above a rising 30-week trend line whose slope reads **+3.8%**, and has beaten the broad market by **+16.9%** over the last three months. Over 63 sessions the stock is up **+29.9%** in absolute terms. That is leadership, then a controlled breather, not a breakdown.
+
+The read on momentum is mid-range, which is the part that matters. A relative-strength reading of **53.7** sits in the middle of its band, neither stretched at the top nor washed out at the bottom. That is the spot where a dip into a live uptrend tends to resolve back up rather than roll over. You get the trend on your side and the entry price below the recent peak.
+
+Conviction here is MEDIUM, and you should size it that way. The read is genuine but it is one read, not a stack of confirmations. The reward-to-risk is **1.5**, decent rather than spectacular. This earns a starter-sized position with a hard line in the sand, not a full swing.
+
+## Technical Analysis
+
+&gt; 📈 Insert the FLYW weekly chart here (TradingView): FLYW weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $17.70 · mark support near $13.95.
+
+The trend structure is intact and the chart is doing the work. Price closed at **15.54**, holding above a 30-week line that is rising at **+3.8%**, so the long-term tape is up and the recent dip is happening inside that uptrend. The stock sits at **86.1%** of its 52-week high and **68.5%** of the way up its yearly range, which tells you it pulled back from strength rather than collapsing from a top.
+
+The reference levels frame the trade. Entry is **15.45**, the stop is **13.95**, and the first target is **17.70**, with a stretch objective at **18.82**. That puts your risk to the stop at **9.7%** and your reward to the first target at **14.6%**, **21.8%** if the stretch level prints. The **13.95** stop is the whole thesis in one number: a daily close beneath it says the pullback became a downtrend and you are wrong.
+
+The **15.45** to **17.70** band is your working zone, and the **18.05** prior high is the lid that needs to give way for the stretch case. Average true range is **0.75**, so a normal day moves the stock about three quarters of a point, and the **9.7%** distance to your stop is roughly two of those ranges. That is enough room to survive noise without inviting a slow bleed.
+
+Relative strength against the market at **+16.9%** over three months is the signal underneath the price, and it is the one to watch. As long as Flywire keeps outperforming a tired tech tape on the way back up, the dip-buy stays valid. The reading that flips this is simple: lose **13.95** on a close and the structure breaks.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $1.96B |
+| Enterprise value | $1.63B |
+| 52-week range | $10.09 - $18.05 |
+| Dividend yield | None |
+| Beta | 1.34 |
+| Trailing P/E | 66.0 |
+| Forward P/E | 12.6 |
+| Price / sales | 2.9 |
+| Price / book | 2.3 |
+| Revenue (TTM) | $678M  (+41.0% YoY) |
+| Revenue / share | $5.55 |
+| Net income (TTM) | $30M |
+| EPS (TTM / fwd) | 0.24 / 1.25 |
+| Gross margin | 60.6% |
+| Operating margin | 6.4% |
+| Profit margin | 4.5% |
+| Operating cash flow / share | $1.36 |
+| Free cash flow / share | $1.32 |
+| Total cash / share | $2.63 |
+| Debt / equity | 0.0 |
+| Current ratio | 1.75 |
+| Return on equity | 3.7% |
+| Analyst consensus | buy - mean target $19.00 (13 analysts) |
+
+The business is growing fast and, rare for a payments small cap, it already makes money on a cash basis. That growth rate is the headline. A network compounding north of **40%** while holding sixty-cent gross margins is doing exactly what the cross-border thesis requires.
+
+Cash generation is the quieter strength. This company is not one capital raise away from trouble.
+
+The weak spot is the bottom line and the multiple you pay for it. Net income is **$30.18M** on a **4.5%** profit margin, with operating margin at **6.4%** and return on equity a thin **3.7%**. The trailing price-to-earnings sits at **66.0**, which looks expensive until you see the forward figure of **12.6** as the Street models earnings per share jumping from **0.24** trailing to **1.25** forward. You are paying up for growth and trusting that operating leverage shows up. Thirteen analysts rate it a buy with a mean target of **19.0**.
+
+## Why Now
+
+The timing is a technical pullback, not an event trade, and you should treat it that way. The next earnings report is roughly **42** days out in early August, well outside any near-term window, so there is no scheduled catalyst pulling the stock in the next two weeks. Web checks turned up no downgrade, no offering, and no guidance cut. The recent analyst flow has been positive.
+
+That absence of a catalyst is a feature for this kind of setup. You are not paying for an event. You are buying a name that already moved **+29.9%** over three months, gave back **2.4%** over the last month, and now offers entry below its high while the 30-week trend keeps rising. The edge is the price location, not a headline.
+
+Options flow is light and offers little to lean on. The most recent session printed **279** call contracts against **0** puts, with call premium of just **$0.07M**. That is a small, one-sided footprint, mildly constructive but too thin to call positioning. The macro backdrop is the live tailwind and the live tension at once: a broadly bullish market gives the trade a tape to work in, while the Technology sector&#x27;s **EXHAUSTED** momentum is the reason you keep the size modest.
+
+## Risk Factors
+
+The cleanest way this loses money is a tech pullback dragging a high-beta payments name down with it. Flywire carries a beta of **1.34**, so it amplifies market moves, and it sits inside a sector that already reads **EXHAUSTED**. When the leaders that drove the tape finally rest, a small cap like this rarely escapes the gravity.
+
+The second risk is the thinness of the read itself. This is one desk signal, not a stack, and the reward-to-risk is only **1.5**. A single confirmation can fail, and when it does you want the loss small. Liquidity is modest too, with about **2.31M** shares trading daily, so a fast exit can cost you slippage in a stress move.
+
+Insider behavior is the flag worth respecting. Recent filings show multiple insiders selling rather than buying, including a director and the general counsel. That is not a sell signal on its own, executives sell for many reasons, but it does remove the comfort of insiders adding alongside you into the dip.
+
+The invalidation is one number. A daily close below **13.95** ends the thesis, because that level is where the controlled pullback would confirm itself as a fresh downtrend. There is no earnings event to gap you through before then, so the risk is orderly and the stop is the discipline.
+
+## Bringing It All Together
+
+- Dual focus: a cross-border payment network plus embedded vertical software, raising switching costs in education, healthcare, travel, and B2B.
+- Market need: cross-border volume keeps growing and institutions want self-closing reconciliation, which is exactly what Flywire sells.
+
+- Trend: above a 30-week line rising **+3.8%**, **12.9%** below the high, beating the market by **+16.9%** over three months.
+- Catalyst: none imminent, next earnings near **42** days out, so the edge is price location, not an event.
+- Levels: enter **15.45**, stop **13.95**, target **17.70**, stretch **18.82**, reward-to-risk **1.5**, risk to stop **9.7%**.
+
+## Conclusion
+
+Flywire is a profitable, cash-generative payments network pulling back into a rising trend while the broad tech tape runs out of momentum. The chart hands you a defined entry at **15.45**, a hard stop at **13.95**, and a first target at **17.70**.
+
+The honest count is MEDIUM conviction. This is one read, the sector is exhausted, insiders are trimming, and the reward-to-risk is a workmanlike **1.5**. That argues for a starter position, not a full swing, with the **13.95** line non-negotiable. Take the trend while it pays you and respect the stop the moment it does not.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
