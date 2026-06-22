@@ -1,0 +1,232 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Opera&#x27;s Pullback Into the AI Browser Bet — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>Opera&#x27;s Pullback Into the AI Browser Bet</h1>
+<div class="subtitle">A profitable, cash-rich small cap pulls back into a buy zone. The setup is clean. The conviction is modest, and you should size it that way.</div>
+<div class="meta">EOD 2026-06-19 · OPRA · written from the desk · model claude-opus-4-8</div>
+<div class="chips"><span class="chip">OPRA</span>
+<span class="chip">Communication Services</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-06-19: entry <b>$18.52</b> &rarr; <b>$18.41</b> (as of 2026-06-22) · <span class="neg">-0.6%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>The browser is turning into an AI agent, and the companies that own the front door to the web are repricing around it. Opera sits in Communication Services, a sector the desk reads as <strong>NEUTRAL</strong> with acceleration tagged <strong>DEAD</strong>. That is the honest backdrop. Money is not rushing into this corner of the market right now.</p>
+<p>That matters for how you treat this name. When a sector is flat to fading, the broad rising tide is gone. What works is bottom-up: a company that grows on its own, throws off cash, and trades cheap enough that you get paid to wait. The sector tailwind is absent, so the business has to carry the trade.</p>
+<p>Opera fits that profile better than most small caps in its group. It is profitable, nearly debt-free, and it pays you a <strong>4.5%</strong> dividend yield while you hold. In a sector going sideways, a cash machine that compounds revenue at <strong>23.2%</strong> is the kind of name that can grind higher even when the index does nothing.</p>
+<p>The structural shift underneath is real. Browsers are becoming the layer where AI meets the user, and Opera is building toward that with its agentic AI browser and AI-powered news. You are buying a niche operator with a clean balance sheet, leaning into a theme that the rest of its sector has not yet rewarded with a multiple.</p>
+<h2>Introducing $OPRA</h2>
+<p>Opera Limited builds web browsers and the services that ride on top of them. It runs Opera One, the gaming-focused Opera GX, and Opera Neon, a subscription agentic AI browser aimed at people who want their browser to do work for them. The company was founded in <strong>1995</strong> and is headquartered in Oslo, Norway, with <strong>605</strong> employees. It is a subsidiary of Kunlun Tech.</p>
+<p>The money comes from more than the browser itself. Opera Ads is an online advertising platform, and Opera News is an AI-powered news discovery service that monetizes attention. The company also has Web3 and e-commerce pieces, plus GameMaker, a 2D game development tool. The browser is the distribution engine, and the ads and search revenue are the payoff.</p>
+<p>The edge here is focus and reach without the cost base of a giant. Opera does not need to win the browser war outright. It needs to keep a loyal, monetizable user base, especially in gaming and emerging-market segments, and convert that engagement into ad and search dollars. With a market cap near <strong>1.59B</strong> and gross margins at <strong>51.0%</strong>, it runs lean and keeps a large share of every dollar of revenue.</p>
+<h2>The Thesis</h2>
+<p>You are buying a steady uptrend on a modest pullback, and you should size it small. The stock is <strong>10.3%</strong> below its high, sitting above its 30-week average with that line sloping up at <strong>1.3%</strong>, and momentum has cooled to a mid-range reading near <strong>53.8</strong> on the relative strength index. That is the picture of a name that ran, paused, and is offering you a cleaner entry instead of chasing the top.</p>
+<p>The move into the pause was strong. Opera is up <strong>23.8%</strong> over the last 63 trading days and <strong>7.6%</strong> over the last 21, and it has outpaced the broad market by <strong>10.6%</strong> over three months. A stock that leads the index, then gives back a slice without breaking its trend, is the setup the desk surfaced here.</p>
+<p>Be clear-eyed about conviction. This is a single desk read, not a stack of signals firing together. The edge is tested but modest, with a risk-adjusted return around <strong>1.10</strong>, which is below the level the desk treats as a proven, out-of-sample edge. So the call is <strong>MEDIUM</strong> at best, and the right posture is a small, watch-it-closely position rather than a full-size bet.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-06-19-OPRA.png" alt="OPRA weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=OPRA&interval=1W" target="_blank" rel="noopener">📈 Open the OPRA weekly chart on TradingView ↗</a><figcaption>OPRA weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $20.68 · mark support near $17.08.</figcaption></figure>
+<p>The trend is intact and the pullback is shallow. Opera closed at <strong>18.41</strong>, holding above its rising 30-week average, with the line tilted up <strong>1.3%</strong>. The structure says uptrend, with the recent dip a pause inside it rather than a break of it.</p>
+<p>Distance from the high is the cleanest part of the read. The 52-week high is <strong>21.06</strong>, and the stock sits <strong>10.3%</strong> under it, at <strong>87.4%</strong> of that high and roughly <strong>71.7%</strong> of the way up its 52-week range. The low for the year is <strong>11.71</strong>, so you are buying well off the bottom and a short reach from the top. That tightness is the appeal and the limit at once. There is not much room before resistance.</p>
+<p>Use the desk levels as your map. Entry is <strong>18.52</strong>, the stop sits at <strong>17.08</strong>, and the first target is <strong>20.68</strong>, a <strong>1.5:1</strong> reward to risk. That puts <strong>7.8%</strong> of risk against <strong>11.7%</strong> of upside to the first target, with a stretch objective at <strong>21.76</strong> worth <strong>17.5%</strong> if the breakout extends through the prior high. The relative strength index near <strong>53.8</strong> is neutral, neither overbought nor washed out, which leaves room to run before the move gets crowded.</p>
+<p>What would confirm the read is a push back toward <strong>20.68</strong> on rising volume, with the stock reclaiming and holding the <strong>18.52</strong> zone first. A drift higher on no volume is weaker than a thrust on real participation.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$1.59B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$1.45B</td></tr><tr><td class="k">52-week range</td><td class="v">$11.71 - $21.06</td></tr><tr><td class="k">Dividend yield</td><td class="v">4.50%</td></tr><tr><td class="k">Trailing P/E</td><td class="v">14.1</td></tr><tr><td class="k">Forward P/E</td><td class="v">10.2</td></tr><tr><td class="k">Price / sales</td><td class="v">2.5</td></tr><tr><td class="k">Price / book</td><td class="v">1.6</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$648M  (+23.2% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$7.21</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$115M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">1.26 / 1.74</td></tr><tr><td class="k">Gross margin</td><td class="v">51.0%</td></tr><tr><td class="k">Operating margin</td><td class="v">17.3%</td></tr><tr><td class="k">Profit margin</td><td class="v">17.7%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$1.61</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$1.43</td></tr><tr><td class="k">Total cash / share</td><td class="v">$1.57</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.01</td></tr><tr><td class="k">Current ratio</td><td class="v">1.88</td></tr><tr><td class="k">Return on equity</td><td class="v">12.0%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">none - mean target $26.29 (7 analysts)</td></tr></tbody></table>
+<p>The growth and profitability are the strongest part of this story. Earnings per share of <strong>1.26</strong> are set against a forward estimate of <strong>1.74</strong>, which is why the forward multiple at <strong>10.2</strong> is cheaper than the trailing <strong>14.1</strong>. You are paying <strong>2.5</strong> times sales for a business compounding at better than 20%.</p>
+<p>Cash generation backs the income statement. Book value per share is <strong>10.93</strong>, so price-to-book sits at <strong>1.6</strong>. This is a company that does not need the capital markets to fund itself.</p>
+<p>The shareholder return is real, not a gimmick. Return on equity is <strong>12.0%</strong> and return on assets is <strong>5.8%</strong>. The one honest soft spot is scale. With a <strong>1.59B</strong> market cap and thin daily volume, this trades like the small cap it is, and the seven analysts covering it carry no consensus rating, with a mean target of <strong>26.29</strong>. Treat that target as context, not a promise.</p>
+<h2>Why Now</h2>
+<p>The timing rests on the chart and the flow, because the calendar is a blind spot. There is no confirmed near-term catalyst in the facts, and the desk flagged the catalyst status as <strong>UNVERIFIED</strong>: the next earnings date and any recent news could not be checked. So you are not buying an event. You are buying a clean pullback in a stock that has led the market, and you should respect that the news window is unscanned.</p>
+<p>The options flow on <strong>2026-06-18</strong> leaned hard to the call side. Call volume was <strong>14,200</strong> against put volume of just <strong>75</strong>, with <strong>0.39M</strong> in call premium versus <strong>0.01M</strong> in puts. That is a lopsided bullish tilt for a single session. It is one day of positioning, so do not overweight it, but it lines up with the price read rather than fighting it.</p>
+<p>The macro setup is supportive at the broad level even if the sector is not. The regime reads as broadly bullish, which is why the desk is comfortable taking the long side here. What it is not is a sector tailwind. Communication Services is <strong>NEUTRAL</strong> with <strong>DEAD</strong> acceleration, so the push has to come from Opera&#x27;s own momentum and cash story, not from money rotating into the group.</p>
+<h2>Risk Factors</h2>
+<p>The clearest way this loses money is the thin tape. Daily dollar volume near <strong>5.9M</strong> means a stop at <strong>17.08</strong> can gap and slip past you in a fast move. You may not get filled where you want, and that turns a planned <strong>7.8%</strong> loss into a worse one. Size down for that reality.</p>
+<p>The second risk is that the pullback is the start of a real decline rather than a bounce. This is a single desk read in a <strong>NEUTRAL</strong> sector, so the confluence is one signal, not a chorus. A modest-trend small cap bought on a dip can keep falling if the dip becomes a downtrend. The room to the high is the tightest of the desk&#x27;s candidates at <strong>10.3%</strong>, so the reward is capped tighter than usual against that risk.</p>
+<p>The invalidation is precise. A daily close below the stop at <strong>17.08</strong> ends the trade. Failure to hold or reclaim the <strong>18.52</strong> entry zone is your earlier warning to stand aside. And because the catalyst calendar is unverified, treat any fresh adverse headline, once you can confirm one, as a reason to step back. Timing risk around an unseen earnings date is part of the package, not an afterthought.</p>
+<h2>Bringing It All Together</h2>
+<p>- Dual engine: a profitable browser business plus an ad and AI monetization layer, growing revenue <strong>23.2%</strong> and earnings <strong>35.0%</strong>.</p>
+<p>- Fortress balance sheet: debt-to-equity of <strong>0.01</strong>, current ratio <strong>1.88</strong>, <strong>1.57</strong> cash per share.<br>- Clean technical: <strong>10.3%</strong> below the <strong>21.06</strong> high, above a rising 30-week line, relative strength near <strong>53.8</strong>, leading the market by <strong>10.6%</strong> over three months.<br>- Flow agrees: call volume <strong>14,200</strong> versus <strong>75</strong> puts on the last reading.<br>- Levels you trade: entry <strong>18.52</strong>, stop <strong>17.08</strong>, first target <strong>20.68</strong> at <strong>1.5:1</strong>, stretch <strong>21.76</strong>.</p>
+<h2>Conclusion</h2>
+<p>Opera is a high-quality small cap offering you a clean pullback entry, and the business behind the chart is the reason to look. The trend is up, the dip is shallow at <strong>10.3%</strong> off the high, and the flow leans bullish.</p>
+<p>The honest counterweight is conviction. This is one signal, the sector is flat, the tape is thin near <strong>5.9M</strong> a day, and the next catalyst is unverified. So take it small, respect the <strong>17.08</strong> stop as a hard line, and let the <strong>20.68</strong> target prove itself on real volume before you add. The quality is there. The setup is clean. The size should be modest.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Opera Limited (OPRA) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $1.59B; 52-week range $12-$21; Revenue $648M +23% YoY; Net income $115M; Free cash flow/share $1.43; Debt-to-equity 0.01; Return on equity 12%; Dividend yield 4.5%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Opera Limited (OPRA) inside the Communication Services space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): A proven pullback (tested, risk-adjusted return **1.10**) on a name **10.3%** below its high, above its 30-week average with RSI at **53.8**. Steady uptrend, modest pullback.. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># Opera&#x27;s Pullback Into the AI Browser Bet
+
+*A profitable, cash-rich small cap pulls back into a buy zone. The setup is clean. The conviction is modest, and you should size it that way.*
+
+## The Big Picture
+
+The browser is turning into an AI agent, and the companies that own the front door to the web are repricing around it. Opera sits in Communication Services, a sector the desk reads as **NEUTRAL** with acceleration tagged **DEAD**. That is the honest backdrop. Money is not rushing into this corner of the market right now.
+
+That matters for how you treat this name. When a sector is flat to fading, the broad rising tide is gone. What works is bottom-up: a company that grows on its own, throws off cash, and trades cheap enough that you get paid to wait. The sector tailwind is absent, so the business has to carry the trade.
+
+Opera fits that profile better than most small caps in its group. It is profitable, nearly debt-free, and it pays you a **4.5%** dividend yield while you hold. In a sector going sideways, a cash machine that compounds revenue at **23.2%** is the kind of name that can grind higher even when the index does nothing.
+
+The structural shift underneath is real. Browsers are becoming the layer where AI meets the user, and Opera is building toward that with its agentic AI browser and AI-powered news. You are buying a niche operator with a clean balance sheet, leaning into a theme that the rest of its sector has not yet rewarded with a multiple.
+
+## Introducing $OPRA
+
+Opera Limited builds web browsers and the services that ride on top of them. It runs Opera One, the gaming-focused Opera GX, and Opera Neon, a subscription agentic AI browser aimed at people who want their browser to do work for them. The company was founded in **1995** and is headquartered in Oslo, Norway, with **605** employees. It is a subsidiary of Kunlun Tech.
+
+The money comes from more than the browser itself. Opera Ads is an online advertising platform, and Opera News is an AI-powered news discovery service that monetizes attention. The company also has Web3 and e-commerce pieces, plus GameMaker, a 2D game development tool. The browser is the distribution engine, and the ads and search revenue are the payoff.
+
+The edge here is focus and reach without the cost base of a giant. Opera does not need to win the browser war outright. It needs to keep a loyal, monetizable user base, especially in gaming and emerging-market segments, and convert that engagement into ad and search dollars. With a market cap near **1.59B** and gross margins at **51.0%**, it runs lean and keeps a large share of every dollar of revenue.
+
+## The Thesis
+
+You are buying a steady uptrend on a modest pullback, and you should size it small. The stock is **10.3%** below its high, sitting above its 30-week average with that line sloping up at **1.3%**, and momentum has cooled to a mid-range reading near **53.8** on the relative strength index. That is the picture of a name that ran, paused, and is offering you a cleaner entry instead of chasing the top.
+
+The move into the pause was strong. Opera is up **23.8%** over the last 63 trading days and **7.6%** over the last 21, and it has outpaced the broad market by **10.6%** over three months. A stock that leads the index, then gives back a slice without breaking its trend, is the setup the desk surfaced here.
+
+Be clear-eyed about conviction. This is a single desk read, not a stack of signals firing together. The edge is tested but modest, with a risk-adjusted return around **1.10**, which is below the level the desk treats as a proven, out-of-sample edge. So the call is **MEDIUM** at best, and the right posture is a small, watch-it-closely position rather than a full-size bet.
+
+## Technical Analysis
+
+&gt; 📈 Insert the OPRA weekly chart here (TradingView): OPRA weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $20.68 · mark support near $17.08.
+
+The trend is intact and the pullback is shallow. Opera closed at **18.41**, holding above its rising 30-week average, with the line tilted up **1.3%**. The structure says uptrend, with the recent dip a pause inside it rather than a break of it.
+
+Distance from the high is the cleanest part of the read. The 52-week high is **21.06**, and the stock sits **10.3%** under it, at **87.4%** of that high and roughly **71.7%** of the way up its 52-week range. The low for the year is **11.71**, so you are buying well off the bottom and a short reach from the top. That tightness is the appeal and the limit at once. There is not much room before resistance.
+
+Use the desk levels as your map. Entry is **18.52**, the stop sits at **17.08**, and the first target is **20.68**, a **1.5:1** reward to risk. That puts **7.8%** of risk against **11.7%** of upside to the first target, with a stretch objective at **21.76** worth **17.5%** if the breakout extends through the prior high. The relative strength index near **53.8** is neutral, neither overbought nor washed out, which leaves room to run before the move gets crowded.
+
+What would confirm the read is a push back toward **20.68** on rising volume, with the stock reclaiming and holding the **18.52** zone first. A drift higher on no volume is weaker than a thrust on real participation.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $1.59B |
+| Enterprise value | $1.45B |
+| 52-week range | $11.71 - $21.06 |
+| Dividend yield | 4.50% |
+| Trailing P/E | 14.1 |
+| Forward P/E | 10.2 |
+| Price / sales | 2.5 |
+| Price / book | 1.6 |
+| Revenue (TTM) | $648M  (+23.2% YoY) |
+| Revenue / share | $7.21 |
+| Net income (TTM) | $115M |
+| EPS (TTM / fwd) | 1.26 / 1.74 |
+| Gross margin | 51.0% |
+| Operating margin | 17.3% |
+| Profit margin | 17.7% |
+| Operating cash flow / share | $1.61 |
+| Free cash flow / share | $1.43 |
+| Total cash / share | $1.57 |
+| Debt / equity | 0.01 |
+| Current ratio | 1.88 |
+| Return on equity | 12.0% |
+| Analyst consensus | none - mean target $26.29 (7 analysts) |
+
+The growth and profitability are the strongest part of this story. Earnings per share of **1.26** are set against a forward estimate of **1.74**, which is why the forward multiple at **10.2** is cheaper than the trailing **14.1**. You are paying **2.5** times sales for a business compounding at better than 20%.
+
+Cash generation backs the income statement. Book value per share is **10.93**, so price-to-book sits at **1.6**. This is a company that does not need the capital markets to fund itself.
+
+The shareholder return is real, not a gimmick. Return on equity is **12.0%** and return on assets is **5.8%**. The one honest soft spot is scale. With a **1.59B** market cap and thin daily volume, this trades like the small cap it is, and the seven analysts covering it carry no consensus rating, with a mean target of **26.29**. Treat that target as context, not a promise.
+
+## Why Now
+
+The timing rests on the chart and the flow, because the calendar is a blind spot. There is no confirmed near-term catalyst in the facts, and the desk flagged the catalyst status as **UNVERIFIED**: the next earnings date and any recent news could not be checked. So you are not buying an event. You are buying a clean pullback in a stock that has led the market, and you should respect that the news window is unscanned.
+
+The options flow on **2026-06-18** leaned hard to the call side. Call volume was **14,200** against put volume of just **75**, with **0.39M** in call premium versus **0.01M** in puts. That is a lopsided bullish tilt for a single session. It is one day of positioning, so do not overweight it, but it lines up with the price read rather than fighting it.
+
+The macro setup is supportive at the broad level even if the sector is not. The regime reads as broadly bullish, which is why the desk is comfortable taking the long side here. What it is not is a sector tailwind. Communication Services is **NEUTRAL** with **DEAD** acceleration, so the push has to come from Opera&#x27;s own momentum and cash story, not from money rotating into the group.
+
+## Risk Factors
+
+The clearest way this loses money is the thin tape. Daily dollar volume near **5.9M** means a stop at **17.08** can gap and slip past you in a fast move. You may not get filled where you want, and that turns a planned **7.8%** loss into a worse one. Size down for that reality.
+
+The second risk is that the pullback is the start of a real decline rather than a bounce. This is a single desk read in a **NEUTRAL** sector, so the confluence is one signal, not a chorus. A modest-trend small cap bought on a dip can keep falling if the dip becomes a downtrend. The room to the high is the tightest of the desk&#x27;s candidates at **10.3%**, so the reward is capped tighter than usual against that risk.
+
+The invalidation is precise. A daily close below the stop at **17.08** ends the trade. Failure to hold or reclaim the **18.52** entry zone is your earlier warning to stand aside. And because the catalyst calendar is unverified, treat any fresh adverse headline, once you can confirm one, as a reason to step back. Timing risk around an unseen earnings date is part of the package, not an afterthought.
+
+## Bringing It All Together
+
+- Dual engine: a profitable browser business plus an ad and AI monetization layer, growing revenue **23.2%** and earnings **35.0%**.
+
+- Fortress balance sheet: debt-to-equity of **0.01**, current ratio **1.88**, **1.57** cash per share.
+- Clean technical: **10.3%** below the **21.06** high, above a rising 30-week line, relative strength near **53.8**, leading the market by **10.6%** over three months.
+- Flow agrees: call volume **14,200** versus **75** puts on the last reading.
+- Levels you trade: entry **18.52**, stop **17.08**, first target **20.68** at **1.5:1**, stretch **21.76**.
+
+## Conclusion
+
+Opera is a high-quality small cap offering you a clean pullback entry, and the business behind the chart is the reason to look. The trend is up, the dip is shallow at **10.3%** off the high, and the flow leans bullish.
+
+The honest counterweight is conviction. This is one signal, the sector is flat, the tape is thin near **5.9M** a day, and the next catalyst is unverified. So take it small, respect the **17.08** stop as a hard line, and let the **20.68** target prove itself on real volume before you add. The quality is there. The setup is clean. The size should be modest.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

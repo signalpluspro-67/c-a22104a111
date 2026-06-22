@@ -1,0 +1,242 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Miner Quietly Becoming a Compute Landlord — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Miner Quietly Becoming a Compute Landlord</h1>
+<div class="subtitle">IREN runs power, hardware, and data centers. The options tape just voted with real money.</div>
+<div class="meta">EOD 2026-06-19 · IREN · written from the desk · model claude-opus-4-8</div>
+<div class="chips"><span class="chip">IREN</span>
+<span class="chip">Financial Services</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-06-19: entry <b>$59.96</b> &rarr; <b>$59.11</b> (as of 2026-06-22) · <span class="neg">-1.4%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>The story right now is power. Whoever controls cheap electricity and the land to build on owns the next decade of compute. Bitcoin miners spent years optimizing for one thing: turning megawatts into hashrate. That same skill set, cheap power plus dense data center buildout, is exactly what the AI compute boom needs.</p>
+<p>Crypto is one of the hottest themes on the desk this session, and that matters for how a name like this trades. When the theme runs, the operators with real infrastructure get rewarded first, then the speculative shells follow. IREN sits in the first group.</p>
+<p>The sector read is mixed and honest. Financial Services as a whole shows a <strong>NEUTRAL</strong> state, but the momentum tag reads <strong>RIDING</strong>, which tells you the group is still trending rather than topping. You&#x27;re not buying into a sector that&#x27;s rolling over. You&#x27;re buying a high-beta name inside a theme that has wind behind it.</p>
+<p>This backdrop rewards companies that already own the power and the buildings. The market is paying up for vertically integrated operators because the alternative, leasing capacity at spot rates, is getting expensive. A miner that owns its electrical infrastructure and data centers has optionality most pure crypto plays lack.</p>
+<h2>Introducing $IREN</h2>
+<p>IREN Limited runs a vertically integrated data center business across Canada and Australia. It owns its computing hardware, its electrical infrastructure, and the physical sites. On top of that it mines Bitcoin, the scarce digital asset created through a global peer-to-peer network.</p>
+<p>The company was incorporated in <strong>2018</strong> and is based in Sydney, Australia. It carried the name Iris Energy until November <strong>2024</strong>, when it rebranded to IREN. The headcount is lean at <strong>257</strong> employees, which tells you this is a capital and power business, not a labor-heavy one.</p>
+<p>The edge is ownership. Most crypto-adjacent names rent their capacity or chase the cheapest hosting deal of the month. IREN owns the stack from the substation to the rack. That control is what lets a Bitcoin miner pivot toward high-value compute without starting from zero. The same power contracts and the same buildings serve both jobs.</p>
+<h2>The Thesis</h2>
+<p>Real money is positioning long, and the chart gives it room to run. Conviction here is <strong>MEDIUM</strong>, so size it accordingly. This is a tactical long inside a hot theme, backed by a clean reward-to-risk setup and an options tape that&#x27;s loudly bullish.</p>
+<p>The pullback that fired into this setup tested well, with a risk-adjusted read of <strong>1.10</strong>. Price sits <strong>21.5%</strong> below the 52-week high, which leaves headroom rather than chasing into resistance. The relative strength against the broad market is strong, up <strong>30.8%</strong> over the last 63 sessions, so the name is leading, not lagging.</p>
+<p>The single cleanest argument is the flow. Buyers paid <strong>56.38M</strong> in call premium against just <strong>19.54M</strong> in puts on the most recent tape. That is real conviction in real dollars, and it shows up on a name that already has <strong>21.5%</strong> of clear space to its prior high on a <strong>1.5:1</strong> setup. You have a theme tailwind, a leading chart, and the only options name on the desk that earns a tradeable chain. Those three things lining up is the entire case.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-06-19-IREN.png" alt="IREN weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=IREN&interval=1W" target="_blank" rel="noopener">📈 Open the IREN weekly chart on TradingView ↗</a><figcaption>IREN weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $77.21 · mark support near $48.46.</figcaption></figure>
+<p>The trend is up and intact. Price trades above its 30-week line, and that line is sloping higher by <strong>2.0%</strong>, which is the long-term posture you want before committing to a momentum name. The structure says trend, the slope says it&#x27;s still building.</p>
+<p>Price closed at <strong>59.11</strong> against an entry reference of <strong>59.96</strong>. The 52-week high is <strong>76.87</strong> and the low is <strong>9.52</strong>, which puts the stock at <strong>76.9%</strong> of its yearly high and roughly <strong>73.6%</strong> of the way up its full range. You&#x27;re buying strength that has already done most of the heavy lifting off the bottom, where the name is up <strong>569.9%</strong> from its 52-week low, while still leaving <strong>21.5%</strong> of room back to the high.</p>
+<p>RSI reads <strong>53.2</strong>, the middle of the range. That&#x27;s the read you want. The name isn&#x27;t overbought into resistance, and it isn&#x27;t broken. There&#x27;s fuel left. Momentum over the last 21 sessions is <strong>+25.6%</strong> and over 63 sessions <strong>+43.9%</strong>, so the recent push is accelerating, not fading.</p>
+<p>The levels frame the trade. Entry sits at <strong>59.96</strong>, the stop at <strong>48.46</strong>, and the first target at <strong>77.21</strong>, which lines up almost exactly with the prior 52-week high. A second target stretches to <strong>85.84</strong>. That gives you <strong>28.8%</strong> of upside to the first target and <strong>43.2%</strong> to the second, against <strong>19.2%</strong> of risk to the stop. What you want to see next is a push toward <strong>77.21</strong> carried by volume above that 20-day average. A breakout on thin tape is the warning sign.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$21.43B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$23.18B</td></tr><tr><td class="k">52-week range</td><td class="v">$9.52 - $76.87</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">4.23</td></tr><tr><td class="k">Trailing P/E</td><td class="v">77.9</td></tr><tr><td class="k">Forward P/E</td><td class="v">-63.8</td></tr><tr><td class="k">Price / sales</td><td class="v">28.3</td></tr><tr><td class="k">Price / book</td><td class="v">7.7</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$757M  (+0.0% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$2.65</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$158M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">0.77 / -0.94</td></tr><tr><td class="k">Gross margin</td><td class="v">68.4%</td></tr><tr><td class="k">Operating margin</td><td class="v">-64.5%</td></tr><tr><td class="k">Profit margin</td><td class="v">20.9%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$1.10</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$-6.47</td></tr><tr><td class="k">Total cash / share</td><td class="v">$6.19</td></tr><tr><td class="k">Debt / equity</td><td class="v">1.49</td></tr><tr><td class="k">Current ratio</td><td class="v">3.72</td></tr><tr><td class="k">Return on equity</td><td class="v">7.7%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">buy - mean target $80.93 (15 analysts)</td></tr></tbody></table>
+<p>The top line and the cash picture pull in opposite directions, and you need to hold both ideas at once.</p>
+<p>The weak spot is the cash burn from buildout. That gap is capital spending. A company building power and data centers spends ahead of revenue, and that&#x27;s exactly what these numbers show. The operating margin reads <strong>-64.5%</strong> even as the profit margin is positive, which tells you the reported profit leans on items below the operating line. Be clear-eyed about that.</p>
+<p>The balance sheet can carry the build for now. Cash per share is <strong>6.19</strong>, the current ratio is <strong>3.72</strong>, and the quick ratio is <strong>3.5</strong>, so near-term liquidity is healthy. Total debt sits at <strong>3.96B</strong> with debt-to-equity at <strong>1.49</strong>, which is real leverage but not extreme for a capital-heavy operator. Book value per share is <strong>7.81</strong>.</p>
+<p>Valuation is rich and the forward picture is the catch. Trailing P/E is <strong>77.9</strong> and price-to-sales is <strong>28.3</strong>, both stretched. The forward EPS estimate is <strong>-0.94</strong>, which flips the forward P/E negative at <strong>-63.8</strong>. The street still leans positive, with <strong>15</strong> analysts at a buy and a mean target of <strong>80.93</strong>, above the second technical target. You are paying a premium for the buildout and trusting it converts. The beta of <strong>4.23</strong> means this name will move several times harder than the market in both directions.</p>
+<h2>Why Now</h2>
+<p>The timing is driven by flow and theme, not by an event. There&#x27;s no specific near-term catalyst on the calendar to anchor to, so be honest about that. Earnings sit roughly <strong>69</strong> days out, well clear of this trade&#x27;s hold window, which removes a binary risk rather than adding one.</p>
+<p>What&#x27;s live is the positioning. On the most recent tape, <strong>203881</strong> day calls traded against <strong>173655</strong> puts, and the premium split was lopsided: <strong>56.38M</strong> spent on calls versus <strong>19.54M</strong> on puts. That is buyers paying up for upside, not hedging fear. When call premium outweighs put premium by nearly three to one on a leading chart, the smart read is that someone with size wants exposure before the next leg.</p>
+<p>The theme tailwind backs it. Crypto is running, the sector momentum tag reads <strong>RIDING</strong>, and IREN is the operator with real infrastructure inside that move. You have the macro wind, the relative strength of <strong>+30.8%</strong> versus the market, and a flow tape that agrees. The setup is about riding the theme while the structure holds, with the <strong>77.21</strong> high as the magnet.</p>
+<h2>Risk Factors</h2>
+<p>The most credible way you lose money here is the move being partly spent. The desk read flags this as a high score, which means a good chunk of the energy is already in the price. After a <strong>+43.9%</strong> run over 63 sessions, a sharp mean reversion is the obvious bear case, and that&#x27;s the risk you accept at this entry.</p>
+<p>Volatility is the second risk, and it&#x27;s structural. With a beta of <strong>4.23</strong>, this name swings violently. Crypto-linked equities can drop <strong>15%</strong> to <strong>20%</strong> on a bad day in Bitcoin with no company-specific news at all. If financing tightens or Bitcoin sells off hard, the buildout thesis gets repriced fast.</p>
+<p>The valuation leaves no margin for error. At a price-to-sales of <strong>28.3</strong> and a negative forward EPS of <strong>-0.94</strong>, you&#x27;re paying for execution that hasn&#x27;t fully landed. Any stumble in the data center ramp gets punished against that multiple.</p>
+<p>The invalidation is clean. A close below the stop at <strong>48.46</strong> breaks the structure and ends the trade. That&#x27;s <strong>19.2%</strong> of risk from entry, which is wide, so this is a trade you size small. The lack of a dated catalyst is its own timing risk: without an event to force the move, the position depends on the theme staying hot. If crypto cools, the flow disappears with it.</p>
+<h2>Bringing It All Together</h2>
+<p>- Dual focus: IREN owns power, hardware, and data centers across Canada and Australia, mining Bitcoin today with the infrastructure to serve higher-value compute.<br>- Market need: cheap power plus dense buildout is the scarcest resource in the compute boom, and IREN owns its stack from substation to rack.</p>
+<p>- Flow: <strong>56.38M</strong> in call premium against <strong>19.54M</strong> in puts, real bullish positioning on a leading chart.<br>- Technicals: price above a rising 30-week line (slope <strong>+2.0%</strong>), RSI at <strong>53.2</strong> with room left, and <strong>21.5%</strong> of clear space to the high.<br>- Levels: entry <strong>59.96</strong>, stop <strong>48.46</strong>, target <strong>77.21</strong> then <strong>85.84</strong>, for <strong>28.8%</strong> to <strong>43.2%</strong> of upside against <strong>19.2%</strong> of risk on a <strong>1.5:1</strong> base.</p>
+<h2>Conclusion</h2>
+<p>This is a tactical long with MEDIUM conviction, and you trade it that way. The case is a leading chart inside a hot theme, backed by an options tape that paid <strong>56.38M</strong> for calls while spending only <strong>19.54M</strong> on puts. Price sits <strong>21.5%</strong> under its high with RSI at <strong>53.2</strong>, above a rising 30-week line, with <strong>28.8%</strong> of room to the first target at <strong>77.21</strong>.</p>
+<p>The honest counterweight is the burn and the beta. There&#x27;s no dated catalyst to force the move, so the position lives and dies with the crypto theme staying hot.</p>
+<p>Keep the size small, respect the <strong>48.46</strong> stop as the line that ends the trade, and let the flow and the theme carry it toward <strong>77.21</strong>. The setup is clean. The risk is real. Both things are true.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;IREN Limited (IREN) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $21.43B; 52-week range $10-$77; Revenue $757M +0% YoY; Net income $158M; Free cash flow/share $-6.47; Debt-to-equity 1.49; Return on equity 8%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for IREN Limited (IREN) inside the Financial Services space, specifically the &quot;Crypto&quot; theme. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): The pullback fired tested (risk-adjusted return **1.10**) and the options tape agrees: **56.38M** in call premium against **19.54M** in puts on **203881** day calls. Price sits **21.5%** under the high with RSI at **53.2**, and crypto is on. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Miner Quietly Becoming a Compute Landlord
+
+*IREN runs power, hardware, and data centers. The options tape just voted with real money.*
+
+## The Big Picture
+
+The story right now is power. Whoever controls cheap electricity and the land to build on owns the next decade of compute. Bitcoin miners spent years optimizing for one thing: turning megawatts into hashrate. That same skill set, cheap power plus dense data center buildout, is exactly what the AI compute boom needs.
+
+Crypto is one of the hottest themes on the desk this session, and that matters for how a name like this trades. When the theme runs, the operators with real infrastructure get rewarded first, then the speculative shells follow. IREN sits in the first group.
+
+The sector read is mixed and honest. Financial Services as a whole shows a **NEUTRAL** state, but the momentum tag reads **RIDING**, which tells you the group is still trending rather than topping. You&#x27;re not buying into a sector that&#x27;s rolling over. You&#x27;re buying a high-beta name inside a theme that has wind behind it.
+
+This backdrop rewards companies that already own the power and the buildings. The market is paying up for vertically integrated operators because the alternative, leasing capacity at spot rates, is getting expensive. A miner that owns its electrical infrastructure and data centers has optionality most pure crypto plays lack.
+
+## Introducing $IREN
+
+IREN Limited runs a vertically integrated data center business across Canada and Australia. It owns its computing hardware, its electrical infrastructure, and the physical sites. On top of that it mines Bitcoin, the scarce digital asset created through a global peer-to-peer network.
+
+The company was incorporated in **2018** and is based in Sydney, Australia. It carried the name Iris Energy until November **2024**, when it rebranded to IREN. The headcount is lean at **257** employees, which tells you this is a capital and power business, not a labor-heavy one.
+
+The edge is ownership. Most crypto-adjacent names rent their capacity or chase the cheapest hosting deal of the month. IREN owns the stack from the substation to the rack. That control is what lets a Bitcoin miner pivot toward high-value compute without starting from zero. The same power contracts and the same buildings serve both jobs.
+
+## The Thesis
+
+Real money is positioning long, and the chart gives it room to run. Conviction here is **MEDIUM**, so size it accordingly. This is a tactical long inside a hot theme, backed by a clean reward-to-risk setup and an options tape that&#x27;s loudly bullish.
+
+The pullback that fired into this setup tested well, with a risk-adjusted read of **1.10**. Price sits **21.5%** below the 52-week high, which leaves headroom rather than chasing into resistance. The relative strength against the broad market is strong, up **30.8%** over the last 63 sessions, so the name is leading, not lagging.
+
+The single cleanest argument is the flow. Buyers paid **56.38M** in call premium against just **19.54M** in puts on the most recent tape. That is real conviction in real dollars, and it shows up on a name that already has **21.5%** of clear space to its prior high on a **1.5:1** setup. You have a theme tailwind, a leading chart, and the only options name on the desk that earns a tradeable chain. Those three things lining up is the entire case.
+
+## Technical Analysis
+
+&gt; 📈 Insert the IREN weekly chart here (TradingView): IREN weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $77.21 · mark support near $48.46.
+
+The trend is up and intact. Price trades above its 30-week line, and that line is sloping higher by **2.0%**, which is the long-term posture you want before committing to a momentum name. The structure says trend, the slope says it&#x27;s still building.
+
+Price closed at **59.11** against an entry reference of **59.96**. The 52-week high is **76.87** and the low is **9.52**, which puts the stock at **76.9%** of its yearly high and roughly **73.6%** of the way up its full range. You&#x27;re buying strength that has already done most of the heavy lifting off the bottom, where the name is up **569.9%** from its 52-week low, while still leaving **21.5%** of room back to the high.
+
+RSI reads **53.2**, the middle of the range. That&#x27;s the read you want. The name isn&#x27;t overbought into resistance, and it isn&#x27;t broken. There&#x27;s fuel left. Momentum over the last 21 sessions is **+25.6%** and over 63 sessions **+43.9%**, so the recent push is accelerating, not fading.
+
+The levels frame the trade. Entry sits at **59.96**, the stop at **48.46**, and the first target at **77.21**, which lines up almost exactly with the prior 52-week high. A second target stretches to **85.84**. That gives you **28.8%** of upside to the first target and **43.2%** to the second, against **19.2%** of risk to the stop. What you want to see next is a push toward **77.21** carried by volume above that 20-day average. A breakout on thin tape is the warning sign.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $21.43B |
+| Enterprise value | $23.18B |
+| 52-week range | $9.52 - $76.87 |
+| Dividend yield | None |
+| Beta | 4.23 |
+| Trailing P/E | 77.9 |
+| Forward P/E | -63.8 |
+| Price / sales | 28.3 |
+| Price / book | 7.7 |
+| Revenue (TTM) | $757M  (+0.0% YoY) |
+| Revenue / share | $2.65 |
+| Net income (TTM) | $158M |
+| EPS (TTM / fwd) | 0.77 / -0.94 |
+| Gross margin | 68.4% |
+| Operating margin | -64.5% |
+| Profit margin | 20.9% |
+| Operating cash flow / share | $1.10 |
+| Free cash flow / share | $-6.47 |
+| Total cash / share | $6.19 |
+| Debt / equity | 1.49 |
+| Current ratio | 3.72 |
+| Return on equity | 7.7% |
+| Analyst consensus | buy - mean target $80.93 (15 analysts) |
+
+The top line and the cash picture pull in opposite directions, and you need to hold both ideas at once.
+
+The weak spot is the cash burn from buildout. That gap is capital spending. A company building power and data centers spends ahead of revenue, and that&#x27;s exactly what these numbers show. The operating margin reads **-64.5%** even as the profit margin is positive, which tells you the reported profit leans on items below the operating line. Be clear-eyed about that.
+
+The balance sheet can carry the build for now. Cash per share is **6.19**, the current ratio is **3.72**, and the quick ratio is **3.5**, so near-term liquidity is healthy. Total debt sits at **3.96B** with debt-to-equity at **1.49**, which is real leverage but not extreme for a capital-heavy operator. Book value per share is **7.81**.
+
+Valuation is rich and the forward picture is the catch. Trailing P/E is **77.9** and price-to-sales is **28.3**, both stretched. The forward EPS estimate is **-0.94**, which flips the forward P/E negative at **-63.8**. The street still leans positive, with **15** analysts at a buy and a mean target of **80.93**, above the second technical target. You are paying a premium for the buildout and trusting it converts. The beta of **4.23** means this name will move several times harder than the market in both directions.
+
+## Why Now
+
+The timing is driven by flow and theme, not by an event. There&#x27;s no specific near-term catalyst on the calendar to anchor to, so be honest about that. Earnings sit roughly **69** days out, well clear of this trade&#x27;s hold window, which removes a binary risk rather than adding one.
+
+What&#x27;s live is the positioning. On the most recent tape, **203881** day calls traded against **173655** puts, and the premium split was lopsided: **56.38M** spent on calls versus **19.54M** on puts. That is buyers paying up for upside, not hedging fear. When call premium outweighs put premium by nearly three to one on a leading chart, the smart read is that someone with size wants exposure before the next leg.
+
+The theme tailwind backs it. Crypto is running, the sector momentum tag reads **RIDING**, and IREN is the operator with real infrastructure inside that move. You have the macro wind, the relative strength of **+30.8%** versus the market, and a flow tape that agrees. The setup is about riding the theme while the structure holds, with the **77.21** high as the magnet.
+
+## Risk Factors
+
+The most credible way you lose money here is the move being partly spent. The desk read flags this as a high score, which means a good chunk of the energy is already in the price. After a **+43.9%** run over 63 sessions, a sharp mean reversion is the obvious bear case, and that&#x27;s the risk you accept at this entry.
+
+Volatility is the second risk, and it&#x27;s structural. With a beta of **4.23**, this name swings violently. Crypto-linked equities can drop **15%** to **20%** on a bad day in Bitcoin with no company-specific news at all. If financing tightens or Bitcoin sells off hard, the buildout thesis gets repriced fast.
+
+The valuation leaves no margin for error. At a price-to-sales of **28.3** and a negative forward EPS of **-0.94**, you&#x27;re paying for execution that hasn&#x27;t fully landed. Any stumble in the data center ramp gets punished against that multiple.
+
+The invalidation is clean. A close below the stop at **48.46** breaks the structure and ends the trade. That&#x27;s **19.2%** of risk from entry, which is wide, so this is a trade you size small. The lack of a dated catalyst is its own timing risk: without an event to force the move, the position depends on the theme staying hot. If crypto cools, the flow disappears with it.
+
+## Bringing It All Together
+
+- Dual focus: IREN owns power, hardware, and data centers across Canada and Australia, mining Bitcoin today with the infrastructure to serve higher-value compute.
+- Market need: cheap power plus dense buildout is the scarcest resource in the compute boom, and IREN owns its stack from substation to rack.
+
+- Flow: **56.38M** in call premium against **19.54M** in puts, real bullish positioning on a leading chart.
+- Technicals: price above a rising 30-week line (slope **+2.0%**), RSI at **53.2** with room left, and **21.5%** of clear space to the high.
+- Levels: entry **59.96**, stop **48.46**, target **77.21** then **85.84**, for **28.8%** to **43.2%** of upside against **19.2%** of risk on a **1.5:1** base.
+
+## Conclusion
+
+This is a tactical long with MEDIUM conviction, and you trade it that way. The case is a leading chart inside a hot theme, backed by an options tape that paid **56.38M** for calls while spending only **19.54M** on puts. Price sits **21.5%** under its high with RSI at **53.2**, above a rising 30-week line, with **28.8%** of room to the first target at **77.21**.
+
+The honest counterweight is the burn and the beta. There&#x27;s no dated catalyst to force the move, so the position lives and dies with the crypto theme staying hot.
+
+Keep the size small, respect the **48.46** stop as the line that ends the trade, and let the flow and the theme carry it toward **77.21**. The setup is clean. The risk is real. Both things are true.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
