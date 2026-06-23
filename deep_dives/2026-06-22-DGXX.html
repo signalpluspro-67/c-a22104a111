@@ -1,0 +1,233 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Power Play Behind the Utility Label — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Power Play Behind the Utility Label</h1>
+<div class="subtitle">Digi Power X is a small-cap energy and data-center bet riding the one sector that is actually leading. Here is the honest read, weak spots included.</div>
+<div class="meta">EOD 2026-06-22 · DGXX · written from the desk · model claude-opus-4-8</div>
+<div class="chips"><span class="chip">DGXX</span>
+<span class="chip">Utilities</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-06-22: entry <b>$6.66</b> &rarr; <b>$6.66</b> (as of 2026-06-22) · <span class="pos">+0.0%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Utilities are leading this market, and that is a strange place to find leadership. The group sits in a momentum state and at the early stage of its acceleration. Early strength like this matters because you are stepping into a trend with room to extend rather than one already exhausted.</p>
+<p>The driver is electricity. Data centers, AI training, and crypto mining all consume enormous power, and the companies that own generation and grid capacity are the ones collecting the checks. Independent power producers sit at the front of that trade. They can sign contracts with industrial buyers who pay for certainty, and they sell into energy markets that have grown tighter as demand keeps climbing.</p>
+<p>This is why a sleepy, defensive sector suddenly trades like a growth theme. The utility label hides a real shift. Power is the bottleneck for everything the digital economy wants to do next.</p>
+<p>That backdrop rewards a name that owns the power and rents it to the buyers who need it most. Digi Power X is exactly that kind of hybrid, and it comes to you <strong>21.3%</strong> below its high while its sector pushes forward.</p>
+<h2>Introducing $DGXX</h2>
+<p>Digi Power X builds data centers and the energy assets that feed them. It runs three lines of business: cryptocurrency mining, sales of energy and electricity, and colocation services where it rents out space and power to industrial clients.</p>
+<p>The company was Digihost Technology until <strong>March 2025</strong>, when it renamed to Digi Power X to mark the move from a pure crypto miner toward an energy infrastructure operator.</p>
+<p>The edge is the combination. Owning both the power and the racks gives the company a switch. It can mine when crypto economics are rich and lean on colocation revenue when they are not. That flexibility is the entire pitch, and it is why the market is willing to treat a small operator as a piece of the data-center buildout rather than a commodity miner.</p>
+<h2>The Thesis</h2>
+<p>You are buying a pullback inside a strong uptrend, with the one sector that is actually leading at your back. DGXX closed at <strong>6.66</strong>, sitting <strong>21.3%</strong> under its 52-week high of <strong>9.20</strong>, with RSI at a neutral <strong>50.6</strong>. That gives you room toward the high without chasing a stock that is already stretched.</p>
+<p>Liquidity backs the setup. The read that flagged it is the desk&#x27;s cleanest pullback pattern, and it fired on a name riding a sector in force. Relative strength against the broad market is <strong>+170.6%</strong> over the last three months, so DGXX has been beating the index by a wide margin.</p>
+<p>Be honest about the conviction. It is medium at best, and it leans low. Only one read fired here, the confluence is thin, and the reward to risk on the trade is <strong>1.5</strong>. The clean move is to size this small, around <strong>1%</strong> of your book, and let the setup prove itself before you commit more. You are buying a momentum continuation, paid for by a balance sheet, not by earnings.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-06-22-DGXX.png" alt="DGXX weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=DGXX&interval=1W" target="_blank" rel="noopener">📈 Open the DGXX weekly chart on TradingView ↗</a><figcaption>DGXX weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $8.82 · mark support near $5.22.</figcaption></figure>
+<p>The long trend is up and intact. DGXX trades above its 30-week line, and that line slopes higher at <strong>+24.4%</strong>, which tells you the multi-month tide is still rising. The stock sits about two-thirds of the way up its 1-year range and at <strong>72.4%</strong> of its 52-week high, so it has cooled off the top without breaking the structure.</p>
+<p>The near-term picture is a healthy reset. Price is off <strong>11.9%</strong> over the past month while the three-month return still reads <strong>+185.9%</strong>. That is what a pullback inside a powerful advance looks like. RSI at <strong>50.6</strong> is dead neutral, neither overbought nor washed out, which is the window you want for an entry that is not a chase.</p>
+<p>Use the levels as your map. Entry is <strong>6.66</strong>, the stop sits at <strong>5.22</strong>, and the first target is <strong>8.82</strong>, with a stretch objective at <strong>9.90</strong>. That stop is roughly <strong>21.6%</strong> below entry, which is wide, and that width is the honest cost of trading a stock with an average true range of <strong>0.72</strong> and a beta near <strong>6.09</strong>. The move to first target is about <strong>+32.4%</strong>, and the stretch target is about <strong>+48.6%</strong> higher.</p>
+<p>Volume is the tell to watch from here. A push back toward <strong>8.82</strong> that comes on heavier-than-usual turnover would confirm buyers are stepping in rather than letting the stock drift. A grind higher on falling volume would be the warning that the bounce is hollow.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$610M</td></tr><tr><td class="k">Enterprise value</td><td class="v">$556M</td></tr><tr><td class="k">52-week range</td><td class="v">$1.53 - $9.20</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">6.09</td></tr><tr><td class="k">Price / sales</td><td class="v">19.3</td></tr><tr><td class="k">Price / book</td><td class="v">4.0</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$32M  (-26.8% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$0.60</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$-31M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">-0.66</td></tr><tr><td class="k">Gross margin</td><td class="v">11.8%</td></tr><tr><td class="k">Operating margin</td><td class="v">-75.6%</td></tr><tr><td class="k">Profit margin</td><td class="v">-99.0%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$-0.24</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$-0.45</td></tr><tr><td class="k">Total cash / share</td><td class="v">$0.64</td></tr><tr><td class="k">Current ratio</td><td class="v">12.6</td></tr><tr><td class="k">Return on equity</td><td class="v">-43.8%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">none - mean target $12.00 (1 analysts)</td></tr></tbody></table>
+<p>The financials are the weak part of this story, and you should know that going in. Revenue over the trailing year is <strong>$31.7M</strong>, and it shrank <strong>26.8%</strong>. Margins are negative across the board: gross margin is a thin <strong>11.8%</strong>, operating margin is <strong>-75.6%</strong>, and net margin is <strong>-99%</strong>.</p>
+<p>The one genuine bright spot is the balance sheet. DGXX carries <strong>$0</strong> of total debt, a current ratio of <strong>12.6</strong>, and a quick ratio of <strong>10.25</strong>. That gives the company a cushion to fund its buildout and absorb losses without a creditor at the door. Cash sits at <strong>0.64</strong> per share, and book value is <strong>1.67</strong> per share.</p>
+<p>Valuation makes the demands clear. You are paying <strong>19.3</strong> times sales and <strong>4.0</strong> times book for a business that is losing money on every line and shrinking on the top line. Return on equity is <strong>-43.8%</strong> and return on assets is <strong>-16%</strong>. This is a story stock priced on what the data-center pivot could become, not on what it earns today. The single analyst covering it carries a target of <strong>12.0</strong>, which tells you the bull case exists but the coverage is thin. Buy this for the price action and the sector wind, and never for the income statement.</p>
+<h2>Why Now</h2>
+<p>The timing case rests on the sector and the flow, not on an event. Utilities are in a momentum state at an early stage of acceleration, and DGXX is the cleanest way the desk found to ride that wind on a small cap with real liquidity. Buying an early-stage sector move beats buying a late one, and that is the edge in the calendar here.</p>
+<p>The options tape is loud and one-sided in the bulls&#x27; favor. The dollars are even more lopsided: <strong>$3.88M</strong> of call premium versus <strong>$0.24M</strong> of put premium. Traders are paying up for upside, and very few are buying protection.</p>
+<p>Be straight about the catalyst. There is no confirmed near-term event. No earnings date inside the next two weeks has been verified, and there is no clean confirmation that the recent tape is free of adverse news. Treat this as a momentum and flow trade, not an event trade. The reason to act now is the sector posture and the pullback location, full stop.</p>
+<h2>Risk Factors</h2>
+<p>The biggest risk is the maturity of the move. DGXX has run <strong>282.9%</strong> off its 52-week low of <strong>1.53</strong>. A move that large is late, and in a small cap a single bad session can be violent. The wide <strong>5.22</strong> stop exists for that reason, and it can still be run on a gap.</p>
+<p>The evidence is thinner than the headline conviction suggests. Only one read fired, so there is no stack of confirming signals behind the entry. The reward to risk is only <strong>1.5</strong>, which leaves little margin if the stop is tested. A beta near <strong>6.09</strong> means this stock moves far more than the index in both directions.</p>
+<p>The fundamentals are their own risk. A secondary offering, a guidance cut, or a downgrade would hit hard and fast. There is also the classification question. A <strong>$6.66</strong> stock tagged Utilities that mines crypto deserves the scrutiny of whether you are buying a power producer or a miner wearing a utility badge.</p>
+<p>The invalidation is clean. A daily close below <strong>5.22</strong> voids the trade. So does a break of the uptrend structure or any real adverse catalyst that surfaces, since none has been ruled out.</p>
+<h2>Bringing It All Together</h2>
+<p>- <strong>Sector wind</strong>: Utilities lead the market in a momentum state at early-stage acceleration, and DGXX rides it with relative strength of <strong>+170.6%</strong> over three months.<br>- <strong>Location</strong>: price sits <strong>21.3%</strong> below the <strong>9.20</strong> high with RSI at a neutral <strong>50.6</strong>, room to the upside without chasing.<br>- <strong>Structure</strong>: above the 30-week line sloping <strong>+24.4%</strong>, a healthy pullback inside a <strong>+185.9%</strong> three-month advance.</p>
+<p>- <strong>Levels</strong>: entry <strong>6.66</strong>, stop <strong>5.22</strong>, target <strong>8.82</strong>, stretch <strong>9.90</strong>, reward to risk <strong>1.5</strong>.<br>Size small.</p>
+<h2>Conclusion</h2>
+<p>DGXX is a clean pullback in the strongest sector on the board, and that is a real reason to own it. You get a liquid small cap <strong>21.3%</strong> off its high, a neutral RSI at <strong>50.6</strong>, a 30-week line rising <strong>24.4%</strong>, and an options tape leaning hard bullish. The map is simple: enter near <strong>6.66</strong>, stop at <strong>5.22</strong>, aim for <strong>8.82</strong> and then <strong>9.90</strong>.</p>
+<p>The honest counterweight is just as important. The confluence is thin, the financials lose money on every line, the company burns cash, and the reward to risk is a modest <strong>1.5</strong> with no confirmed catalyst. This is a momentum trade backed by a clean balance sheet, and you should size it that way, at the low end of your range, with the <strong>5.22</strong> stop as your hard line. Take the setup for what it is and respect the risk that comes with a small cap that has already tripled.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Digi Power X Inc. (DGXX) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $610M; 52-week range $2-$9; Revenue $32M -27% YoY; Net income $-31M; Free cash flow/share $-0.45; Return on equity -44%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Digi Power X Inc. (DGXX) inside the Utilities space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): DGXX is a clean utility-sector pullback with the strongest tailwind on the board, since utilities are the one group actually leading right now. It sits **21.3%** below its 52-week high with RSI at a neutral **50.6**, so you have room withou. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Power Play Behind the Utility Label
+
+*Digi Power X is a small-cap energy and data-center bet riding the one sector that is actually leading. Here is the honest read, weak spots included.*
+
+## The Big Picture
+
+Utilities are leading this market, and that is a strange place to find leadership. The group sits in a momentum state and at the early stage of its acceleration. Early strength like this matters because you are stepping into a trend with room to extend rather than one already exhausted.
+
+The driver is electricity. Data centers, AI training, and crypto mining all consume enormous power, and the companies that own generation and grid capacity are the ones collecting the checks. Independent power producers sit at the front of that trade. They can sign contracts with industrial buyers who pay for certainty, and they sell into energy markets that have grown tighter as demand keeps climbing.
+
+This is why a sleepy, defensive sector suddenly trades like a growth theme. The utility label hides a real shift. Power is the bottleneck for everything the digital economy wants to do next.
+
+That backdrop rewards a name that owns the power and rents it to the buyers who need it most. Digi Power X is exactly that kind of hybrid, and it comes to you **21.3%** below its high while its sector pushes forward.
+
+## Introducing $DGXX
+
+Digi Power X builds data centers and the energy assets that feed them. It runs three lines of business: cryptocurrency mining, sales of energy and electricity, and colocation services where it rents out space and power to industrial clients.
+
+The company was Digihost Technology until **March 2025**, when it renamed to Digi Power X to mark the move from a pure crypto miner toward an energy infrastructure operator.
+
+The edge is the combination. Owning both the power and the racks gives the company a switch. It can mine when crypto economics are rich and lean on colocation revenue when they are not. That flexibility is the entire pitch, and it is why the market is willing to treat a small operator as a piece of the data-center buildout rather than a commodity miner.
+
+## The Thesis
+
+You are buying a pullback inside a strong uptrend, with the one sector that is actually leading at your back. DGXX closed at **6.66**, sitting **21.3%** under its 52-week high of **9.20**, with RSI at a neutral **50.6**. That gives you room toward the high without chasing a stock that is already stretched.
+
+Liquidity backs the setup. The read that flagged it is the desk&#x27;s cleanest pullback pattern, and it fired on a name riding a sector in force. Relative strength against the broad market is **+170.6%** over the last three months, so DGXX has been beating the index by a wide margin.
+
+Be honest about the conviction. It is medium at best, and it leans low. Only one read fired here, the confluence is thin, and the reward to risk on the trade is **1.5**. The clean move is to size this small, around **1%** of your book, and let the setup prove itself before you commit more. You are buying a momentum continuation, paid for by a balance sheet, not by earnings.
+
+## Technical Analysis
+
+&gt; 📈 Insert the DGXX weekly chart here (TradingView): DGXX weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $8.82 · mark support near $5.22.
+
+The long trend is up and intact. DGXX trades above its 30-week line, and that line slopes higher at **+24.4%**, which tells you the multi-month tide is still rising. The stock sits about two-thirds of the way up its 1-year range and at **72.4%** of its 52-week high, so it has cooled off the top without breaking the structure.
+
+The near-term picture is a healthy reset. Price is off **11.9%** over the past month while the three-month return still reads **+185.9%**. That is what a pullback inside a powerful advance looks like. RSI at **50.6** is dead neutral, neither overbought nor washed out, which is the window you want for an entry that is not a chase.
+
+Use the levels as your map. Entry is **6.66**, the stop sits at **5.22**, and the first target is **8.82**, with a stretch objective at **9.90**. That stop is roughly **21.6%** below entry, which is wide, and that width is the honest cost of trading a stock with an average true range of **0.72** and a beta near **6.09**. The move to first target is about **+32.4%**, and the stretch target is about **+48.6%** higher.
+
+Volume is the tell to watch from here. A push back toward **8.82** that comes on heavier-than-usual turnover would confirm buyers are stepping in rather than letting the stock drift. A grind higher on falling volume would be the warning that the bounce is hollow.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $610M |
+| Enterprise value | $556M |
+| 52-week range | $1.53 - $9.20 |
+| Dividend yield | None |
+| Beta | 6.09 |
+| Price / sales | 19.3 |
+| Price / book | 4.0 |
+| Revenue (TTM) | $32M  (-26.8% YoY) |
+| Revenue / share | $0.60 |
+| Net income (TTM) | $-31M |
+| EPS (TTM / fwd) | -0.66 |
+| Gross margin | 11.8% |
+| Operating margin | -75.6% |
+| Profit margin | -99.0% |
+| Operating cash flow / share | $-0.24 |
+| Free cash flow / share | $-0.45 |
+| Total cash / share | $0.64 |
+| Current ratio | 12.6 |
+| Return on equity | -43.8% |
+| Analyst consensus | none - mean target $12.00 (1 analysts) |
+
+The financials are the weak part of this story, and you should know that going in. Revenue over the trailing year is **$31.7M**, and it shrank **26.8%**. Margins are negative across the board: gross margin is a thin **11.8%**, operating margin is **-75.6%**, and net margin is **-99%**.
+
+The one genuine bright spot is the balance sheet. DGXX carries **$0** of total debt, a current ratio of **12.6**, and a quick ratio of **10.25**. That gives the company a cushion to fund its buildout and absorb losses without a creditor at the door. Cash sits at **0.64** per share, and book value is **1.67** per share.
+
+Valuation makes the demands clear. You are paying **19.3** times sales and **4.0** times book for a business that is losing money on every line and shrinking on the top line. Return on equity is **-43.8%** and return on assets is **-16%**. This is a story stock priced on what the data-center pivot could become, not on what it earns today. The single analyst covering it carries a target of **12.0**, which tells you the bull case exists but the coverage is thin. Buy this for the price action and the sector wind, and never for the income statement.
+
+## Why Now
+
+The timing case rests on the sector and the flow, not on an event. Utilities are in a momentum state at an early stage of acceleration, and DGXX is the cleanest way the desk found to ride that wind on a small cap with real liquidity. Buying an early-stage sector move beats buying a late one, and that is the edge in the calendar here.
+
+The options tape is loud and one-sided in the bulls&#x27; favor. The dollars are even more lopsided: **$3.88M** of call premium versus **$0.24M** of put premium. Traders are paying up for upside, and very few are buying protection.
+
+Be straight about the catalyst. There is no confirmed near-term event. No earnings date inside the next two weeks has been verified, and there is no clean confirmation that the recent tape is free of adverse news. Treat this as a momentum and flow trade, not an event trade. The reason to act now is the sector posture and the pullback location, full stop.
+
+## Risk Factors
+
+The biggest risk is the maturity of the move. DGXX has run **282.9%** off its 52-week low of **1.53**. A move that large is late, and in a small cap a single bad session can be violent. The wide **5.22** stop exists for that reason, and it can still be run on a gap.
+
+The evidence is thinner than the headline conviction suggests. Only one read fired, so there is no stack of confirming signals behind the entry. The reward to risk is only **1.5**, which leaves little margin if the stop is tested. A beta near **6.09** means this stock moves far more than the index in both directions.
+
+The fundamentals are their own risk. A secondary offering, a guidance cut, or a downgrade would hit hard and fast. There is also the classification question. A **$6.66** stock tagged Utilities that mines crypto deserves the scrutiny of whether you are buying a power producer or a miner wearing a utility badge.
+
+The invalidation is clean. A daily close below **5.22** voids the trade. So does a break of the uptrend structure or any real adverse catalyst that surfaces, since none has been ruled out.
+
+## Bringing It All Together
+
+- **Sector wind**: Utilities lead the market in a momentum state at early-stage acceleration, and DGXX rides it with relative strength of **+170.6%** over three months.
+- **Location**: price sits **21.3%** below the **9.20** high with RSI at a neutral **50.6**, room to the upside without chasing.
+- **Structure**: above the 30-week line sloping **+24.4%**, a healthy pullback inside a **+185.9%** three-month advance.
+
+- **Levels**: entry **6.66**, stop **5.22**, target **8.82**, stretch **9.90**, reward to risk **1.5**.
+Size small.
+
+## Conclusion
+
+DGXX is a clean pullback in the strongest sector on the board, and that is a real reason to own it. You get a liquid small cap **21.3%** off its high, a neutral RSI at **50.6**, a 30-week line rising **24.4%**, and an options tape leaning hard bullish. The map is simple: enter near **6.66**, stop at **5.22**, aim for **8.82** and then **9.90**.
+
+The honest counterweight is just as important. The confluence is thin, the financials lose money on every line, the company burns cash, and the reward to risk is a modest **1.5** with no confirmed catalyst. This is a momentum trade backed by a clean balance sheet, and you should size it that way, at the low end of your range, with the **5.22** stop as your hard line. Take the setup for what it is and respect the risk that comes with a small cap that has already tripled.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
