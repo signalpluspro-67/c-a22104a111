@@ -1,0 +1,242 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Building Behind the Buildout — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Building Behind the Buildout</h1>
+<div class="subtitle">Legence sells the picks and shovels of the data-center boom, and the stock just handed you a 17% dip in an uptrend.</div>
+<div class="meta">EOD 2026-06-23 · LGN · written from the desk · model claude-opus-4-8</div>
+<div class="chips"><span class="chip">LGN</span>
+<span class="chip">Industrials</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-06-23: entry <b>$84.81</b> &rarr; <b>$84.81</b> (as of 2026-06-23) · <span class="pos">+0.0%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>The data-center buildout is the most capital-hungry construction cycle in a generation, and the companies that win are the ones that wire, cool, and pipe the boxes rather than the ones that fill them. Every gigawatt of compute needs HVAC, mechanical, electrical, and plumbing systems engineered to mission-critical tolerances. That demand lands on a small set of specialist engineering and installation firms long before it shows up in chip revenue.</p>
+<p>Industrials is one of three sectors actually leading the broad market right now. The desk has the group tagged as <strong>MOMENTUM</strong> and still accelerating (<strong>RIDING</strong>), which means money is rotating in, not out. When a sector leads and a quality name inside it pulls back, you get the cleanest kind of entry: a strong horse resting, not a broken one.</p>
+<p>The structural shift here is energy efficiency meeting compute density. Buildings consume a huge share of US energy, and the operators paying for new data centers and life-sciences labs care about both uptime and power draw. That puts a premium on firms that can design a system to run cooler and cheaper, then install and maintain it. The buildout rewards the integrator who does both ends.</p>
+<p>This backdrop favors a focused engineering-services operator with real backlog and real cash flow. It rewards a company like Legence.</p>
+<h2>Introducing $LGN</h2>
+<p>Legence Corp. is a US building-systems and engineering-services firm based in San Jose, California, founded back in <strong>1914</strong> and now employing roughly <strong>7,000</strong> people. It designs, installs, and maintains the mechanical, electrical, and plumbing systems that keep mission-critical buildings running. Think data centers, technology campuses, life-sciences labs, hospitals, and schools.</p>
+<p>The business runs through two segments. Engineering &amp; Consulting designs HVAC and MEP systems, builds energy-reduction and sustainability strategies, and handles program and project management. Installation &amp; Maintenance fabricates and installs those systems in new and existing buildings, then provides the ongoing preventative maintenance, emergency repair, and system testing that turns a one-time build into a recurring revenue stream.</p>
+<p>The edge sits in owning both ends of the job. Legence can engineer a more efficient system, install it, and then maintain it for years. That dual focus is rare in engineering and construction, where most players specialize in one slice. It also gives the company a foothold in exactly the end markets that are spending hardest right now: data centers, technology, and life sciences. Legence is Blackstone-backed and a recent public arrival, which matters for the trade and for the risk, both covered below.</p>
+<h2>The Thesis</h2>
+<p>The call is a clean pullback long in a sector that is leading. Legence sits <strong>17.1%</strong> below its 52-week high of <strong>107.24</strong> after a vicious run, and the stock is still above its 30-week trend line. That combination, a quality name resting inside an uptrend in a momentum sector, is the setup the desk surfaced this name on.</p>
+<p>Conviction here is <strong>MEDIUM</strong>, and I want to be straight with you about why it is not higher. The setup rests on a single desk read rather than a stack of confirming signals. One clean technical read plus a real sector tailwind got it ranked, and the room to the upside target is deeper than the names trading above their own highs. That is enough to act on. It is not enough to oversize.</p>
+<p>The reward-to-risk is <strong>1.5</strong> to one. You are risking <strong>12.4%</strong> down to the stop to make <strong>18.6%</strong> to the first target. The fundamentals behind the chart are loud, with revenue more than doubling and free cash flow already real, which gives the technical setup something to lean on. Size this as a stock-only swing with a hard stop, and let the sector tailwind do the work.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-06-23-LGN.png" alt="LGN weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=LGN&interval=1W" target="_blank" rel="noopener">📈 Open the LGN weekly chart on TradingView ↗</a><figcaption>LGN weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $100.56 · mark support near $74.31.</figcaption></figure>
+<p>The trend is intact and the stock is resting, which is the whole point. Legence closed at <strong>84.81</strong>, sitting at <strong>79.1%</strong> of its 52-week high and in the upper third of its yearly range at <strong>72.1%</strong> of the band between <strong>26.96</strong> and <strong>107.24</strong>. Price is above the 30-week line, so the primary uptrend is still in force. The pullback has taken it <strong>17.1%</strong> off the high without breaking structure.</p>
+<p>Momentum has cooled to neutral, and that is what you want at an entry. RSI reads <strong>48.8</strong>, dead center, with no oversold panic and no overbought stretch. The 63-day return is still a massive <strong>+62.6%</strong>, and the stock has outperformed the broad market by <strong>+50.7%</strong> over that same window. The shorter 21-day return of <strong>+3.5%</strong> tells you the violent leg is over and the stock is consolidating its gains rather than rolling over.</p>
+<p>Use the levels as your map. Entry is <strong>84.81</strong>, with the stop set at <strong>74.31</strong> and the first target at <strong>100.56</strong>. The stop sits below recent support and gives the position room: with a 14-day average true range of <strong>5.25</strong>, the <strong>74.31</strong> line is roughly two ATRs of breathing space under the entry, far enough that normal noise should not stop you out. A second target stretches to <strong>108.44</strong>, which is <strong>+27.9%</strong> from here and just above the prior 52-week high.</p>
+<p>Volume confirmation is the missing piece you want to see before the target prints. A push back toward the <strong>100.56</strong> level on rising volume would tell you institutions are stepping back in. A drift higher on thin tape would be weaker and would argue for patience or a tighter trail.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$14.05B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$7.96B</td></tr><tr><td class="k">52-week range</td><td class="v">$26.96 - $107.24</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Forward P/E</td><td class="v">48.3</td></tr><tr><td class="k">Price / sales</td><td class="v">4.6</td></tr><tr><td class="k">Price / book</td><td class="v">13.9</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$3.08B  (+105.1% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$45.77</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$4M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">-0.33 / 1.77</td></tr><tr><td class="k">Gross margin</td><td class="v">19.8%</td></tr><tr><td class="k">Operating margin</td><td class="v">3.2%</td></tr><tr><td class="k">Profit margin</td><td class="v">-0.7%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$4.52</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$4.31</td></tr><tr><td class="k">Total cash / share</td><td class="v">$3.20</td></tr><tr><td class="k">Debt / equity</td><td class="v">1.24</td></tr><tr><td class="k">Current ratio</td><td class="v">1.3</td></tr><tr><td class="k">Return on equity</td><td class="v">-7.2%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">strong buy - mean target $106.41 (17 analysts)</td></tr></tbody></table>
+<p>The growth is genuinely rare for an engineering firm. Backlog that size is forward visibility you can underwrite. It tells you the order book is full before the work is even recognized.</p>
+<p>Cash generation is the part that anchors the trade. That is real money, not an accounting story.</p>
+<p>Now the honest weak spots. Reported earnings are still thin: trailing EPS is <strong>-0.33</strong> and the net margin is <strong>-0.7%</strong>, so the headline profit line is barely above water even as cash flow booms. The forward picture improves to <strong>1.77</strong> of EPS, but that puts the forward P/E at <strong>48.3</strong> and the price-to-book at a steep <strong>13.9</strong>. You are paying a premium multiple. The most important number to watch is the margin. Adjusted gross margin slipped to <strong>18.7%</strong> from <strong>21.9%</strong> a year ago on mix shift, with the trailing gross margin around <strong>19.8%</strong>. The revenue blowout is partly masking softer unit economics, and that is the figure that decides whether this stays a quality compounder.</p>
+<p>Analysts are firmly behind it, for what that is worth. Seventeen of them carry a <strong>strong_buy</strong> rating with a mean target of <strong>106.41</strong>, close to the prior high.</p>
+<h2>Why Now</h2>
+<p>The timing case rests on sector leadership and a rested chart, because there is no near-term hard catalyst. Q1 was reported on <strong>May 14</strong>, and the next earnings date sits around <strong>August 9, 2026</strong>, well outside any two-week window. No event is pending. You are buying the trend and the tailwind, not an event.</p>
+<p>The macro pull is the real driver. Industrials is leading and accelerating, and Legence sits in the exact end markets, data centers and life sciences, soaking up the most capital. That <strong>5.4B</strong> backlog converts into recognized revenue over the coming quarters regardless of the calendar. The sector momentum gives the pullback a reason to resolve up rather than drift.</p>
+<p>Analyst action has been supportive, with recent price-target raises from BofA at <strong>105</strong>, alongside Stifel at <strong>77</strong> and Goldman at <strong>72</strong>. Read those carefully. The BofA target and the <strong>106.41</strong> average back the upside case, while the Stifel and Goldman numbers sit below the entry. The bull target leans on the high end of the range, so treat the consensus as a tailwind rather than a guarantee.</p>
+<p>The options chain offers no help here. Daily call volume was a trivial <strong>103</strong> contracts against <strong>0</strong> puts, with call premium of just <strong>0.05M</strong>. The chain is too thin to trade and too thin to read as a flow signal. This is a stock-only swing.</p>
+<h2>Risk Factors</h2>
+<p>The single biggest risk is that the whole case rides on one desk read rather than a stack of confirming signals. A thin signal is a real signal, and it is also a fragile one. Respect that by sizing small.</p>
+<p>The margin slide is the fundamental risk that could turn the growth story sour. Adjusted gross margin fell to <strong>18.7%</strong> from <strong>21.9%</strong>, and if that compression continues, the <strong>105%</strong> revenue surge becomes a story about chasing low-quality work. A guidance cut or a print confirming that slide would damage the bull case before price even reaches your stop.</p>
+<p>The sponsor overhang is the supply risk. Blackstone backs the company and sold roughly <strong>15.4M</strong> shares in an April secondary. A recent IPO with an ongoing sponsor selldown means more stock can hit the market, capping rallies and pressuring the chart independent of the business doing fine.</p>
+<p>The valuation leaves no cushion. A forward P/E of <strong>48.3</strong> and a price-to-book of <strong>13.9</strong> price in continued execution. Any stumble gets punished harder at that multiple.</p>
+<p>The invalidation is clean and mechanical. A close below <strong>74.31</strong> kills the thesis for a roughly <strong>12%</strong> loss from the <strong>84.81</strong> entry. With no catalyst on the calendar, timing risk also runs against you: the trade has to work on the trend alone, and a dead stretch of tape can stop you out before the <strong>August</strong> report ever arrives.</p>
+<h2>Bringing It All Together</h2>
+<p>- Dual focus: Legence both engineers and installs the mechanical, electrical, and HVAC systems that mission-critical buildings need, owning both ends of the job.<br>- Market need: data centers and life sciences are spending hardest, and a record <strong>5.4B</strong> backlog gives forward visibility most engineering firms never have.</p>
+<p>- Sector tailwind: Industrials is leading and accelerating (<strong>MOMENTUM</strong>, <strong>RIDING</strong>), and price holds above its 30-week trend line at <strong>79.1%</strong> of the 52-week high.<br>- Levels: entry <strong>84.81</strong>, stop <strong>74.31</strong>, first target <strong>100.56</strong> for <strong>+18.6%</strong>, second target <strong>108.44</strong> for <strong>+27.9%</strong>, at a <strong>1.5</strong> reward-to-risk.</p>
+<h2>Conclusion</h2>
+<p>Legence is a quality engineering-services compounder sitting in the right sector at the right moment, and the <strong>17.1%</strong> pullback to <strong>84.81</strong> hands you a defined-risk entry inside an intact uptrend.</p>
+<p>The case is honest about its limits. It rests on a single read, the margin at <strong>18.7%</strong> is sliding, the multiple at <strong>48.3</strong> times forward earnings is rich, and Blackstone can keep selling. That is why this is a <strong>MEDIUM</strong>-conviction, small-size swing with a hard stop at <strong>74.31</strong>, rather than a core position. Buy the trend, respect the <strong>1.5</strong> reward-to-risk, and let the <strong>74.31</strong> line make the decision for you if it comes to that.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Legence Corp. (LGN) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $14.05B; 52-week range $27-$107; Revenue $3.08B +105% YoY; Net income $4M; Free cash flow/share $4.31; Debt-to-equity 1.24; Return on equity -7%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Legence Corp. (LGN) inside the Industrials space, specifically the &quot;Recent IPOs (2024-2026)&quot; theme. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): A clean pullback (score **100**, tested, risk-adjusted return **1.10**) in industrials, one of the three sectors actually leading right now.. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Building Behind the Buildout
+
+*Legence sells the picks and shovels of the data-center boom, and the stock just handed you a 17% dip in an uptrend.*
+
+## The Big Picture
+
+The data-center buildout is the most capital-hungry construction cycle in a generation, and the companies that win are the ones that wire, cool, and pipe the boxes rather than the ones that fill them. Every gigawatt of compute needs HVAC, mechanical, electrical, and plumbing systems engineered to mission-critical tolerances. That demand lands on a small set of specialist engineering and installation firms long before it shows up in chip revenue.
+
+Industrials is one of three sectors actually leading the broad market right now. The desk has the group tagged as **MOMENTUM** and still accelerating (**RIDING**), which means money is rotating in, not out. When a sector leads and a quality name inside it pulls back, you get the cleanest kind of entry: a strong horse resting, not a broken one.
+
+The structural shift here is energy efficiency meeting compute density. Buildings consume a huge share of US energy, and the operators paying for new data centers and life-sciences labs care about both uptime and power draw. That puts a premium on firms that can design a system to run cooler and cheaper, then install and maintain it. The buildout rewards the integrator who does both ends.
+
+This backdrop favors a focused engineering-services operator with real backlog and real cash flow. It rewards a company like Legence.
+
+## Introducing $LGN
+
+Legence Corp. is a US building-systems and engineering-services firm based in San Jose, California, founded back in **1914** and now employing roughly **7,000** people. It designs, installs, and maintains the mechanical, electrical, and plumbing systems that keep mission-critical buildings running. Think data centers, technology campuses, life-sciences labs, hospitals, and schools.
+
+The business runs through two segments. Engineering &amp; Consulting designs HVAC and MEP systems, builds energy-reduction and sustainability strategies, and handles program and project management. Installation &amp; Maintenance fabricates and installs those systems in new and existing buildings, then provides the ongoing preventative maintenance, emergency repair, and system testing that turns a one-time build into a recurring revenue stream.
+
+The edge sits in owning both ends of the job. Legence can engineer a more efficient system, install it, and then maintain it for years. That dual focus is rare in engineering and construction, where most players specialize in one slice. It also gives the company a foothold in exactly the end markets that are spending hardest right now: data centers, technology, and life sciences. Legence is Blackstone-backed and a recent public arrival, which matters for the trade and for the risk, both covered below.
+
+## The Thesis
+
+The call is a clean pullback long in a sector that is leading. Legence sits **17.1%** below its 52-week high of **107.24** after a vicious run, and the stock is still above its 30-week trend line. That combination, a quality name resting inside an uptrend in a momentum sector, is the setup the desk surfaced this name on.
+
+Conviction here is **MEDIUM**, and I want to be straight with you about why it is not higher. The setup rests on a single desk read rather than a stack of confirming signals. One clean technical read plus a real sector tailwind got it ranked, and the room to the upside target is deeper than the names trading above their own highs. That is enough to act on. It is not enough to oversize.
+
+The reward-to-risk is **1.5** to one. You are risking **12.4%** down to the stop to make **18.6%** to the first target. The fundamentals behind the chart are loud, with revenue more than doubling and free cash flow already real, which gives the technical setup something to lean on. Size this as a stock-only swing with a hard stop, and let the sector tailwind do the work.
+
+## Technical Analysis
+
+&gt; 📈 Insert the LGN weekly chart here (TradingView): LGN weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $100.56 · mark support near $74.31.
+
+The trend is intact and the stock is resting, which is the whole point. Legence closed at **84.81**, sitting at **79.1%** of its 52-week high and in the upper third of its yearly range at **72.1%** of the band between **26.96** and **107.24**. Price is above the 30-week line, so the primary uptrend is still in force. The pullback has taken it **17.1%** off the high without breaking structure.
+
+Momentum has cooled to neutral, and that is what you want at an entry. RSI reads **48.8**, dead center, with no oversold panic and no overbought stretch. The 63-day return is still a massive **+62.6%**, and the stock has outperformed the broad market by **+50.7%** over that same window. The shorter 21-day return of **+3.5%** tells you the violent leg is over and the stock is consolidating its gains rather than rolling over.
+
+Use the levels as your map. Entry is **84.81**, with the stop set at **74.31** and the first target at **100.56**. The stop sits below recent support and gives the position room: with a 14-day average true range of **5.25**, the **74.31** line is roughly two ATRs of breathing space under the entry, far enough that normal noise should not stop you out. A second target stretches to **108.44**, which is **+27.9%** from here and just above the prior 52-week high.
+
+Volume confirmation is the missing piece you want to see before the target prints. A push back toward the **100.56** level on rising volume would tell you institutions are stepping back in. A drift higher on thin tape would be weaker and would argue for patience or a tighter trail.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $14.05B |
+| Enterprise value | $7.96B |
+| 52-week range | $26.96 - $107.24 |
+| Dividend yield | None |
+| Forward P/E | 48.3 |
+| Price / sales | 4.6 |
+| Price / book | 13.9 |
+| Revenue (TTM) | $3.08B  (+105.1% YoY) |
+| Revenue / share | $45.77 |
+| Net income (TTM) | $4M |
+| EPS (TTM / fwd) | -0.33 / 1.77 |
+| Gross margin | 19.8% |
+| Operating margin | 3.2% |
+| Profit margin | -0.7% |
+| Operating cash flow / share | $4.52 |
+| Free cash flow / share | $4.31 |
+| Total cash / share | $3.20 |
+| Debt / equity | 1.24 |
+| Current ratio | 1.3 |
+| Return on equity | -7.2% |
+| Analyst consensus | strong buy - mean target $106.41 (17 analysts) |
+
+The growth is genuinely rare for an engineering firm. Backlog that size is forward visibility you can underwrite. It tells you the order book is full before the work is even recognized.
+
+Cash generation is the part that anchors the trade. That is real money, not an accounting story.
+
+Now the honest weak spots. Reported earnings are still thin: trailing EPS is **-0.33** and the net margin is **-0.7%**, so the headline profit line is barely above water even as cash flow booms. The forward picture improves to **1.77** of EPS, but that puts the forward P/E at **48.3** and the price-to-book at a steep **13.9**. You are paying a premium multiple. The most important number to watch is the margin. Adjusted gross margin slipped to **18.7%** from **21.9%** a year ago on mix shift, with the trailing gross margin around **19.8%**. The revenue blowout is partly masking softer unit economics, and that is the figure that decides whether this stays a quality compounder.
+
+Analysts are firmly behind it, for what that is worth. Seventeen of them carry a **strong_buy** rating with a mean target of **106.41**, close to the prior high.
+
+## Why Now
+
+The timing case rests on sector leadership and a rested chart, because there is no near-term hard catalyst. Q1 was reported on **May 14**, and the next earnings date sits around **August 9, 2026**, well outside any two-week window. No event is pending. You are buying the trend and the tailwind, not an event.
+
+The macro pull is the real driver. Industrials is leading and accelerating, and Legence sits in the exact end markets, data centers and life sciences, soaking up the most capital. That **5.4B** backlog converts into recognized revenue over the coming quarters regardless of the calendar. The sector momentum gives the pullback a reason to resolve up rather than drift.
+
+Analyst action has been supportive, with recent price-target raises from BofA at **105**, alongside Stifel at **77** and Goldman at **72**. Read those carefully. The BofA target and the **106.41** average back the upside case, while the Stifel and Goldman numbers sit below the entry. The bull target leans on the high end of the range, so treat the consensus as a tailwind rather than a guarantee.
+
+The options chain offers no help here. Daily call volume was a trivial **103** contracts against **0** puts, with call premium of just **0.05M**. The chain is too thin to trade and too thin to read as a flow signal. This is a stock-only swing.
+
+## Risk Factors
+
+The single biggest risk is that the whole case rides on one desk read rather than a stack of confirming signals. A thin signal is a real signal, and it is also a fragile one. Respect that by sizing small.
+
+The margin slide is the fundamental risk that could turn the growth story sour. Adjusted gross margin fell to **18.7%** from **21.9%**, and if that compression continues, the **105%** revenue surge becomes a story about chasing low-quality work. A guidance cut or a print confirming that slide would damage the bull case before price even reaches your stop.
+
+The sponsor overhang is the supply risk. Blackstone backs the company and sold roughly **15.4M** shares in an April secondary. A recent IPO with an ongoing sponsor selldown means more stock can hit the market, capping rallies and pressuring the chart independent of the business doing fine.
+
+The valuation leaves no cushion. A forward P/E of **48.3** and a price-to-book of **13.9** price in continued execution. Any stumble gets punished harder at that multiple.
+
+The invalidation is clean and mechanical. A close below **74.31** kills the thesis for a roughly **12%** loss from the **84.81** entry. With no catalyst on the calendar, timing risk also runs against you: the trade has to work on the trend alone, and a dead stretch of tape can stop you out before the **August** report ever arrives.
+
+## Bringing It All Together
+
+- Dual focus: Legence both engineers and installs the mechanical, electrical, and HVAC systems that mission-critical buildings need, owning both ends of the job.
+- Market need: data centers and life sciences are spending hardest, and a record **5.4B** backlog gives forward visibility most engineering firms never have.
+
+- Sector tailwind: Industrials is leading and accelerating (**MOMENTUM**, **RIDING**), and price holds above its 30-week trend line at **79.1%** of the 52-week high.
+- Levels: entry **84.81**, stop **74.31**, first target **100.56** for **+18.6%**, second target **108.44** for **+27.9%**, at a **1.5** reward-to-risk.
+
+## Conclusion
+
+Legence is a quality engineering-services compounder sitting in the right sector at the right moment, and the **17.1%** pullback to **84.81** hands you a defined-risk entry inside an intact uptrend.
+
+The case is honest about its limits. It rests on a single read, the margin at **18.7%** is sliding, the multiple at **48.3** times forward earnings is rich, and Blackstone can keep selling. That is why this is a **MEDIUM**-conviction, small-size swing with a hard stop at **74.31**, rather than a core position. Buy the trend, respect the **1.5** reward-to-risk, and let the **74.31** line make the decision for you if it comes to that.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

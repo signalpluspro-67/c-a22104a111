@@ -1,0 +1,238 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Quiet Turnaround in Implantable Vision — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Quiet Turnaround in Implantable Vision</h1>
+<div class="subtitle">STAAR Surgical pulled back into its uptrend after a record quarter. The setup is clean, the conviction is honest, and the China question still hangs over it.</div>
+<div class="meta">EOD 2026-06-23 · STAA · written from the desk · model claude-opus-4-8</div>
+<div class="chips"><span class="chip">STAA</span>
+<span class="chip">Healthcare</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-06-23: entry <b>$28.94</b> &rarr; <b>$28.94</b> (as of 2026-06-23) · <span class="pos">+0.0%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>The eye is the last frontier of elective surgery that people happily pay for out of pocket. Refractive correction is a discretionary medical spend, and it tracks consumer confidence as much as it tracks demographics. When middle-class spending power rises, the funnel of people who choose to fix their vision rises with it.</p>
+<p>Healthcare as a group sits in a holding pattern right now. The sector reads as <strong>NEUTRAL</strong> and the momentum behind it is <strong>DECELERATING</strong>. You do not have a wind at your back here. That changes how you treat any long in the space. You lean on the individual company doing something the broad market is not, rather than on a rising tide carrying everything.</p>
+<p>Inside that flat sector, the implantable lens story is structural. There is a permanent shift away from corneal laser procedures toward lens-based correction for higher prescriptions, and the addressable pool keeps widening as the technology covers more visual disorders. That shift rewards the one company built entirely around the lens, not the laser.</p>
+<p>This backdrop favors a name with its own engine. A sector that is not trending does not lift a stock for you, so the stock has to lift itself. STAAR Surgical has been doing exactly that, and that is why it landed on the desk.</p>
+<h2>Introducing $STAA</h2>
+<p>STAAR Surgical Company designs, makes, and sells phakic implantable lenses for the human eye. The flagship is the implantable collamer lens family, the EVO ICL line, used in refractive surgery to correct myopia, hyperopia, astigmatism, and presbyopia. Unlike laser correction, which reshapes the cornea permanently, the implant goes behind the iris and can be removed. That reversibility is the edge for patients with strong prescriptions who are poor candidates for laser.</p>
+<p>The company is small and focused. It runs with roughly <strong>921</strong> employees out of Lake Forest, California, and sells directly through its own sales reps in Japan, the United States, Germany, Spain, Singapore, Canada, and the United Kingdom, plus distributors across China, Korea, India, and the rest of Europe. That distribution map matters, because the demand mix is not evenly spread. China is the heavyweight.</p>
+<p>The business model is high-margin and single-product by design. STAAR does one thing and tries to do it better than anyone. The gross margin tells you the pricing power: <strong>76.9%</strong> of revenue survives the cost of making the lens. The question for an investor is never the product. It is whether the company can convert that gross margin into real profit and real cash, and whether the China concentration is a strength or a vulnerability.</p>
+<h2>The Thesis</h2>
+<p>The call is a mean reversion long inside a standing uptrend. STAA ran hard, paused, and pulled back into a level where buyers have stepped in before. You are buying the rest, not the run.</p>
+<p>The stock sits <strong>-13.2%</strong> below its 52-week high after a sharp cooldown. Over the last 21 sessions it gave back <strong>-11.7%</strong>, which is the pause. Step back one quarter and the picture flips: it is up <strong>+56.3%</strong> over 63 sessions and has beaten the broad market by <strong>+44.4%</strong> over that same stretch. That combination, a powerful three-month advance followed by a controlled dip, is the entire setup. The trend is intact and the froth has come out.</p>
+<p>Price holds above its 30-week line, and that line slopes up <strong>+2.6%</strong>. RSI reads near the neutral midline, <strong>49.1</strong> on the desk&#x27;s read and <strong>54.6</strong> on the standard length, both well clear of oversold and well clear of overbought. The move cooled without breaking. That is what you want before you add.</p>
+<p>Be honest about the conviction. It is <strong>MEDIUM</strong>, and arguably softer than that. One desk read carries this, not a stack of confirming signals, and the healthcare group offers no help. The pressure test flags the real concern directly: the stock already moved roughly <strong>15%</strong> on its last earnings beat, so part of the edge a pullback usually offers may already be spent. Size this as a single clean technical long, not a high-conviction bet. The validated edge here is real but modest, closer to a <strong>1.10</strong> risk-adjusted return than any headline number.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-06-23-STAA.png" alt="STAA weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=STAA&interval=1W" target="_blank" rel="noopener">📈 Open the STAA weekly chart on TradingView ↗</a><figcaption>STAA weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $31.82 · mark support near $27.02.</figcaption></figure>
+<p>The structure is constructive and the levels are tight. STAA closed at <strong>28.94</strong>, which sits at <strong>80.7%</strong> of its 52-week high of <strong>35.87</strong> and <strong>65.8%</strong> of the way up its full 52-week range off the <strong>15.59</strong> low. You are buying in the upper third of the range, well above the lows, after a pullback rather than a breakdown.</p>
+<p>The trend filter is clean. Price is above the rising 30-week line, and the medium-term EMA posture supports the long. The dip of <strong>-11.7%</strong> over the last month brought the stock back toward support without violating the larger uptrend that produced the <strong>+56.3%</strong> three-month gain. Relative strength is the standout: outperforming the broad market by <strong>+44.4%</strong> over 63 sessions tells you institutions were accumulating this while most of healthcare went nowhere.</p>
+<p>The trade levels frame the risk cleanly. Entry is <strong>28.94</strong>, the stop sits at <strong>27.02</strong>, and the first target is <strong>31.82</strong>. That is <strong>6.6%</strong> of risk to the stop against <strong>10.0%</strong> of upside to target, a reward to risk of <strong>1.5</strong>. A second target sits higher at <strong>33.26</strong>, worth <strong>14.9%</strong> if the move extends back toward the prior high. With ATR at <strong>0.96</strong>, the <strong>27.02</strong> stop sits about two daily ranges below entry, far enough to survive normal noise and close enough to cap the loss.</p>
+<p>RSI near <strong>49.1</strong> to <strong>54.6</strong> leaves room in both directions, so you are not chasing an exhausted move. Volume is the missing confirmation. A push higher on thin volume is suspect. A daily close below <strong>27.02</strong> ends the thesis.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$1.41B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$1.29B</td></tr><tr><td class="k">52-week range</td><td class="v">$15.59 - $35.87</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">1.23</td></tr><tr><td class="k">Forward P/E</td><td class="v">28.7</td></tr><tr><td class="k">Price / sales</td><td class="v">4.9</td></tr><tr><td class="k">Price / book</td><td class="v">4.0</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$290M  (+119.6% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$5.84</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$-21M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">-0.42 / 0.99</td></tr><tr><td class="k">Gross margin</td><td class="v">76.9%</td></tr><tr><td class="k">Operating margin</td><td class="v">18.7%</td></tr><tr><td class="k">Profit margin</td><td class="v">-7.2%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$-1.01</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$-0.35</td></tr><tr><td class="k">Total cash / share</td><td class="v">$3.29</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.11</td></tr><tr><td class="k">Current ratio</td><td class="v">5.12</td></tr><tr><td class="k">Return on equity</td><td class="v">-6.0%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">none - mean target $29.67 (9 analysts)</td></tr></tbody></table>
+<p>The fundamental story is a turnaround in progress, and the numbers cut both ways. The gross margin is excellent at <strong>76.9%</strong> and the operating margin is a healthy <strong>18.7%</strong>, so the core product economics work. The problem sits below the operating line.</p>
+<p>The company is not yet profitable on a trailing basis. Net income is <strong>-$21.0M</strong>, EPS is <strong>-$0.42</strong>, and the profit margin is <strong>-7.2%</strong>. The market is paying ahead of the recovery, with a forward P/E of <strong>28.7</strong> that prices in the swing to profit. Forward EPS is pegged at <strong>$0.99</strong>, so the analysts modeling this expect the loss to flip to real earnings.</p>
+<p>The balance sheet is the safety net that lets you hold through the turnaround. There is <strong>$3.29</strong> of cash per share. This is a company with a clean balance sheet burning some cash while it rebuilds margin, not a stressed one. The nine analysts covering it carry a mean target of <strong>29.67</strong>, which sits roughly at the current price. The valuation is full. The thesis is the trade setup and the operating rebound, not a discount.</p>
+<h2>Why Now</h2>
+<p>The timing rests on the chart, not on an event. There is no scheduled catalyst inside the next two weeks. You are not buying into a binary. The trade has to work on the technical reversion alone, then the August print becomes the next test.</p>
+<p>The regime is supportive even if the sector is not. The broad market backdrop favors longs, and STAA&#x27;s own relative strength of <strong>+44.4%</strong> over three months shows real demand that does not depend on healthcare cooperating. When a stock outperforms by that margin in a flat sector, you respect the accumulation underneath it.</p>
+<p>Options flow leans the right way but lightly. On <strong>2026-06-22</strong>, call volume of <strong>294</strong> contracts ran against just <strong>42</strong> puts, a call-heavy tilt. The premium behind it is small, near <strong>$0.1M</strong> on calls, so treat this as a mild positive lean rather than a conviction signal from large players. It confirms direction without adding weight.</p>
+<h2>Risk Factors</h2>
+<p>The first risk is that the edge is already spent. The stock jumped roughly <strong>15%</strong> on the last earnings beat and pushed into the analyst target band, so the pullback you are buying may have given back less of the move than it appears. Entry near <strong>28.94</strong> sitting right at the <strong>29.67</strong> mean target leaves little room above before you hit resistance.</p>
+<p>The second risk is concentration. Revenue depends heavily on China demand for the ICL and EVO+ line. That is a single point of failure. Any slowdown in Chinese elective surgery spending hits the top line directly, and that is the variable least visible from the outside.</p>
+<p>The third risk is the absence of help. One desk read carries this long, and healthcare reads <strong>NEUTRAL</strong> with <strong>DECELERATING</strong> momentum. There is no sector tailwind to bail out a wobble, so the position is more exposed to its own stumbles than a name with confluence behind it.</p>
+<p>The invalidation is precise. A daily close below the stop at <strong>27.02</strong> ends the thesis and caps the loss at <strong>6.6%</strong>. A reversal that fills the prior earnings gap would also negate the mean reversion read before the stop even triggers. Timing risk is real too: with no catalyst for <strong>41</strong> days, the trade can drift sideways and tie up capital while you wait.</p>
+<h2>Bringing It All Together</h2>
+<p>- Single-focus franchise: STAAR owns the implantable lens category with a <strong>76.9%</strong> gross margin and <strong>18.7%</strong> operating margin.<br>- Structural demand: the shift from laser to lens-based correction keeps widening the addressable pool, and STAA is the pure play on it.<br>- Clean technical setup: <strong>-13.2%</strong> off the high after a <strong>+56.3%</strong> three-month run, holding above a rising 30-week line, with relative strength of <strong>+44.4%</strong> versus the broad market.</p>
+<p>- Defined risk: entry <strong>28.94</strong>, stop <strong>27.02</strong>, target <strong>31.82</strong>, with a <strong>1.5</strong> reward to risk and a second target at <strong>33.26</strong>.<br>- Honest caveats: no catalyst for <strong>41</strong> days, healthcare offers no tailwind, China concentration is the single biggest unknown, and the valuation at <strong>4.9</strong> times sales is full.</p>
+<h2>Conclusion</h2>
+<p>STAA is a clean technical long on a real operating recovery, taken with eyes open about its limits. You get a focused, high-margin franchise that has rebuilt its top line, pulled back into a defined support zone above a rising trend, and outperformed a flat sector by <strong>+44.4%</strong>. The risk is contained at <strong>6.6%</strong> to the <strong>27.02</strong> stop against <strong>10.0%</strong> to the first target.</p>
+<p>Keep the position size honest. The conviction is <strong>MEDIUM</strong> at best, the edge is modest, part of the move may already be captured, and the China dependence is a genuine vulnerability. This is a measured trade on a quality name at a fair price, not a table-pounder. Buy the reversion, respect the <strong>27.02</strong> line, and let the August print decide whether it becomes more than a swing.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;STAAR Surgical Company (STAA) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $1.41B; 52-week range $16-$36; Revenue $290M +120% YoY; Net income $-21M; Free cash flow/share $-0.35; Debt-to-equity 0.11; Return on equity -6%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for STAAR Surgical Company (STAA) inside the Healthcare space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): A proven pullback (score **90**, tested, risk-adjusted return **1.10**) in healthcare, sitting **-13.2%** below its high after a pause, with relative strength of **+44.4%** and price above its 30-week line. RSI **49.1** means the move has c. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Quiet Turnaround in Implantable Vision
+
+*STAAR Surgical pulled back into its uptrend after a record quarter. The setup is clean, the conviction is honest, and the China question still hangs over it.*
+
+## The Big Picture
+
+The eye is the last frontier of elective surgery that people happily pay for out of pocket. Refractive correction is a discretionary medical spend, and it tracks consumer confidence as much as it tracks demographics. When middle-class spending power rises, the funnel of people who choose to fix their vision rises with it.
+
+Healthcare as a group sits in a holding pattern right now. The sector reads as **NEUTRAL** and the momentum behind it is **DECELERATING**. You do not have a wind at your back here. That changes how you treat any long in the space. You lean on the individual company doing something the broad market is not, rather than on a rising tide carrying everything.
+
+Inside that flat sector, the implantable lens story is structural. There is a permanent shift away from corneal laser procedures toward lens-based correction for higher prescriptions, and the addressable pool keeps widening as the technology covers more visual disorders. That shift rewards the one company built entirely around the lens, not the laser.
+
+This backdrop favors a name with its own engine. A sector that is not trending does not lift a stock for you, so the stock has to lift itself. STAAR Surgical has been doing exactly that, and that is why it landed on the desk.
+
+## Introducing $STAA
+
+STAAR Surgical Company designs, makes, and sells phakic implantable lenses for the human eye. The flagship is the implantable collamer lens family, the EVO ICL line, used in refractive surgery to correct myopia, hyperopia, astigmatism, and presbyopia. Unlike laser correction, which reshapes the cornea permanently, the implant goes behind the iris and can be removed. That reversibility is the edge for patients with strong prescriptions who are poor candidates for laser.
+
+The company is small and focused. It runs with roughly **921** employees out of Lake Forest, California, and sells directly through its own sales reps in Japan, the United States, Germany, Spain, Singapore, Canada, and the United Kingdom, plus distributors across China, Korea, India, and the rest of Europe. That distribution map matters, because the demand mix is not evenly spread. China is the heavyweight.
+
+The business model is high-margin and single-product by design. STAAR does one thing and tries to do it better than anyone. The gross margin tells you the pricing power: **76.9%** of revenue survives the cost of making the lens. The question for an investor is never the product. It is whether the company can convert that gross margin into real profit and real cash, and whether the China concentration is a strength or a vulnerability.
+
+## The Thesis
+
+The call is a mean reversion long inside a standing uptrend. STAA ran hard, paused, and pulled back into a level where buyers have stepped in before. You are buying the rest, not the run.
+
+The stock sits **-13.2%** below its 52-week high after a sharp cooldown. Over the last 21 sessions it gave back **-11.7%**, which is the pause. Step back one quarter and the picture flips: it is up **+56.3%** over 63 sessions and has beaten the broad market by **+44.4%** over that same stretch. That combination, a powerful three-month advance followed by a controlled dip, is the entire setup. The trend is intact and the froth has come out.
+
+Price holds above its 30-week line, and that line slopes up **+2.6%**. RSI reads near the neutral midline, **49.1** on the desk&#x27;s read and **54.6** on the standard length, both well clear of oversold and well clear of overbought. The move cooled without breaking. That is what you want before you add.
+
+Be honest about the conviction. It is **MEDIUM**, and arguably softer than that. One desk read carries this, not a stack of confirming signals, and the healthcare group offers no help. The pressure test flags the real concern directly: the stock already moved roughly **15%** on its last earnings beat, so part of the edge a pullback usually offers may already be spent. Size this as a single clean technical long, not a high-conviction bet. The validated edge here is real but modest, closer to a **1.10** risk-adjusted return than any headline number.
+
+## Technical Analysis
+
+&gt; 📈 Insert the STAA weekly chart here (TradingView): STAA weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $31.82 · mark support near $27.02.
+
+The structure is constructive and the levels are tight. STAA closed at **28.94**, which sits at **80.7%** of its 52-week high of **35.87** and **65.8%** of the way up its full 52-week range off the **15.59** low. You are buying in the upper third of the range, well above the lows, after a pullback rather than a breakdown.
+
+The trend filter is clean. Price is above the rising 30-week line, and the medium-term EMA posture supports the long. The dip of **-11.7%** over the last month brought the stock back toward support without violating the larger uptrend that produced the **+56.3%** three-month gain. Relative strength is the standout: outperforming the broad market by **+44.4%** over 63 sessions tells you institutions were accumulating this while most of healthcare went nowhere.
+
+The trade levels frame the risk cleanly. Entry is **28.94**, the stop sits at **27.02**, and the first target is **31.82**. That is **6.6%** of risk to the stop against **10.0%** of upside to target, a reward to risk of **1.5**. A second target sits higher at **33.26**, worth **14.9%** if the move extends back toward the prior high. With ATR at **0.96**, the **27.02** stop sits about two daily ranges below entry, far enough to survive normal noise and close enough to cap the loss.
+
+RSI near **49.1** to **54.6** leaves room in both directions, so you are not chasing an exhausted move. Volume is the missing confirmation. A push higher on thin volume is suspect. A daily close below **27.02** ends the thesis.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $1.41B |
+| Enterprise value | $1.29B |
+| 52-week range | $15.59 - $35.87 |
+| Dividend yield | None |
+| Beta | 1.23 |
+| Forward P/E | 28.7 |
+| Price / sales | 4.9 |
+| Price / book | 4.0 |
+| Revenue (TTM) | $290M  (+119.6% YoY) |
+| Revenue / share | $5.84 |
+| Net income (TTM) | $-21M |
+| EPS (TTM / fwd) | -0.42 / 0.99 |
+| Gross margin | 76.9% |
+| Operating margin | 18.7% |
+| Profit margin | -7.2% |
+| Operating cash flow / share | $-1.01 |
+| Free cash flow / share | $-0.35 |
+| Total cash / share | $3.29 |
+| Debt / equity | 0.11 |
+| Current ratio | 5.12 |
+| Return on equity | -6.0% |
+| Analyst consensus | none - mean target $29.67 (9 analysts) |
+
+The fundamental story is a turnaround in progress, and the numbers cut both ways. The gross margin is excellent at **76.9%** and the operating margin is a healthy **18.7%**, so the core product economics work. The problem sits below the operating line.
+
+The company is not yet profitable on a trailing basis. Net income is **-$21.0M**, EPS is **-$0.42**, and the profit margin is **-7.2%**. The market is paying ahead of the recovery, with a forward P/E of **28.7** that prices in the swing to profit. Forward EPS is pegged at **$0.99**, so the analysts modeling this expect the loss to flip to real earnings.
+
+The balance sheet is the safety net that lets you hold through the turnaround. There is **$3.29** of cash per share. This is a company with a clean balance sheet burning some cash while it rebuilds margin, not a stressed one. The nine analysts covering it carry a mean target of **29.67**, which sits roughly at the current price. The valuation is full. The thesis is the trade setup and the operating rebound, not a discount.
+
+## Why Now
+
+The timing rests on the chart, not on an event. There is no scheduled catalyst inside the next two weeks. You are not buying into a binary. The trade has to work on the technical reversion alone, then the August print becomes the next test.
+
+The regime is supportive even if the sector is not. The broad market backdrop favors longs, and STAA&#x27;s own relative strength of **+44.4%** over three months shows real demand that does not depend on healthcare cooperating. When a stock outperforms by that margin in a flat sector, you respect the accumulation underneath it.
+
+Options flow leans the right way but lightly. On **2026-06-22**, call volume of **294** contracts ran against just **42** puts, a call-heavy tilt. The premium behind it is small, near **$0.1M** on calls, so treat this as a mild positive lean rather than a conviction signal from large players. It confirms direction without adding weight.
+
+## Risk Factors
+
+The first risk is that the edge is already spent. The stock jumped roughly **15%** on the last earnings beat and pushed into the analyst target band, so the pullback you are buying may have given back less of the move than it appears. Entry near **28.94** sitting right at the **29.67** mean target leaves little room above before you hit resistance.
+
+The second risk is concentration. Revenue depends heavily on China demand for the ICL and EVO+ line. That is a single point of failure. Any slowdown in Chinese elective surgery spending hits the top line directly, and that is the variable least visible from the outside.
+
+The third risk is the absence of help. One desk read carries this long, and healthcare reads **NEUTRAL** with **DECELERATING** momentum. There is no sector tailwind to bail out a wobble, so the position is more exposed to its own stumbles than a name with confluence behind it.
+
+The invalidation is precise. A daily close below the stop at **27.02** ends the thesis and caps the loss at **6.6%**. A reversal that fills the prior earnings gap would also negate the mean reversion read before the stop even triggers. Timing risk is real too: with no catalyst for **41** days, the trade can drift sideways and tie up capital while you wait.
+
+## Bringing It All Together
+
+- Single-focus franchise: STAAR owns the implantable lens category with a **76.9%** gross margin and **18.7%** operating margin.
+- Structural demand: the shift from laser to lens-based correction keeps widening the addressable pool, and STAA is the pure play on it.
+- Clean technical setup: **-13.2%** off the high after a **+56.3%** three-month run, holding above a rising 30-week line, with relative strength of **+44.4%** versus the broad market.
+
+- Defined risk: entry **28.94**, stop **27.02**, target **31.82**, with a **1.5** reward to risk and a second target at **33.26**.
+- Honest caveats: no catalyst for **41** days, healthcare offers no tailwind, China concentration is the single biggest unknown, and the valuation at **4.9** times sales is full.
+
+## Conclusion
+
+STAA is a clean technical long on a real operating recovery, taken with eyes open about its limits. You get a focused, high-margin franchise that has rebuilt its top line, pulled back into a defined support zone above a rising trend, and outperformed a flat sector by **+44.4%**. The risk is contained at **6.6%** to the **27.02** stop against **10.0%** to the first target.
+
+Keep the position size honest. The conviction is **MEDIUM** at best, the edge is modest, part of the move may already be captured, and the China dependence is a genuine vulnerability. This is a measured trade on a quality name at a fair price, not a table-pounder. Buy the reversion, respect the **27.02** line, and let the August print decide whether it becomes more than a swing.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

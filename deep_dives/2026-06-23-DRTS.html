@@ -1,0 +1,226 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Targeting Cancer With Alpha Particles — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>Targeting Cancer With Alpha Particles</h1>
+<div class="subtitle">A clinical-stage oncology leader resting inside a steep uptrend, with the discipline to keep the size small.</div>
+<div class="meta">EOD 2026-06-23 · DRTS · written from the desk · model claude-opus-4-8</div>
+<div class="chips"><span class="chip">DRTS</span>
+<span class="chip">Healthcare</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-06-23: entry <b>$10.03</b> &rarr; <b>$10.03</b> (as of 2026-06-23) · <span class="pos">+0.0%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Healthcare is not leading this market. The sector reads <strong>NEUTRAL</strong> and its momentum is <strong>DECELERATING</strong>, which means broad sector beta will not carry a position for you. That pushes you toward stocks that move on their own clinical path instead of riding the group.</p>
+<p>Radiation oncology is where the interesting small-cap work sits. Most external-beam radiation uses photons or, in advanced centers, protons. Both work, both have limits near sensitive tissue. Alpha-particle therapy aims at a different physics problem: deliver a short-range, high-energy dose directly inside a tumor, then let it diffuse only millimeters before it stops. The promise is a harder hit on the cancer with less collateral damage to what surrounds it.</p>
+<p>That physics matters most for solid tumors in awkward places. Pancreas, prostate, head and neck, skin. These are exactly the indications where a localized alpha dose could change outcomes, and exactly where a small, focused company can build an edge before larger players notice.</p>
+<p>A backdrop like this rewards a company with its own trial-driven story and a chart already trending, because you are not relying on the sector to do the lifting.</p>
+<h2>Introducing $DRTS</h2>
+<p>Alpha Tau Medical (<strong>$DRTS</strong>) is a clinical-stage oncology company based in Jerusalem, Israel, with roughly <strong>121</strong> employees. Its product is Alpha DaRT, short for diffusing alpha-emitters radiation therapy. The idea is to seed a tumor with tiny sources that release alpha particles, killing cancer from the inside over a controlled radius.</p>
+<p>The pipeline is broad for a company this size. Alpha DaRT is in clinical trials across skin, oral, pancreatic, prostate, lung, liver, and breast cancer, with preclinical work behind it. The company also holds a strategic collaboration to develop and commercialize the technology for prostate cancer, which gives it a partner and a focused commercial target.</p>
+<p>This is a single-technology platform company. The bet is that one physical approach to radiation can be aimed at many cancers. That is the upside and the concentration risk in one sentence.</p>
+<h2>The Thesis</h2>
+<p>You are buying a healthy rest inside a strong uptrend. $DRTS has run hard, then paused, and the pause looks orderly. Over the last three months it is up <strong>+39.3%</strong>, and it has beaten the broad market by <strong>+27.4%</strong> over the same stretch. The 30-week trend line is rising at a steep <strong>+31.3%</strong> slope, and price sits above it.</p>
+<p>The pullback is the setup. Over the last month the stock is down <strong>-8.5%</strong>, which has pulled it back to <strong>-10.3%</strong> below its 52-week high of <strong>11.62</strong>. That is a shallow give-back, the kind that strong leaders produce before the next leg. A failing chart breaks far deeper than this.</p>
+<p>Conviction here is <strong>MEDIUM</strong>, and you should hold it there honestly. One read drove this, with no second signal stacking behind it. Liquidity is thin. There is no confirmed catalyst. The trend and the relative strength are real, the structure is clean, but the lack of confluence and the thin volume cap how hard you press. Size small and let the levels do the work.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-06-23-DRTS.png" alt="DRTS weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=DRTS&interval=1W" target="_blank" rel="noopener">📈 Open the DRTS weekly chart on TradingView ↗</a><figcaption>DRTS weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $12.43 · mark support near $8.43.</figcaption></figure>
+<p>The trend is up and intact. Price closed at <strong>10.03</strong>, holding above a 30-week line that is climbing at <strong>+31.3%</strong>. When the medium-term trend line slopes that steeply and price stays above it, the path of least resistance is higher. The stock sits in the upper portion of its 52-week range, at <strong>86.3%</strong> of the <strong>11.62</strong> high, and a towering <strong>+245.9%</strong> above the <strong>2.85</strong> low. This has been a momentum leader for a year.</p>
+<p>The pullback gives you a defined entry. The reference entry is <strong>10.03</strong>, the stop sits at <strong>8.43</strong>, and the first target is <strong>12.43</strong>. That frames a reward of <strong>+23.9%</strong> against a risk of <strong>-16.0%</strong>, a <strong>1.5</strong> to <strong>1</strong> payout. A second target at <strong>13.63</strong> would be <strong>+35.9%</strong> from here if the trend extends to a fresh high. RSI at <strong>61.3</strong> is firm without being stretched, so there is room to run before the stock reaches overbought.</p>
+<p>Relative strength is the strongest tell. Beating the market by <strong>+27.4%</strong> over three months tells you institutions have been accumulating, not distributing. A move back over the <strong>11.62</strong> high on heavy volume validates the entry. Without volume behind it, treat any bounce as suspect.</p>
+<p>The stop is not arbitrary. A close below <strong>8.43</strong> breaks the pullback structure and tells you the dip was a falling knife. That is your line.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$883M</td></tr><tr><td class="k">Enterprise value</td><td class="v">$781M</td></tr><tr><td class="k">52-week range</td><td class="v">$2.85 - $11.62</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">1.2</td></tr><tr><td class="k">Forward P/E</td><td class="v">-19.0</td></tr><tr><td class="k">Price / book</td><td class="v">12.7</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$-57M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">-0.67 / -0.51</td></tr><tr><td class="k">Gross margin</td><td class="v">0.0%</td></tr><tr><td class="k">Operating margin</td><td class="v">0.0%</td></tr><tr><td class="k">Profit margin</td><td class="v">0.0%</td></tr><tr><td class="k">Total cash / share</td><td class="v">$0.85</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.21</td></tr><tr><td class="k">Current ratio</td><td class="v">7.79</td></tr><tr><td class="k">Return on equity</td><td class="v">-90.5%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">buy - mean target $14.20 (5 analysts)</td></tr></tbody></table>
+<p>Read these numbers as a clinical-stage biotech, because that is what they are. Forward EPS of <strong>-0.51</strong> points to a slightly narrower loss ahead, but this company will burn cash until a trial reads out and a product reaches market. The forward P/E of <strong>-19.0</strong> is a math artifact of negative earnings. It carries no valuation signal.</p>
+<p>The balance sheet is the reassuring part. Cash sits at <strong>0.85</strong> per share, total debt is small at <strong>14.3M</strong>, and debt to equity is a light <strong>0.21</strong>. The current ratio of <strong>7.79</strong> and quick ratio of <strong>7.31</strong> mean near-term obligations are well covered. A clinical-stage company lives or dies on its cash runway, and this one is not stretched thin.</p>
+<p>Valuation is rich on book, and you should expect that. Price to book of <strong>12.7</strong> against book value of <strong>0.77</strong> per share tells you the market is paying for the platform and the trials, not the assets on the page. Return on equity of <strong>-90.5%</strong> looks alarming until you remember it is losses divided by a thin equity base. Five analysts cover it with a buy rating and a mean target of <strong>14.2</strong>, which sits above the <strong>12.43</strong> first target and roughly at the <strong>13.63</strong> second. That supports the direction without guaranteeing it.</p>
+<h2>Why Now</h2>
+<p>The timing case rests on the chart and the flow, not on a known event. The pullback to <strong>-10.3%</strong> below the high, with RSI cooling to <strong>61.3</strong> and the month down <strong>-8.5%</strong>, has reset the stock inside its uptrend. That is the window where leaders tend to resume.</p>
+<p>Options flow leans bullish, though the size is small. On June 22 the stock saw <strong>883</strong> call contracts trade against just <strong>37</strong> puts, a heavy call skew. Call premium of <strong>$0.08M</strong> dwarfed put premium of <strong>$0.01M</strong>. Both the call wall and the put wall sit at <strong>10</strong>, right at the current price, which marks <strong>10</strong> as the battleground level that dealers and traders are watching.</p>
+<p>Be straight about the catalyst. No near-term earnings, trial readout, or regulatory date could be confirmed for this setup. Treat this as a technical entry with no known event to power it, rather than assuming a catalyst is hiding. The healthcare sector reads <strong>NEUTRAL</strong> and <strong>DECELERATING</strong>, so you are not getting a sector push either. The entire near-term case is the trend, the relative strength, and the call flow.</p>
+<h2>Risk Factors</h2>
+<p>Thin liquidity is the first and biggest problem. The stock trades only about <strong>$6.9M</strong> a day. At that size, fills slip, a single seller can move it, and a bad print can gap it straight through the <strong>8.43</strong> stop before you act. That alone is why this stays small.</p>
+<p>The setup has no confluence. Only one read fired, with no second signal confirming it. A lone read in a thin small-cap is a thinner edge than it looks. Pair that with an unconfirmed catalyst and you have a trade carried entirely by momentum, which can reverse fast when momentum is the only support.</p>
+<p>The business risk is the usual clinical-stage binary. A failed readout, a slower trial, or a capital raise that dilutes the <strong>90.3M</strong> share count could undercut the stock regardless of the chart. ROE of <strong>-90.5%</strong> reflects a company spending well ahead of revenue.</p>
+<p>The invalidation is clean and you should respect it. A close below <strong>8.43</strong>, about <strong>-16.0%</strong> from the <strong>10.03</strong> entry, kills the thesis. That break means the pullback was the start of a real decline, and the right move is to be out.</p>
+<h2>Bringing It All Together</h2>
+<p>- A single, focused platform: Alpha DaRT alpha-particle radiation aimed at solid tumors across skin, prostate, pancreatic, and more.<br>- A real market need: localized, high-dose radiation with less collateral damage in hard-to-treat cancers.<br>- A clean balance sheet for a clinical-stage company: cash of <strong>0.85</strong> per share, debt to equity of <strong>0.21</strong>, current ratio of <strong>7.79</strong>.<br>- A strong, rising trend: 30-week line sloping <strong>+31.3%</strong>, price up <strong>+39.3%</strong> over three months and <strong>+27.4%</strong> ahead of the market.<br>- A defined setup: entry <strong>10.03</strong>, stop <strong>8.43</strong>, targets <strong>12.43</strong> and <strong>13.63</strong>, for a <strong>1.5</strong> to <strong>1</strong> payout.</p>
+<h2>Conclusion</h2>
+<p>$DRTS gives you a clean technical setup on a real momentum leader in alpha-particle cancer therapy, resting <strong>-10.3%</strong> below its high inside an uptrend still climbing at <strong>+31.3%</strong>. The reward to risk is fair at <strong>1.5</strong> to <strong>1</strong>, the relative strength is strong at <strong>+27.4%</strong>, and the call flow backs the direction. The catch is real: thin liquidity, a single read, and no confirmed catalyst mean this is a small position, defined entirely by the <strong>8.43</strong> stop. Buy the rest, keep the size honest, and let the <strong>12.43</strong> target prove the trend or let the stop end it.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Alpha Tau Medical Ltd. (DRTS) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $883M; 52-week range $3-$12; Net income $-57M; Debt-to-equity 0.21; Return on equity -90%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Alpha Tau Medical Ltd. (DRTS) inside the Healthcare space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): A proven pullback (score **90**, tested, risk-adjusted return **1.10**) on a small healthcare name riding a steeply rising 30-week line (slope **+31.3%**). It sits **-10.3%** below its high with relative strength of **+27.4%**, a healthy re. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># Targeting Cancer With Alpha Particles
+
+*A clinical-stage oncology leader resting inside a steep uptrend, with the discipline to keep the size small.*
+
+## The Big Picture
+
+Healthcare is not leading this market. The sector reads **NEUTRAL** and its momentum is **DECELERATING**, which means broad sector beta will not carry a position for you. That pushes you toward stocks that move on their own clinical path instead of riding the group.
+
+Radiation oncology is where the interesting small-cap work sits. Most external-beam radiation uses photons or, in advanced centers, protons. Both work, both have limits near sensitive tissue. Alpha-particle therapy aims at a different physics problem: deliver a short-range, high-energy dose directly inside a tumor, then let it diffuse only millimeters before it stops. The promise is a harder hit on the cancer with less collateral damage to what surrounds it.
+
+That physics matters most for solid tumors in awkward places. Pancreas, prostate, head and neck, skin. These are exactly the indications where a localized alpha dose could change outcomes, and exactly where a small, focused company can build an edge before larger players notice.
+
+A backdrop like this rewards a company with its own trial-driven story and a chart already trending, because you are not relying on the sector to do the lifting.
+
+## Introducing $DRTS
+
+Alpha Tau Medical (**$DRTS**) is a clinical-stage oncology company based in Jerusalem, Israel, with roughly **121** employees. Its product is Alpha DaRT, short for diffusing alpha-emitters radiation therapy. The idea is to seed a tumor with tiny sources that release alpha particles, killing cancer from the inside over a controlled radius.
+
+The pipeline is broad for a company this size. Alpha DaRT is in clinical trials across skin, oral, pancreatic, prostate, lung, liver, and breast cancer, with preclinical work behind it. The company also holds a strategic collaboration to develop and commercialize the technology for prostate cancer, which gives it a partner and a focused commercial target.
+
+This is a single-technology platform company. The bet is that one physical approach to radiation can be aimed at many cancers. That is the upside and the concentration risk in one sentence.
+
+## The Thesis
+
+You are buying a healthy rest inside a strong uptrend. $DRTS has run hard, then paused, and the pause looks orderly. Over the last three months it is up **+39.3%**, and it has beaten the broad market by **+27.4%** over the same stretch. The 30-week trend line is rising at a steep **+31.3%** slope, and price sits above it.
+
+The pullback is the setup. Over the last month the stock is down **-8.5%**, which has pulled it back to **-10.3%** below its 52-week high of **11.62**. That is a shallow give-back, the kind that strong leaders produce before the next leg. A failing chart breaks far deeper than this.
+
+Conviction here is **MEDIUM**, and you should hold it there honestly. One read drove this, with no second signal stacking behind it. Liquidity is thin. There is no confirmed catalyst. The trend and the relative strength are real, the structure is clean, but the lack of confluence and the thin volume cap how hard you press. Size small and let the levels do the work.
+
+## Technical Analysis
+
+&gt; 📈 Insert the DRTS weekly chart here (TradingView): DRTS weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $12.43 · mark support near $8.43.
+
+The trend is up and intact. Price closed at **10.03**, holding above a 30-week line that is climbing at **+31.3%**. When the medium-term trend line slopes that steeply and price stays above it, the path of least resistance is higher. The stock sits in the upper portion of its 52-week range, at **86.3%** of the **11.62** high, and a towering **+245.9%** above the **2.85** low. This has been a momentum leader for a year.
+
+The pullback gives you a defined entry. The reference entry is **10.03**, the stop sits at **8.43**, and the first target is **12.43**. That frames a reward of **+23.9%** against a risk of **-16.0%**, a **1.5** to **1** payout. A second target at **13.63** would be **+35.9%** from here if the trend extends to a fresh high. RSI at **61.3** is firm without being stretched, so there is room to run before the stock reaches overbought.
+
+Relative strength is the strongest tell. Beating the market by **+27.4%** over three months tells you institutions have been accumulating, not distributing. A move back over the **11.62** high on heavy volume validates the entry. Without volume behind it, treat any bounce as suspect.
+
+The stop is not arbitrary. A close below **8.43** breaks the pullback structure and tells you the dip was a falling knife. That is your line.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $883M |
+| Enterprise value | $781M |
+| 52-week range | $2.85 - $11.62 |
+| Dividend yield | None |
+| Beta | 1.2 |
+| Forward P/E | -19.0 |
+| Price / book | 12.7 |
+| Net income (TTM) | $-57M |
+| EPS (TTM / fwd) | -0.67 / -0.51 |
+| Gross margin | 0.0% |
+| Operating margin | 0.0% |
+| Profit margin | 0.0% |
+| Total cash / share | $0.85 |
+| Debt / equity | 0.21 |
+| Current ratio | 7.79 |
+| Return on equity | -90.5% |
+| Analyst consensus | buy - mean target $14.20 (5 analysts) |
+
+Read these numbers as a clinical-stage biotech, because that is what they are. Forward EPS of **-0.51** points to a slightly narrower loss ahead, but this company will burn cash until a trial reads out and a product reaches market. The forward P/E of **-19.0** is a math artifact of negative earnings. It carries no valuation signal.
+
+The balance sheet is the reassuring part. Cash sits at **0.85** per share, total debt is small at **14.3M**, and debt to equity is a light **0.21**. The current ratio of **7.79** and quick ratio of **7.31** mean near-term obligations are well covered. A clinical-stage company lives or dies on its cash runway, and this one is not stretched thin.
+
+Valuation is rich on book, and you should expect that. Price to book of **12.7** against book value of **0.77** per share tells you the market is paying for the platform and the trials, not the assets on the page. Return on equity of **-90.5%** looks alarming until you remember it is losses divided by a thin equity base. Five analysts cover it with a buy rating and a mean target of **14.2**, which sits above the **12.43** first target and roughly at the **13.63** second. That supports the direction without guaranteeing it.
+
+## Why Now
+
+The timing case rests on the chart and the flow, not on a known event. The pullback to **-10.3%** below the high, with RSI cooling to **61.3** and the month down **-8.5%**, has reset the stock inside its uptrend. That is the window where leaders tend to resume.
+
+Options flow leans bullish, though the size is small. On June 22 the stock saw **883** call contracts trade against just **37** puts, a heavy call skew. Call premium of **$0.08M** dwarfed put premium of **$0.01M**. Both the call wall and the put wall sit at **10**, right at the current price, which marks **10** as the battleground level that dealers and traders are watching.
+
+Be straight about the catalyst. No near-term earnings, trial readout, or regulatory date could be confirmed for this setup. Treat this as a technical entry with no known event to power it, rather than assuming a catalyst is hiding. The healthcare sector reads **NEUTRAL** and **DECELERATING**, so you are not getting a sector push either. The entire near-term case is the trend, the relative strength, and the call flow.
+
+## Risk Factors
+
+Thin liquidity is the first and biggest problem. The stock trades only about **$6.9M** a day. At that size, fills slip, a single seller can move it, and a bad print can gap it straight through the **8.43** stop before you act. That alone is why this stays small.
+
+The setup has no confluence. Only one read fired, with no second signal confirming it. A lone read in a thin small-cap is a thinner edge than it looks. Pair that with an unconfirmed catalyst and you have a trade carried entirely by momentum, which can reverse fast when momentum is the only support.
+
+The business risk is the usual clinical-stage binary. A failed readout, a slower trial, or a capital raise that dilutes the **90.3M** share count could undercut the stock regardless of the chart. ROE of **-90.5%** reflects a company spending well ahead of revenue.
+
+The invalidation is clean and you should respect it. A close below **8.43**, about **-16.0%** from the **10.03** entry, kills the thesis. That break means the pullback was the start of a real decline, and the right move is to be out.
+
+## Bringing It All Together
+
+- A single, focused platform: Alpha DaRT alpha-particle radiation aimed at solid tumors across skin, prostate, pancreatic, and more.
+- A real market need: localized, high-dose radiation with less collateral damage in hard-to-treat cancers.
+- A clean balance sheet for a clinical-stage company: cash of **0.85** per share, debt to equity of **0.21**, current ratio of **7.79**.
+- A strong, rising trend: 30-week line sloping **+31.3%**, price up **+39.3%** over three months and **+27.4%** ahead of the market.
+- A defined setup: entry **10.03**, stop **8.43**, targets **12.43** and **13.63**, for a **1.5** to **1** payout.
+
+
+## Conclusion
+
+$DRTS gives you a clean technical setup on a real momentum leader in alpha-particle cancer therapy, resting **-10.3%** below its high inside an uptrend still climbing at **+31.3%**. The reward to risk is fair at **1.5** to **1**, the relative strength is strong at **+27.4%**, and the call flow backs the direction. The catch is real: thin liquidity, a single read, and no confirmed catalyst mean this is a small position, defined entirely by the **8.43** stop. Buy the rest, keep the size honest, and let the **12.43** target prove the trend or let the stop end it.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

@@ -1,0 +1,238 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Analog Devices Rests Inside Its Climb — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>Analog Devices Rests Inside Its Climb</h1>
+<div class="subtitle">A pullback long in the chips that run the physical world, with a clear stop and an honest cap on conviction.</div>
+<div class="meta">EOD 2026-06-23 · ADI · written from the desk · model claude-opus-4-8</div>
+<div class="chips"><span class="chip">ADI</span>
+<span class="chip">Technology</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-06-23: entry <b>$417.26</b> &rarr; <b>$417.26</b> (as of 2026-06-23) · <span class="pos">+0.0%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Analog chips are the bridge between the real world and everything digital. They take sound, light, pressure, motion, and temperature and turn them into the data that processors crunch. Every car, factory robot, medical scanner, and base station leans on this layer. The work is unglamorous and sticky. Design wins last for years because a part qualified into an automotive platform or an industrial line stays there for a decade.</p>
+<p>The semiconductor group has had a powerful run. That strength now reads stretched. The Technology sector sits in an <strong>EXHAUSTED</strong> state, which means the move higher is mature and the easy gains are behind it. You should treat that as a warning to size carefully, not a reason to avoid the space outright. Stretched and broken are different conditions. A mature uptrend can still grind higher while it digests gains, and that digestion is exactly where the best entries in strong stocks show up.</p>
+<p>Analog Devices sits at the high-margin, slow-cycle end of this market. It is not a memory commodity maker living and dying on price wars. It sells differentiated parts into automotive, industrial, communications, and healthcare, the markets with the longest design cycles and the stickiest revenue. When the broad chip trade cools, this is the kind of business that holds its ground because its end demand does not evaporate on a single quarter&#x27;s inventory swing.</p>
+<p>That backdrop rewards a specific kind of setup. You want quality that has already proven its trend, then catch it on a rest rather than a chase. Analog Devices is sitting <strong>-6.3%</strong> below its 52-week high after a strong climb. That is the profile this kind of market pays you for.</p>
+<h2>Introducing $ADI</h2>
+<p>Analog Devices designs and makes the integrated circuits that read and shape analog signals. The core product lines are data converters that translate real-world signals into digital data and back, amplifiers that clean up those signals, power management chips, radio frequency parts for cellular infrastructure, and micro-electro-mechanical sensors like accelerometers and gyroscopes. It also sells the digital signal processing and software tools that sit alongside the hardware.</p>
+<p>The edge is breadth plus depth. Founded in <strong>1965</strong> and headquartered in Wilmington, Massachusetts, it has spent six decades building a catalog that customers design into long-lived products. That installed base is the moat. Once a part is qualified into a car platform or a factory controller, switching it out is expensive and risky, so the revenue tends to stay.</p>
+<p>This is a profitable, cash-generating business, not a speculative story. Gross margin runs at <strong>64.5%</strong> and operating margin at <strong>38.1%</strong>. The company throws off real cash, which gives it room to invest, pay dividends, and buy back stock through cycles. You are buying a franchise, and the question is the price and the timing.</p>
+<h2>The Thesis</h2>
+<p>You are buying a rest inside an uptrend, not a top. Analog Devices is <strong>-6.3%</strong> below its 52-week high of <strong>445.91</strong> after returning <strong>+33.7%</strong> over the last three months. The 30-week trend line is rising with a slope of <strong>+19.3%</strong>, and the stock sits above it. The stock has outpaced the broad market by <strong>+21.7%</strong> over the same three-month window. That combination, a strong trend plus a shallow pullback, is the setup that pays.</p>
+<p>The RSI sits at a neutral <strong>51.2</strong>. That matters. It tells you the recent climb has cooled off without breaking. You are not chasing an overbought spike, and you are not catching a falling knife. You are stepping in while the stock catches its breath inside a move that is still intact.</p>
+<p>Conviction here is <strong>MEDIUM</strong>, and you should size for that, not for certainty. The reason for the cap is honest: the same session that flagged this long also flagged a short, a sign of two-way pressure under the surface. Add the <strong>EXHAUSTED</strong> sector reading and you have real reasons to keep position size moderate. The risk and reward ratio on the trade is <strong>1.5</strong>, which is acceptable rather than exceptional. This is a quality long with a defined plan, not a high-conviction swing-for-the-fences bet.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-06-23-ADI.png" alt="ADI weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=ADI&interval=1W" target="_blank" rel="noopener">📈 Open the ADI weekly chart on TradingView ↗</a><figcaption>ADI weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $477.71 · mark support near $376.96.</figcaption></figure>
+<p>The trend is up and the stock is above its rising 30-week line, with that line sloping higher at <strong>+19.3%</strong>. That is the single most important thing on the chart. A stock above a rising long-term average is in a healthy uptrend, and pullbacks in that condition tend to get bought. The shorter-term posture backs it up: the stock returned <strong>+8.6%</strong> over the last month and <strong>+33.7%</strong> over three months.</p>
+<p>Price now sits at <strong>417.26</strong>, which is <strong>93.6%</strong> of the way up its 52-week range and <strong>-6.3%</strong> below the high of <strong>445.91</strong>. The 52-week low is <strong>218.37</strong>, so the stock has nearly doubled off the bottom, up <strong>+89.1%</strong> from that level. This is a leader pulling back inside its range, not a laggard trying to find a floor.</p>
+<p>Use the levels as your map. Entry is <strong>417.26</strong>. The stop sits at <strong>376.96</strong>, which is <strong>9.7%</strong> below entry and a clean line that says the uptrend has failed if it breaks. The first target is <strong>477.71</strong>, worth <strong>+14.5%</strong> from here, with a second target at <strong>507.94</strong> for <strong>+21.7%</strong>.</p>
+<p>The RSI at <strong>51.2</strong> is dead neutral, which is what you want at an entry inside an uptrend. There is no momentum exhaustion to fight and no oversold panic to fade. Relative strength of <strong>+21.7%</strong> versus the broad market over three months tells you this stock is leading, and leaders are where pullback buys work best. What you want to see next is a push back toward the high on rising volume, which would confirm the rest is over and buyers are back in control.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$211.62B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$207.90B</td></tr><tr><td class="k">52-week range</td><td class="v">$218.37 - $445.91</td></tr><tr><td class="k">Beta</td><td class="v">1.18</td></tr><tr><td class="k">Trailing P/E</td><td class="v">64.5</td></tr><tr><td class="k">Forward P/E</td><td class="v">29.4</td></tr><tr><td class="k">Price / sales</td><td class="v">16.6</td></tr><tr><td class="k">Price / book</td><td class="v">6.3</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$12.74B  (+37.2% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$25.98</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$3.31B</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">6.74 / 14.77</td></tr><tr><td class="k">Gross margin</td><td class="v">64.5%</td></tr><tr><td class="k">Operating margin</td><td class="v">38.1%</td></tr><tr><td class="k">Profit margin</td><td class="v">26.0%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$10.48</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$7.94</td></tr><tr><td class="k">Total cash / share</td><td class="v">$7.06</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.26</td></tr><tr><td class="k">Current ratio</td><td class="v">1.75</td></tr><tr><td class="k">Return on equity</td><td class="v">9.6%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">buy - mean target $450.73 (30 analysts)</td></tr></tbody></table>
+<p>The growth here is real and accelerating off the cycle low. That is a business coming out of a downturn with a steep recovery in profitability. The market sees it, which is why the stock has run.</p>
+<p>Profitability and cash generation are the strong points. Gross margin is <strong>64.5%</strong>, operating margin is <strong>38.1%</strong>, and net profit margin is <strong>26.0%</strong>. The balance sheet is conservative: debt to equity is just <strong>0.26</strong>, the current ratio is <strong>1.75</strong>, and book value is <strong>69.27</strong> per share. This is a company that can fund itself, return cash, and ride out a soft patch without stress.</p>
+<p>The honest weak spot is valuation. The trailing price to earnings multiple is <strong>64.5</strong>, the price to sales ratio is <strong>16.6</strong>, and the price to book is <strong>6.3</strong>. Those are rich numbers. The forward price to earnings of <strong>29.4</strong> is more reasonable and tells you the market is paying up for the earnings rebound, with forward EPS more than double the trailing figure. Return on equity of <strong>9.6%</strong> is modest for a business of this quality, a reminder that the recovery in profit is still early and the multiple is doing a lot of the work. You are paying a premium for a premium franchise, so the margin for error on execution is thin. The 30 analysts covering the stock rate it a <strong>buy</strong> with a mean target of <strong>450.73</strong>.</p>
+<h2>Why Now</h2>
+<p>There is no catalyst inside the next two weeks, and you should know that going in. The last earnings report landed in May 2026 and the next one is roughly two months out, around mid-to-late August. So this is a trend-and-pullback entry, not an event trade. You are not being paid to wait for a specific surprise. You are stepping into a leader on a rest while the broad market still favors longs.</p>
+<p>The macro tone supports a long, not a short. The market read is broadly constructive, which keeps a long position consistent with the bigger picture even with the sector stretched. Sentiment around the stock is supportive too: the mean analyst target of <strong>450.73</strong> sits above the current price of <strong>417.26</strong>, and the rating is a <strong>buy</strong> across <strong>30</strong> analysts. The Street has been raising targets, which means the recent strength has real backing rather than pure speculation.</p>
+<p>The options flow is mixed and worth reading honestly. But call premium of <strong>7.59 million</strong> topped put premium of <strong>6.39 million</strong>, so the dollars committed tilted bullish even as the contract count tilted the other way. The put wall sits at <strong>440</strong>, just under the 52-week high, and the call wall sits far above at <strong>550</strong>. That structure says dealers see support building near the recent highs and a ceiling only well above current levels. None of this is a green light on its own. It is a backdrop that does not argue against the long.</p>
+<h2>Risk Factors</h2>
+<p>The clearest risk is the conflicting signal. The same session that surfaced this long also fired a short. That is two-way pressure, and it is the main reason conviction stays at <strong>MEDIUM</strong> instead of higher. When buyers and sellers are both stepping up, the stock can chop sideways and grind you toward the stop without ever resolving.</p>
+<p>The sector is stretched. The Technology group reads <strong>EXHAUSTED</strong>, which means a broad chip selloff could drag this stock down regardless of its own merits. A leader in a tired sector is still exposed to a sector-wide rollover. If the whole group rolls, this name rolls with it.</p>
+<p>The upside leg is partly unproven by the Street. The first target of <strong>477.71</strong> sits above the mean analyst target of <strong>450.73</strong> and above the consensus zone of roughly <strong>405</strong> to <strong>430</strong>. That gap means the target is more your read than the market&#x27;s consensus. If the stock stalls in that <strong>405</strong> to <strong>430</strong> band and cannot push through, the <strong>+14.5%</strong> path to the first target may take longer than the chart suggests, and with no catalyst to force the issue you could be left grinding.</p>
+<p>The valuation leaves no cushion. A trailing price to earnings of <strong>64.5</strong> and a price to sales of <strong>16.6</strong> price in continued execution. Any stumble on the earnings recovery and the multiple compresses fast.</p>
+<p>The single invalidation is clean. A daily close below the stop at <strong>376.96</strong> ends the trade. That is <strong>9.7%</strong> of risk, so size the position so that loss is one you can take without flinching. Treat a break of momentum or a sector-wide selloff as reasons to cut early rather than wait for the stop.</p>
+<h2>Bringing It All Together</h2>
+<p>- Dual edge: a shallow pullback at <strong>-6.3%</strong> below the high paired with strong momentum, up <strong>+33.7%</strong> over three months.<br>- Real demand: analog chips into automotive, industrial, and communications, the stickiest end markets in semiconductors.</p>
+<p>- Trend intact: above a rising 30-week line sloping <strong>+19.3%</strong>, relative strength of <strong>+21.7%</strong> versus the market, RSI neutral at <strong>51.2</strong>.<br>- No near-term catalyst: next earnings is roughly two months out, so this is a trend entry, not an event trade.<br>- Levels: enter <strong>417.26</strong>, stop <strong>376.96</strong>, first target <strong>477.71</strong>, second target <strong>507.94</strong>, with a <strong>1.5</strong> risk and reward ratio.</p>
+<h2>Conclusion</h2>
+<p>Analog Devices is a quality long you buy on a rest, with eyes open. The trend is up, the franchise is excellent, the cash generation is strong, and the stock is leading the broad market by <strong>+21.7%</strong> over three months while sitting only <strong>-6.3%</strong> below its high. Those are the conditions that reward a pullback entry.</p>
+<p>The caution is honest and it caps the conviction at <strong>MEDIUM</strong>. A conflicting short fired the same session, the sector reads exhausted, the valuation is rich at a <strong>64.5</strong> trailing multiple, and the first target of <strong>477.71</strong> sits above where the Street&#x27;s consensus lives. So you take this with moderate size, you hold the line at <strong>376.96</strong>, and you let the <strong>1.5</strong> risk and reward ratio do its work. Buy the rest, respect the stop, and stay honest about the two-way pressure underneath.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Analog Devices, Inc. (ADI) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $211.62B; 52-week range $218-$446; Revenue $12.74B +37% YoY; Net income $3.31B; Free cash flow/share $7.94; Debt-to-equity 0.26; Return on equity 10%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Analog Devices, Inc. (ADI) inside the Technology space, specifically the &quot;Semiconductors&quot; theme. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): A proven pullback (tested, risk-adjusted return **1.10**) plus a momentum read (risk-adjusted return **0.73**) on a stock holding **-6.3%** below its high. It rides a rising 30-week line (slope **+19.3%**), shows relative strength of **+21.. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># Analog Devices Rests Inside Its Climb
+
+*A pullback long in the chips that run the physical world, with a clear stop and an honest cap on conviction.*
+
+## The Big Picture
+
+Analog chips are the bridge between the real world and everything digital. They take sound, light, pressure, motion, and temperature and turn them into the data that processors crunch. Every car, factory robot, medical scanner, and base station leans on this layer. The work is unglamorous and sticky. Design wins last for years because a part qualified into an automotive platform or an industrial line stays there for a decade.
+
+The semiconductor group has had a powerful run. That strength now reads stretched. The Technology sector sits in an **EXHAUSTED** state, which means the move higher is mature and the easy gains are behind it. You should treat that as a warning to size carefully, not a reason to avoid the space outright. Stretched and broken are different conditions. A mature uptrend can still grind higher while it digests gains, and that digestion is exactly where the best entries in strong stocks show up.
+
+Analog Devices sits at the high-margin, slow-cycle end of this market. It is not a memory commodity maker living and dying on price wars. It sells differentiated parts into automotive, industrial, communications, and healthcare, the markets with the longest design cycles and the stickiest revenue. When the broad chip trade cools, this is the kind of business that holds its ground because its end demand does not evaporate on a single quarter&#x27;s inventory swing.
+
+That backdrop rewards a specific kind of setup. You want quality that has already proven its trend, then catch it on a rest rather than a chase. Analog Devices is sitting **-6.3%** below its 52-week high after a strong climb. That is the profile this kind of market pays you for.
+
+## Introducing $ADI
+
+Analog Devices designs and makes the integrated circuits that read and shape analog signals. The core product lines are data converters that translate real-world signals into digital data and back, amplifiers that clean up those signals, power management chips, radio frequency parts for cellular infrastructure, and micro-electro-mechanical sensors like accelerometers and gyroscopes. It also sells the digital signal processing and software tools that sit alongside the hardware.
+
+The edge is breadth plus depth. Founded in **1965** and headquartered in Wilmington, Massachusetts, it has spent six decades building a catalog that customers design into long-lived products. That installed base is the moat. Once a part is qualified into a car platform or a factory controller, switching it out is expensive and risky, so the revenue tends to stay.
+
+This is a profitable, cash-generating business, not a speculative story. Gross margin runs at **64.5%** and operating margin at **38.1%**. The company throws off real cash, which gives it room to invest, pay dividends, and buy back stock through cycles. You are buying a franchise, and the question is the price and the timing.
+
+## The Thesis
+
+You are buying a rest inside an uptrend, not a top. Analog Devices is **-6.3%** below its 52-week high of **445.91** after returning **+33.7%** over the last three months. The 30-week trend line is rising with a slope of **+19.3%**, and the stock sits above it. The stock has outpaced the broad market by **+21.7%** over the same three-month window. That combination, a strong trend plus a shallow pullback, is the setup that pays.
+
+The RSI sits at a neutral **51.2**. That matters. It tells you the recent climb has cooled off without breaking. You are not chasing an overbought spike, and you are not catching a falling knife. You are stepping in while the stock catches its breath inside a move that is still intact.
+
+Conviction here is **MEDIUM**, and you should size for that, not for certainty. The reason for the cap is honest: the same session that flagged this long also flagged a short, a sign of two-way pressure under the surface. Add the **EXHAUSTED** sector reading and you have real reasons to keep position size moderate. The risk and reward ratio on the trade is **1.5**, which is acceptable rather than exceptional. This is a quality long with a defined plan, not a high-conviction swing-for-the-fences bet.
+
+## Technical Analysis
+
+&gt; 📈 Insert the ADI weekly chart here (TradingView): ADI weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $477.71 · mark support near $376.96.
+
+The trend is up and the stock is above its rising 30-week line, with that line sloping higher at **+19.3%**. That is the single most important thing on the chart. A stock above a rising long-term average is in a healthy uptrend, and pullbacks in that condition tend to get bought. The shorter-term posture backs it up: the stock returned **+8.6%** over the last month and **+33.7%** over three months.
+
+Price now sits at **417.26**, which is **93.6%** of the way up its 52-week range and **-6.3%** below the high of **445.91**. The 52-week low is **218.37**, so the stock has nearly doubled off the bottom, up **+89.1%** from that level. This is a leader pulling back inside its range, not a laggard trying to find a floor.
+
+Use the levels as your map. Entry is **417.26**. The stop sits at **376.96**, which is **9.7%** below entry and a clean line that says the uptrend has failed if it breaks. The first target is **477.71**, worth **+14.5%** from here, with a second target at **507.94** for **+21.7%**.
+
+The RSI at **51.2** is dead neutral, which is what you want at an entry inside an uptrend. There is no momentum exhaustion to fight and no oversold panic to fade. Relative strength of **+21.7%** versus the broad market over three months tells you this stock is leading, and leaders are where pullback buys work best. What you want to see next is a push back toward the high on rising volume, which would confirm the rest is over and buyers are back in control.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $211.62B |
+| Enterprise value | $207.90B |
+| 52-week range | $218.37 - $445.91 |
+| Beta | 1.18 |
+| Trailing P/E | 64.5 |
+| Forward P/E | 29.4 |
+| Price / sales | 16.6 |
+| Price / book | 6.3 |
+| Revenue (TTM) | $12.74B  (+37.2% YoY) |
+| Revenue / share | $25.98 |
+| Net income (TTM) | $3.31B |
+| EPS (TTM / fwd) | 6.74 / 14.77 |
+| Gross margin | 64.5% |
+| Operating margin | 38.1% |
+| Profit margin | 26.0% |
+| Operating cash flow / share | $10.48 |
+| Free cash flow / share | $7.94 |
+| Total cash / share | $7.06 |
+| Debt / equity | 0.26 |
+| Current ratio | 1.75 |
+| Return on equity | 9.6% |
+| Analyst consensus | buy - mean target $450.73 (30 analysts) |
+
+The growth here is real and accelerating off the cycle low. That is a business coming out of a downturn with a steep recovery in profitability. The market sees it, which is why the stock has run.
+
+Profitability and cash generation are the strong points. Gross margin is **64.5%**, operating margin is **38.1%**, and net profit margin is **26.0%**. The balance sheet is conservative: debt to equity is just **0.26**, the current ratio is **1.75**, and book value is **69.27** per share. This is a company that can fund itself, return cash, and ride out a soft patch without stress.
+
+The honest weak spot is valuation. The trailing price to earnings multiple is **64.5**, the price to sales ratio is **16.6**, and the price to book is **6.3**. Those are rich numbers. The forward price to earnings of **29.4** is more reasonable and tells you the market is paying up for the earnings rebound, with forward EPS more than double the trailing figure. Return on equity of **9.6%** is modest for a business of this quality, a reminder that the recovery in profit is still early and the multiple is doing a lot of the work. You are paying a premium for a premium franchise, so the margin for error on execution is thin. The 30 analysts covering the stock rate it a **buy** with a mean target of **450.73**.
+
+## Why Now
+
+There is no catalyst inside the next two weeks, and you should know that going in. The last earnings report landed in May 2026 and the next one is roughly two months out, around mid-to-late August. So this is a trend-and-pullback entry, not an event trade. You are not being paid to wait for a specific surprise. You are stepping into a leader on a rest while the broad market still favors longs.
+
+The macro tone supports a long, not a short. The market read is broadly constructive, which keeps a long position consistent with the bigger picture even with the sector stretched. Sentiment around the stock is supportive too: the mean analyst target of **450.73** sits above the current price of **417.26**, and the rating is a **buy** across **30** analysts. The Street has been raising targets, which means the recent strength has real backing rather than pure speculation.
+
+The options flow is mixed and worth reading honestly. But call premium of **7.59 million** topped put premium of **6.39 million**, so the dollars committed tilted bullish even as the contract count tilted the other way. The put wall sits at **440**, just under the 52-week high, and the call wall sits far above at **550**. That structure says dealers see support building near the recent highs and a ceiling only well above current levels. None of this is a green light on its own. It is a backdrop that does not argue against the long.
+
+## Risk Factors
+
+The clearest risk is the conflicting signal. The same session that surfaced this long also fired a short. That is two-way pressure, and it is the main reason conviction stays at **MEDIUM** instead of higher. When buyers and sellers are both stepping up, the stock can chop sideways and grind you toward the stop without ever resolving.
+
+The sector is stretched. The Technology group reads **EXHAUSTED**, which means a broad chip selloff could drag this stock down regardless of its own merits. A leader in a tired sector is still exposed to a sector-wide rollover. If the whole group rolls, this name rolls with it.
+
+The upside leg is partly unproven by the Street. The first target of **477.71** sits above the mean analyst target of **450.73** and above the consensus zone of roughly **405** to **430**. That gap means the target is more your read than the market&#x27;s consensus. If the stock stalls in that **405** to **430** band and cannot push through, the **+14.5%** path to the first target may take longer than the chart suggests, and with no catalyst to force the issue you could be left grinding.
+
+The valuation leaves no cushion. A trailing price to earnings of **64.5** and a price to sales of **16.6** price in continued execution. Any stumble on the earnings recovery and the multiple compresses fast.
+
+The single invalidation is clean. A daily close below the stop at **376.96** ends the trade. That is **9.7%** of risk, so size the position so that loss is one you can take without flinching. Treat a break of momentum or a sector-wide selloff as reasons to cut early rather than wait for the stop.
+
+## Bringing It All Together
+
+- Dual edge: a shallow pullback at **-6.3%** below the high paired with strong momentum, up **+33.7%** over three months.
+- Real demand: analog chips into automotive, industrial, and communications, the stickiest end markets in semiconductors.
+
+- Trend intact: above a rising 30-week line sloping **+19.3%**, relative strength of **+21.7%** versus the market, RSI neutral at **51.2**.
+- No near-term catalyst: next earnings is roughly two months out, so this is a trend entry, not an event trade.
+- Levels: enter **417.26**, stop **376.96**, first target **477.71**, second target **507.94**, with a **1.5** risk and reward ratio.
+
+## Conclusion
+
+Analog Devices is a quality long you buy on a rest, with eyes open. The trend is up, the franchise is excellent, the cash generation is strong, and the stock is leading the broad market by **+21.7%** over three months while sitting only **-6.3%** below its high. Those are the conditions that reward a pullback entry.
+
+The caution is honest and it caps the conviction at **MEDIUM**. A conflicting short fired the same session, the sector reads exhausted, the valuation is rich at a **64.5** trailing multiple, and the first target of **477.71** sits above where the Street&#x27;s consensus lives. So you take this with moderate size, you hold the line at **376.96**, and you let the **1.5** risk and reward ratio do its work. Buy the rest, respect the stop, and stay honest about the two-way pressure underneath.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
