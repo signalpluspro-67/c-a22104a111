@@ -1,0 +1,239 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Viavi&#x27;s Optical Comeback — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>Viavi&#x27;s Optical Comeback</h1>
+<div class="subtitle">A real photonics turnaround backed by the AI buildout, but the easy entry is already gone.</div>
+<div class="meta">EOD 2026-06-29 · VIAV · written from the desk · model claude-opus-4-8</div>
+<div class="chips"><span class="chip">VIAV</span>
+<span class="chip">Technology</span>
+<span class="chip hi">HIGH conviction</span></div>
+<div class="track">Tracking since 2026-06-29: entry <b>$41.77</b> &rarr; <b>$48.18</b> (as of 2026-06-29) · <span class="pos">+15.3%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>The optical layer is where the AI buildout actually lives. Every datacenter that trains a model moves data between chips, racks, and buildings over light. That light has to be generated, coated, measured, and verified, and the companies that supply the test gear and the optical components sit in front of a demand wave that is still building.</p>
+<p>Photonics is one of tonight&#x27;s hot themes for a reason. Optical interconnects are scaling inside AI clusters. Co-packaged optics, higher-speed transceivers, and denser fiber routes all need validation before they ship and monitoring once they run. Spend on network test and assurance tends to track that complexity, not the price of any single chip.</p>
+<p>There is a second leg most people miss. Optical coatings power 3D sensing in phones, anti-counterfeiting in currency, and filters in aerospace and defense. That hardware is unglamorous and high-margin, and it throws off cash through cycles that have nothing to do with the AI trade.</p>
+<p>This backdrop rewards a name that sells the picks and shovels of the light layer instead of betting on one end market. Viavi does exactly that.</p>
+<h2>Introducing $VIAV</h2>
+<p>Viavi Solutions is the company you used to know as JDS Uniphase. The rebrand split the old telecom-bubble story into a focused test-and-optics business.</p>
+<p>It runs two segments. Network and Service Enablement (NSE) builds the instruments, software, and assurance tools that telecom carriers, cloud operators, militaries, and first responders use to develop, deploy, and police their networks. This is the test-equipment franchise: lab gear, field probes, service assurance, and the AIOps software that watches live networks for trouble.</p>
+<p>The second segment, Optical Security and Performance Products (OSP), is the quiet cash engine. It takes Viavi&#x27;s core optical-coating technology and turns it into anti-counterfeiting features for banknotes, 3D-sensing filters for consumer devices, and components for government, aerospace, automotive, and industrial customers. The company has also signed a partnership to develop quantum security and network intelligence, a long-dated option on where this all goes.</p>
+<p>The edge here is hard-won manufacturing. Optical coatings at volume are difficult to copy, and decades of carrier relationships make Viavi a default vendor when a network operator needs to certify new hardware.</p>
+<h2>The Thesis</h2>
+<p>The honest read first: the story is strong and the entry is gone. Two independent signals lined up on a photonics name sitting <strong>12.9%</strong> below its 52-week high with a neutral momentum reading, and that combination is what surfaced Viavi to the desk. The chart is in a clean uptrend, the theme has a tailwind, and the options are tradeable. On paper this is a high-quality long.</p>
+<p>The problem is price. The setup was designed to enter near <strong>41.77</strong>, where the math worked: about <strong>32.5%</strong> of upside to the <strong>55.33</strong> target against <strong>20.4%</strong> of risk to the <strong>33.23</strong> stop. Viavi now trades at <strong>48.18</strong>. That is roughly <strong>15%</strong> above the intended entry and inside spitting distance of the target.</p>
+<p>So size this for what it is. From <strong>48.18</strong> you have only about <strong>15%</strong> left to <strong>55.33</strong> while the stop sits about <strong>31%</strong> below you. The designed reward-to-risk of <strong>1.6</strong> to <strong>1</strong> has inverted at the current chase price.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-06-29-VIAV.png" alt="VIAV weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=VIAV&interval=1W" target="_blank" rel="noopener">📈 Open the VIAV weekly chart on TradingView ↗</a><figcaption>VIAV weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $55.33 · mark support near $33.23.</figcaption></figure>
+<p>The trend is unambiguous and the entry timing is the only issue. Viavi closed at <strong>48.18</strong>, sits <strong>76.1%</strong> of the way up its 52-week range, and trades above its rising 30-week line, with that long-term average sloping up at roughly <strong>54.8%</strong>. Stock above a steeply rising 30-week line is the cleanest version of a stage-two uptrend you will find.</p>
+<p>The momentum picture is calm, which is what makes the chart look healthy rather than blown off. RSI reads about <strong>47.5</strong>, smack in the middle. That is unusual for a name up <strong>39.1%</strong> over the last 63 days, and it tells you the recent action has been a flat consolidation: the 21-day return is roughly <strong>-0.6%</strong> while the stock digests its run. Relative strength against the broad market is strong at about <strong>+22.6%</strong> over the same 63 days, so the digestion is happening from a position of leadership.</p>
+<p>Use the desk&#x27;s levels as your map. Support and the real reference for buyers is the <strong>41.77</strong> area, with the <strong>35.87</strong> swing low and the <strong>33.23</strong> stop beneath it. Overhead, <strong>55.33</strong> is the swing-high target and the line that matters; a daily close through it on expanding volume would open the path toward <strong>60.98</strong>, just under the <strong>60.43</strong> 52-week high.</p>
+<p>With ATR around <strong>4.27</strong>, a normal day swings more than four dollars. That matters for stop placement. A <strong>33.23</strong> stop is more than three average ranges below the current price, which is why chasing here ties up a wide, expensive stop for a thin slice of remaining upside.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$13.19B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$13.14B</td></tr><tr><td class="k">52-week range</td><td class="v">$9.14 - $60.43</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">1.19</td></tr><tr><td class="k">Forward P/E</td><td class="v">41.8</td></tr><tr><td class="k">Price / sales</td><td class="v">9.7</td></tr><tr><td class="k">Price / book</td><td class="v">14.8</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$1.37B  (+42.8% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$6.06</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$-55M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">-0.25 / 1.28</td></tr><tr><td class="k">Gross margin</td><td class="v">60.4%</td></tr><tr><td class="k">Operating margin</td><td class="v">12.0%</td></tr><tr><td class="k">Profit margin</td><td class="v">-4.0%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$0.29</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$0.70</td></tr><tr><td class="k">Total cash / share</td><td class="v">$2.14</td></tr><tr><td class="k">Debt / equity</td><td class="v">1.34</td></tr><tr><td class="k">Current ratio</td><td class="v">1.61</td></tr><tr><td class="k">Return on equity</td><td class="v">-7.0%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">strong buy - mean target $64.43 (7 analysts)</td></tr></tbody></table>
+<p>The top line is the headline. That pace says the network-test and optical-component demand is real, not a one-quarter blip. Operating margin came in at <strong>12.0%</strong>, so the core business makes money before the capital structure takes its cut.</p>
+<p>Below that line the picture is messier, and you should own it. Net income was <strong>-55.1 million</strong> over the trailing year, trailing EPS was <strong>-0.25</strong>, and earnings growth printed <strong>-68.5%</strong>. Return on equity is <strong>-7.0%</strong> and net margin is <strong>-4.0%</strong>, both reflections of that same gap between operating profit and the bottom line.</p>
+<p>Cash generation is the redeeming feature and the reason the balance sheet holds. Cash stands at about <strong>2.14</strong> per share, the current ratio is <strong>1.61</strong>, and the quick ratio is <strong>1.30</strong>, so near-term liquidity is fine. The valuation is rich on every static measure: forward P/E of <strong>41.8</strong>, price-to-sales of <strong>9.7</strong>, and price-to-book of <strong>14.8</strong> against a book value of <strong>3.62</strong> per share. You are paying up for a turnaround that the market expects to swing to a forward EPS near <strong>1.28</strong>. The seven analysts covering it carry a strong-buy and a mean target of <strong>64.43</strong>, which would be a meaningful move above the <strong>60.43</strong> prior high.</p>
+<h2>Why Now</h2>
+<p>The near-term clock is earnings. That report is the catalyst that either confirms the <strong>42.8%</strong> revenue trajectory and the path to forward profitability or breaks it. There is no other verified event in the window, so the timing question is really a question about positioning into that print.</p>
+<p>The options tape leans bullish but lightly. On <strong>2026-06-26</strong>, calls traded <strong>610</strong> contracts against <strong>193</strong> puts, and call premium of about <strong>0.29 million</strong> dollars outran put premium of roughly <strong>0.09 million</strong>. That is a clean three-to-one skew toward upside, the kind of flow that fits a stock holding a tight consolidation near its highs while traders position for the next leg.</p>
+<p>The macro frame is supportive on the index level and mixed underneath. The broad market is in a constructive regime, and photonics is a live theme. The catch sits in the sector internals: Technology reads neutral, and the sector&#x27;s near-term momentum has rolled to a weakening posture. So the tailwind is the theme and the broad tape, while the sector group itself is no longer accelerating. That argues for selectivity and against chasing the whole tech complex into this print.</p>
+<h2>Risk Factors</h2>
+<p>Technology is the stretched part of this market, and Viavi carries a beta of about <strong>1.19</strong>. A broad tech pullback drags it down with the group regardless of how good the photonics story is, and the sector&#x27;s weakening near-term momentum makes that the most credible way you lose money here.</p>
+<p>The second risk is the one you create by chasing. At <strong>48.18</strong> the trade is mechanically stale. Price already ran past the <strong>41.77</strong> entry, the reward-to-risk that justified the setup has inverted, and a buy here pairs about <strong>15%</strong> of remaining upside with a stop more than <strong>30%</strong> below. Pay the chase and you are accepting a wide, expensive stop for a thin reward.</p>
+<p>The valuation amplifies any disappointment. Forward P/E near <strong>41.8</strong> and price-to-sales of <strong>9.7</strong> price in a successful turn to the forward EPS of <strong>1.28</strong>. The leverage, with debt-to-equity at <strong>1.34</strong>, leaves less room for error than the cash flow alone suggests.</p>
+<p>The single invalidation is the <strong>33.23</strong> stop. A close below it ends the thesis and confirms the stage-two uptrend has broken.</p>
+<h2>Bringing It All Together</h2>
+<p>- Dual engine: network-test gear and high-margin optical coatings, both pulled by the AI-driven optical buildout, with <strong>60.4%</strong> gross margins.</p>
+<p>- Strong chart: above a 30-week line sloping up <strong>54.8%</strong>, RSI a calm <strong>47.5</strong>, relative strength <strong>+22.6%</strong> over 63 days, <strong>12.9%</strong> under the <strong>60.43</strong> high.</p>
+<p>- Levels that matter: real support at <strong>41.77</strong>, target <strong>55.33</strong> then <strong>60.98</strong>, hard stop <strong>33.23</strong>, analyst mean <strong>64.43</strong>.<br>- The catch: at <strong>48.18</strong> the <strong>1.6</strong>-to-<strong>1</strong> setup has inverted, so this is a wait-for-the-dip name, not a chase.</p>
+<h2>Conclusion</h2>
+<p>Viavi is a genuine photonics turnaround with the revenue, the cash flow, and the chart to back the story.</p>
+<p>My stance is straightforward and a little contrarian to the headline. You like the company and you wait for the price. The <strong>41.77</strong> entry was the trade; at <strong>48.18</strong> you are paying up for <strong>15%</strong> of remaining upside against a stop <strong>31%</strong> below, and that math does not earn full size. Patience is the edge here, because the business is not going anywhere and the next pullback gives you a cleaner shot at the same upside.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Viavi Solutions Inc. (VIAV) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $13.19B; 52-week range $9-$60; Revenue $1.37B +43% YoY; Net income $-55M; Free cash flow/share $0.70; Debt-to-equity 1.34; Return on equity -7%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Viavi Solutions Inc. (VIAV) inside the Technology space, specifically the &quot;Photonics&quot; theme. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Two strong signals line up: a proprietary desk read tested at risk-adjusted return **1.10** and an unusual options read at risk-adjusted return **2.33**, on a photonics name **12.9%** under its high with RSI **47.5** and no flags. Photonics. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># Viavi&#x27;s Optical Comeback
+
+*A real photonics turnaround backed by the AI buildout, but the easy entry is already gone.*
+
+## The Big Picture
+
+The optical layer is where the AI buildout actually lives. Every datacenter that trains a model moves data between chips, racks, and buildings over light. That light has to be generated, coated, measured, and verified, and the companies that supply the test gear and the optical components sit in front of a demand wave that is still building.
+
+Photonics is one of tonight&#x27;s hot themes for a reason. Optical interconnects are scaling inside AI clusters. Co-packaged optics, higher-speed transceivers, and denser fiber routes all need validation before they ship and monitoring once they run. Spend on network test and assurance tends to track that complexity, not the price of any single chip.
+
+There is a second leg most people miss. Optical coatings power 3D sensing in phones, anti-counterfeiting in currency, and filters in aerospace and defense. That hardware is unglamorous and high-margin, and it throws off cash through cycles that have nothing to do with the AI trade.
+
+This backdrop rewards a name that sells the picks and shovels of the light layer instead of betting on one end market. Viavi does exactly that.
+
+## Introducing $VIAV
+
+Viavi Solutions is the company you used to know as JDS Uniphase. The rebrand split the old telecom-bubble story into a focused test-and-optics business.
+
+It runs two segments. Network and Service Enablement (NSE) builds the instruments, software, and assurance tools that telecom carriers, cloud operators, militaries, and first responders use to develop, deploy, and police their networks. This is the test-equipment franchise: lab gear, field probes, service assurance, and the AIOps software that watches live networks for trouble.
+
+The second segment, Optical Security and Performance Products (OSP), is the quiet cash engine. It takes Viavi&#x27;s core optical-coating technology and turns it into anti-counterfeiting features for banknotes, 3D-sensing filters for consumer devices, and components for government, aerospace, automotive, and industrial customers. The company has also signed a partnership to develop quantum security and network intelligence, a long-dated option on where this all goes.
+
+The edge here is hard-won manufacturing. Optical coatings at volume are difficult to copy, and decades of carrier relationships make Viavi a default vendor when a network operator needs to certify new hardware.
+
+## The Thesis
+
+The honest read first: the story is strong and the entry is gone. Two independent signals lined up on a photonics name sitting **12.9%** below its 52-week high with a neutral momentum reading, and that combination is what surfaced Viavi to the desk. The chart is in a clean uptrend, the theme has a tailwind, and the options are tradeable. On paper this is a high-quality long.
+
+The problem is price. The setup was designed to enter near **41.77**, where the math worked: about **32.5%** of upside to the **55.33** target against **20.4%** of risk to the **33.23** stop. Viavi now trades at **48.18**. That is roughly **15%** above the intended entry and inside spitting distance of the target.
+
+So size this for what it is. From **48.18** you have only about **15%** left to **55.33** while the stop sits about **31%** below you. The designed reward-to-risk of **1.6** to **1** has inverted at the current chase price.
+
+## Technical Analysis
+
+&gt; 📈 Insert the VIAV weekly chart here (TradingView): VIAV weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $55.33 · mark support near $33.23.
+
+The trend is unambiguous and the entry timing is the only issue. Viavi closed at **48.18**, sits **76.1%** of the way up its 52-week range, and trades above its rising 30-week line, with that long-term average sloping up at roughly **54.8%**. Stock above a steeply rising 30-week line is the cleanest version of a stage-two uptrend you will find.
+
+The momentum picture is calm, which is what makes the chart look healthy rather than blown off. RSI reads about **47.5**, smack in the middle. That is unusual for a name up **39.1%** over the last 63 days, and it tells you the recent action has been a flat consolidation: the 21-day return is roughly **-0.6%** while the stock digests its run. Relative strength against the broad market is strong at about **+22.6%** over the same 63 days, so the digestion is happening from a position of leadership.
+
+Use the desk&#x27;s levels as your map. Support and the real reference for buyers is the **41.77** area, with the **35.87** swing low and the **33.23** stop beneath it. Overhead, **55.33** is the swing-high target and the line that matters; a daily close through it on expanding volume would open the path toward **60.98**, just under the **60.43** 52-week high.
+
+With ATR around **4.27**, a normal day swings more than four dollars. That matters for stop placement. A **33.23** stop is more than three average ranges below the current price, which is why chasing here ties up a wide, expensive stop for a thin slice of remaining upside.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $13.19B |
+| Enterprise value | $13.14B |
+| 52-week range | $9.14 - $60.43 |
+| Dividend yield | None |
+| Beta | 1.19 |
+| Forward P/E | 41.8 |
+| Price / sales | 9.7 |
+| Price / book | 14.8 |
+| Revenue (TTM) | $1.37B  (+42.8% YoY) |
+| Revenue / share | $6.06 |
+| Net income (TTM) | $-55M |
+| EPS (TTM / fwd) | -0.25 / 1.28 |
+| Gross margin | 60.4% |
+| Operating margin | 12.0% |
+| Profit margin | -4.0% |
+| Operating cash flow / share | $0.29 |
+| Free cash flow / share | $0.70 |
+| Total cash / share | $2.14 |
+| Debt / equity | 1.34 |
+| Current ratio | 1.61 |
+| Return on equity | -7.0% |
+| Analyst consensus | strong buy - mean target $64.43 (7 analysts) |
+
+The top line is the headline. That pace says the network-test and optical-component demand is real, not a one-quarter blip. Operating margin came in at **12.0%**, so the core business makes money before the capital structure takes its cut.
+
+Below that line the picture is messier, and you should own it. Net income was **-55.1 million** over the trailing year, trailing EPS was **-0.25**, and earnings growth printed **-68.5%**. Return on equity is **-7.0%** and net margin is **-4.0%**, both reflections of that same gap between operating profit and the bottom line.
+
+Cash generation is the redeeming feature and the reason the balance sheet holds. Cash stands at about **2.14** per share, the current ratio is **1.61**, and the quick ratio is **1.30**, so near-term liquidity is fine. The valuation is rich on every static measure: forward P/E of **41.8**, price-to-sales of **9.7**, and price-to-book of **14.8** against a book value of **3.62** per share. You are paying up for a turnaround that the market expects to swing to a forward EPS near **1.28**. The seven analysts covering it carry a strong-buy and a mean target of **64.43**, which would be a meaningful move above the **60.43** prior high.
+
+## Why Now
+
+The near-term clock is earnings. That report is the catalyst that either confirms the **42.8%** revenue trajectory and the path to forward profitability or breaks it. There is no other verified event in the window, so the timing question is really a question about positioning into that print.
+
+The options tape leans bullish but lightly. On **2026-06-26**, calls traded **610** contracts against **193** puts, and call premium of about **0.29 million** dollars outran put premium of roughly **0.09 million**. That is a clean three-to-one skew toward upside, the kind of flow that fits a stock holding a tight consolidation near its highs while traders position for the next leg.
+
+The macro frame is supportive on the index level and mixed underneath. The broad market is in a constructive regime, and photonics is a live theme. The catch sits in the sector internals: Technology reads neutral, and the sector&#x27;s near-term momentum has rolled to a weakening posture. So the tailwind is the theme and the broad tape, while the sector group itself is no longer accelerating. That argues for selectivity and against chasing the whole tech complex into this print.
+
+## Risk Factors
+
+Technology is the stretched part of this market, and Viavi carries a beta of about **1.19**. A broad tech pullback drags it down with the group regardless of how good the photonics story is, and the sector&#x27;s weakening near-term momentum makes that the most credible way you lose money here.
+
+The second risk is the one you create by chasing. At **48.18** the trade is mechanically stale. Price already ran past the **41.77** entry, the reward-to-risk that justified the setup has inverted, and a buy here pairs about **15%** of remaining upside with a stop more than **30%** below. Pay the chase and you are accepting a wide, expensive stop for a thin reward.
+
+The valuation amplifies any disappointment. Forward P/E near **41.8** and price-to-sales of **9.7** price in a successful turn to the forward EPS of **1.28**. The leverage, with debt-to-equity at **1.34**, leaves less room for error than the cash flow alone suggests.
+
+The single invalidation is the **33.23** stop. A close below it ends the thesis and confirms the stage-two uptrend has broken.
+
+## Bringing It All Together
+
+- Dual engine: network-test gear and high-margin optical coatings, both pulled by the AI-driven optical buildout, with **60.4%** gross margins.
+
+- Strong chart: above a 30-week line sloping up **54.8%**, RSI a calm **47.5**, relative strength **+22.6%** over 63 days, **12.9%** under the **60.43** high.
+
+- Levels that matter: real support at **41.77**, target **55.33** then **60.98**, hard stop **33.23**, analyst mean **64.43**.
+- The catch: at **48.18** the **1.6**-to-**1** setup has inverted, so this is a wait-for-the-dip name, not a chase.
+
+## Conclusion
+
+Viavi is a genuine photonics turnaround with the revenue, the cash flow, and the chart to back the story.
+
+My stance is straightforward and a little contrarian to the headline. You like the company and you wait for the price. The **41.77** entry was the trade; at **48.18** you are paying up for **15%** of remaining upside against a stop **31%** below, and that math does not earn full size. Patience is the edge here, because the business is not going anywhere and the next pullback gives you a cleaner shot at the same upside.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
