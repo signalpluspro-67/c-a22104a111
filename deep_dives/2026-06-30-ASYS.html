@@ -1,0 +1,232 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Amtech&#x27;s Semiconductor Packaging Bet — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>Amtech&#x27;s Semiconductor Packaging Bet</h1>
+<div class="subtitle">A small-cap tool maker riding the advanced-packaging build, but you&#x27;re buying it well above the desk&#x27;s entry.</div>
+<div class="meta">EOD 2026-06-30 · ASYS · written from the desk · model claude-opus-4-8</div>
+<div class="chips"><span class="chip">ASYS</span>
+<span class="chip">Technology</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-06-30: entry <b>$17.80</b> &rarr; <b>$20.88</b> (as of 2026-06-30) · <span class="pos">+17.3%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Advanced packaging is where the semiconductor money is moving. As raw transistor shrinks get harder and more expensive, the industry is squeezing performance out of how chips are stacked, bonded, and cooled instead. That shift rewards the companies that sell the ovens, furnaces, and polishing gear that make packaging work.</p>
+<p>The sector backdrop is mixed right now. Technology as a group reads EXHAUSTED on the macro screen, which means the easy, broad move higher has already happened and the group is running on fumes rather than fresh fuel. You want to respect that. When the sector is tired, individual names have to carry their own weight instead of getting a free lift from the trend.</p>
+<p>That is where a specialist like this earns its place. Amtech does not sell leading-edge lithography. It sells the thermal processing and wafer-handling equipment that packaging and power-semiconductor makers need regardless of which foundry wins the node race. The demand is real and it is structural. The question you have to answer is whether the price still pays you to own it.</p>
+<h2>Introducing $ASYS</h2>
+<p>Amtech Systems is a small Arizona tool maker with two segments and a long history. It was incorporated in <strong>1981</strong>, it employs <strong>264</strong> people, and it builds capital equipment plus the consumables that go with it for fabricating and packaging semiconductor devices.</p>
+<p>The first segment is Thermal Processing Solutions. That covers solder reflow equipment for advanced packaging, belt furnaces for power-semiconductor substrates, and horizontal diffusion furnaces for wafer processing. The second segment is Semiconductor Fabrication Solutions, which sells double-sided wafer cleaning systems, polishing templates, process chemicals, and CMP parts and service under the Entrepix, PR Hoffman, and Intersurface Dynamics brands.</p>
+<p>It sells worldwide, from the United States and Mexico to China, Taiwan, Singapore, and across Europe. The edge is not scale. The edge is being an entrenched supplier of specialized consumables and service into packaging lines that cannot swap tools easily once a process is qualified. That recurring consumables and service tail is what makes a company this small worth a second look.</p>
+<h2>The Thesis</h2>
+<p>The call here is a pullback inside a strong uptrend, and the conviction is MEDIUM for a reason. The desk read tested at a risk-adjusted return of <strong>1.10</strong>, the 30-week trend line is climbing at <strong>34.6%</strong>, and the stock sits <strong>13.0%</strong> below its <strong>$25.71</strong> 52-week high with the weekly RSI near <strong>50.9</strong> and no trend violations flagged. Those are the ingredients of a clean, still-rising small cap that has cooled off rather than broken.</p>
+<p>The reward-to-risk on the desk&#x27;s plan is <strong>1.5</strong>, measured from a <strong>$17.80</strong> entry with a <strong>$13.71</strong> stop and a <strong>$23.99</strong> target. On paper that is a trend-aligned long in a name that has done nothing wrong technically.</p>
+<p>Here is the honest part. The plan was built off <strong>$17.80</strong>, and the stock last traded at <strong>$20.88</strong>. You&#x27;re being asked to buy something roughly <strong>17%</strong> above where the desk wanted in. The setup is sound. The entry price is stale. That gap is the whole argument for keeping this small and patient rather than chasing.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-06-30-ASYS.png" alt="ASYS weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=ASYS&interval=1W" target="_blank" rel="noopener">📈 Open the ASYS weekly chart on TradingView ↗</a><figcaption>ASYS weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $23.99 · mark support near $13.71.</figcaption></figure>
+<p>The trend is intact and steep. Price closed at <strong>$20.88</strong>, it sits above the rising 30-week line, and that line is sloping up at <strong>34.6%</strong>, which tells you the multi-month direction is firmly higher. Over the last <strong>63</strong> trading days the stock is up <strong>88.1%</strong>, and it has beaten the broad market by <strong>70.8%</strong> over that same stretch. This has been one of the stronger small caps around, full stop.</p>
+<p>Momentum has cooled, and that is the point of a pullback setup. The 14-day RSI reads <strong>56.3</strong> on the daily and <strong>50.9</strong> on the weekly, both in neutral territory rather than overbought. The 21-day return is <strong>-1.8%</strong>, so the stock has paused after its run. It sits <strong>13.0%</strong> below the <strong>$25.71</strong> high and rests in the top quarter of its 1-year range at a position reading of <strong>77.8</strong>, so it is closer to the highs than the lows without being pinned to the ceiling.</p>
+<p>The levels frame the trade. The desk&#x27;s reference entry is <strong>$17.80</strong>, the stop is <strong>$13.71</strong>, and the first target is <strong>$23.99</strong>, which lines up with the swing high. A second objective sits at <strong>$27.02</strong>. From the current <strong>$20.88</strong>, the target is <strong>34.8%</strong> away and the stop is <strong>23.0%</strong> below, which flips the reward-to-risk against you at today&#x27;s price. The swing low at <strong>$12.15</strong> and the stop at <strong>$13.71</strong> mark the zone where the whole uptrend thesis breaks.</p>
+<p>Volume is the tell to watch. Confirmation of a resumed leg would be a push back toward <strong>$23.99</strong> on volume running above that average, not a drift up on quiet tape. With an ATR of <strong>2.05</strong>, a single average day moves the stock about ten percent of its price, so expect the ride to be choppy.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$351M</td></tr><tr><td class="k">Enterprise value</td><td class="v">$294M</td></tr><tr><td class="k">52-week range</td><td class="v">$3.93 - $25.71</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">2.0</td></tr><tr><td class="k">Trailing P/E</td><td class="v">111.7</td></tr><tr><td class="k">Forward P/E</td><td class="v">25.1</td></tr><tr><td class="k">Price / sales</td><td class="v">4.5</td></tr><tr><td class="k">Price / book</td><td class="v">5.2</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$79M  (+31.4% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$5.49</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$2M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">0.18 / 0.8</td></tr><tr><td class="k">Gross margin</td><td class="v">45.9%</td></tr><tr><td class="k">Operating margin</td><td class="v">8.8%</td></tr><tr><td class="k">Profit margin</td><td class="v">3.1%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$0.63</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$0.63</td></tr><tr><td class="k">Total cash / share</td><td class="v">$1.68</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.33</td></tr><tr><td class="k">Current ratio</td><td class="v">2.87</td></tr><tr><td class="k">Return on equity</td><td class="v">4.6%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">none - mean target $22.00 (1 analysts)</td></tr></tbody></table>
+<p>Growth and margins are the strong side. For a small tool maker, a <strong>45.9%</strong> gross margin backed by <strong>31.4%</strong> top-line growth is a genuinely good profile. It tells you the consumables and service mix is doing work.</p>
+<p>Cash generation is clean and the balance sheet is sturdy. Cash sits at <strong>$1.68</strong> per share. This is not a fragile business.</p>
+<p>The weak spot is the bottom line and the price you pay for it. That thin net figure is why the trailing P/E reads <strong>111.7</strong>. The forward P/E of <strong>25.1</strong> assumes EPS jumps to <strong>$0.80</strong>, and you&#x27;re paying <strong>4.5</strong> times sales and <strong>5.2</strong> times book today on that promise. Return on equity is <strong>4.6%</strong> and return on assets is <strong>4.0%</strong>, both modest. You&#x27;re buying the growth and the cash flow, not the current earnings.</p>
+<h2>Why Now</h2>
+<p>The near-term catalyst is earnings, and the date is not confirmed. The desk flags an event around <strong>2026-08-04</strong>, roughly <strong>34</strong> days out, but that date could not be verified in this environment, so treat it as a marker rather than a fact. Any downgrade, guidance change, or dilution in the days before it could not be checked either. You go in assuming the calendar risk is live.</p>
+<p>The macro tailwind is real but fading. Advanced packaging demand supports the business, yet the Technology sector reads EXHAUSTED, so you are leaning on the company&#x27;s own momentum rather than a rising sector to carry it. That argues for less size, not more.</p>
+<p>Options flow is thin and does not tell you much. On <strong>2026-06-29</strong> the stock saw <strong>212</strong> call contracts against <strong>3</strong> puts, with call premium of just <strong>$0.03M</strong>. The direction skews bullish, but the dollars are tiny and easy to overread. This is a lightly traded name, and the flow reflects it.</p>
+<h2>Risk Factors</h2>
+<p>Liquidity is the first real risk. The stock trades about <strong>$8.4M</strong> a day, so a broad market wobble moves it harder than a large cap, and getting out in size is costly. In a small cap, thin volume cuts both ways and it usually hurts most on the way down.</p>
+<p>The chased entry is the second. Last price at <strong>$20.88</strong> is roughly <strong>17%</strong> above the <strong>$17.80</strong> entry the plan was built on. Buy here and the stop at <strong>$13.71</strong> sits <strong>23.0%</strong> below you, which means your actual reward-to-risk is worse than the <strong>1.5</strong> on the sheet. The pullback buy-zone is gone at this level.</p>
+<p>Valuation is the third. At a trailing P/E of <strong>111.7</strong>, <strong>4.5</strong> times sales, and <strong>5.2</strong> times book, the stock needs the forward EPS jump to <strong>$0.80</strong> to hold up. Miss that on the coming report and the multiple has a long way to fall. With a beta of <strong>2.0</strong>, it will amplify any market drop.</p>
+<p>The single invalidation is clean. A break back below the <strong>$13.71</strong> stop, near the <strong>$12.15</strong> swing low, voids the uptrend and the whole thesis. Above that, the rising 30-week line keeps you in. Below it, you&#x27;re out.</p>
+<h2>Bringing It All Together</h2>
+<p>- Dual focus: thermal processing and wafer fabrication tools, tied to the advanced-packaging build with recurring consumables and service.</p>
+<p>- Trend: above a 30-week line rising <strong>34.6%</strong>, up <strong>88.1%</strong> over 63 days, beating the market by <strong>70.8%</strong>, now resting <strong>13.0%</strong> below the <strong>$25.71</strong> high.<br>- Catalyst: an unconfirmed earnings event near <strong>2026-08-04</strong>, about <strong>34</strong> days out, into an EXHAUSTED sector.<br>- Levels: desk entry <strong>$17.80</strong>, stop <strong>$13.71</strong>, target <strong>$23.99</strong> then <strong>$27.02</strong>, but you&#x27;re already at <strong>$20.88</strong> and paying up.</p>
+<h2>Conclusion</h2>
+<p>Amtech is a good business at an awkward price. The growth, the margins, and the cash flow are all there, and the uptrend is one of the cleanest you&#x27;ll find in a small cap. The problem is that the desk&#x27;s plan wanted you in at <strong>$17.80</strong>, and at <strong>$20.88</strong> you&#x27;re chasing a move that already ran <strong>88.1%</strong> in three months. Add a stretched trailing multiple, a beta of <strong>2.0</strong>, thin <strong>$8.4M</strong> daily volume, and an unconfirmed catalyst, and this is a MEDIUM-conviction watch, not a buy-up-here.</p>
+<p>The patient play is to let it come back toward the <strong>$17.80</strong> zone where the reward-to-risk actually works, and to keep any position small given the liquidity. If it breaks <strong>$13.71</strong>, the story is over. If it holds the rising trend and pulls back to the entry, you get the setup the desk actually wanted.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Amtech Systems, Inc. (ASYS) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $351M; 52-week range $4-$26; Revenue $79M +31% YoY; Net income $2M; Free cash flow/share $0.63; Debt-to-equity 0.33; Return on equity 5%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Amtech Systems, Inc. (ASYS) inside the Technology space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): ASYS is a proven pullback in a small-cap uptrend. The pullback desk read reads tested at risk-adjusted return **1.10**, the 30-week trend climbs **34.6%**, and price sits **13.0%** below its high with RSI at **50.9** and no flags.. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># Amtech&#x27;s Semiconductor Packaging Bet
+
+*A small-cap tool maker riding the advanced-packaging build, but you&#x27;re buying it well above the desk&#x27;s entry.*
+
+## The Big Picture
+
+Advanced packaging is where the semiconductor money is moving. As raw transistor shrinks get harder and more expensive, the industry is squeezing performance out of how chips are stacked, bonded, and cooled instead. That shift rewards the companies that sell the ovens, furnaces, and polishing gear that make packaging work.
+
+The sector backdrop is mixed right now. Technology as a group reads EXHAUSTED on the macro screen, which means the easy, broad move higher has already happened and the group is running on fumes rather than fresh fuel. You want to respect that. When the sector is tired, individual names have to carry their own weight instead of getting a free lift from the trend.
+
+That is where a specialist like this earns its place. Amtech does not sell leading-edge lithography. It sells the thermal processing and wafer-handling equipment that packaging and power-semiconductor makers need regardless of which foundry wins the node race. The demand is real and it is structural. The question you have to answer is whether the price still pays you to own it.
+
+## Introducing $ASYS
+
+Amtech Systems is a small Arizona tool maker with two segments and a long history. It was incorporated in **1981**, it employs **264** people, and it builds capital equipment plus the consumables that go with it for fabricating and packaging semiconductor devices.
+
+The first segment is Thermal Processing Solutions. That covers solder reflow equipment for advanced packaging, belt furnaces for power-semiconductor substrates, and horizontal diffusion furnaces for wafer processing. The second segment is Semiconductor Fabrication Solutions, which sells double-sided wafer cleaning systems, polishing templates, process chemicals, and CMP parts and service under the Entrepix, PR Hoffman, and Intersurface Dynamics brands.
+
+It sells worldwide, from the United States and Mexico to China, Taiwan, Singapore, and across Europe. The edge is not scale. The edge is being an entrenched supplier of specialized consumables and service into packaging lines that cannot swap tools easily once a process is qualified. That recurring consumables and service tail is what makes a company this small worth a second look.
+
+## The Thesis
+
+The call here is a pullback inside a strong uptrend, and the conviction is MEDIUM for a reason. The desk read tested at a risk-adjusted return of **1.10**, the 30-week trend line is climbing at **34.6%**, and the stock sits **13.0%** below its **$25.71** 52-week high with the weekly RSI near **50.9** and no trend violations flagged. Those are the ingredients of a clean, still-rising small cap that has cooled off rather than broken.
+
+The reward-to-risk on the desk&#x27;s plan is **1.5**, measured from a **$17.80** entry with a **$13.71** stop and a **$23.99** target. On paper that is a trend-aligned long in a name that has done nothing wrong technically.
+
+Here is the honest part. The plan was built off **$17.80**, and the stock last traded at **$20.88**. You&#x27;re being asked to buy something roughly **17%** above where the desk wanted in. The setup is sound. The entry price is stale. That gap is the whole argument for keeping this small and patient rather than chasing.
+
+## Technical Analysis
+
+&gt; 📈 Insert the ASYS weekly chart here (TradingView): ASYS weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $23.99 · mark support near $13.71.
+
+The trend is intact and steep. Price closed at **$20.88**, it sits above the rising 30-week line, and that line is sloping up at **34.6%**, which tells you the multi-month direction is firmly higher. Over the last **63** trading days the stock is up **88.1%**, and it has beaten the broad market by **70.8%** over that same stretch. This has been one of the stronger small caps around, full stop.
+
+Momentum has cooled, and that is the point of a pullback setup. The 14-day RSI reads **56.3** on the daily and **50.9** on the weekly, both in neutral territory rather than overbought. The 21-day return is **-1.8%**, so the stock has paused after its run. It sits **13.0%** below the **$25.71** high and rests in the top quarter of its 1-year range at a position reading of **77.8**, so it is closer to the highs than the lows without being pinned to the ceiling.
+
+The levels frame the trade. The desk&#x27;s reference entry is **$17.80**, the stop is **$13.71**, and the first target is **$23.99**, which lines up with the swing high. A second objective sits at **$27.02**. From the current **$20.88**, the target is **34.8%** away and the stop is **23.0%** below, which flips the reward-to-risk against you at today&#x27;s price. The swing low at **$12.15** and the stop at **$13.71** mark the zone where the whole uptrend thesis breaks.
+
+Volume is the tell to watch. Confirmation of a resumed leg would be a push back toward **$23.99** on volume running above that average, not a drift up on quiet tape. With an ATR of **2.05**, a single average day moves the stock about ten percent of its price, so expect the ride to be choppy.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $351M |
+| Enterprise value | $294M |
+| 52-week range | $3.93 - $25.71 |
+| Dividend yield | None |
+| Beta | 2.0 |
+| Trailing P/E | 111.7 |
+| Forward P/E | 25.1 |
+| Price / sales | 4.5 |
+| Price / book | 5.2 |
+| Revenue (TTM) | $79M  (+31.4% YoY) |
+| Revenue / share | $5.49 |
+| Net income (TTM) | $2M |
+| EPS (TTM / fwd) | 0.18 / 0.8 |
+| Gross margin | 45.9% |
+| Operating margin | 8.8% |
+| Profit margin | 3.1% |
+| Operating cash flow / share | $0.63 |
+| Free cash flow / share | $0.63 |
+| Total cash / share | $1.68 |
+| Debt / equity | 0.33 |
+| Current ratio | 2.87 |
+| Return on equity | 4.6% |
+| Analyst consensus | none - mean target $22.00 (1 analysts) |
+
+Growth and margins are the strong side. For a small tool maker, a **45.9%** gross margin backed by **31.4%** top-line growth is a genuinely good profile. It tells you the consumables and service mix is doing work.
+
+Cash generation is clean and the balance sheet is sturdy. Cash sits at **$1.68** per share. This is not a fragile business.
+
+The weak spot is the bottom line and the price you pay for it. That thin net figure is why the trailing P/E reads **111.7**. The forward P/E of **25.1** assumes EPS jumps to **$0.80**, and you&#x27;re paying **4.5** times sales and **5.2** times book today on that promise. Return on equity is **4.6%** and return on assets is **4.0%**, both modest. You&#x27;re buying the growth and the cash flow, not the current earnings.
+
+## Why Now
+
+The near-term catalyst is earnings, and the date is not confirmed. The desk flags an event around **2026-08-04**, roughly **34** days out, but that date could not be verified in this environment, so treat it as a marker rather than a fact. Any downgrade, guidance change, or dilution in the days before it could not be checked either. You go in assuming the calendar risk is live.
+
+The macro tailwind is real but fading. Advanced packaging demand supports the business, yet the Technology sector reads EXHAUSTED, so you are leaning on the company&#x27;s own momentum rather than a rising sector to carry it. That argues for less size, not more.
+
+Options flow is thin and does not tell you much. On **2026-06-29** the stock saw **212** call contracts against **3** puts, with call premium of just **$0.03M**. The direction skews bullish, but the dollars are tiny and easy to overread. This is a lightly traded name, and the flow reflects it.
+
+## Risk Factors
+
+Liquidity is the first real risk. The stock trades about **$8.4M** a day, so a broad market wobble moves it harder than a large cap, and getting out in size is costly. In a small cap, thin volume cuts both ways and it usually hurts most on the way down.
+
+The chased entry is the second. Last price at **$20.88** is roughly **17%** above the **$17.80** entry the plan was built on. Buy here and the stop at **$13.71** sits **23.0%** below you, which means your actual reward-to-risk is worse than the **1.5** on the sheet. The pullback buy-zone is gone at this level.
+
+Valuation is the third. At a trailing P/E of **111.7**, **4.5** times sales, and **5.2** times book, the stock needs the forward EPS jump to **$0.80** to hold up. Miss that on the coming report and the multiple has a long way to fall. With a beta of **2.0**, it will amplify any market drop.
+
+The single invalidation is clean. A break back below the **$13.71** stop, near the **$12.15** swing low, voids the uptrend and the whole thesis. Above that, the rising 30-week line keeps you in. Below it, you&#x27;re out.
+
+## Bringing It All Together
+
+- Dual focus: thermal processing and wafer fabrication tools, tied to the advanced-packaging build with recurring consumables and service.
+
+- Trend: above a 30-week line rising **34.6%**, up **88.1%** over 63 days, beating the market by **70.8%**, now resting **13.0%** below the **$25.71** high.
+- Catalyst: an unconfirmed earnings event near **2026-08-04**, about **34** days out, into an EXHAUSTED sector.
+- Levels: desk entry **$17.80**, stop **$13.71**, target **$23.99** then **$27.02**, but you&#x27;re already at **$20.88** and paying up.
+
+## Conclusion
+
+Amtech is a good business at an awkward price. The growth, the margins, and the cash flow are all there, and the uptrend is one of the cleanest you&#x27;ll find in a small cap. The problem is that the desk&#x27;s plan wanted you in at **$17.80**, and at **$20.88** you&#x27;re chasing a move that already ran **88.1%** in three months. Add a stretched trailing multiple, a beta of **2.0**, thin **$8.4M** daily volume, and an unconfirmed catalyst, and this is a MEDIUM-conviction watch, not a buy-up-here.
+
+The patient play is to let it come back toward the **$17.80** zone where the reward-to-risk actually works, and to keep any position small given the liquidity. If it breaks **$13.71**, the story is over. If it holds the rising trend and pulls back to the entry, you get the setup the desk actually wanted.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
