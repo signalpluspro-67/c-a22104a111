@@ -1,0 +1,228 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Robinhood&#x27;s Insider Bet, and the Price You Pay to Follow It — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>Robinhood&#x27;s Insider Bet, and the Price You Pay to Follow It</h1>
+<div class="subtitle">A director put $35.3M to work near $82. The stock now trades at $101. That gap is the whole trade.</div>
+<div class="meta">EOD 2026-07-01 · HOOD · written from the desk · model claude-opus-4-8</div>
+<div class="chips"><span class="chip">HOOD</span>
+<span class="chip">Financial Services</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-07-01: entry <b>$91.41</b> &rarr; <b>$101.28</b> (as of 2026-07-01) · <span class="pos">+10.8%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Retail trading is a real business again, and Robinhood is the clearest US-listed way to own that trend. Volumes on stocks, options, and crypto have climbed back toward the highs, and the platforms that monetize that flow print cash when volatility stays alive. The sector backdrop is only neutral, so this is a single-name story rather than a rising-tide trade.</p>
+<p>The Financial Services group reads <strong>NEUTRAL</strong> on both state and acceleration. Nothing in the macro is pushing capital-markets stocks higher as a bloc. That matters for sizing. When the sector is not helping, a long has to earn its keep on company-specific signals, and it carries the full weight of any broad-market wobble.</p>
+<p>Two themes give Robinhood more torque than a plain brokerage: FinTech and Crypto. The company sells trading, but it also sells a full spending and saving stack now, from cash cards to retirement accounts to crypto wallets. That mix turns every uptick in retail engagement into fee income across several lines at once.</p>
+<p>A backdrop like this rewards a platform with high margins and real operating leverage, because incremental volume drops almost straight to the bottom line. Robinhood fits that description. The question is never whether the business works. It is what you pay to own it on any given day.</p>
+<h2>Introducing $HOOD</h2>
+<p>Robinhood Markets runs a US financial services platform built for a younger investor. You can trade stocks, ETFs, and ADRs, buy fractional shares, set recurring buys, trade on margin, lend out fully paid shares, and get a cash sweep on idle balances. The product line now stretches to retirement accounts, around-the-clock trading, event contracts, futures, joint investing accounts, and short selling.</p>
+<p>The edge is distribution and cost. Robinhood pulled a generation into markets with zero-commission trades and a phone-first design, then built adjacent products on top of that user base. Crypto sits inside the same app. So do credit cards, spending accounts, and wallets. Each new product raises the revenue the company can pull from one relationship.</p>
+<p>That headcount against a business this size tells you how much of the operation is software. Robinhood sits in the Capital Markets industry, and its results move with retail appetite for risk.</p>
+<h2>The Thesis</h2>
+<p>The reason to look here is a large, real insider buy from someone who knows the business. A director bought about <strong>$35.3M</strong> of stock in the open market near <strong>82.09</strong>. That is cash on the line, not a grant or an option exercise, and it is the largest liquid insider buy the desk surfaced in its clean options group. When an insider commits that much at a specific level, it marks a price they think is cheap.</p>
+<p>The momentum behind the entry is genuine. The stock is up <strong>+11.6%</strong> over the last month and <strong>+46.1%</strong> over three months, and it has beaten the broad market by <strong>+31.9%</strong> over that same three-month stretch. RSI sits at <strong>64.9</strong>, up from the <strong>58.8</strong> the desk flagged at the read, so buyers keep pressing. Heavy live options volume means a bullish expression trades cleanly if you want one.</p>
+<p>Be plain about conviction: this is a <strong>MEDIUM</strong> idea at best, and the honest read is lower. The insider bought near <strong>82.09</strong>. You would be buying near <strong>101.28</strong>. That is roughly <strong>23%</strong> above where informed money actually stepped in, and only a short hop below the <strong>108.15</strong> target. Most of the edge the insider captured is already in the price. Size this as a watch-and-nibble, not a core position.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-07-01-HOOD.png" alt="HOOD weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=HOOD&interval=1W" target="_blank" rel="noopener">📈 Open the HOOD weekly chart on TradingView ↗</a><figcaption>HOOD weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $108.15 · mark support near $78.25.</figcaption></figure>
+<p>The trend is constructive on the surface and weaker underneath. Price closed at <strong>101.28</strong>, back above the 30-week line, which is the signal a trend-follower wants to see. The catch is that the 30-week line still slopes down at <strong>-14.3%</strong>. Price has recovered faster than the longer trend, so you are buying a bounce inside a downtrend that has not turned up yet.</p>
+<p>The stock sits <strong>-33.6%</strong> below its 52-week high of <strong>153.86</strong> and <strong>+55.4%</strong> above the 52-week low of <strong>63.52</strong>. That puts it around <strong>41.8%</strong> of the way up its yearly range, closer to the middle than the top. There is room to run toward the highs, and there is also a long way to fall if the bounce fails.</p>
+<p>The reference levels frame the trade tightly. The plan entry was <strong>91.41</strong>, well below the current <strong>101.28</strong>. Support runs down toward the swing low near <strong>69.19</strong>, with the hard line at the <strong>78.25</strong> stop. Resistance sits right overhead at the swing high of <strong>108.15</strong>, which doubles as the first target. A second target sits at <strong>121.02</strong> if the highs come back into play.</p>
+<p>Momentum and relative strength both back the long. RSI at <strong>64.9</strong> is strong without being stretched into extreme territory. The <strong>+31.9%</strong> edge over the market across three months tells you buyers favored this over the average stock. What is missing is a clean entry. With ATR at <strong>6.58</strong>, a single <strong>6.58</strong> point swing is normal daily noise, and price already trades roughly <strong>7%</strong> under the <strong>108.15</strong> ceiling. You want volume to confirm a break above <strong>108.15</strong> before trusting the next leg, and average daily volume near <strong>32.1M</strong> shares gives you the liquidity to act on it.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$91.70B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$86.41B</td></tr><tr><td class="k">52-week range</td><td class="v">$63.52 - $153.86</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">2.35</td></tr><tr><td class="k">Trailing P/E</td><td class="v">47.8</td></tr><tr><td class="k">Forward P/E</td><td class="v">34.7</td></tr><tr><td class="k">Price / sales</td><td class="v">19.9</td></tr><tr><td class="k">Price / book</td><td class="v">9.8</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$4.61B  (+15.1% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$5.17</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$1.90B</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">2.06 / 2.94</td></tr><tr><td class="k">Gross margin</td><td class="v">92.2%</td></tr><tr><td class="k">Operating margin</td><td class="v">38.5%</td></tr><tr><td class="k">Profit margin</td><td class="v">41.1%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$3.83</td></tr><tr><td class="k">Total cash / share</td><td class="v">$21.40</td></tr><tr><td class="k">Debt / equity</td><td class="v">1.4</td></tr><tr><td class="k">Current ratio</td><td class="v">1.11</td></tr><tr><td class="k">Return on equity</td><td class="v">21.5%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">buy - mean target $104.54 (25 analysts)</td></tr></tbody></table>
+<p>The business is high-margin and cash-generative, and that is the strongest part of the case. Gross margin runs <strong>92.2%</strong>, operating margin <strong>38.5%</strong>, and net profit margin <strong>41.1%</strong>. Operating cash flow of <strong>$3.03B</strong>, or <strong>3.83</strong> per share, shows the profits are real money and not accounting.</p>
+<p>The balance sheet is workable with one caveat. Cash per share sits at <strong>21.4</strong>, a thick cushion against a book value of <strong>10.34</strong> per share. Return on equity of <strong>21.5%</strong> is healthy, though return on assets of <strong>5.2%</strong> reflects a capital-heavy platform.</p>
+<p>Valuation is the weak spot, and you should own that. Trailing P/E is <strong>47.8</strong>, forward P/E <strong>34.7</strong>, price-to-sales <strong>19.9</strong>, and price-to-book <strong>9.8</strong>. Those are growth multiples, and forward earnings growth is only <strong>2.7%</strong> on the current read, with EPS of <strong>2.06</strong> trailing and <strong>2.94</strong> forward. Beta of <strong>2.35</strong> means the stock moves more than twice the market in both directions. The <strong>25</strong> analysts covering it carry a buy call with a mean target of <strong>104.54</strong>, roughly <strong>3%</strong> above the current price, so Wall Street sees little upside from here on their base case.</p>
+<h2>Why Now</h2>
+<p>The timing is the problem, and it deserves a straight answer. Earnings land around <strong>2026-07-28</strong>, about <strong>26</strong> days out and roughly <strong>28</strong> days from the read. That sits beyond a short-dated options horizon, so it is an event risk for near-term calls rather than a tailwind you can lean on. There is no clean near-term catalyst to carry the trade into the print.</p>
+<p>The options flow is the live signal. That is roughly three dollars of call buying for every dollar of put buying. Real money is positioning long, which lines up with the insider and the price action.</p>
+<p>One structural item is worth flagging. A <strong>$2.0B</strong> convertible-notes deal closed on Jun 25, structured to avoid net dilution until the stock reaches around <strong>304</strong>. That removes a common overhang: you are not staring at fresh share issuance at these levels, which clears one worry off the table for a long.</p>
+<h2>Risk Factors</h2>
+<p>The cleanest risk is that you are chasing. The insider bought near <strong>82.09</strong>, and the current <strong>101.28</strong> is about <strong>23%</strong> higher. The plan entry of <strong>91.41</strong> is already gone. You are paying up for a signal that was cheap at a price you cannot get. Insider buying is context, and context is not proof of an edge.</p>
+<p>The options are expensive and time is against them. Rich implied volatility means calls carry heavy premium and bleed if the stock stalls. With earnings <strong>26</strong> days out, a short-dated bullish bet can decay while you wait for a catalyst that arrives too late to help. The <strong>1.3</strong> reward-to-risk ratio is thin: you risk <strong>14.4%</strong> down to the <strong>78.25</strong> stop to make <strong>18.3%</strong> up to the <strong>108.15</strong> target.</p>
+<p>The trend has not turned. The 30-week line still points down at <strong>-14.3%</strong>, and beta of <strong>2.35</strong> means a market pullback hits this harder than most. The single line that kills the thesis is a daily close below the <strong>78.25</strong> stop. Treat a loss of the insider&#x27;s <strong>82.09</strong> buy zone as an earlier warning that informed money is offside and the read is breaking down.</p>
+<h2>Bringing It All Together</h2>
+<p>- A director bought <strong>$35.3M</strong> in the open market near <strong>82.09</strong>, the largest liquid insider buy in the group.<br>- Options flow leans bullish: <strong>$40.24M</strong> call premium against <strong>$12.97M</strong> put premium on <strong>2026-06-30</strong>.<br>- The business is strong on paper: <strong>92.2%</strong> gross margin, <strong>41.1%</strong> net margin, <strong>$3.03B</strong> operating cash flow, <strong>21.5%</strong> ROE.<br>- Momentum is real: <strong>+46.1%</strong> over three months and <strong>+31.9%</strong> ahead of the market, with RSI at <strong>64.9</strong>.<br>- The entry is extended: price at <strong>101.28</strong> sits <strong>23%</strong> above the insider and only <strong>7%</strong> below the <strong>108.15</strong> target, on a <strong>1.3</strong> reward-to-risk.<br>- Levels that matter: stop <strong>78.25</strong>, target <strong>108.15</strong>, second target <strong>121.02</strong>, earnings around <strong>2026-07-28</strong>.</p>
+<h2>Conclusion</h2>
+<p>Robinhood is a good business, and the insider buy is a real signal. The trouble is you cannot buy it where the insider did. At <strong>101.28</strong> you are paying <strong>23%</strong> above his <strong>82.09</strong> cost and reaching for a target only <strong>7%</strong> overhead, with a <strong>1.3</strong> reward-to-risk and pricey options that decay into a print <strong>26</strong> days out. The right posture is small size and patience. Wait for a pullback toward the <strong>91.41</strong> plan entry, or for a confirmed break above <strong>108.15</strong> on volume, before treating this as more than a watch. A daily close under <strong>78.25</strong> ends the discussion.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Robinhood Markets, Inc. (HOOD) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $91.70B; 52-week range $64-$154; Revenue $4.61B +15% YoY; Net income $1.90B; Debt-to-equity 1.4; Return on equity 22%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Robinhood Markets, Inc. (HOOD) inside the Financial Services space, specifically the &quot;FinTech&quot; theme. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): A director bought **$35.3M** of HOOD in the open market near **82.09**, real cash from someone who knows the business. The stock sits **33.6%** off its high with heavy live options volume, so a bullish expression trades. RSI **58.8** and a . Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># Robinhood&#x27;s Insider Bet, and the Price You Pay to Follow It
+
+*A director put $35.3M to work near $82. The stock now trades at $101. That gap is the whole trade.*
+
+## The Big Picture
+
+Retail trading is a real business again, and Robinhood is the clearest US-listed way to own that trend. Volumes on stocks, options, and crypto have climbed back toward the highs, and the platforms that monetize that flow print cash when volatility stays alive. The sector backdrop is only neutral, so this is a single-name story rather than a rising-tide trade.
+
+The Financial Services group reads **NEUTRAL** on both state and acceleration. Nothing in the macro is pushing capital-markets stocks higher as a bloc. That matters for sizing. When the sector is not helping, a long has to earn its keep on company-specific signals, and it carries the full weight of any broad-market wobble.
+
+Two themes give Robinhood more torque than a plain brokerage: FinTech and Crypto. The company sells trading, but it also sells a full spending and saving stack now, from cash cards to retirement accounts to crypto wallets. That mix turns every uptick in retail engagement into fee income across several lines at once.
+
+A backdrop like this rewards a platform with high margins and real operating leverage, because incremental volume drops almost straight to the bottom line. Robinhood fits that description. The question is never whether the business works. It is what you pay to own it on any given day.
+
+## Introducing $HOOD
+
+Robinhood Markets runs a US financial services platform built for a younger investor. You can trade stocks, ETFs, and ADRs, buy fractional shares, set recurring buys, trade on margin, lend out fully paid shares, and get a cash sweep on idle balances. The product line now stretches to retirement accounts, around-the-clock trading, event contracts, futures, joint investing accounts, and short selling.
+
+The edge is distribution and cost. Robinhood pulled a generation into markets with zero-commission trades and a phone-first design, then built adjacent products on top of that user base. Crypto sits inside the same app. So do credit cards, spending accounts, and wallets. Each new product raises the revenue the company can pull from one relationship.
+
+That headcount against a business this size tells you how much of the operation is software. Robinhood sits in the Capital Markets industry, and its results move with retail appetite for risk.
+
+## The Thesis
+
+The reason to look here is a large, real insider buy from someone who knows the business. A director bought about **$35.3M** of stock in the open market near **82.09**. That is cash on the line, not a grant or an option exercise, and it is the largest liquid insider buy the desk surfaced in its clean options group. When an insider commits that much at a specific level, it marks a price they think is cheap.
+
+The momentum behind the entry is genuine. The stock is up **+11.6%** over the last month and **+46.1%** over three months, and it has beaten the broad market by **+31.9%** over that same three-month stretch. RSI sits at **64.9**, up from the **58.8** the desk flagged at the read, so buyers keep pressing. Heavy live options volume means a bullish expression trades cleanly if you want one.
+
+Be plain about conviction: this is a **MEDIUM** idea at best, and the honest read is lower. The insider bought near **82.09**. You would be buying near **101.28**. That is roughly **23%** above where informed money actually stepped in, and only a short hop below the **108.15** target. Most of the edge the insider captured is already in the price. Size this as a watch-and-nibble, not a core position.
+
+## Technical Analysis
+
+&gt; 📈 Insert the HOOD weekly chart here (TradingView): HOOD weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $108.15 · mark support near $78.25.
+
+The trend is constructive on the surface and weaker underneath. Price closed at **101.28**, back above the 30-week line, which is the signal a trend-follower wants to see. The catch is that the 30-week line still slopes down at **-14.3%**. Price has recovered faster than the longer trend, so you are buying a bounce inside a downtrend that has not turned up yet.
+
+The stock sits **-33.6%** below its 52-week high of **153.86** and **+55.4%** above the 52-week low of **63.52**. That puts it around **41.8%** of the way up its yearly range, closer to the middle than the top. There is room to run toward the highs, and there is also a long way to fall if the bounce fails.
+
+The reference levels frame the trade tightly. The plan entry was **91.41**, well below the current **101.28**. Support runs down toward the swing low near **69.19**, with the hard line at the **78.25** stop. Resistance sits right overhead at the swing high of **108.15**, which doubles as the first target. A second target sits at **121.02** if the highs come back into play.
+
+Momentum and relative strength both back the long. RSI at **64.9** is strong without being stretched into extreme territory. The **+31.9%** edge over the market across three months tells you buyers favored this over the average stock. What is missing is a clean entry. With ATR at **6.58**, a single **6.58** point swing is normal daily noise, and price already trades roughly **7%** under the **108.15** ceiling. You want volume to confirm a break above **108.15** before trusting the next leg, and average daily volume near **32.1M** shares gives you the liquidity to act on it.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $91.70B |
+| Enterprise value | $86.41B |
+| 52-week range | $63.52 - $153.86 |
+| Dividend yield | None |
+| Beta | 2.35 |
+| Trailing P/E | 47.8 |
+| Forward P/E | 34.7 |
+| Price / sales | 19.9 |
+| Price / book | 9.8 |
+| Revenue (TTM) | $4.61B  (+15.1% YoY) |
+| Revenue / share | $5.17 |
+| Net income (TTM) | $1.90B |
+| EPS (TTM / fwd) | 2.06 / 2.94 |
+| Gross margin | 92.2% |
+| Operating margin | 38.5% |
+| Profit margin | 41.1% |
+| Operating cash flow / share | $3.83 |
+| Total cash / share | $21.40 |
+| Debt / equity | 1.4 |
+| Current ratio | 1.11 |
+| Return on equity | 21.5% |
+| Analyst consensus | buy - mean target $104.54 (25 analysts) |
+
+The business is high-margin and cash-generative, and that is the strongest part of the case. Gross margin runs **92.2%**, operating margin **38.5%**, and net profit margin **41.1%**. Operating cash flow of **$3.03B**, or **3.83** per share, shows the profits are real money and not accounting.
+
+The balance sheet is workable with one caveat. Cash per share sits at **21.4**, a thick cushion against a book value of **10.34** per share. Return on equity of **21.5%** is healthy, though return on assets of **5.2%** reflects a capital-heavy platform.
+
+Valuation is the weak spot, and you should own that. Trailing P/E is **47.8**, forward P/E **34.7**, price-to-sales **19.9**, and price-to-book **9.8**. Those are growth multiples, and forward earnings growth is only **2.7%** on the current read, with EPS of **2.06** trailing and **2.94** forward. Beta of **2.35** means the stock moves more than twice the market in both directions. The **25** analysts covering it carry a buy call with a mean target of **104.54**, roughly **3%** above the current price, so Wall Street sees little upside from here on their base case.
+
+## Why Now
+
+The timing is the problem, and it deserves a straight answer. Earnings land around **2026-07-28**, about **26** days out and roughly **28** days from the read. That sits beyond a short-dated options horizon, so it is an event risk for near-term calls rather than a tailwind you can lean on. There is no clean near-term catalyst to carry the trade into the print.
+
+The options flow is the live signal. That is roughly three dollars of call buying for every dollar of put buying. Real money is positioning long, which lines up with the insider and the price action.
+
+One structural item is worth flagging. A **$2.0B** convertible-notes deal closed on Jun 25, structured to avoid net dilution until the stock reaches around **304**. That removes a common overhang: you are not staring at fresh share issuance at these levels, which clears one worry off the table for a long.
+
+## Risk Factors
+
+The cleanest risk is that you are chasing. The insider bought near **82.09**, and the current **101.28** is about **23%** higher. The plan entry of **91.41** is already gone. You are paying up for a signal that was cheap at a price you cannot get. Insider buying is context, and context is not proof of an edge.
+
+The options are expensive and time is against them. Rich implied volatility means calls carry heavy premium and bleed if the stock stalls. With earnings **26** days out, a short-dated bullish bet can decay while you wait for a catalyst that arrives too late to help. The **1.3** reward-to-risk ratio is thin: you risk **14.4%** down to the **78.25** stop to make **18.3%** up to the **108.15** target.
+
+The trend has not turned. The 30-week line still points down at **-14.3%**, and beta of **2.35** means a market pullback hits this harder than most. The single line that kills the thesis is a daily close below the **78.25** stop. Treat a loss of the insider&#x27;s **82.09** buy zone as an earlier warning that informed money is offside and the read is breaking down.
+
+## Bringing It All Together
+
+- A director bought **$35.3M** in the open market near **82.09**, the largest liquid insider buy in the group.
+- Options flow leans bullish: **$40.24M** call premium against **$12.97M** put premium on **2026-06-30**.
+- The business is strong on paper: **92.2%** gross margin, **41.1%** net margin, **$3.03B** operating cash flow, **21.5%** ROE.
+- Momentum is real: **+46.1%** over three months and **+31.9%** ahead of the market, with RSI at **64.9**.
+- The entry is extended: price at **101.28** sits **23%** above the insider and only **7%** below the **108.15** target, on a **1.3** reward-to-risk.
+- Levels that matter: stop **78.25**, target **108.15**, second target **121.02**, earnings around **2026-07-28**.
+
+## Conclusion
+
+Robinhood is a good business, and the insider buy is a real signal. The trouble is you cannot buy it where the insider did. At **101.28** you are paying **23%** above his **82.09** cost and reaching for a target only **7%** overhead, with a **1.3** reward-to-risk and pricey options that decay into a print **26** days out. The right posture is small size and patience. Wait for a pullback toward the **91.41** plan entry, or for a confirmed break above **108.15** on volume, before treating this as more than a watch. A daily close under **78.25** ends the discussion.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
