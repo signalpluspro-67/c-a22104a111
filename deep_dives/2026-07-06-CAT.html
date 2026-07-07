@@ -1,0 +1,228 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Caterpillar&#x27;s Power Play — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>Caterpillar&#x27;s Power Play</h1>
+<div class="subtitle">A momentum leader in the AI energy trade. The price you want to pay in sits below where it trades today.</div>
+<div class="meta">EOD 2026-07-06 · CAT · written from the desk · model claude-opus-4-8</div>
+<div class="chips"><span class="chip">CAT</span>
+<span class="chip">Industrials</span>
+<span class="chip hi">HIGH conviction</span></div>
+<div class="track">Tracking since 2026-07-06: entry <b>$921.25</b> &rarr; <b>$988.82</b> (as of 2026-07-06) · <span class="pos">+7.3%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>The AI trade has moved from the chips to the electricity that runs them, and Caterpillar builds the hardware behind that power. Its stock is up roughly <strong>73%</strong> year to date on that shift.</p>
+<p>Data centers need generators, engines and on-site power, and CAT&#x27;s Energy &amp; Transportation segment sells reciprocating engines, generator sets and gas turbines straight into that demand. When a hyperscaler needs standby and prime power for a new campus, the order flows to a short list of suppliers, and Caterpillar is at the top of it. That is the structural story driving the multiple.</p>
+<p>That story has a second edge. The industrials group reads exhausted here, deep into a late chase where the easy money is already booked. Beta on CAT is <strong>1.56</strong>, so it moves more than the market in both directions. When a theme runs this far this fast, the reward for chasing the last leg shrinks and the risk of a sharp reversal grows.</p>
+<p>This backdrop rewards a name with real cash flows and a real seat at the AI-power table, bought at a sane level rather than at the highs. Caterpillar is that name. The discipline is in the entry.</p>
+<h2>Introducing $CAT</h2>
+<p>Caterpillar Inc. You know the yellow machines. The business underneath them is broader than the brand.</p>
+<p>Four engines drive the company. Construction Industries sells excavators, loaders, graders and the parts that keep them running. Resource Industries builds the mining trucks, shovels, drills and autonomous fleet technology that pull ore out of the ground. Energy &amp; Transportation makes the reciprocating engines, generator sets, gas compressors and locomotive components, and this is the segment the market now prices as an AI-power proxy. Financial Products is the captive finance arm that lends against all of it.</p>
+<p>The edge is scale and the dealer network. Caterpillar&#x27;s distribution and aftermarket parts business gives it a recurring, higher-margin revenue stream that pure equipment makers cannot match. That installed base is the moat. The power-generation demand from data centers is the new growth layer sitting on top of it.</p>
+<h2>The Thesis</h2>
+<p>This is a momentum leader that pulled back and held its trend, and you want to own that on the dip rather than the rip. CAT sits <strong>7.1%</strong> off its 52-week high with a 30-week average sloping up <strong>+20.9%</strong>, and it has outrun the S&amp;P by <strong>+23.7%</strong> over the last three months. The trend is intact and the leadership is real.</p>
+<p>The setup grades high on quality. On the chart alone, this is one of the better-constructed long setups in the group.</p>
+<p>Here is the honest part. The plan pays in at <strong>921.25</strong>, and the stock closed at <strong>988.82</strong>. Conviction on the setup is high. Conviction on chasing it up here is not. The discipline is to wait for the pullback to entry and size normally, or stand aside if it never comes. Buying up at the highs turns a good setup into a bad one.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-07-06-CAT.png" alt="CAT weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=CAT&interval=1W" target="_blank" rel="noopener">📈 Open the CAT weekly chart on TradingView ↗</a><figcaption>CAT weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $1,064.90 · mark support near $831.15.</figcaption></figure>
+<p>The primary trend is up and unbroken. CAT trades above its rising 30-week average, and that line slopes higher at <strong>+20.9%</strong>, which tells you the intermediate trend has real momentum behind it. The shorter 8 and 21-week averages sit below price in the standard bullish stack. Nothing on this chart says the trend is over.</p>
+<p>This is a leader resting near its highs, digesting a big move. Over the last <strong>63</strong> trading days the stock is up <strong>37.9%</strong>, and over the last <strong>21</strong> days it is up <strong>6.8%</strong>, so recent price action is still firm.</p>
+<p>The reference levels frame the trade. Support that matters is the <strong>831.15</strong> stop, below the swing structure. The planned entry is <strong>921.25</strong>. Resistance and the first target is <strong>1064.90</strong>, the prior swing high, with a second objective at <strong>1123.97</strong>. Relative strength versus SPY at <strong>+23.7%</strong> over three months confirms clear leadership.</p>
+<p>Volume is the tell to watch. A clean move back through <strong>1064.90</strong> on volume above that average would confirm the breakout continuation. A slide to the <strong>921.25</strong> entry on light, orderly volume is the pullback you want to buy. A break of <strong>831.15</strong> on heavy volume is the trend failing, and you are out.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$443.79B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$483.59B</td></tr><tr><td class="k">52-week range</td><td class="v">$357.73 - $1,073.46</td></tr><tr><td class="k">Dividend yield</td><td class="v">0.68%</td></tr><tr><td class="k">Beta</td><td class="v">1.56</td></tr><tr><td class="k">Trailing P/E</td><td class="v">48.1</td></tr><tr><td class="k">Forward P/E</td><td class="v">32.0</td></tr><tr><td class="k">Price / sales</td><td class="v">6.3</td></tr><tr><td class="k">Price / book</td><td class="v">23.8</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$70.76B  (+22.2% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$151.47</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$9.43B</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">20.04 / 30.11</td></tr><tr><td class="k">Gross margin</td><td class="v">28.6%</td></tr><tr><td class="k">Operating margin</td><td class="v">18.2%</td></tr><tr><td class="k">Profit margin</td><td class="v">13.3%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$26.75</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$8.20</td></tr><tr><td class="k">Total cash / share</td><td class="v">$7.20</td></tr><tr><td class="k">Debt / equity</td><td class="v">2.31</td></tr><tr><td class="k">Current ratio</td><td class="v">1.35</td></tr><tr><td class="k">Return on equity</td><td class="v">51.3%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">buy - mean target $951.02 (26 analysts)</td></tr></tbody></table>
+<p>The growth is strong and it is accelerating. Trailing EPS of <strong>20.04</strong> is set to reach a forward <strong>30.11</strong>. Profitability is excellent for heavy machinery: gross margin <strong>28.6%</strong>, operating margin <strong>18.2%</strong>, and a return on equity of <strong>51.3%</strong>. This is a high-quality industrial firing on the top and bottom line.</p>
+<p>Cash generation is where you slow down. The dividend of <strong>6.52</strong> yields <strong>0.68%</strong> at a payout ratio of just <strong>30%</strong>, so the payout is well covered even on that thinner free cash flow.</p>
+<p>The balance sheet carries leverage you should understand. Current ratio is <strong>1.35</strong> and quick ratio is <strong>0.73</strong>, adequate for this business. The real caution is valuation. Trailing P/E is <strong>48.1</strong>, price-to-sales is <strong>6.3</strong>, and price-to-book is <strong>23.8</strong>, all rich for an industrial. The average analyst target of <strong>951.02</strong> across <strong>26</strong> analysts sits below the <strong>988.82</strong> close, so the Street already sees the stock as slightly ahead of fair value even with a buy rating.</p>
+<h2>Why Now</h2>
+<p>The near-term catalyst is Q2 earnings on <strong>August 4, 2026</strong>, about <strong>28</strong> days out. That is a binary event sitting at the far edge of a swing hold, and it cuts both ways. A beat and raise extends the trend toward <strong>1064.90</strong>. A miss or a soft guide with this valuation is how the multiple compresses fast. If you are in the trade, you are carrying earnings risk into a rich stock.</p>
+<p>The macro tailwind is the AI power buildout, and it is real. Data-center electricity demand feeds Energy &amp; Transportation directly, and that is the growth layer the market is paying up for.</p>
+<p>Options positioning is mixed and worth reading closely. On <strong>July 2</strong> call premium ran <strong>$59.23 million</strong> against put premium of <strong>$47.35 million</strong>, so the dollars leaned bullish. The call wall sits at <strong>1070</strong>, right at the target zone, and the put wall sits at <strong>825</strong>, right at the stop zone. The market has drawn the same box this trade is built around.</p>
+<h2>Risk Factors</h2>
+<p>The valuation is the primary risk, and a well-known bear has already pressed it. On <strong>July 1, 2026</strong> Michael Burry disclosed a short at roughly <strong>$1,061</strong>, flagging a price-to-sales ratio at a 30-year high and a P/E in the low <strong>50s</strong>, calling the stock an AI-infrastructure proxy running on hype. If data-center capital spending cools, the multiple compresses hard, and a crowded, extended momentum leader reverting is exactly the failure mode here.</p>
+<p>The sector adds to it. Industrials read exhausted and late in the chase, so a group-wide cooling could drag CAT down regardless of its own numbers. With a beta of <strong>1.56</strong>, it would fall faster than the market in that case.</p>
+<p>The single invalidation is clean. A close below the <strong>831.15</strong> stop proves the pullback thesis wrong and puts risk to entry at <strong>9.8%</strong>. There is also the timing risk already flagged: the <strong>August 4</strong> earnings print lands inside the hold window, so an un-hedged position carries a binary event. And the entry itself is a discipline check. At <strong>988.82</strong> the stock trades above the <strong>921.25</strong> trigger, so chasing it here is its own mistake.</p>
+<h2>Bringing It All Together</h2>
+<p>- Dual driver: a dominant machinery franchise plus a real AI-power growth layer in Energy &amp; Transportation, with the stock up about <strong>73%</strong> year to date on that shift.<br>- Trend quality: above a 30-week average sloping <strong>+20.9%</strong>, <strong>7.1%</strong> off the high, and <strong>+23.7%</strong> stronger than SPY over three months.<br>- Fundamentals: revenue up <strong>22.2%</strong>, earnings up <strong>30.2%</strong>, operating margin <strong>18.2%</strong>, and ROE of <strong>51.3%</strong>, offset by a rich <strong>48.1</strong> trailing P/E.<br>- Catalyst: Q2 earnings on <strong>August 4, 2026</strong>, a binary event <strong>28</strong> days out that lands inside the hold.<br>- Levels: buy the pullback at <strong>921.25</strong>, stop <strong>831.15</strong>, target <strong>1064.90</strong> then <strong>1123.97</strong>, for <strong>1.6</strong> to <strong>1</strong> reward-to-risk, with the option market&#x27;s put wall at <strong>825</strong> and call wall at <strong>1070</strong> bracketing the same range.</p>
+<h2>Conclusion</h2>
+<p>Caterpillar is a high-quality leader in the right theme, and the chart earns its place on the buy list. The trade is a separate question from the company. At <strong>988.82</strong> the stock trades well above the <strong>921.25</strong> entry, a fresh short from a credible bear sits over it, and a binary earnings print lands <strong>28</strong> days out. You want this one on a pullback to <strong>921.25</strong> with a stop at <strong>831.15</strong>. Chasing it at the highs into earnings is the mistake to avoid. Wait for your level, or let it go.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Caterpillar Inc. (CAT) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $443.79B; 52-week range $358-$1,073; Revenue $70.76B +22% YoY; Net income $9.43B; Free cash flow/share $8.20; Debt-to-equity 2.31; Return on equity 51%; Dividend yield 0.7%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Caterpillar Inc. (CAT) inside the Industrials space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): A momentum leader that pulled back and held. It sits **7.1%** off the 52-week high with a 30-week average sloping up **+20.9%**, relative strength **+23.7%** versus SPY, and a a proprietary desk read read graded tested at risk-adjusted retu. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># Caterpillar&#x27;s Power Play
+
+*A momentum leader in the AI energy trade. The price you want to pay in sits below where it trades today.*
+
+## The Big Picture
+
+The AI trade has moved from the chips to the electricity that runs them, and Caterpillar builds the hardware behind that power. Its stock is up roughly **73%** year to date on that shift.
+
+Data centers need generators, engines and on-site power, and CAT&#x27;s Energy &amp; Transportation segment sells reciprocating engines, generator sets and gas turbines straight into that demand. When a hyperscaler needs standby and prime power for a new campus, the order flows to a short list of suppliers, and Caterpillar is at the top of it. That is the structural story driving the multiple.
+
+That story has a second edge. The industrials group reads exhausted here, deep into a late chase where the easy money is already booked. Beta on CAT is **1.56**, so it moves more than the market in both directions. When a theme runs this far this fast, the reward for chasing the last leg shrinks and the risk of a sharp reversal grows.
+
+This backdrop rewards a name with real cash flows and a real seat at the AI-power table, bought at a sane level rather than at the highs. Caterpillar is that name. The discipline is in the entry.
+
+## Introducing $CAT
+
+Caterpillar Inc. You know the yellow machines. The business underneath them is broader than the brand.
+
+Four engines drive the company. Construction Industries sells excavators, loaders, graders and the parts that keep them running. Resource Industries builds the mining trucks, shovels, drills and autonomous fleet technology that pull ore out of the ground. Energy &amp; Transportation makes the reciprocating engines, generator sets, gas compressors and locomotive components, and this is the segment the market now prices as an AI-power proxy. Financial Products is the captive finance arm that lends against all of it.
+
+The edge is scale and the dealer network. Caterpillar&#x27;s distribution and aftermarket parts business gives it a recurring, higher-margin revenue stream that pure equipment makers cannot match. That installed base is the moat. The power-generation demand from data centers is the new growth layer sitting on top of it.
+
+## The Thesis
+
+This is a momentum leader that pulled back and held its trend, and you want to own that on the dip rather than the rip. CAT sits **7.1%** off its 52-week high with a 30-week average sloping up **+20.9%**, and it has outrun the S&amp;P by **+23.7%** over the last three months. The trend is intact and the leadership is real.
+
+The setup grades high on quality. On the chart alone, this is one of the better-constructed long setups in the group.
+
+Here is the honest part. The plan pays in at **921.25**, and the stock closed at **988.82**. Conviction on the setup is high. Conviction on chasing it up here is not. The discipline is to wait for the pullback to entry and size normally, or stand aside if it never comes. Buying up at the highs turns a good setup into a bad one.
+
+## Technical Analysis
+
+&gt; 📈 Insert the CAT weekly chart here (TradingView): CAT weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $1,064.90 · mark support near $831.15.
+
+The primary trend is up and unbroken. CAT trades above its rising 30-week average, and that line slopes higher at **+20.9%**, which tells you the intermediate trend has real momentum behind it. The shorter 8 and 21-week averages sit below price in the standard bullish stack. Nothing on this chart says the trend is over.
+
+This is a leader resting near its highs, digesting a big move. Over the last **63** trading days the stock is up **37.9%**, and over the last **21** days it is up **6.8%**, so recent price action is still firm.
+
+The reference levels frame the trade. Support that matters is the **831.15** stop, below the swing structure. The planned entry is **921.25**. Resistance and the first target is **1064.90**, the prior swing high, with a second objective at **1123.97**. Relative strength versus SPY at **+23.7%** over three months confirms clear leadership.
+
+Volume is the tell to watch. A clean move back through **1064.90** on volume above that average would confirm the breakout continuation. A slide to the **921.25** entry on light, orderly volume is the pullback you want to buy. A break of **831.15** on heavy volume is the trend failing, and you are out.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $443.79B |
+| Enterprise value | $483.59B |
+| 52-week range | $357.73 - $1,073.46 |
+| Dividend yield | 0.68% |
+| Beta | 1.56 |
+| Trailing P/E | 48.1 |
+| Forward P/E | 32.0 |
+| Price / sales | 6.3 |
+| Price / book | 23.8 |
+| Revenue (TTM) | $70.76B  (+22.2% YoY) |
+| Revenue / share | $151.47 |
+| Net income (TTM) | $9.43B |
+| EPS (TTM / fwd) | 20.04 / 30.11 |
+| Gross margin | 28.6% |
+| Operating margin | 18.2% |
+| Profit margin | 13.3% |
+| Operating cash flow / share | $26.75 |
+| Free cash flow / share | $8.20 |
+| Total cash / share | $7.20 |
+| Debt / equity | 2.31 |
+| Current ratio | 1.35 |
+| Return on equity | 51.3% |
+| Analyst consensus | buy - mean target $951.02 (26 analysts) |
+
+The growth is strong and it is accelerating. Trailing EPS of **20.04** is set to reach a forward **30.11**. Profitability is excellent for heavy machinery: gross margin **28.6%**, operating margin **18.2%**, and a return on equity of **51.3%**. This is a high-quality industrial firing on the top and bottom line.
+
+Cash generation is where you slow down. The dividend of **6.52** yields **0.68%** at a payout ratio of just **30%**, so the payout is well covered even on that thinner free cash flow.
+
+The balance sheet carries leverage you should understand. Current ratio is **1.35** and quick ratio is **0.73**, adequate for this business. The real caution is valuation. Trailing P/E is **48.1**, price-to-sales is **6.3**, and price-to-book is **23.8**, all rich for an industrial. The average analyst target of **951.02** across **26** analysts sits below the **988.82** close, so the Street already sees the stock as slightly ahead of fair value even with a buy rating.
+
+## Why Now
+
+The near-term catalyst is Q2 earnings on **August 4, 2026**, about **28** days out. That is a binary event sitting at the far edge of a swing hold, and it cuts both ways. A beat and raise extends the trend toward **1064.90**. A miss or a soft guide with this valuation is how the multiple compresses fast. If you are in the trade, you are carrying earnings risk into a rich stock.
+
+The macro tailwind is the AI power buildout, and it is real. Data-center electricity demand feeds Energy &amp; Transportation directly, and that is the growth layer the market is paying up for.
+
+Options positioning is mixed and worth reading closely. On **July 2** call premium ran **$59.23 million** against put premium of **$47.35 million**, so the dollars leaned bullish. The call wall sits at **1070**, right at the target zone, and the put wall sits at **825**, right at the stop zone. The market has drawn the same box this trade is built around.
+
+## Risk Factors
+
+The valuation is the primary risk, and a well-known bear has already pressed it. On **July 1, 2026** Michael Burry disclosed a short at roughly **$1,061**, flagging a price-to-sales ratio at a 30-year high and a P/E in the low **50s**, calling the stock an AI-infrastructure proxy running on hype. If data-center capital spending cools, the multiple compresses hard, and a crowded, extended momentum leader reverting is exactly the failure mode here.
+
+The sector adds to it. Industrials read exhausted and late in the chase, so a group-wide cooling could drag CAT down regardless of its own numbers. With a beta of **1.56**, it would fall faster than the market in that case.
+
+The single invalidation is clean. A close below the **831.15** stop proves the pullback thesis wrong and puts risk to entry at **9.8%**. There is also the timing risk already flagged: the **August 4** earnings print lands inside the hold window, so an un-hedged position carries a binary event. And the entry itself is a discipline check. At **988.82** the stock trades above the **921.25** trigger, so chasing it here is its own mistake.
+
+## Bringing It All Together
+
+- Dual driver: a dominant machinery franchise plus a real AI-power growth layer in Energy &amp; Transportation, with the stock up about **73%** year to date on that shift.
+- Trend quality: above a 30-week average sloping **+20.9%**, **7.1%** off the high, and **+23.7%** stronger than SPY over three months.
+- Fundamentals: revenue up **22.2%**, earnings up **30.2%**, operating margin **18.2%**, and ROE of **51.3%**, offset by a rich **48.1** trailing P/E.
+- Catalyst: Q2 earnings on **August 4, 2026**, a binary event **28** days out that lands inside the hold.
+- Levels: buy the pullback at **921.25**, stop **831.15**, target **1064.90** then **1123.97**, for **1.6** to **1** reward-to-risk, with the option market&#x27;s put wall at **825** and call wall at **1070** bracketing the same range.
+
+## Conclusion
+
+Caterpillar is a high-quality leader in the right theme, and the chart earns its place on the buy list. The trade is a separate question from the company. At **988.82** the stock trades well above the **921.25** entry, a fresh short from a credible bear sits over it, and a binary earnings print lands **28** days out. You want this one on a pullback to **921.25** with a stop at **831.15**. Chasing it at the highs into earnings is the mistake to avoid. Wait for your level, or let it go.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
