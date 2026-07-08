@@ -1,0 +1,221 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Time-Critical Medicine, Priced for a Bounce — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>Time-Critical Medicine, Priced for a Bounce</h1>
+<div class="subtitle">A thin healthcare small cap held its support line. The reward-to-risk is the best on the desk tonight, and the conviction is deliberately medium.</div>
+<div class="meta">EOD 2026-07-07 · SRTA · written from the desk · model claude-opus-4-8</div>
+<div class="chips"><span class="chip">SRTA</span>
+<span class="chip">Healthcare</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-07-07: entry <b>$5.32</b> &rarr; <b>$5.32</b> (as of 2026-07-07) · <span class="pos">+0.0%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Healthcare stopped being the easy trade months ago. The sector reads as exhausted, and the money chasing it now is late money. That&#x27;s the backdrop you&#x27;re working against, so a broad healthcare basket is the wrong tool here. You want one specific, mispriced piece of it.</p>
+<p>The specific piece is time-critical medical logistics. Moving a human organ from donor to recipient is a business measured in minutes, and the operators who do it well sit at a chokepoint the hospital cannot skip. US organ transplant volumes keep climbing, and the recovery, preservation and transport work wrapped around each transplant stays fragmented and under-built.</p>
+<p>That combination pays an operator with scale in both the flying and the clinical work. Strata Critical Medical sells exactly that. A tired sector plus a growing niche pushes the whole setup down to the single-name level, so the case gets made or broken on this company&#x27;s own numbers, and those are where we&#x27;re headed.</p>
+<h2>Introducing $SRTA</h2>
+<p>Strata Critical Medical, Inc. runs the logistics and the medicine around organ transplant. The company was Blade Air Mobility until August 2025, when it dropped the urban air-taxi identity and renamed itself around the critical-medical business it had built underneath. It&#x27;s headquartered in New York and employs about <strong>327</strong> people.</p>
+<p>The business splits into two segments. Logistics handles air and ground transport for human organs, transplant teams and related materials, plus organ placement services. Clinical handles the medicine itself: organ recovery, normothermic regional perfusion, preservation, cardiac perfusion, blood management and autotransfusion, ECMO (extracorporeal membrane oxygenation, machine support that oxygenates blood outside the body), perfusion staffing and equipment rentals.</p>
+<p>The edge is owning both halves. A hospital that needs an organ flown in and a perfusion team standing by can source both from one vendor. That bundle is hard for a pure-logistics carrier or a pure-staffing firm to copy, and it&#x27;s the reason revenue is growing the way it is.</p>
+<h2>The Thesis</h2>
+<p>You&#x27;re buying a pullback inside an uptrend. SRTA trades at <strong>$5.32</strong>, sits <strong>17.8%</strong> below its 52-week high, and has held support on a clean chart that stays above a rising 30-week trend line. The desk read tags this as a proven pullback with a risk-adjusted score of <strong>1.10</strong>. That clears the bar, and it does not shout. Take the medium conviction at face value.</p>
+<p>The reason it ranked at all is the geometry. Entry at <strong>$5.32</strong>, stop at <strong>$4.82</strong>, target at <strong>$6.47</strong> gives you a reward-to-risk of <strong>2.3</strong> to <strong>1</strong>, the best ratio of any read on the desk tonight. You risk <strong>9.4%</strong> to the stop for <strong>21.6%</strong> of upside back toward the prior swing high. Underneath the chart, the fundamental story is intact: revenue grew <strong>87.4%</strong> year over year off an acquisitive expansion of the clinical business.</p>
+<p>Size this small. The math is attractive and the liquidity is not, and one clean read with no confluence behind it is a reason to keep the position light rather than press it.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-07-07-SRTA.png" alt="SRTA weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=SRTA&interval=1W" target="_blank" rel="noopener">📈 Open the SRTA weekly chart on TradingView ↗</a><figcaption>SRTA weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $6.47 · mark support near $4.82.</figcaption></figure>
+<p>The trend is up and the pullback is orderly. Price holds above a 30-week line that is sloping higher at <strong>4.1%</strong>, which is the single structural fact that keeps this a buy-the-dip rather than a falling-knife. SRTA changes hands at <strong>81.9%</strong> of its 52-week high of <strong>$6.50</strong>, roughly <strong>55.5%</strong> of the way up its <strong>$3.85</strong> to <strong>$6.50</strong> yearly range, so there&#x27;s room in both directions.</p>
+<p>The levels are tight and defined. Support and your entry sit together at <strong>$5.32</strong>, the stop rides just under structure at <strong>$4.82</strong>, and resistance is the prior swing high at <strong>$6.47</strong> that doubles as the target. Momentum has cooled without breaking: the last 21 days ran <strong>-15.0%</strong>, which is the dip you&#x27;re buying, while the trailing 63 days are still up <strong>26.7%</strong>. RSI near <strong>43.5</strong> sits below the 50 midline, so buyers have stepped back but sellers haven&#x27;t taken control.</p>
+<p>Relative strength is the part that separates this from a generic bounce. SRTA has outrun the S&amp;P by <strong>12.9%</strong> over the past 63 days, so it was leading before it pulled in. With ATR at <strong>$0.25</strong>, a single average day covers half the distance to the stop, which tells you how quickly this can move against you. A daily close below <strong>$4.82</strong> ends the read.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$470M</td></tr><tr><td class="k">Enterprise value</td><td class="v">$416M</td></tr><tr><td class="k">52-week range</td><td class="v">$3.85 - $6.50</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">2.2</td></tr><tr><td class="k">Price / sales</td><td class="v">2.1</td></tr><tr><td class="k">Price / book</td><td class="v">1.6</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$229M  (+87.4% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$2.74</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$-16M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">-0.19</td></tr><tr><td class="k">Gross margin</td><td class="v">21.1%</td></tr><tr><td class="k">Operating margin</td><td class="v">-2.8%</td></tr><tr><td class="k">Profit margin</td><td class="v">20.6%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$-0.52</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$-0.28</td></tr><tr><td class="k">Total cash / share</td><td class="v">$0.68</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.02</td></tr><tr><td class="k">Current ratio</td><td class="v">5.93</td></tr><tr><td class="k">Return on equity</td><td class="v">-6.4%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">strong buy - mean target $9.25 (4 analysts)</td></tr></tbody></table>
+<p>Growth is the headline and it&#x27;s real. That pace comes from stacking clinical services onto the logistics base, and it&#x27;s why the market pays <strong>2.1</strong> times sales and <strong>1.6</strong> times book for a company this size.</p>
+<p>Profitability is the honest weak spot. You are underwriting a company that is buying its revenue growth and has not yet turned the corner on cash.</p>
+<p>The balance sheet is what makes that burn survivable for now. Cash per share sits at <strong>$0.68</strong> and book value at <strong>$3.30</strong>. Four analysts rate it strong buy with a mean target of <strong>$9.25</strong>, well above the <strong>$5.32</strong> print, though four voices on a stock this thin is a light sample to lean on.</p>
+<h2>Why Now</h2>
+<p>There is no supportive near-term catalyst, and you should hold that plainly in view. The next scheduled event is Q2 earnings on August 11, 2026, roughly five weeks out. That is beyond any clean two-week window and, on a hold measured in a few weeks, it reads as an earnings-gap risk rather than a tailwind. Q1 already passed on May 6.</p>
+<p>So the timing case is technical, and only technical. You have a leading small cap that pulled back <strong>15.0%</strong> in three weeks into a defined support shelf at <strong>$5.32</strong>, inside a broad market that remains in a bull regime. That&#x27;s the whole clock: mean reversion back toward <strong>$6.47</strong> before earnings reintroduces event risk.</p>
+<p>The sector does you no favors. Healthcare reads as exhausted and late in its chase, so the macro tailwind you&#x27;d normally want at your back is absent. There are no options-flow signals here to lean on either. This is a pullback trade taken on its own merits, timed against a fading sector rather than with it, which is another argument for a small position.</p>
+<h2>Risk Factors</h2>
+<p>Liquidity is the first and largest risk. SRTA trades about <strong>$7.1M</strong> a day, so slippage on both entry and exit is real, and a thin book gaps in the direction you don&#x27;t want. With a beta of <strong>2.2</strong>, this is a high-beta name, and a broad-market dip hits high-beta small caps first and hardest.</p>
+<p>The run that set up this dip was partly acquisition-fueled, which cuts two ways. A recent deal used about <strong>20%</strong> stock as consideration, and there&#x27;s disclosed insider intent to sell roughly <strong>65,000</strong> shares. That share overhang can cap the bounce even if the chart cooperates, and an acquisitive, stock-issuing operator can gap down hard if the growth story wobbles. The <strong>18%</strong> dip could be the front edge of a roll-over rather than a buyable pause.</p>
+<p>The cash burn compounds all of it. The single invalidation is clean: a daily close below <strong>$4.82</strong> kills the mean-reversion thesis, about <strong>9.4%</strong> below your <strong>$5.32</strong> entry. And the August 11 earnings date is a live gap risk if the trade runs longer than a couple of weeks.</p>
+<h2>Bringing It All Together</h2>
+<p>- Dual focus: one vendor owns both the organ transport and the clinical perfusion work, a bundle rivals can&#x27;t easily match.<br>- Market need: US transplant volumes are rising into a fragmented, under-built logistics and recovery niche.</p>
+<p>- Catalyst: none supportive near term; August 11 earnings is a gap risk, not a tailwind.<br>- Levels: long <strong>$5.32</strong>, stop <strong>$4.82</strong>, target <strong>$6.47</strong>, reward-to-risk <strong>2.3</strong> to <strong>1</strong>, with relative strength <strong>+12.9%</strong> vs the S&amp;P over 63 days.</p>
+<h2>Conclusion</h2>
+<p>This is a small, disciplined pullback trade and it should stay small. The chart is clean, the reward-to-risk of <strong>2.3</strong> to <strong>1</strong> is the strongest on the desk tonight, and a leading name that outran the market by <strong>12.9%</strong> has pulled back <strong>15.0%</strong> into support at <strong>$5.32</strong>. That&#x27;s a setup worth taking. It is not a setup worth pressing, because the liquidity is thin at <strong>$7.1M</strong> a day, the beta is <strong>2.2</strong>, the sector is exhausted, and free cash flow is still negative. Enter at <strong>$5.32</strong>, respect the <strong>$4.82</strong> stop without argument, and take profits into <strong>$6.47</strong> before August earnings turns this into an event trade. Medium conviction, medium size, tight leash.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Strata Critical Medical, Inc. (SRTA) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $470M; 52-week range $4-$6; Revenue $229M +87% YoY; Net income $-16M; Free cash flow/share $-0.28; Debt-to-equity 0.02; Return on equity -6%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Strata Critical Medical, Inc. (SRTA) inside the Healthcare space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): SRTA is a proven pullback in an uptrend (tested, risk-adjusted return **1.10**), a small cap that held support and sits **17.8%** under its 52-week high. The chart is clean, above a rising 30-week line, with no flags and no Weinstein proble. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># Time-Critical Medicine, Priced for a Bounce
+
+*A thin healthcare small cap held its support line. The reward-to-risk is the best on the desk tonight, and the conviction is deliberately medium.*
+
+## The Big Picture
+
+Healthcare stopped being the easy trade months ago. The sector reads as exhausted, and the money chasing it now is late money. That&#x27;s the backdrop you&#x27;re working against, so a broad healthcare basket is the wrong tool here. You want one specific, mispriced piece of it.
+
+The specific piece is time-critical medical logistics. Moving a human organ from donor to recipient is a business measured in minutes, and the operators who do it well sit at a chokepoint the hospital cannot skip. US organ transplant volumes keep climbing, and the recovery, preservation and transport work wrapped around each transplant stays fragmented and under-built.
+
+That combination pays an operator with scale in both the flying and the clinical work. Strata Critical Medical sells exactly that. A tired sector plus a growing niche pushes the whole setup down to the single-name level, so the case gets made or broken on this company&#x27;s own numbers, and those are where we&#x27;re headed.
+
+## Introducing $SRTA
+
+Strata Critical Medical, Inc. runs the logistics and the medicine around organ transplant. The company was Blade Air Mobility until August 2025, when it dropped the urban air-taxi identity and renamed itself around the critical-medical business it had built underneath. It&#x27;s headquartered in New York and employs about **327** people.
+
+The business splits into two segments. Logistics handles air and ground transport for human organs, transplant teams and related materials, plus organ placement services. Clinical handles the medicine itself: organ recovery, normothermic regional perfusion, preservation, cardiac perfusion, blood management and autotransfusion, ECMO (extracorporeal membrane oxygenation, machine support that oxygenates blood outside the body), perfusion staffing and equipment rentals.
+
+The edge is owning both halves. A hospital that needs an organ flown in and a perfusion team standing by can source both from one vendor. That bundle is hard for a pure-logistics carrier or a pure-staffing firm to copy, and it&#x27;s the reason revenue is growing the way it is.
+
+## The Thesis
+
+You&#x27;re buying a pullback inside an uptrend. SRTA trades at **$5.32**, sits **17.8%** below its 52-week high, and has held support on a clean chart that stays above a rising 30-week trend line. The desk read tags this as a proven pullback with a risk-adjusted score of **1.10**. That clears the bar, and it does not shout. Take the medium conviction at face value.
+
+The reason it ranked at all is the geometry. Entry at **$5.32**, stop at **$4.82**, target at **$6.47** gives you a reward-to-risk of **2.3** to **1**, the best ratio of any read on the desk tonight. You risk **9.4%** to the stop for **21.6%** of upside back toward the prior swing high. Underneath the chart, the fundamental story is intact: revenue grew **87.4%** year over year off an acquisitive expansion of the clinical business.
+
+Size this small. The math is attractive and the liquidity is not, and one clean read with no confluence behind it is a reason to keep the position light rather than press it.
+
+## Technical Analysis
+
+&gt; 📈 Insert the SRTA weekly chart here (TradingView): SRTA weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $6.47 · mark support near $4.82.
+
+The trend is up and the pullback is orderly. Price holds above a 30-week line that is sloping higher at **4.1%**, which is the single structural fact that keeps this a buy-the-dip rather than a falling-knife. SRTA changes hands at **81.9%** of its 52-week high of **$6.50**, roughly **55.5%** of the way up its **$3.85** to **$6.50** yearly range, so there&#x27;s room in both directions.
+
+The levels are tight and defined. Support and your entry sit together at **$5.32**, the stop rides just under structure at **$4.82**, and resistance is the prior swing high at **$6.47** that doubles as the target. Momentum has cooled without breaking: the last 21 days ran **-15.0%**, which is the dip you&#x27;re buying, while the trailing 63 days are still up **26.7%**. RSI near **43.5** sits below the 50 midline, so buyers have stepped back but sellers haven&#x27;t taken control.
+
+Relative strength is the part that separates this from a generic bounce. SRTA has outrun the S&amp;P by **12.9%** over the past 63 days, so it was leading before it pulled in. With ATR at **$0.25**, a single average day covers half the distance to the stop, which tells you how quickly this can move against you. A daily close below **$4.82** ends the read.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $470M |
+| Enterprise value | $416M |
+| 52-week range | $3.85 - $6.50 |
+| Dividend yield | None |
+| Beta | 2.2 |
+| Price / sales | 2.1 |
+| Price / book | 1.6 |
+| Revenue (TTM) | $229M  (+87.4% YoY) |
+| Revenue / share | $2.74 |
+| Net income (TTM) | $-16M |
+| EPS (TTM / fwd) | -0.19 |
+| Gross margin | 21.1% |
+| Operating margin | -2.8% |
+| Profit margin | 20.6% |
+| Operating cash flow / share | $-0.52 |
+| Free cash flow / share | $-0.28 |
+| Total cash / share | $0.68 |
+| Debt / equity | 0.02 |
+| Current ratio | 5.93 |
+| Return on equity | -6.4% |
+| Analyst consensus | strong buy - mean target $9.25 (4 analysts) |
+
+Growth is the headline and it&#x27;s real. That pace comes from stacking clinical services onto the logistics base, and it&#x27;s why the market pays **2.1** times sales and **1.6** times book for a company this size.
+
+Profitability is the honest weak spot. You are underwriting a company that is buying its revenue growth and has not yet turned the corner on cash.
+
+The balance sheet is what makes that burn survivable for now. Cash per share sits at **$0.68** and book value at **$3.30**. Four analysts rate it strong buy with a mean target of **$9.25**, well above the **$5.32** print, though four voices on a stock this thin is a light sample to lean on.
+
+## Why Now
+
+There is no supportive near-term catalyst, and you should hold that plainly in view. The next scheduled event is Q2 earnings on August 11, 2026, roughly five weeks out. That is beyond any clean two-week window and, on a hold measured in a few weeks, it reads as an earnings-gap risk rather than a tailwind. Q1 already passed on May 6.
+
+So the timing case is technical, and only technical. You have a leading small cap that pulled back **15.0%** in three weeks into a defined support shelf at **$5.32**, inside a broad market that remains in a bull regime. That&#x27;s the whole clock: mean reversion back toward **$6.47** before earnings reintroduces event risk.
+
+The sector does you no favors. Healthcare reads as exhausted and late in its chase, so the macro tailwind you&#x27;d normally want at your back is absent. There are no options-flow signals here to lean on either. This is a pullback trade taken on its own merits, timed against a fading sector rather than with it, which is another argument for a small position.
+
+## Risk Factors
+
+Liquidity is the first and largest risk. SRTA trades about **$7.1M** a day, so slippage on both entry and exit is real, and a thin book gaps in the direction you don&#x27;t want. With a beta of **2.2**, this is a high-beta name, and a broad-market dip hits high-beta small caps first and hardest.
+
+The run that set up this dip was partly acquisition-fueled, which cuts two ways. A recent deal used about **20%** stock as consideration, and there&#x27;s disclosed insider intent to sell roughly **65,000** shares. That share overhang can cap the bounce even if the chart cooperates, and an acquisitive, stock-issuing operator can gap down hard if the growth story wobbles. The **18%** dip could be the front edge of a roll-over rather than a buyable pause.
+
+The cash burn compounds all of it. The single invalidation is clean: a daily close below **$4.82** kills the mean-reversion thesis, about **9.4%** below your **$5.32** entry. And the August 11 earnings date is a live gap risk if the trade runs longer than a couple of weeks.
+
+## Bringing It All Together
+
+- Dual focus: one vendor owns both the organ transport and the clinical perfusion work, a bundle rivals can&#x27;t easily match.
+- Market need: US transplant volumes are rising into a fragmented, under-built logistics and recovery niche.
+
+- Catalyst: none supportive near term; August 11 earnings is a gap risk, not a tailwind.
+- Levels: long **$5.32**, stop **$4.82**, target **$6.47**, reward-to-risk **2.3** to **1**, with relative strength **+12.9%** vs the S&amp;P over 63 days.
+
+## Conclusion
+
+This is a small, disciplined pullback trade and it should stay small. The chart is clean, the reward-to-risk of **2.3** to **1** is the strongest on the desk tonight, and a leading name that outran the market by **12.9%** has pulled back **15.0%** into support at **$5.32**. That&#x27;s a setup worth taking. It is not a setup worth pressing, because the liquidity is thin at **$7.1M** a day, the beta is **2.2**, the sector is exhausted, and free cash flow is still negative. Enter at **$5.32**, respect the **$4.82** stop without argument, and take profits into **$6.47** before August earnings turns this into an event trade. Medium conviction, medium size, tight leash.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
