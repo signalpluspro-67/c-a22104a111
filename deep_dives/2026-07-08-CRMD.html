@@ -1,0 +1,232 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A Deep Discount With a Loaded Gun Attached — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>A Deep Discount With a Loaded Gun Attached</h1>
+<div class="subtitle">CorMedix trades at a fraction of its high on a real cash engine, but the setup asks you to buy weakness into an exhausted sector and a reimbursement cliff.</div>
+<div class="meta">EOD 2026-07-08 · CRMD · written from the desk · model claude-opus-4-8</div>
+<div class="chips"><span class="chip">CRMD</span>
+<span class="chip">Healthcare</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-07-08: entry <b>$8.25</b> &rarr; <b>$8.83</b> (as of 2026-07-08) · <span class="pos">+7.0%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Small-cap biopharma is where the market hides its widest gaps between price and cash flow. When a company crosses from cash-burning clinical hope to a real commercial engine, the stock often stays priced for the old story long after the numbers change. That lag is the opportunity. It is also the trap, because the same names snap back down fast when a single reimbursement decision moves against them.</p>
+<p>Healthcare is the backdrop here, and the backdrop is tired. The sector reads as <strong>EXHAUSTED</strong>, and the recent buying looks like a late chase rather than fresh leadership. Money is rotating elsewhere. When you buy a Healthcare small-cap right now, you are fighting the sector tape, not riding it. That does not kill a single-name thesis, but it removes the wind at your back and raises the bar for the company&#x27;s own story to carry the trade.</p>
+<p>The reward for getting a name like this right is size. A company that has flipped to positive earnings and free cash flow, yet still trades near the low end of its yearly range, gives you a wide runway if sentiment ever catches up to the fundamentals. CorMedix fits that shape. It sits <strong>46.7%</strong> under its 52-week high while printing real profits. Whether that gap is a discount or a warning is the whole question.</p>
+<h2>Introducing $CRMD</h2>
+<p>CorMedix Inc. is a biopharmaceutical company based in Parsippany, New Jersey, built around one commercial product: DefenCath. DefenCath is an antimicrobial catheter lock solution designed to cut catheter-related bloodstream infections in adult patients with kidney failure. That is a narrow, serious clinical problem, and CorMedix has moved DefenCath from candidate to revenue-generating product.</p>
+<p>The company is lean. It runs on roughly <strong>191</strong> employees, which tells you this is a focused commercial launch rather than a sprawling drug portfolio. One approved product carries the whole business. That concentration is the source of both the operating leverage you see in the margins and the fragility you see in the risk section.</p>
+<p>The economics of a single-product specialty pharma are brutal in both directions. Gross margin runs at <strong>91.9%</strong>, so almost every incremental dollar of DefenCath sales drops toward operating income. The flip side is that any change to how DefenCath gets paid for, whether by Medicare or by the dialysis operators who administer it, hits the entire income statement at once. There is no second product to cushion the blow.</p>
+<h2>The Thesis</h2>
+<p>The desk read is a mean-reversion bounce in a beaten-down name, and the conviction is MEDIUM, so this is a starter position rather than a core holding. CRMD pairs the standard pullback setup with a short-squeeze angle. The stock sits <strong>46.7%</strong> below its 52-week high at <strong>8.83</strong>, so the room to recover is wide on paper. The chart is clean, RSI sits at <strong>59.0</strong>, and it trades about <strong>$10.9M</strong> a day, which is enough liquidity to get in and out without slippage killing you.</p>
+<p>The recovery-room argument is real. From <strong>8.83</strong>, the distance back toward the yearly high at <strong>15.65</strong> is large, and the stock has already put in a <strong>23.2%</strong> gain over the last 63 trading days while beating the S&amp;P by <strong>10.3%</strong> over the same stretch. That is a name waking up, not one still bleeding out.</p>
+<p>Be clear about what ranks this second and lower. The squeeze leg is untested, and it carries less weight than the pullback read the desk trusts. The math on the trade is also unfriendly, with a reward-to-risk ratio of <strong>0.9</strong>, meaning the defined risk is larger than the defined reward. You are paid to be right quickly and punished for patience. Size this small and treat it as a tactical bounce, not a conviction hold.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-07-08-CRMD.png" alt="CRMD weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=CRMD&interval=1W" target="_blank" rel="noopener">📈 Open the CRMD weekly chart on TradingView ↗</a><figcaption>CRMD weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $8.96 · mark support near $7.47.</figcaption></figure>
+<p>The trend is constructive on the surface and rotten underneath. Price holds above the 30-week moving average, which is the line that separates healthy names from broken ones. The catch is that the 30-week line still slopes down at <strong>-9.9%</strong>, so the longer trend has not turned up yet. You have a stock recovering inside a downtrend, which is exactly the condition where bounces fade unless volume confirms.</p>
+<p>Momentum has improved without overheating. RSI at <strong>59.0</strong> sits in neutral-to-firm territory, with room to run before anything looks stretched. The <strong>23.2%</strong> return over 63 days and the <strong>10.3%</strong> edge over the S&amp;P show real relative strength, and the shorter-term <strong>5.6%</strong> gain over 21 days says the move has not stalled. Price now sits at roughly <strong>56.4%</strong> of its 52-week high and in the bottom <strong>28.4%</strong> of its yearly range, so there is plenty of overhead supply to chew through.</p>
+<p>The levels define a tight, demanding trade. The reference entry is <strong>8.25</strong>, the stop is <strong>7.47</strong>, and the first target is <strong>8.96</strong>, which lines up with the swing high. A second target sits at <strong>10.01</strong>. From the <strong>8.25</strong> entry, the risk down to stop is <strong>9.5%</strong> and the reward up to first target is <strong>8.6%</strong>, with a stretch case of <strong>21.3%</strong> to the second target. Note the timing problem baked into these numbers: the stock is already at <strong>8.83</strong>, above the <strong>8.25</strong> entry, so it needs a pullback of roughly <strong>7%</strong> just to trigger. With daily ATR at <strong>0.39</strong>, that pullback is a couple of average days of range, so it is plausible, but you may sit on your hands waiting for a fill that never comes.</p>
+<p>Volume is the tell that would validate any of this. Average daily volume runs near <strong>1.51M</strong> shares. A clean break and hold above the <strong>8.96</strong> swing high on volume clearly above that average would confirm the squeeze leg. A push toward <strong>7.13</strong>, the swing low, on rising volume tells you the sellers are still in control and the stop at <strong>7.47</strong> is in play.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$686M</td></tr><tr><td class="k">Enterprise value</td><td class="v">$656M</td></tr><tr><td class="k">52-week range</td><td class="v">$6.12 - $15.65</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">1.48</td></tr><tr><td class="k">Trailing P/E</td><td class="v">4.0</td></tr><tr><td class="k">Forward P/E</td><td class="v">25.0</td></tr><tr><td class="k">Price / sales</td><td class="v">1.7</td></tr><tr><td class="k">Price / book</td><td class="v">1.6</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$400M  (+226.1% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$5.29</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$180M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">2.17 / 0.35</td></tr><tr><td class="k">Gross margin</td><td class="v">91.9%</td></tr><tr><td class="k">Operating margin</td><td class="v">50.0%</td></tr><tr><td class="k">Profit margin</td><td class="v">45.2%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$2.52</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$1.53</td></tr><tr><td class="k">Total cash / share</td><td class="v">$2.27</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.34</td></tr><tr><td class="k">Current ratio</td><td class="v">2.98</td></tr><tr><td class="k">Return on equity</td><td class="v">65.6%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">buy - mean target $15.20 (5 analysts)</td></tr></tbody></table>
+<p>The fundamentals are the strongest part of this story, and they are strong enough to make you look twice. That is not a slow grind higher, it is a step-change from a company crossing into full commercialization. Revenue per share sits at <strong>5.29</strong>, and the stock trades at just <strong>1.7</strong> times sales.</p>
+<p>Profitability has arrived, and it is heavy. Gross margin is <strong>91.9%</strong>, operating margin is <strong>50.0%</strong>, and net margin is <strong>45.2%</strong>. Return on equity is <strong>65.6%</strong> and return on assets is <strong>26.4%</strong>.</p>
+<p>The balance sheet gives you room to be patient. Book value is <strong>5.58</strong> per share against a price-to-book of <strong>1.6</strong>.</p>
+<p>Here is the honest wrinkle, and it is a big one. Trailing P/E of <strong>4.0</strong> looks like a giveaway, but forward P/E jumps to <strong>25.0</strong> and forward EPS drops to <strong>0.35</strong> from the trailing <strong>2.17</strong>. The market expects earnings to fall hard from here. That gap between the cheap trailing multiple and the expensive forward multiple is the reimbursement cliff showing up in the numbers before it shows up in the headlines. The five analysts covering it carry a buy rating and a mean target of <strong>15.2</strong>, well above spot, so the sell side still sees value. The forward estimates say the market is bracing for the earnings base to shrink.</p>
+<h2>Why Now</h2>
+<p>The timing case is thin, and you should treat it that way. There is no near-term positive catalyst pending. Earnings are confirmed for early August 2026, roughly <strong>27</strong> days out. That sits outside a tight two-week trading window but inside a few-weeks hold, which means you carry event risk without a clear positive trigger to catch. You are holding into a print, not front-running good news.</p>
+<p>Options flow leans bullish but light. On July 7, calls outnumbered puts by <strong>1446</strong> to <strong>173</strong> in daily volume, with call premium of <strong>$0.05M</strong> against put premium of <strong>$0.01M</strong>. The direction is positive, and the dollars behind it are small. This is a mild positioning tilt, not institutional conviction stacking up. Read it as a minor supporting signal, nothing you would size around.</p>
+<p>The macro timing works against you. Healthcare reads as <strong>EXHAUSTED</strong> and the recent action looks like a late chase, so you are buying a bounce in a sector the market is leaving. The live overhang here is a reimbursement change, not a catalyst that helps you. That combination, no positive trigger plus a known negative one on the calendar, is why this is a small tactical position rather than a bet you lean on.</p>
+<h2>Risk Factors</h2>
+<p>The cleanest way this loses money is the reimbursement cliff, and it is credible. CRMD faces a post-TDAPA hangover: a Medicare reimbursement change later in 2026 that erodes DefenCath pricing. That change is likely why the stock sold off in the first place. If it plays out, the company keeps bleeding while you wait for a bounce that never arrives, and the forward EPS estimate of <strong>0.35</strong> against trailing <strong>2.17</strong> tells you the market already expects the pain.</p>
+<p>The squeeze leg is untested and thin. It is the weaker half of the thesis, and if forced buyers never show up, the recovery-room argument loses its engine. A name this far below its high, <strong>46.7%</strong> down, can stay cheap for a long time. Cheap is not a catalyst.</p>
+<p>The reward-to-risk is asymmetric against you at <strong>0.9</strong>. The first target at <strong>8.96</strong> is only about <strong>1.5%</strong> above the current <strong>8.83</strong>, while the stop at <strong>7.47</strong> sits well below. You are risking more than you stand to make on the first leg, which is the opposite of how you want a trade framed.</p>
+<p>The single invalidation is a daily close below the <strong>7.47</strong> stop. That kills the setup. Add the trigger risk: entry is <strong>8.25</strong> and the stock is already at <strong>8.83</strong>, so the trade may never fill without a pullback of roughly <strong>7%</strong>. And the sector backdrop, Healthcare exhausted and out of the leading rotation, means you get no help from the group if the name stalls.</p>
+<h2>Bringing It All Together</h2>
+<p>- <strong>Dual focus:</strong> a pullback read plus a short-squeeze angle, though the squeeze leg is untested and ranks lower.<br>- <strong>Market need:</strong> DefenCath addresses catheter-related bloodstream infections in kidney-failure patients, a narrow but serious clinical problem, on <strong>91.9%</strong> gross margins.</p>
+<p>- <strong>Catalyst:</strong> none positive pending; earnings roughly <strong>27</strong> days out and a Medicare reimbursement cliff as the live overhang.<br>- <strong>Levels:</strong> entry <strong>8.25</strong>, stop <strong>7.47</strong>, first target <strong>8.96</strong>, stretch <strong>10.01</strong>, reward-to-risk of <strong>0.9</strong>, with the stock at <strong>8.83</strong> needing a pullback to trigger.</p>
+<h2>Conclusion</h2>
+<p>CorMedix gives you a rare combination: a genuinely cheap trailing multiple, real cash flow, and a wide gap back toward its high. It also hands you an unfriendly reward-to-risk of <strong>0.9</strong>, an entry at <strong>8.25</strong> that the <strong>8.83</strong> price has not pulled back to reach, an exhausted sector, and a reimbursement change that the forward EPS drop to <strong>0.35</strong> says is already feared. Conviction is MEDIUM, and the honest version of MEDIUM here is a small starter clipped tight to the <strong>7.47</strong> stop, taken only if price actually fills near <strong>8.25</strong>. The fundamentals are the reason to watch it. The forward estimates and the sector tape are the reasons to keep the position light and quick. If it closes below <strong>7.47</strong>, you are wrong, and you leave.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;CorMedix Inc. (CRMD) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $686M; 52-week range $6-$16; Revenue $400M +226% YoY; Net income $180M; Free cash flow/share $1.53; Debt-to-equity 0.34; Return on equity 66%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for CorMedix Inc. (CRMD) inside the Healthcare space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): CRMD pairs the proven pullback desk read with a short-squeeze setup, and it sits well back at **46.7%** under the 52-week high at **8.83**, so the room to recover is wide. RSI is **59.0**, the chart is clean, and it trades **$10.9M** a day.. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># A Deep Discount With a Loaded Gun Attached
+
+*CorMedix trades at a fraction of its high on a real cash engine, but the setup asks you to buy weakness into an exhausted sector and a reimbursement cliff.*
+
+## The Big Picture
+
+Small-cap biopharma is where the market hides its widest gaps between price and cash flow. When a company crosses from cash-burning clinical hope to a real commercial engine, the stock often stays priced for the old story long after the numbers change. That lag is the opportunity. It is also the trap, because the same names snap back down fast when a single reimbursement decision moves against them.
+
+Healthcare is the backdrop here, and the backdrop is tired. The sector reads as **EXHAUSTED**, and the recent buying looks like a late chase rather than fresh leadership. Money is rotating elsewhere. When you buy a Healthcare small-cap right now, you are fighting the sector tape, not riding it. That does not kill a single-name thesis, but it removes the wind at your back and raises the bar for the company&#x27;s own story to carry the trade.
+
+The reward for getting a name like this right is size. A company that has flipped to positive earnings and free cash flow, yet still trades near the low end of its yearly range, gives you a wide runway if sentiment ever catches up to the fundamentals. CorMedix fits that shape. It sits **46.7%** under its 52-week high while printing real profits. Whether that gap is a discount or a warning is the whole question.
+
+## Introducing $CRMD
+
+CorMedix Inc. is a biopharmaceutical company based in Parsippany, New Jersey, built around one commercial product: DefenCath. DefenCath is an antimicrobial catheter lock solution designed to cut catheter-related bloodstream infections in adult patients with kidney failure. That is a narrow, serious clinical problem, and CorMedix has moved DefenCath from candidate to revenue-generating product.
+
+The company is lean. It runs on roughly **191** employees, which tells you this is a focused commercial launch rather than a sprawling drug portfolio. One approved product carries the whole business. That concentration is the source of both the operating leverage you see in the margins and the fragility you see in the risk section.
+
+The economics of a single-product specialty pharma are brutal in both directions. Gross margin runs at **91.9%**, so almost every incremental dollar of DefenCath sales drops toward operating income. The flip side is that any change to how DefenCath gets paid for, whether by Medicare or by the dialysis operators who administer it, hits the entire income statement at once. There is no second product to cushion the blow.
+
+## The Thesis
+
+The desk read is a mean-reversion bounce in a beaten-down name, and the conviction is MEDIUM, so this is a starter position rather than a core holding. CRMD pairs the standard pullback setup with a short-squeeze angle. The stock sits **46.7%** below its 52-week high at **8.83**, so the room to recover is wide on paper. The chart is clean, RSI sits at **59.0**, and it trades about **$10.9M** a day, which is enough liquidity to get in and out without slippage killing you.
+
+The recovery-room argument is real. From **8.83**, the distance back toward the yearly high at **15.65** is large, and the stock has already put in a **23.2%** gain over the last 63 trading days while beating the S&amp;P by **10.3%** over the same stretch. That is a name waking up, not one still bleeding out.
+
+Be clear about what ranks this second and lower. The squeeze leg is untested, and it carries less weight than the pullback read the desk trusts. The math on the trade is also unfriendly, with a reward-to-risk ratio of **0.9**, meaning the defined risk is larger than the defined reward. You are paid to be right quickly and punished for patience. Size this small and treat it as a tactical bounce, not a conviction hold.
+
+## Technical Analysis
+
+&gt; 📈 Insert the CRMD weekly chart here (TradingView): CRMD weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $8.96 · mark support near $7.47.
+
+The trend is constructive on the surface and rotten underneath. Price holds above the 30-week moving average, which is the line that separates healthy names from broken ones. The catch is that the 30-week line still slopes down at **-9.9%**, so the longer trend has not turned up yet. You have a stock recovering inside a downtrend, which is exactly the condition where bounces fade unless volume confirms.
+
+Momentum has improved without overheating. RSI at **59.0** sits in neutral-to-firm territory, with room to run before anything looks stretched. The **23.2%** return over 63 days and the **10.3%** edge over the S&amp;P show real relative strength, and the shorter-term **5.6%** gain over 21 days says the move has not stalled. Price now sits at roughly **56.4%** of its 52-week high and in the bottom **28.4%** of its yearly range, so there is plenty of overhead supply to chew through.
+
+The levels define a tight, demanding trade. The reference entry is **8.25**, the stop is **7.47**, and the first target is **8.96**, which lines up with the swing high. A second target sits at **10.01**. From the **8.25** entry, the risk down to stop is **9.5%** and the reward up to first target is **8.6%**, with a stretch case of **21.3%** to the second target. Note the timing problem baked into these numbers: the stock is already at **8.83**, above the **8.25** entry, so it needs a pullback of roughly **7%** just to trigger. With daily ATR at **0.39**, that pullback is a couple of average days of range, so it is plausible, but you may sit on your hands waiting for a fill that never comes.
+
+Volume is the tell that would validate any of this. Average daily volume runs near **1.51M** shares. A clean break and hold above the **8.96** swing high on volume clearly above that average would confirm the squeeze leg. A push toward **7.13**, the swing low, on rising volume tells you the sellers are still in control and the stop at **7.47** is in play.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $686M |
+| Enterprise value | $656M |
+| 52-week range | $6.12 - $15.65 |
+| Dividend yield | None |
+| Beta | 1.48 |
+| Trailing P/E | 4.0 |
+| Forward P/E | 25.0 |
+| Price / sales | 1.7 |
+| Price / book | 1.6 |
+| Revenue (TTM) | $400M  (+226.1% YoY) |
+| Revenue / share | $5.29 |
+| Net income (TTM) | $180M |
+| EPS (TTM / fwd) | 2.17 / 0.35 |
+| Gross margin | 91.9% |
+| Operating margin | 50.0% |
+| Profit margin | 45.2% |
+| Operating cash flow / share | $2.52 |
+| Free cash flow / share | $1.53 |
+| Total cash / share | $2.27 |
+| Debt / equity | 0.34 |
+| Current ratio | 2.98 |
+| Return on equity | 65.6% |
+| Analyst consensus | buy - mean target $15.20 (5 analysts) |
+
+The fundamentals are the strongest part of this story, and they are strong enough to make you look twice. That is not a slow grind higher, it is a step-change from a company crossing into full commercialization. Revenue per share sits at **5.29**, and the stock trades at just **1.7** times sales.
+
+Profitability has arrived, and it is heavy. Gross margin is **91.9%**, operating margin is **50.0%**, and net margin is **45.2%**. Return on equity is **65.6%** and return on assets is **26.4%**.
+
+The balance sheet gives you room to be patient. Book value is **5.58** per share against a price-to-book of **1.6**.
+
+Here is the honest wrinkle, and it is a big one. Trailing P/E of **4.0** looks like a giveaway, but forward P/E jumps to **25.0** and forward EPS drops to **0.35** from the trailing **2.17**. The market expects earnings to fall hard from here. That gap between the cheap trailing multiple and the expensive forward multiple is the reimbursement cliff showing up in the numbers before it shows up in the headlines. The five analysts covering it carry a buy rating and a mean target of **15.2**, well above spot, so the sell side still sees value. The forward estimates say the market is bracing for the earnings base to shrink.
+
+## Why Now
+
+The timing case is thin, and you should treat it that way. There is no near-term positive catalyst pending. Earnings are confirmed for early August 2026, roughly **27** days out. That sits outside a tight two-week trading window but inside a few-weeks hold, which means you carry event risk without a clear positive trigger to catch. You are holding into a print, not front-running good news.
+
+Options flow leans bullish but light. On July 7, calls outnumbered puts by **1446** to **173** in daily volume, with call premium of **$0.05M** against put premium of **$0.01M**. The direction is positive, and the dollars behind it are small. This is a mild positioning tilt, not institutional conviction stacking up. Read it as a minor supporting signal, nothing you would size around.
+
+The macro timing works against you. Healthcare reads as **EXHAUSTED** and the recent action looks like a late chase, so you are buying a bounce in a sector the market is leaving. The live overhang here is a reimbursement change, not a catalyst that helps you. That combination, no positive trigger plus a known negative one on the calendar, is why this is a small tactical position rather than a bet you lean on.
+
+## Risk Factors
+
+The cleanest way this loses money is the reimbursement cliff, and it is credible. CRMD faces a post-TDAPA hangover: a Medicare reimbursement change later in 2026 that erodes DefenCath pricing. That change is likely why the stock sold off in the first place. If it plays out, the company keeps bleeding while you wait for a bounce that never arrives, and the forward EPS estimate of **0.35** against trailing **2.17** tells you the market already expects the pain.
+
+The squeeze leg is untested and thin. It is the weaker half of the thesis, and if forced buyers never show up, the recovery-room argument loses its engine. A name this far below its high, **46.7%** down, can stay cheap for a long time. Cheap is not a catalyst.
+
+The reward-to-risk is asymmetric against you at **0.9**. The first target at **8.96** is only about **1.5%** above the current **8.83**, while the stop at **7.47** sits well below. You are risking more than you stand to make on the first leg, which is the opposite of how you want a trade framed.
+
+The single invalidation is a daily close below the **7.47** stop. That kills the setup. Add the trigger risk: entry is **8.25** and the stock is already at **8.83**, so the trade may never fill without a pullback of roughly **7%**. And the sector backdrop, Healthcare exhausted and out of the leading rotation, means you get no help from the group if the name stalls.
+
+## Bringing It All Together
+
+- **Dual focus:** a pullback read plus a short-squeeze angle, though the squeeze leg is untested and ranks lower.
+- **Market need:** DefenCath addresses catheter-related bloodstream infections in kidney-failure patients, a narrow but serious clinical problem, on **91.9%** gross margins.
+
+- **Catalyst:** none positive pending; earnings roughly **27** days out and a Medicare reimbursement cliff as the live overhang.
+- **Levels:** entry **8.25**, stop **7.47**, first target **8.96**, stretch **10.01**, reward-to-risk of **0.9**, with the stock at **8.83** needing a pullback to trigger.
+
+## Conclusion
+
+CorMedix gives you a rare combination: a genuinely cheap trailing multiple, real cash flow, and a wide gap back toward its high. It also hands you an unfriendly reward-to-risk of **0.9**, an entry at **8.25** that the **8.83** price has not pulled back to reach, an exhausted sector, and a reimbursement change that the forward EPS drop to **0.35** says is already feared. Conviction is MEDIUM, and the honest version of MEDIUM here is a small starter clipped tight to the **7.47** stop, taken only if price actually fills near **8.25**. The fundamentals are the reason to watch it. The forward estimates and the sector tape are the reasons to keep the position light and quick. If it closes below **7.47**, you are wrong, and you leave.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

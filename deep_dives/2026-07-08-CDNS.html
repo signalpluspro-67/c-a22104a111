@@ -1,0 +1,234 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Software Every Chip Passes Through — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Software Every Chip Passes Through</h1>
+<div class="subtitle">Cadence sits 11.5% below its high with RSI reset. The setup is clean. The earnings date is the catch.</div>
+<div class="meta">EOD 2026-07-08 · CDNS · written from the desk · model claude-opus-4-8</div>
+<div class="chips"><span class="chip">CDNS</span>
+<span class="chip">Technology</span>
+<span class="chip hi">HIGH conviction</span></div>
+<div class="track">Tracking since 2026-07-08: entry <b>$368.49</b> &rarr; <b>$368.49</b> (as of 2026-07-08) · <span class="pos">+0.0%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Every advanced chip on the planet moves through a short list of design tools, and Cadence owns a large piece of that list. That is the whole reason this company earns an <strong>86.1%</strong> gross margin. When a business sells software that engineers cannot tape out a chip without, pricing power takes care of itself.</p>
+<p>Chip design software, the category known as EDA (electronic design automation, the tools that let engineers lay out and verify a chip before it is manufactured), is one of the tightest oligopolies in technology. Cadence and one main rival split the serious work between them. As AI accelerators and custom silicon get denser, verifying a design gets harder and slower, and that difficulty converts directly into demand for the tools that automate it. Cadence also runs a strategic collaboration with NVIDIA, which places it close to the center of the AI hardware buildout.</p>
+<p>The sector backdrop is honest and mixed. Technology is reading NEUTRAL right now, and its momentum has started to decelerate. You are not getting a sector tailwind pushing this trade along. That matters for sizing, and I will return to it. It also means the case here rests on the company and the chart, not on a rising tide.</p>
+<p>A backdrop like this rewards quality over beta. When the group is not leading, the money that stays invested rotates toward businesses with recurring revenue, real cash generation, and pricing that holds in a slowdown. Cadence fits that description. The question is entry, and the entry is what the desk flagged.</p>
+<h2>Introducing $CDNS</h2>
+<p>Cadence Design Systems builds the software, hardware, and silicon intellectual property that engineers use to design and verify chips and electronic systems.</p>
+<p>The product line is deep and sticky. On verification you have Jasper for formal proofs, Xcelium for logic simulation, Verisium for AI-driven debug, and the Palladium and Protium boxes for emulation and prototyping. On design you have Innovus for digital layout and Virtuoso for custom analog. The intellectual property portfolio covers the standard high-speed protocols, memory interfaces, and embedded security through Secure-IC, plus the Tensilica DSP cores. Once a design team builds a flow around these tools, switching means retraining engineers and re-qualifying a pipeline, which is why the revenue recurs.</p>
+<p>The newer growth arm is System Design and Analysis, which pushes Cadence past the chip and into packages, boards, and full electronic systems. That includes Allegro and Orca X for PCB and advanced packaging, Sigrity X for signal and power integrity, Clarity for electromagnetics, Celsius for thermal, and Fidelity for fluid dynamics. This is the part of the story that turns Cadence from a chip-tool vendor into a broader engineering software company, and it is where the AI and digital-twin work lives.</p>
+<h2>The Thesis</h2>
+<p>The call is a pullback buy inside an intact uptrend. Cadence trades at <strong>368.49</strong>, which is <strong>11.5%</strong> below its 52-week high of <strong>416.69</strong>, and it holds above a 30-week average that is still rising at about <strong>4.0%</strong>. The 14-period RSI has reset to <strong>45.2</strong>, the middle of its range, so the stock has cooled off without breaking down. You are buying a strong name on sale, not chasing one that already ran.</p>
+<p>The math is favorable. Entry sits at <strong>368.49</strong>, the stop at <strong>342.01</strong>, and the first target at <strong>416.39</strong>, the prior swing high. That is roughly <strong>1.8</strong> of reward for every unit of risk, with about <strong>13.0%</strong> of upside to target against <strong>7.2%</strong> of downside to the stop. A second target at <strong>428.07</strong> would add <strong>16.2%</strong> if the move extends past the old high.</p>
+<p>Conviction here is real but capped, and I want you to hold both ideas at once. The technical edge is proven and the trend is up. The catch is timing: earnings land inside the holding window, which turns a mean-reversion swing into something closer to a bet on one print. So treat this as a medium-conviction position sized below a normal full clip, not a table-pounding one. The setup is clean. The calendar is not.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-07-08-CDNS.png" alt="CDNS weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=CDNS&interval=1W" target="_blank" rel="noopener">📈 Open the CDNS weekly chart on TradingView ↗</a><figcaption>CDNS weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $416.39 · mark support near $342.01.</figcaption></figure>
+<p>The primary trend is up and the stock respects it. Price sits above a 30-week average that is climbing near <strong>4.0%</strong>, and the shorter-term 8 and 21-week lines are the ones price is pulling back into rather than breaking. Over the last three months Cadence is up <strong>31.8%</strong>, and it has beaten the broad market by <strong>19.0%</strong> over that same stretch, so this is a relative-strength leader taking a breather, not a laggard rolling over.</p>
+<p>The pullback is shallow and orderly. Over the past month the stock is down only <strong>2.0%</strong>, and it holds at <strong>88.4%</strong> of its 52-week high while sitting about two-thirds of the way up its full 52-week range. The distance from the high is <strong>11.5%</strong>, enough room to run back toward the old peak without needing new information. The 14-period RSI at <strong>45.2</strong> tells you the same thing: momentum has cooled to neutral, which is exactly where continuation entries set up.</p>
+<p>The levels are tight and worth citing. Support and your line in the sand is <strong>342.01</strong>, roughly two ATRs below entry given the <strong>13.24</strong> average true range, so a close beneath it is a real break and not noise. Resistance is the swing high at <strong>416.39</strong>, which doubles as your first target and sits just under the 52-week high at <strong>416.69</strong>. Above that, <strong>428.07</strong> is the extension. The reference structure runs from the swing low near <strong>288.20</strong> up through here.</p>
+<p>Volume is the tell to watch on the way back up. Confirmation looks like the reclaim toward <strong>416.39</strong> arriving on expanding volume rather than drifting there on thin tape. If the bounce comes on quiet participation and stalls under the prior high, the pullback is stalling and the read weakens.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$102.92B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$104.46B</td></tr><tr><td class="k">52-week range</td><td class="v">$262.75 - $416.69</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">1.15</td></tr><tr><td class="k">Trailing P/E</td><td class="v">87.0</td></tr><tr><td class="k">Forward P/E</td><td class="v">39.7</td></tr><tr><td class="k">Price / sales</td><td class="v">18.6</td></tr><tr><td class="k">Price / book</td><td class="v">15.7</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$5.53B  (+18.7% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$20.37</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$1.17B</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">4.29 / 9.4</td></tr><tr><td class="k">Gross margin</td><td class="v">86.1%</td></tr><tr><td class="k">Operating margin</td><td class="v">29.7%</td></tr><tr><td class="k">Profit margin</td><td class="v">21.2%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$5.79</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$5.44</td></tr><tr><td class="k">Total cash / share</td><td class="v">$5.61</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.47</td></tr><tr><td class="k">Current ratio</td><td class="v">1.47</td></tr><tr><td class="k">Return on equity</td><td class="v">20.7%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">strong buy - mean target $388.78 (25 analysts)</td></tr></tbody></table>
+<p>The business is growing and the profitability is elite. Gross margin is <strong>86.1%</strong>, operating margin is <strong>29.7%</strong>, and net margin is <strong>21.2%</strong>. Those are the economics of mission-critical software with a locked-in customer base, and they are the entire reason this name commands the multiple it does.</p>
+<p>Cash generation backs the income statement. Return on equity is <strong>20.7%</strong> and return on assets is <strong>10.4%</strong>. Nothing here threatens the trade.</p>
+<p>The honest weak spot is price. Trailing P/E is <strong>87.0</strong>, and even on forward earnings of <strong>$9.40</strong> the multiple is <strong>39.7</strong>. Price to sales is <strong>18.6</strong> and price to book is <strong>15.7</strong> against book value of <strong>$23.79</strong> a share. This is a quality business priced like one, which means it has to keep delivering to hold the tape. It also means your target of <strong>416.39</strong> sits above the <strong>388.78</strong> average analyst estimate, so the upside leg leans on a strong quarter, not just multiple expansion. The Street still rates it a strong buy across <strong>25</strong> analysts, for what a consensus rating is worth.</p>
+<h2>Why Now</h2>
+<p>The near-term driver is earnings, and it is confirmed for <strong>July 27, 2026</strong>, about <strong>18</strong> days out from here. That date falls inside the holding window for this swing, so you cannot treat it as background. It is the dominant catalyst, ahead of the technical setup. A beat that reclaims the prior high is the bull path. A soft print is the risk, and I cover that next.</p>
+<p>The macro leg is neutral, and I would rather say that plainly than dress it up. Technology is not leading and its momentum has turned lower, so you are relying on Cadence being a standout inside a flat group rather than riding the sector. The relative strength number, <strong>19.0%</strong> ahead of the market over three months, is the evidence that it can be that standout.</p>
+<p>Options flow is close to balanced with a slight defensive tilt. On the July 7 tape, puts traded <strong>828</strong> contracts against <strong>700</strong> calls, yet call premium at <strong>$0.9M</strong> outweighed put premium at <strong>$0.51M</strong>, so the larger dollars leaned bullish even as contract count leaned the other way. The call wall sits at <strong>415</strong>, right where your target and the 52-week high cluster, which marks the ceiling dealers are positioned around. The put wall at <strong>355</strong> sits between entry and your stop, a rough floor buyers are defending above the invalidation.</p>
+<h2>Risk Factors</h2>
+<p>The biggest risk is the calendar, and it is structural to this trade. A pullback swing was never built to hold through an earnings print, and this one does. A rich-multiple name that misses or guides soft can gap straight through <strong>342.01</strong> overnight, and your stop does not protect you across a gap. That is the single largest way this loses money, and it is why the position should be sized down.</p>
+<p>The second risk is that the bounce never shows. The recent move lower could extend, price could fail to reclaim the swing high, and the stock could grind sideways to lower while the trend deteriorates. A failure to push back toward <strong>416.39</strong> after entry is the setup stalling even before any hard break.</p>
+<p>Valuation raises the stakes on every one of these. At <strong>87.0</strong> trailing and <strong>39.7</strong> forward earnings, there is little cushion for disappointment, and the target already sits above the <strong>388.78</strong> consensus, so the trade needs the quarter to cooperate. The sector being neutral rather than supportive removes the safety net a rising group would provide.</p>
+<p>The invalidation is clean and non-negotiable. A daily close below <strong>342.01</strong> proves the pullback buy wrong, roughly <strong>7%</strong> under entry. Respect it, and respect that the earnings gap could take you there without a chance to react.</p>
+<h2>Bringing It All Together</h2>
+<p>- Dual edge: a proven pullback structure plus a momentum overlay, with price above a 30-week average rising <strong>4.0%</strong> and relative strength <strong>19.0%</strong> ahead of the market.<br>- Market need: EDA tools are required to design and verify every advanced chip, which shows up as an <strong>86.1%</strong> gross margin and recurring revenue.<br>- Fundamentals: revenue up <strong>18.7%</strong>, earnings up <strong>23.0%</strong>, free cash flow of <strong>$1.50B</strong>, and a clean balance sheet at <strong>0.47</strong> debt to equity.<br>- Catalyst: Q2 earnings on <strong>July 27, 2026</strong>, about <strong>18</strong> days out and inside the hold, the dominant near-term driver.<br>- Levels: entry <strong>368.49</strong>, stop <strong>342.01</strong>, first target <strong>416.39</strong>, extension <strong>428.07</strong>, for roughly <strong>1.8</strong> reward to risk.</p>
+<h2>Conclusion</h2>
+<p>Cadence is a high-quality business at a clean technical entry, and the reward-to-risk at <strong>1.8</strong> is worth taking. You are buying an uptrend leader <strong>11.5%</strong> off its high with RSI reset to <strong>45.2</strong>, above a rising 30-week line, with room back to <strong>416.39</strong>. That part I like.</p>
+<p>The part that keeps this at medium conviction and half size is the <strong>July 27</strong> earnings date sitting inside your window. It converts a technical swing into a bet on one quarter, and a <strong>39.7</strong> forward multiple leaves no room for a miss. If you take it, take it smaller than a normal position, know that <strong>342.01</strong> is the line, and accept that the gap risk is the price of holding through the print.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Cadence Design Systems, Inc. (CDNS) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $102.92B; 52-week range $263-$417; Revenue $5.53B +19% YoY; Net income $1.17B; Free cash flow/share $5.44; Debt-to-equity 0.47; Return on equity 21%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Cadence Design Systems, Inc. (CDNS) inside the Technology space, specifically the &quot;Trump&#x27;s Personal Portfolio&quot; theme. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): CDNS gives you the same proven pullback edge (**tested · risk-adjusted return 1.10 · tested) with a momentum overlay, and it holds above a rising 30-week average. It sits **11.5%** below the 52-week high at **368.49** with RSI reset to **45. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Software Every Chip Passes Through
+
+*Cadence sits 11.5% below its high with RSI reset. The setup is clean. The earnings date is the catch.*
+
+## The Big Picture
+
+Every advanced chip on the planet moves through a short list of design tools, and Cadence owns a large piece of that list. That is the whole reason this company earns an **86.1%** gross margin. When a business sells software that engineers cannot tape out a chip without, pricing power takes care of itself.
+
+Chip design software, the category known as EDA (electronic design automation, the tools that let engineers lay out and verify a chip before it is manufactured), is one of the tightest oligopolies in technology. Cadence and one main rival split the serious work between them. As AI accelerators and custom silicon get denser, verifying a design gets harder and slower, and that difficulty converts directly into demand for the tools that automate it. Cadence also runs a strategic collaboration with NVIDIA, which places it close to the center of the AI hardware buildout.
+
+The sector backdrop is honest and mixed. Technology is reading NEUTRAL right now, and its momentum has started to decelerate. You are not getting a sector tailwind pushing this trade along. That matters for sizing, and I will return to it. It also means the case here rests on the company and the chart, not on a rising tide.
+
+A backdrop like this rewards quality over beta. When the group is not leading, the money that stays invested rotates toward businesses with recurring revenue, real cash generation, and pricing that holds in a slowdown. Cadence fits that description. The question is entry, and the entry is what the desk flagged.
+
+## Introducing $CDNS
+
+Cadence Design Systems builds the software, hardware, and silicon intellectual property that engineers use to design and verify chips and electronic systems.
+
+The product line is deep and sticky. On verification you have Jasper for formal proofs, Xcelium for logic simulation, Verisium for AI-driven debug, and the Palladium and Protium boxes for emulation and prototyping. On design you have Innovus for digital layout and Virtuoso for custom analog. The intellectual property portfolio covers the standard high-speed protocols, memory interfaces, and embedded security through Secure-IC, plus the Tensilica DSP cores. Once a design team builds a flow around these tools, switching means retraining engineers and re-qualifying a pipeline, which is why the revenue recurs.
+
+The newer growth arm is System Design and Analysis, which pushes Cadence past the chip and into packages, boards, and full electronic systems. That includes Allegro and Orca X for PCB and advanced packaging, Sigrity X for signal and power integrity, Clarity for electromagnetics, Celsius for thermal, and Fidelity for fluid dynamics. This is the part of the story that turns Cadence from a chip-tool vendor into a broader engineering software company, and it is where the AI and digital-twin work lives.
+
+## The Thesis
+
+The call is a pullback buy inside an intact uptrend. Cadence trades at **368.49**, which is **11.5%** below its 52-week high of **416.69**, and it holds above a 30-week average that is still rising at about **4.0%**. The 14-period RSI has reset to **45.2**, the middle of its range, so the stock has cooled off without breaking down. You are buying a strong name on sale, not chasing one that already ran.
+
+The math is favorable. Entry sits at **368.49**, the stop at **342.01**, and the first target at **416.39**, the prior swing high. That is roughly **1.8** of reward for every unit of risk, with about **13.0%** of upside to target against **7.2%** of downside to the stop. A second target at **428.07** would add **16.2%** if the move extends past the old high.
+
+Conviction here is real but capped, and I want you to hold both ideas at once. The technical edge is proven and the trend is up. The catch is timing: earnings land inside the holding window, which turns a mean-reversion swing into something closer to a bet on one print. So treat this as a medium-conviction position sized below a normal full clip, not a table-pounding one. The setup is clean. The calendar is not.
+
+## Technical Analysis
+
+&gt; 📈 Insert the CDNS weekly chart here (TradingView): CDNS weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $416.39 · mark support near $342.01.
+
+The primary trend is up and the stock respects it. Price sits above a 30-week average that is climbing near **4.0%**, and the shorter-term 8 and 21-week lines are the ones price is pulling back into rather than breaking. Over the last three months Cadence is up **31.8%**, and it has beaten the broad market by **19.0%** over that same stretch, so this is a relative-strength leader taking a breather, not a laggard rolling over.
+
+The pullback is shallow and orderly. Over the past month the stock is down only **2.0%**, and it holds at **88.4%** of its 52-week high while sitting about two-thirds of the way up its full 52-week range. The distance from the high is **11.5%**, enough room to run back toward the old peak without needing new information. The 14-period RSI at **45.2** tells you the same thing: momentum has cooled to neutral, which is exactly where continuation entries set up.
+
+The levels are tight and worth citing. Support and your line in the sand is **342.01**, roughly two ATRs below entry given the **13.24** average true range, so a close beneath it is a real break and not noise. Resistance is the swing high at **416.39**, which doubles as your first target and sits just under the 52-week high at **416.69**. Above that, **428.07** is the extension. The reference structure runs from the swing low near **288.20** up through here.
+
+Volume is the tell to watch on the way back up. Confirmation looks like the reclaim toward **416.39** arriving on expanding volume rather than drifting there on thin tape. If the bounce comes on quiet participation and stalls under the prior high, the pullback is stalling and the read weakens.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $102.92B |
+| Enterprise value | $104.46B |
+| 52-week range | $262.75 - $416.69 |
+| Dividend yield | None |
+| Beta | 1.15 |
+| Trailing P/E | 87.0 |
+| Forward P/E | 39.7 |
+| Price / sales | 18.6 |
+| Price / book | 15.7 |
+| Revenue (TTM) | $5.53B  (+18.7% YoY) |
+| Revenue / share | $20.37 |
+| Net income (TTM) | $1.17B |
+| EPS (TTM / fwd) | 4.29 / 9.4 |
+| Gross margin | 86.1% |
+| Operating margin | 29.7% |
+| Profit margin | 21.2% |
+| Operating cash flow / share | $5.79 |
+| Free cash flow / share | $5.44 |
+| Total cash / share | $5.61 |
+| Debt / equity | 0.47 |
+| Current ratio | 1.47 |
+| Return on equity | 20.7% |
+| Analyst consensus | strong buy - mean target $388.78 (25 analysts) |
+
+The business is growing and the profitability is elite. Gross margin is **86.1%**, operating margin is **29.7%**, and net margin is **21.2%**. Those are the economics of mission-critical software with a locked-in customer base, and they are the entire reason this name commands the multiple it does.
+
+Cash generation backs the income statement. Return on equity is **20.7%** and return on assets is **10.4%**. Nothing here threatens the trade.
+
+The honest weak spot is price. Trailing P/E is **87.0**, and even on forward earnings of **$9.40** the multiple is **39.7**. Price to sales is **18.6** and price to book is **15.7** against book value of **$23.79** a share. This is a quality business priced like one, which means it has to keep delivering to hold the tape. It also means your target of **416.39** sits above the **388.78** average analyst estimate, so the upside leg leans on a strong quarter, not just multiple expansion. The Street still rates it a strong buy across **25** analysts, for what a consensus rating is worth.
+
+## Why Now
+
+The near-term driver is earnings, and it is confirmed for **July 27, 2026**, about **18** days out from here. That date falls inside the holding window for this swing, so you cannot treat it as background. It is the dominant catalyst, ahead of the technical setup. A beat that reclaims the prior high is the bull path. A soft print is the risk, and I cover that next.
+
+The macro leg is neutral, and I would rather say that plainly than dress it up. Technology is not leading and its momentum has turned lower, so you are relying on Cadence being a standout inside a flat group rather than riding the sector. The relative strength number, **19.0%** ahead of the market over three months, is the evidence that it can be that standout.
+
+Options flow is close to balanced with a slight defensive tilt. On the July 7 tape, puts traded **828** contracts against **700** calls, yet call premium at **$0.9M** outweighed put premium at **$0.51M**, so the larger dollars leaned bullish even as contract count leaned the other way. The call wall sits at **415**, right where your target and the 52-week high cluster, which marks the ceiling dealers are positioned around. The put wall at **355** sits between entry and your stop, a rough floor buyers are defending above the invalidation.
+
+## Risk Factors
+
+The biggest risk is the calendar, and it is structural to this trade. A pullback swing was never built to hold through an earnings print, and this one does. A rich-multiple name that misses or guides soft can gap straight through **342.01** overnight, and your stop does not protect you across a gap. That is the single largest way this loses money, and it is why the position should be sized down.
+
+The second risk is that the bounce never shows. The recent move lower could extend, price could fail to reclaim the swing high, and the stock could grind sideways to lower while the trend deteriorates. A failure to push back toward **416.39** after entry is the setup stalling even before any hard break.
+
+Valuation raises the stakes on every one of these. At **87.0** trailing and **39.7** forward earnings, there is little cushion for disappointment, and the target already sits above the **388.78** consensus, so the trade needs the quarter to cooperate. The sector being neutral rather than supportive removes the safety net a rising group would provide.
+
+The invalidation is clean and non-negotiable. A daily close below **342.01** proves the pullback buy wrong, roughly **7%** under entry. Respect it, and respect that the earnings gap could take you there without a chance to react.
+
+## Bringing It All Together
+
+- Dual edge: a proven pullback structure plus a momentum overlay, with price above a 30-week average rising **4.0%** and relative strength **19.0%** ahead of the market.
+- Market need: EDA tools are required to design and verify every advanced chip, which shows up as an **86.1%** gross margin and recurring revenue.
+- Fundamentals: revenue up **18.7%**, earnings up **23.0%**, free cash flow of **$1.50B**, and a clean balance sheet at **0.47** debt to equity.
+- Catalyst: Q2 earnings on **July 27, 2026**, about **18** days out and inside the hold, the dominant near-term driver.
+- Levels: entry **368.49**, stop **342.01**, first target **416.39**, extension **428.07**, for roughly **1.8** reward to risk.
+
+## Conclusion
+
+Cadence is a high-quality business at a clean technical entry, and the reward-to-risk at **1.8** is worth taking. You are buying an uptrend leader **11.5%** off its high with RSI reset to **45.2**, above a rising 30-week line, with room back to **416.39**. That part I like.
+
+The part that keeps this at medium conviction and half size is the **July 27** earnings date sitting inside your window. It converts a technical swing into a bet on one quarter, and a **39.7** forward multiple leaves no room for a miss. If you take it, take it smaller than a normal position, know that **342.01** is the line, and accept that the gap risk is the price of holding through the print.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

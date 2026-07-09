@@ -1,0 +1,231 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MongoDB&#x27;s Pullback Setup, With Honest Caveats — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>MongoDB&#x27;s Pullback Setup, With Honest Caveats</h1>
+<div class="subtitle">A quality software franchise on a mean-reversion signal, but the entry already ran and the reward math tightened.</div>
+<div class="meta">EOD 2026-07-08 · MDB · written from the desk · model claude-opus-4-8</div>
+<div class="chips"><span class="chip">MDB</span>
+<span class="chip">Technology</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-07-08: entry <b>$336.66</b> &rarr; <b>$363.00</b> (as of 2026-07-08) · <span class="pos">+7.8%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>The database layer is the one piece of software infrastructure the AI buildout cannot skip. Every agent, every retrieval system, every model that needs to remember something writes to a database. That demand is real. What is not real right now is a broad technology tailwind carrying every quality name higher with it.</p>
+<p>The sector reads NEUTRAL, and its short-term acceleration just turned lower. That matters for how you size this. When technology leads, you buy strength and let the group do half the work. When it goes flat and starts decelerating, a single-stock long has to earn its keep on its own chart and its own numbers, without the sector pushing at its back.</p>
+<p>The one live theme here is AI Agents, and MongoDB sits close to it. Agentic systems need a flexible document store to hold state, context, and memory between steps. MongoDB&#x27;s core product was built for exactly that shape of data. So the structural story is intact even while the sector clock works against you.</p>
+<p>This backdrop rewards a name like MongoDB in one specific way. You want a company whose fundamentals stand up on their own, priced off its 52-week high, so you are not paying for a sector move that has not shown up yet. MongoDB trades <strong>17.6%</strong> below its high at <strong>363.0</strong>. That is the setup the desk surfaced.</p>
+<h2>Introducing $MDB</h2>
+<p>MongoDB runs a general purpose database platform used by developers worldwide. Its document model stores data in flexible structures instead of rigid rows and columns, which is why it became a default choice for teams building modern applications fast.</p>
+<p>The business has three faces. MongoDB Atlas is the hosted, multi-cloud database-as-a-service product, and it is the growth engine, since customers pay as they consume. Enterprise Advanced is the commercial server that large customers run in the cloud, on-premises, or in a hybrid mix. Community Server is the free download that seeds adoption and pulls developers into the paid tiers later.</p>
+<p>The edge is developer gravity. MongoDB got into engineering teams from the bottom up, one project at a time, and that installed base compounds as applications grow and consume more of the platform. Gross margin sits at <strong>72%</strong>, which is what a software franchise with pricing power looks like. The question is never whether the business is good. It is whether this is the price and the moment.</p>
+<h2>The Thesis</h2>
+<p>The call here is a mean-reversion long on a quality large-cap software name that pulled back inside an uptrend. MongoDB is <strong>17.6%</strong> off its 52-week high at <strong>363.0</strong>, RSI sits at <strong>59.2</strong>, and the desk read that fired bets on a snap back toward the <strong>403.88</strong> swing high after the pullback shakes out weaker holders. The stock is up <strong>42.9%</strong> over the last <strong>63</strong> trading days and has beaten the S&amp;P by <strong>30.1%</strong> over that same stretch, so the trend this dip is buying against is strong.</p>
+<p>Conviction is MEDIUM, and you should hold it that way for two honest reasons. First, this leans on a single pullback signal with no sector tailwind underneath it, since technology is neutral and decelerating. Second, and this is the one that governs sizing, the planned entry at <strong>336.66</strong> has already been passed. Price is above it at <strong>363.0</strong>, so buying here means chasing the very move the setup was designed to buy into cheaply.</p>
+<p>That changes the math you are actually trading. Measured from the planned entry, reward to <strong>403.88</strong> against risk to the <strong>301.54</strong> stop framed a clean <strong>1.9</strong> to 1. Bought up here near <strong>363.0</strong>, the room to target shrinks and the room to the stop grows, and the ratio compresses toward roughly 0.7 to 1. Same idea, worse price. So the thesis is a small, watch-and-scale position, not a full-size commitment on a broken level.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-07-08-MDB.png" alt="MDB weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=MDB&interval=1W" target="_blank" rel="noopener">📈 Open the MDB weekly chart on TradingView ↗</a><figcaption>MDB weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $403.88 · mark support near $301.54.</figcaption></figure>
+<p>The primary trend is up, and price holds above its 30-week moving average, which is the line that separates a stock in favor from one in trouble. The one blemish is that this long-term average carries a slight negative slope of <strong>-1.0%</strong>, so the trend is intact but flattening rather than accelerating. The medium-term momentum is stronger than that suggests, with a <strong>42.9%</strong> gain over the last <strong>63</strong> days.</p>
+<p>Price sits <strong>17.6%</strong> under the 52-week high of <strong>444.72</strong> and <strong>66.8%</strong> of the way up its 1-year range, so it is in the upper third of where it has traded but with clear room back to the highs. RSI at <strong>59.2</strong> is constructive without being stretched, which is the reading you want on a pullback entry: buyers in control, not yet exhausted.</p>
+<p>The reference levels do the real work. The <strong>336.66</strong> zone is your intended support and entry, the <strong>301.54</strong> stop marks where the setup dies, and <strong>403.88</strong> is both the swing high and the first target, a level that lines up with the prior peak. A second, more ambitious target sits at <strong>415.68</strong>. With ATR near <strong>17.56</strong>, a run to <strong>403.88</strong> is a little over two average ranges of upside from the low <strong>360s</strong>, which is reachable but not a layup from here.</p>
+<p>Relative strength is the strongest single piece of this chart. Outperforming the S&amp;P by <strong>30.1%</strong> over <strong>63</strong> days tells you institutions have been accumulating this while the broad market lagged. A push to the highs on thin volume is the tell that this is drifting, not being bought.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$28.53B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$25.64B</td></tr><tr><td class="k">52-week range</td><td class="v">$198.47 - $444.72</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">1.55</td></tr><tr><td class="k">Forward P/E</td><td class="v">48.3</td></tr><tr><td class="k">Price / sales</td><td class="v">11.0</td></tr><tr><td class="k">Price / book</td><td class="v">9.7</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$2.60B  (+25.2% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$32.10</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$-29M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">-0.38 / 7.34</td></tr><tr><td class="k">Gross margin</td><td class="v">72.0%</td></tr><tr><td class="k">Operating margin</td><td class="v">-3.6%</td></tr><tr><td class="k">Profit margin</td><td class="v">-1.1%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$7.42</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$6.44</td></tr><tr><td class="k">Total cash / share</td><td class="v">$30.18</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.02</td></tr><tr><td class="k">Current ratio</td><td class="v">4.95</td></tr><tr><td class="k">Return on equity</td><td class="v">-1.0%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">buy - mean target $397.40 (37 analysts)</td></tr></tbody></table>
+<p>Growth and cash generation are the strong side of this ledger. A software business compounding revenue in the mid-20s while converting to this much cash is doing the important thing right.</p>
+<p>Profitability on a reported basis is the weak spot, and you should own it. That is largely stock-based compensation and heavy reinvestment weighing on the GAAP line, since gross margin is a healthy <strong>72%</strong> and forward EPS is pegged at <strong>7.34</strong>. The market is paying up for the forward number, with a forward P/E of <strong>48.3</strong> and price-to-sales of <strong>11.0</strong>. This is a premium valuation that needs the growth to keep showing up.</p>
+<p>The balance sheet removes the risk that a soft quarter becomes a solvency question. Total debt is just <strong>$58.64M</strong> against a debt-to-equity of <strong>0.02</strong>, cash runs <strong>30.18</strong> per share, and the current ratio is <strong>4.95</strong>. This company can fund itself through any tape. The 37 analysts covering it carry a buy rating and a mean target of <strong>397.40</strong>, which sits just under the <strong>403.88</strong> chart target and gives the setup an independent second opinion pointing the same way.</p>
+<h2>Why Now</h2>
+<p>The honest answer on timing is that there is no near-term catalyst, and you should trade it as such. Nothing is pending in the next two weeks. The next earnings report lands around late August 2026, roughly seven weeks out, which puts it in the middle of the hold as an event risk rather than a driver you are positioning ahead of. You are buying a technical snap-back, not a scheduled fundamental unlock.</p>
+<p>What you do have is the options flow, and it leans bullish. That roughly nine-to-one premium skew tells you the bigger, more committed money was positioning for upside, not protection.</p>
+<p>The macro piece cuts the other way and belongs in the timing read. Technology is neutral and its short-term acceleration turned lower, so the sector is not going to carry this. That is the whole reason the desk ranked it second. The move, if it comes, has to come from the stock&#x27;s own mean-reversion and its relative strength, with the AI Agents theme as a slow structural support rather than a spark.</p>
+<h2>Risk Factors</h2>
+<p>The cleanest way this loses money is that it never was the trade it was priced as. The <strong>336.66</strong> entry already ran, so buying near <strong>363.0</strong> turns an advertised <strong>1.9</strong> to 1 into something closer to 0.7 to 1. You are paying more and standing closer to the stop, and the reward math no longer justifies a full position.</p>
+<p>The second risk is the missing tailwind. This rests on one pullback signal with technology neutral and decelerating. If the software tape rolls over, there is no sector strength to cushion the drop, and long calls bleed value to time decay while you wait for a move that may not arrive.</p>
+<p>The third is the earnings report landing mid-hold in late August. A weak print or soft guide near a <strong>48.3</strong> forward multiple can gap this well below any orderly stop, since premium valuations punish disappointments hard. That is event risk you are carrying without being paid a catalyst for it.</p>
+<p>The invalidation is clean. A daily close below the <strong>301.54</strong> stop ends the thesis, which is <strong>10.4%</strong> of downside from around current levels. Treat a failure to reclaim and hold the <strong>336.66</strong> zone as its own warning, since price already ran past the level the whole setup was built on.</p>
+<h2>Bringing It All Together</h2>
+<p>- Dual pull: a mean-reversion long inside a strong uptrend, up <strong>42.9%</strong> over <strong>63</strong> days and beating the S&amp;P by <strong>30.1%</strong>, sitting <strong>17.6%</strong> below its <strong>444.72</strong> high.</p>
+<p>- Catalyst: none in the next two weeks, with earnings in late August as a mid-hold risk, plus a nine-to-one bullish premium skew of <strong>$62.97M</strong> in calls to <strong>$7.0M</strong> in puts.<br>- Levels: entry <strong>336.66</strong>, stop <strong>301.54</strong>, first target <strong>403.88</strong>, second target <strong>415.68</strong>, with the <strong>397.40</strong> analyst mean sitting right under target.</p>
+<h2>Conclusion</h2>
+<p>MongoDB is a genuinely good business on a real signal at an entry that already ran, and that combination sets the position size for you. You want a small, patient long that adds on a pullback into the <strong>336.66</strong> zone, not a full commitment chasing <strong>363.0</strong> where the reward math has quietly compressed toward 0.7 to 1. The <strong>301.54</strong> stop is the line, <strong>403.88</strong> is the prize, and the late-August print is the risk you carry to get there. Buy the quality, respect the broken level, and keep it small until price gives you the entry the setup actually wanted.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;MongoDB, Inc. (MDB) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $28.53B; 52-week range $198-$445; Revenue $2.60B +25% YoY; Net income $-29M; Free cash flow/share $6.44; Debt-to-equity 0.02; Return on equity -1%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for MongoDB, Inc. (MDB) inside the Technology space, specifically the &quot;AI Agents&quot; theme. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): MDB carries the same proven pullback edge (**tested · risk-adjusted return 1.10 · tested) and trades **17.6%** under its 52-week high at **363.0** with RSI at **59.2**.. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># MongoDB&#x27;s Pullback Setup, With Honest Caveats
+
+*A quality software franchise on a mean-reversion signal, but the entry already ran and the reward math tightened.*
+
+## The Big Picture
+
+The database layer is the one piece of software infrastructure the AI buildout cannot skip. Every agent, every retrieval system, every model that needs to remember something writes to a database. That demand is real. What is not real right now is a broad technology tailwind carrying every quality name higher with it.
+
+The sector reads NEUTRAL, and its short-term acceleration just turned lower. That matters for how you size this. When technology leads, you buy strength and let the group do half the work. When it goes flat and starts decelerating, a single-stock long has to earn its keep on its own chart and its own numbers, without the sector pushing at its back.
+
+The one live theme here is AI Agents, and MongoDB sits close to it. Agentic systems need a flexible document store to hold state, context, and memory between steps. MongoDB&#x27;s core product was built for exactly that shape of data. So the structural story is intact even while the sector clock works against you.
+
+This backdrop rewards a name like MongoDB in one specific way. You want a company whose fundamentals stand up on their own, priced off its 52-week high, so you are not paying for a sector move that has not shown up yet. MongoDB trades **17.6%** below its high at **363.0**. That is the setup the desk surfaced.
+
+## Introducing $MDB
+
+MongoDB runs a general purpose database platform used by developers worldwide. Its document model stores data in flexible structures instead of rigid rows and columns, which is why it became a default choice for teams building modern applications fast.
+
+The business has three faces. MongoDB Atlas is the hosted, multi-cloud database-as-a-service product, and it is the growth engine, since customers pay as they consume. Enterprise Advanced is the commercial server that large customers run in the cloud, on-premises, or in a hybrid mix. Community Server is the free download that seeds adoption and pulls developers into the paid tiers later.
+
+The edge is developer gravity. MongoDB got into engineering teams from the bottom up, one project at a time, and that installed base compounds as applications grow and consume more of the platform. Gross margin sits at **72%**, which is what a software franchise with pricing power looks like. The question is never whether the business is good. It is whether this is the price and the moment.
+
+## The Thesis
+
+The call here is a mean-reversion long on a quality large-cap software name that pulled back inside an uptrend. MongoDB is **17.6%** off its 52-week high at **363.0**, RSI sits at **59.2**, and the desk read that fired bets on a snap back toward the **403.88** swing high after the pullback shakes out weaker holders. The stock is up **42.9%** over the last **63** trading days and has beaten the S&amp;P by **30.1%** over that same stretch, so the trend this dip is buying against is strong.
+
+Conviction is MEDIUM, and you should hold it that way for two honest reasons. First, this leans on a single pullback signal with no sector tailwind underneath it, since technology is neutral and decelerating. Second, and this is the one that governs sizing, the planned entry at **336.66** has already been passed. Price is above it at **363.0**, so buying here means chasing the very move the setup was designed to buy into cheaply.
+
+That changes the math you are actually trading. Measured from the planned entry, reward to **403.88** against risk to the **301.54** stop framed a clean **1.9** to 1. Bought up here near **363.0**, the room to target shrinks and the room to the stop grows, and the ratio compresses toward roughly 0.7 to 1. Same idea, worse price. So the thesis is a small, watch-and-scale position, not a full-size commitment on a broken level.
+
+## Technical Analysis
+
+&gt; 📈 Insert the MDB weekly chart here (TradingView): MDB weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $403.88 · mark support near $301.54.
+
+The primary trend is up, and price holds above its 30-week moving average, which is the line that separates a stock in favor from one in trouble. The one blemish is that this long-term average carries a slight negative slope of **-1.0%**, so the trend is intact but flattening rather than accelerating. The medium-term momentum is stronger than that suggests, with a **42.9%** gain over the last **63** days.
+
+Price sits **17.6%** under the 52-week high of **444.72** and **66.8%** of the way up its 1-year range, so it is in the upper third of where it has traded but with clear room back to the highs. RSI at **59.2** is constructive without being stretched, which is the reading you want on a pullback entry: buyers in control, not yet exhausted.
+
+The reference levels do the real work. The **336.66** zone is your intended support and entry, the **301.54** stop marks where the setup dies, and **403.88** is both the swing high and the first target, a level that lines up with the prior peak. A second, more ambitious target sits at **415.68**. With ATR near **17.56**, a run to **403.88** is a little over two average ranges of upside from the low **360s**, which is reachable but not a layup from here.
+
+Relative strength is the strongest single piece of this chart. Outperforming the S&amp;P by **30.1%** over **63** days tells you institutions have been accumulating this while the broad market lagged. A push to the highs on thin volume is the tell that this is drifting, not being bought.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $28.53B |
+| Enterprise value | $25.64B |
+| 52-week range | $198.47 - $444.72 |
+| Dividend yield | None |
+| Beta | 1.55 |
+| Forward P/E | 48.3 |
+| Price / sales | 11.0 |
+| Price / book | 9.7 |
+| Revenue (TTM) | $2.60B  (+25.2% YoY) |
+| Revenue / share | $32.10 |
+| Net income (TTM) | $-29M |
+| EPS (TTM / fwd) | -0.38 / 7.34 |
+| Gross margin | 72.0% |
+| Operating margin | -3.6% |
+| Profit margin | -1.1% |
+| Operating cash flow / share | $7.42 |
+| Free cash flow / share | $6.44 |
+| Total cash / share | $30.18 |
+| Debt / equity | 0.02 |
+| Current ratio | 4.95 |
+| Return on equity | -1.0% |
+| Analyst consensus | buy - mean target $397.40 (37 analysts) |
+
+Growth and cash generation are the strong side of this ledger. A software business compounding revenue in the mid-20s while converting to this much cash is doing the important thing right.
+
+Profitability on a reported basis is the weak spot, and you should own it. That is largely stock-based compensation and heavy reinvestment weighing on the GAAP line, since gross margin is a healthy **72%** and forward EPS is pegged at **7.34**. The market is paying up for the forward number, with a forward P/E of **48.3** and price-to-sales of **11.0**. This is a premium valuation that needs the growth to keep showing up.
+
+The balance sheet removes the risk that a soft quarter becomes a solvency question. Total debt is just **$58.64M** against a debt-to-equity of **0.02**, cash runs **30.18** per share, and the current ratio is **4.95**. This company can fund itself through any tape. The 37 analysts covering it carry a buy rating and a mean target of **397.40**, which sits just under the **403.88** chart target and gives the setup an independent second opinion pointing the same way.
+
+## Why Now
+
+The honest answer on timing is that there is no near-term catalyst, and you should trade it as such. Nothing is pending in the next two weeks. The next earnings report lands around late August 2026, roughly seven weeks out, which puts it in the middle of the hold as an event risk rather than a driver you are positioning ahead of. You are buying a technical snap-back, not a scheduled fundamental unlock.
+
+What you do have is the options flow, and it leans bullish. That roughly nine-to-one premium skew tells you the bigger, more committed money was positioning for upside, not protection.
+
+The macro piece cuts the other way and belongs in the timing read. Technology is neutral and its short-term acceleration turned lower, so the sector is not going to carry this. That is the whole reason the desk ranked it second. The move, if it comes, has to come from the stock&#x27;s own mean-reversion and its relative strength, with the AI Agents theme as a slow structural support rather than a spark.
+
+## Risk Factors
+
+The cleanest way this loses money is that it never was the trade it was priced as. The **336.66** entry already ran, so buying near **363.0** turns an advertised **1.9** to 1 into something closer to 0.7 to 1. You are paying more and standing closer to the stop, and the reward math no longer justifies a full position.
+
+The second risk is the missing tailwind. This rests on one pullback signal with technology neutral and decelerating. If the software tape rolls over, there is no sector strength to cushion the drop, and long calls bleed value to time decay while you wait for a move that may not arrive.
+
+The third is the earnings report landing mid-hold in late August. A weak print or soft guide near a **48.3** forward multiple can gap this well below any orderly stop, since premium valuations punish disappointments hard. That is event risk you are carrying without being paid a catalyst for it.
+
+The invalidation is clean. A daily close below the **301.54** stop ends the thesis, which is **10.4%** of downside from around current levels. Treat a failure to reclaim and hold the **336.66** zone as its own warning, since price already ran past the level the whole setup was built on.
+
+## Bringing It All Together
+
+- Dual pull: a mean-reversion long inside a strong uptrend, up **42.9%** over **63** days and beating the S&amp;P by **30.1%**, sitting **17.6%** below its **444.72** high.
+
+
+- Catalyst: none in the next two weeks, with earnings in late August as a mid-hold risk, plus a nine-to-one bullish premium skew of **$62.97M** in calls to **$7.0M** in puts.
+- Levels: entry **336.66**, stop **301.54**, first target **403.88**, second target **415.68**, with the **397.40** analyst mean sitting right under target.
+
+## Conclusion
+
+MongoDB is a genuinely good business on a real signal at an entry that already ran, and that combination sets the position size for you. You want a small, patient long that adds on a pullback into the **336.66** zone, not a full commitment chasing **363.0** where the reward math has quietly compressed toward 0.7 to 1. The **301.54** stop is the line, **403.88** is the prize, and the late-August print is the risk you carry to get there. Buy the quality, respect the broken level, and keep it small until price gives you the entry the setup actually wanted.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
