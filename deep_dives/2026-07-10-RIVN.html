@@ -1,0 +1,228 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A Small Bet on Rivian&#x27;s Bounce — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>A Small Bet on Rivian&#x27;s Bounce</h1>
+<div class="subtitle">A low-conviction options long on a stretched EV stock heading into a binary print.</div>
+<div class="meta">EOD 2026-07-10 · RIVN · written from the desk · model claude-opus-4-8</div>
+<div class="chips"><span class="chip">RIVN</span>
+<span class="chip">Consumer Cyclical</span>
+<span class="chip lo">LOW conviction</span></div>
+<div class="track">Tracking since 2026-07-10: entry <b>$16.38</b> &rarr; <b>$18.48</b> (as of 2026-07-10) · <span class="pos">+12.8%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>The market now prices electric vehicle makers on cash burn first and growth second. Rivian sits in the Consumer Cyclical sector, and that sector reads NEUTRAL right now with momentum that has just rolled over to the downside. That backdrop rewards balance-sheet survivors and pressures the heavy cash burners, and Rivian still belongs in the second group.</p>
+<p>The structural shift is real. EV adoption keeps grinding higher, and the companies that own their vehicle software and their factories can eventually earn high-margin service revenue on top of the hardware. Rivian is built for that model. The catch is timing. The sector is handing out no multiple expansion right now, so a stock like this lives and dies on its own delivery numbers and its own liquidity.</p>
+<p>So you treat this as a rental with a hard exit. When broad sector momentum turns down, you do not marry a pre-profit manufacturer. You position it for one defined move, keep a stop, and accept that the edge here is thin.</p>
+<h2>Introducing $RIVN</h2>
+<p>Rivian designs, builds, and sells electric vehicles, and it runs two segments: Automotive, and Software and Services. The consumer lineup is the R1T pickup and the R1S three-row SUV. Behind those it sells the parts that make an EV company more than a metal bender: vehicle software, Autonomy+, charging through the Rivian Adventure Network, and FleetOS for commercial fleets. The Amazon delivery van program anchors the commercial side.</p>
+<p>The edge is vertical integration. Rivian owns its electrical architecture and its software stack, which is the piece legacy carmakers keep failing at. If the company survives to scale, that ownership is what turns a low-margin hardware business into a recurring-revenue one.</p>
+<p>It is a real manufacturer shipping real product. The open question is whether it reaches profitability before the cash runs thin.</p>
+<h2>The Thesis</h2>
+<p>Conviction here is low, and you should size it that way. One signal flagged Rivian for unusual buying leadership, and that is the entire quantitative reason it is on the desk. There is no stack of confirming evidence behind it. The read is blunt: this is a speculative add, sized as money you can lose in full.</p>
+<p>What makes it tradeable is room and liquidity. There is about <strong>17.7%</strong> of room back up toward the prior swing high, and the options chain is deep enough to express the view cleanly. The modeled entry sat at <strong>16.38</strong>, the target at <strong>20.14</strong>, and the stop at <strong>13.58</strong>, a reward-to-risk near <strong>1.3</strong>.</p>
+<p>Here is the honest wrinkle. Price is already <strong>18.48</strong>, well above the <strong>16.38</strong> entry, so you would be paying up and the real reward-to-risk is worse than the modeled <strong>1.3</strong>. Thin proof plus a chase keeps this a small speculative tail. It ranks below any proven pick, and it earns only a small position.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-07-10-RIVN.png" alt="RIVN weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=RIVN&interval=1W" target="_blank" rel="noopener">📈 Open the RIVN weekly chart on TradingView ↗</a><figcaption>RIVN weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $20.14 · mark support near $13.58.</figcaption></figure>
+<p>The primary trend points up, but the stock is stretched into resistance. RIVN closed at <strong>18.48</strong>, holding above its rising 30-week trend line, and that line slopes higher by <strong>2.5%</strong>, which tells you the intermediate trend still favors the bulls. Price sits about <strong>17.7%</strong> below the 52-week high of <strong>22.69</strong> and trades at roughly <strong>81.4%</strong> of that high, so there is air above and a clear ceiling overhead. It sits about <strong>62%</strong> of the way up its 52-week range.</p>
+<p>Momentum is firm without being extreme. The 14-day RSI reads <strong>57.3</strong>, room to run before overbought territory near 70. That relative strength is the one honest bull point on the chart.</p>
+<p>The levels are clean. The model entry is <strong>16.38</strong>, the target is <strong>20.14</strong> at the prior swing high, and the stop is <strong>13.58</strong> just under the <strong>12.90</strong> swing low. That frames about <strong>23.0%</strong> of upside to target against roughly <strong>17.1%</strong> of downside to the stop, a reward-to-risk near <strong>1.3</strong>. With price already at <strong>18.48</strong>, above the <strong>16.38</strong> entry, that ratio is worse than modeled. A second target sits at <strong>22.68</strong> near the 52-week high, worth about <strong>38.5%</strong> if the print is strong.</p>
+<p>Without that, the move stalls into the same swing high that has capped it before. ATR of <strong>1.40</strong> means a normal session swings more than a dollar, so the <strong>13.58</strong> stop sits about three to four average ranges below the close.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$22.44B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$21.21B</td></tr><tr><td class="k">52-week range</td><td class="v">$11.57 - $22.69</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">1.6</td></tr><tr><td class="k">Forward P/E</td><td class="v">-8.7</td></tr><tr><td class="k">Price / sales</td><td class="v">4.1</td></tr><tr><td class="k">Price / book</td><td class="v">4.7</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$5.53B  (+11.4% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$4.55</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$-3.52B</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">-2.39 / -1.9</td></tr><tr><td class="k">Gross margin</td><td class="v">1.0%</td></tr><tr><td class="k">Operating margin</td><td class="v">-63.8%</td></tr><tr><td class="k">Profit margin</td><td class="v">-63.6%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$-0.95</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$-0.96</td></tr><tr><td class="k">Total cash / share</td><td class="v">$3.83</td></tr><tr><td class="k">Debt / equity</td><td class="v">1.18</td></tr><tr><td class="k">Current ratio</td><td class="v">2.1</td></tr><tr><td class="k">Return on equity</td><td class="v">-65.7%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">hold - mean target $18.72 (25 analysts)</td></tr></tbody></table>
+<p>The numbers describe a company still burning to reach scale. Gross margin has crawled to <strong>1.0%</strong>, barely above breakeven, and the operating margin is <strong>-63.8%</strong>. The trailing net loss was <strong>$3.517 billion</strong>, or <strong>-$2.39</strong> per share.</p>
+<p>Cash generation is the weak spot, and you should not look past it. Free cash flow ran <strong>-$1.303 billion</strong>, about <strong>-$0.96</strong> per share, and operating cash flow was <strong>-$1.294 billion</strong>. The balance sheet still carries the burn for now: cash of <strong>$3.83</strong> per share against book value of <strong>$3.49</strong>, a current ratio of <strong>2.1</strong>, and a quick ratio of <strong>1.54</strong>.</p>
+<p>Profitability sits deep in the red, with return on equity of <strong>-65.7%</strong> and return on assets of <strong>-16.0%</strong>. Forward P/E is <strong>-8.7</strong>, which only tells you the Street models more losses ahead (forward EPS of <strong>-1.90</strong>). The <strong>25</strong> analysts covering it rate it a hold with a mean target of <strong>18.72</strong>, almost exactly where the stock trades. Nobody is calling for a breakout on the fundamentals. This works only as a momentum and liquidity trade.</p>
+<h2>Why Now</h2>
+<p>The real catalyst ahead is Q2 earnings on <strong>2026-07-30</strong>, roughly <strong>19</strong> days out. The dilutive equity raise and the raised preliminary guidance already printed in early July, so the fresh supply and the delivery bump are behind you. What remains is a binary earnings reaction into a stock that has already run.</p>
+<p>Positioning leans bullish. Traders are paying up for upside into the print. That flow is why a speculative long has a live chain to express it, though heavy call buying into earnings is a crowded bet as often as a smart one.</p>
+<p>The macro piece is mixed. The Consumer Cyclical sector reads NEUTRAL with momentum newly turning down, so you get no sector tailwind here. This is a single-stock event trade, and the timing is the whole point: you position ahead of a known date with defined risk.</p>
+<h2>Risk Factors</h2>
+<p>The clearest way you lose money is the dilution overhang. Rivian priced roughly <strong>75 million</strong> new shares for about <strong>$1.2 billion</strong> at <strong>$15.50</strong> in early July 2026, and the stock dropped about <strong>17%</strong> on the news. That fresh supply caps upside near the deal price and signals the cash burn continues, so calls can decay while the stock chops between the offering price and current levels.</p>
+<p>The evidence is thin. One signal put this stock on the desk, and it carries no proven edge. On a name with a beta of <strong>1.6</strong> and daily ranges over a dollar, a single unconfirmed read is a small speculative tail, sized as money you can lose in full.</p>
+<p>Earnings are the binary risk. With the print due around <strong>2026-07-30</strong>, a soft delivery or margin number can gap the stock through support regardless of the flow. The invalidation is mechanical: a close below the <strong>13.58</strong> stop, well under the <strong>15.50</strong> offering price, confirms the dilution won and the momentum signal failed. That stop sits about <strong>17.1%</strong> below current levels, which is the real capital at risk on the shares.</p>
+<h2>Bringing It All Together</h2>
+<p>- Dual focus: an EV maker with vehicle software and services (R1T, R1S, FleetOS, Amazon vans) built for higher-margin recurring revenue later.</p>
+<p>- Fundamentals are weak: gross margin of <strong>1.0%</strong>, free cash flow of <strong>-$1.303 billion</strong>, a <strong>$3.517 billion</strong> net loss, and a hold rating with an <strong>18.72</strong> mean target.<br>- Catalyst is binary: Q2 earnings around <strong>2026-07-30</strong>, with bullish flow (<strong>$20.8 million</strong> call premium against <strong>$3.77 million</strong> in puts) already positioned.<br>- Levels: target <strong>20.14</strong> then <strong>22.68</strong>, stop <strong>13.58</strong>, roughly <strong>23.0%</strong> up against <strong>17.1%</strong> down, reward-to-risk near <strong>1.3</strong> and worse now that price is <strong>18.48</strong>.</p>
+<h2>Conclusion</h2>
+<p>You treat this as a small, defined-risk swing on a momentum signal, and you keep the position tiny. The setup has real points in its favor: strong relative strength and bullish options flow into a known catalyst, with about <strong>23.0%</strong> of room to the <strong>20.14</strong> target. Everything else argues for caution. The signal is unproven, the company is still burning over <strong>$1.3 billion</strong> a year in free cash flow, and a fresh <strong>$1.2 billion</strong> raise at <strong>$15.50</strong> hangs over the stock.</p>
+<p>Price at <strong>18.48</strong> is already above the <strong>16.38</strong> entry, so your reward-to-risk is worse than the modeled <strong>1.3</strong> and you are chasing. If you take it, take it small, respect the <strong>13.58</strong> stop, and know the Q2 print around <strong>2026-07-30</strong> decides it. This is a low-conviction tail, and it deserves low-conviction size.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Rivian Automotive, Inc. (RIVN) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $22.44B; 52-week range $12-$23; Revenue $5.53B +11% YoY; Net income $-3.52B; Free cash flow/share $-0.96; Debt-to-equity 1.18; Return on equity -66%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Rivian Automotive, Inc. (RIVN) inside the Consumer Cyclical space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): The evidence is one volume-leadership signal with no proven edge, so this call is a speculative add.. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># A Small Bet on Rivian&#x27;s Bounce
+
+*A low-conviction options long on a stretched EV stock heading into a binary print.*
+
+## The Big Picture
+
+The market now prices electric vehicle makers on cash burn first and growth second. Rivian sits in the Consumer Cyclical sector, and that sector reads NEUTRAL right now with momentum that has just rolled over to the downside. That backdrop rewards balance-sheet survivors and pressures the heavy cash burners, and Rivian still belongs in the second group.
+
+The structural shift is real. EV adoption keeps grinding higher, and the companies that own their vehicle software and their factories can eventually earn high-margin service revenue on top of the hardware. Rivian is built for that model. The catch is timing. The sector is handing out no multiple expansion right now, so a stock like this lives and dies on its own delivery numbers and its own liquidity.
+
+So you treat this as a rental with a hard exit. When broad sector momentum turns down, you do not marry a pre-profit manufacturer. You position it for one defined move, keep a stop, and accept that the edge here is thin.
+
+## Introducing $RIVN
+
+Rivian designs, builds, and sells electric vehicles, and it runs two segments: Automotive, and Software and Services. The consumer lineup is the R1T pickup and the R1S three-row SUV. Behind those it sells the parts that make an EV company more than a metal bender: vehicle software, Autonomy+, charging through the Rivian Adventure Network, and FleetOS for commercial fleets. The Amazon delivery van program anchors the commercial side.
+
+The edge is vertical integration. Rivian owns its electrical architecture and its software stack, which is the piece legacy carmakers keep failing at. If the company survives to scale, that ownership is what turns a low-margin hardware business into a recurring-revenue one.
+
+It is a real manufacturer shipping real product. The open question is whether it reaches profitability before the cash runs thin.
+
+## The Thesis
+
+Conviction here is low, and you should size it that way. One signal flagged Rivian for unusual buying leadership, and that is the entire quantitative reason it is on the desk. There is no stack of confirming evidence behind it. The read is blunt: this is a speculative add, sized as money you can lose in full.
+
+What makes it tradeable is room and liquidity. There is about **17.7%** of room back up toward the prior swing high, and the options chain is deep enough to express the view cleanly. The modeled entry sat at **16.38**, the target at **20.14**, and the stop at **13.58**, a reward-to-risk near **1.3**.
+
+Here is the honest wrinkle. Price is already **18.48**, well above the **16.38** entry, so you would be paying up and the real reward-to-risk is worse than the modeled **1.3**. Thin proof plus a chase keeps this a small speculative tail. It ranks below any proven pick, and it earns only a small position.
+
+## Technical Analysis
+
+&gt; 📈 Insert the RIVN weekly chart here (TradingView): RIVN weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $20.14 · mark support near $13.58.
+
+The primary trend points up, but the stock is stretched into resistance. RIVN closed at **18.48**, holding above its rising 30-week trend line, and that line slopes higher by **2.5%**, which tells you the intermediate trend still favors the bulls. Price sits about **17.7%** below the 52-week high of **22.69** and trades at roughly **81.4%** of that high, so there is air above and a clear ceiling overhead. It sits about **62%** of the way up its 52-week range.
+
+Momentum is firm without being extreme. The 14-day RSI reads **57.3**, room to run before overbought territory near 70. That relative strength is the one honest bull point on the chart.
+
+The levels are clean. The model entry is **16.38**, the target is **20.14** at the prior swing high, and the stop is **13.58** just under the **12.90** swing low. That frames about **23.0%** of upside to target against roughly **17.1%** of downside to the stop, a reward-to-risk near **1.3**. With price already at **18.48**, above the **16.38** entry, that ratio is worse than modeled. A second target sits at **22.68** near the 52-week high, worth about **38.5%** if the print is strong.
+
+Without that, the move stalls into the same swing high that has capped it before. ATR of **1.40** means a normal session swings more than a dollar, so the **13.58** stop sits about three to four average ranges below the close.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $22.44B |
+| Enterprise value | $21.21B |
+| 52-week range | $11.57 - $22.69 |
+| Dividend yield | None |
+| Beta | 1.6 |
+| Forward P/E | -8.7 |
+| Price / sales | 4.1 |
+| Price / book | 4.7 |
+| Revenue (TTM) | $5.53B  (+11.4% YoY) |
+| Revenue / share | $4.55 |
+| Net income (TTM) | $-3.52B |
+| EPS (TTM / fwd) | -2.39 / -1.9 |
+| Gross margin | 1.0% |
+| Operating margin | -63.8% |
+| Profit margin | -63.6% |
+| Operating cash flow / share | $-0.95 |
+| Free cash flow / share | $-0.96 |
+| Total cash / share | $3.83 |
+| Debt / equity | 1.18 |
+| Current ratio | 2.1 |
+| Return on equity | -65.7% |
+| Analyst consensus | hold - mean target $18.72 (25 analysts) |
+
+The numbers describe a company still burning to reach scale. Gross margin has crawled to **1.0%**, barely above breakeven, and the operating margin is **-63.8%**. The trailing net loss was **$3.517 billion**, or **-$2.39** per share.
+
+Cash generation is the weak spot, and you should not look past it. Free cash flow ran **-$1.303 billion**, about **-$0.96** per share, and operating cash flow was **-$1.294 billion**. The balance sheet still carries the burn for now: cash of **$3.83** per share against book value of **$3.49**, a current ratio of **2.1**, and a quick ratio of **1.54**.
+
+Profitability sits deep in the red, with return on equity of **-65.7%** and return on assets of **-16.0%**. Forward P/E is **-8.7**, which only tells you the Street models more losses ahead (forward EPS of **-1.90**). The **25** analysts covering it rate it a hold with a mean target of **18.72**, almost exactly where the stock trades. Nobody is calling for a breakout on the fundamentals. This works only as a momentum and liquidity trade.
+
+## Why Now
+
+The real catalyst ahead is Q2 earnings on **2026-07-30**, roughly **19** days out. The dilutive equity raise and the raised preliminary guidance already printed in early July, so the fresh supply and the delivery bump are behind you. What remains is a binary earnings reaction into a stock that has already run.
+
+Positioning leans bullish. Traders are paying up for upside into the print. That flow is why a speculative long has a live chain to express it, though heavy call buying into earnings is a crowded bet as often as a smart one.
+
+The macro piece is mixed. The Consumer Cyclical sector reads NEUTRAL with momentum newly turning down, so you get no sector tailwind here. This is a single-stock event trade, and the timing is the whole point: you position ahead of a known date with defined risk.
+
+## Risk Factors
+
+The clearest way you lose money is the dilution overhang. Rivian priced roughly **75 million** new shares for about **$1.2 billion** at **$15.50** in early July 2026, and the stock dropped about **17%** on the news. That fresh supply caps upside near the deal price and signals the cash burn continues, so calls can decay while the stock chops between the offering price and current levels.
+
+The evidence is thin. One signal put this stock on the desk, and it carries no proven edge. On a name with a beta of **1.6** and daily ranges over a dollar, a single unconfirmed read is a small speculative tail, sized as money you can lose in full.
+
+Earnings are the binary risk. With the print due around **2026-07-30**, a soft delivery or margin number can gap the stock through support regardless of the flow. The invalidation is mechanical: a close below the **13.58** stop, well under the **15.50** offering price, confirms the dilution won and the momentum signal failed. That stop sits about **17.1%** below current levels, which is the real capital at risk on the shares.
+
+## Bringing It All Together
+
+- Dual focus: an EV maker with vehicle software and services (R1T, R1S, FleetOS, Amazon vans) built for higher-margin recurring revenue later.
+
+- Fundamentals are weak: gross margin of **1.0%**, free cash flow of **-$1.303 billion**, a **$3.517 billion** net loss, and a hold rating with an **18.72** mean target.
+- Catalyst is binary: Q2 earnings around **2026-07-30**, with bullish flow (**$20.8 million** call premium against **$3.77 million** in puts) already positioned.
+- Levels: target **20.14** then **22.68**, stop **13.58**, roughly **23.0%** up against **17.1%** down, reward-to-risk near **1.3** and worse now that price is **18.48**.
+
+## Conclusion
+
+You treat this as a small, defined-risk swing on a momentum signal, and you keep the position tiny. The setup has real points in its favor: strong relative strength and bullish options flow into a known catalyst, with about **23.0%** of room to the **20.14** target. Everything else argues for caution. The signal is unproven, the company is still burning over **$1.3 billion** a year in free cash flow, and a fresh **$1.2 billion** raise at **$15.50** hangs over the stock.
+
+Price at **18.48** is already above the **16.38** entry, so your reward-to-risk is worse than the modeled **1.3** and you are chasing. If you take it, take it small, respect the **13.58** stop, and know the Q2 print around **2026-07-30** decides it. This is a low-conviction tail, and it deserves low-conviction size.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

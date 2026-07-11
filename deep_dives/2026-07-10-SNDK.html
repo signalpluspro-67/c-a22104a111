@@ -1,0 +1,228 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Cleanest Way to Own the Memory Squeeze — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Cleanest Way to Own the Memory Squeeze</h1>
+<div class="subtitle">SanDisk pulled back hard inside a strong uptrend. The chart, the flow and the balance sheet all point the same way. The catch is that the entry sits below where the stock trades today.</div>
+<div class="meta">EOD 2026-07-10 · SNDK · written from the desk · model claude-opus-4-8</div>
+<div class="chips"><span class="chip">SNDK</span>
+<span class="chip">Technology</span>
+<span class="chip hi">HIGH conviction</span></div>
+<div class="track">Tracking since 2026-07-10: entry <b>$1,467.14</b> &rarr; <b>$1,816.01</b> (as of 2026-07-10) · <span class="pos">+23.8%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>AI runs on memory, and the market has started paying up for the companies that make it. The theme the desk tracks, &quot;The Five Layers of Memory,&quot; puts NAND flash storage under the same demand pull that repriced logic chips and high-bandwidth memory. SanDisk ($SNDK) sits at the center of that pull as a pure-play NAND maker, and its stock has moved <strong>+113.3%</strong> over the last 63 sessions to prove it.</p>
+<p>The broader technology sector is cooling even as the memory story runs hot. The desk reads the sector as neutral and decelerating, so this is a stock-specific setup rather than a rising-tide trade. That distinction should shape how you size it. You are betting on one company&#x27;s snapback, not on tech beta lifting everything.</p>
+<p>NAND has always been a brutal commodity cycle. Prices boom, capacity floods in, prices crater, and the pure-play makers get crushed on the down leg. What changed is the shift toward long-term supply contracts that smooth the swings, plus AI storage demand that raises the floor under bit shipments. If that structural shift holds, a stock like SanDisk earns a higher multiple than the old cycle ever gave it.</p>
+<p>Here is why this backdrop rewards a name like SNDK. It has repriced violently to the upside, yet it still trades <strong>22.2%</strong> below its 52-week high after an early-July memory selloff. You get a proven uptrend and a discount in the same chart. That combination is what the desk went looking for.</p>
+<h2>Introducing $SNDK</h2>
+<p>SanDisk makes data storage built on NAND flash, and it sells that storage into almost every device that holds data. The lineup runs from solid state drives for desktops, notebooks, gaming consoles and set-top boxes, to embedded flash for phones, tablets, wearables, cars and connected-home gear, to the removable cards and USB drives you know from retail shelves, plus raw wafers and components sold to other builders.</p>
+<p>The customer base is broad. SanDisk sells to computer makers and OEMs, to datacenters and private-cloud buyers, to cloud service providers, and to resellers, distributors and retailers through its own sales force and channel partners. That mix gives it both high-volume enterprise demand and a sticky consumer franchise.</p>
+<p>That recent structure matters. You are looking at a clean, pure-play flash maker rather than a diversified storage conglomerate, so the stock trades directly on the memory cycle and the market&#x27;s read of where that cycle is headed.</p>
+<h2>The Thesis</h2>
+<p>The core call is a mean reversion inside an uptrend, expressed through call options. SanDisk sold off roughly a fifth to a third from its high in an early-July NAND selloff and now sits <strong>22.2%</strong> under that high with the 14-week RSI at a cool <strong>49.4</strong>. Relative strength versus the market runs <strong>+102.6%</strong> over 63 days. You have a leader that pulled back, not a broken chart.</p>
+<p>The reason to use calls rather than shares comes down to the chain. Options volume is deep and the premium is liquid, so you can define risk while keeping exposure to a fast snapback toward the <strong>2335.00</strong> target zone. The desk&#x27;s read is that the freshest momentum reset in this group, combined with the widest room back to the high, makes SanDisk the sharpest expression of the memory rebound.</p>
+<p>Be honest about conviction. The desk stamped this high, but the pressure test pulls it back to medium for one reason: you are buying into an active sector selloff, and catching a falling knife is exactly how mean-reversion trades go to zero. Treat this as a medium-conviction, defined-risk position. Size it small enough that a continued memory rout costs you premium you were willing to lose, and no more.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-07-10-SNDK.png" alt="SNDK weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=SNDK&interval=1W" target="_blank" rel="noopener">📈 Open the SNDK weekly chart on TradingView ↗</a><figcaption>SNDK weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $2,335.00 · mark support near $1,001.98.</figcaption></figure>
+<p>SanDisk trades above its rising 30-week line, and that line is steep, with a slope reading of <strong>+116.7%</strong>. That is the primary tell. The long-term trend is up and accelerating. After a <strong>+113.3%</strong> run over the last 63 sessions and a <strong>+10.3%</strong> gain over the last 21, the shorter 8 and 21 week averages sit above that 30-week line, so the near-term structure still leads the longer one.</p>
+<p>Price closed at <strong>1816.01</strong>. That is <strong>77.1%</strong> of the 52-week high of <strong>2354.39</strong> and leaves the stock <strong>22.2%</strong> under that high. Inside its 1-year range it sits in the top <strong>23%</strong>, so this is a leader that gave back some ground, not a laggard trying to base. The 14-week RSI at <strong>49.4</strong> sits right at the midpoint, which means the selloff cooled momentum without breaking the trend. There is no overbought condition left to work off.</p>
+<p>Relative strength versus the market reads <strong>+102.6%</strong> over 63 days. SanDisk has more than doubled the market&#x27;s return over that window, and that kind of leadership is what you want under a pullback buy. The reference levels frame the trade: entry at <strong>1467.14</strong>, a stop at <strong>1001.98</strong>, and a first target at <strong>2335.00</strong>, with a second objective at <strong>2513.75</strong>. Risk to the stop from the entry is <strong>31.7%</strong>, upside to the first target is <strong>59.2%</strong>, and to the second target <strong>71.3%</strong>, which sets a reward-to-risk near <strong>1.9</strong>.</p>
+<p>The timing problem is plain. At <strong>1816.01</strong>, the stock trades well above the <strong>1467.14</strong> entry, so you are either paying up here or waiting for a pullback into that zone. An ATR of <strong>232.58</strong> tells you moves of a couple hundred points are normal, so any stop needs that much room or it gets tagged on noise.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$293.23B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$289.70B</td></tr><tr><td class="k">52-week range</td><td class="v">$40.10 - $2,354.39</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Trailing P/E</td><td class="v">67.6</td></tr><tr><td class="k">Forward P/E</td><td class="v">10.8</td></tr><tr><td class="k">Price / sales</td><td class="v">22.2</td></tr><tr><td class="k">Price / book</td><td class="v">21.3</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$13.18B  (+251.0% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$89.99</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$4.51B</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">29.31 / 183.05</td></tr><tr><td class="k">Gross margin</td><td class="v">56.0%</td></tr><tr><td class="k">Operating margin</td><td class="v">70.0%</td></tr><tr><td class="k">Profit margin</td><td class="v">34.2%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$31.33</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$15.26</td></tr><tr><td class="k">Total cash / share</td><td class="v">$25.22</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.02</td></tr><tr><td class="k">Current ratio</td><td class="v">4.78</td></tr><tr><td class="k">Return on equity</td><td class="v">39.3%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">buy - mean target $1,751.32 (22 analysts)</td></tr></tbody></table>
+<p>The growth line is the headline. Gross margin sits at <strong>56.0%</strong> and profit margin at <strong>34.2%</strong>. The reported operating margin near <strong>70%</strong> reflects the recent spike in memory pricing more than a steady run rate, so read it as a cycle-high figure rather than a durable one.</p>
+<p>Cash generation is real but lighter than the income statement suggests. The balance sheet is the quiet strength here. Returns are strong, with ROE at <strong>39.3%</strong> and ROA at <strong>22.8%</strong>.</p>
+<p>Valuation is where you stay honest. The trailing P/E of <strong>67.6</strong> looks rich, but the forward P/E collapses to <strong>10.8</strong> because the market expects EPS to jump from <strong>29.31</strong> trailing to <strong>183.05</strong> forward as the cycle plays out. Price-to-sales at <strong>22.2</strong> and price-to-book at <strong>21.3</strong> are steep on any absolute basis. The whole bull case rests on those forward earnings arriving. If the NAND cycle rolls over instead, that forward multiple stops being cheap and starts being a trap. The 22 analysts covering it carry a buy rating and a mean target of <strong>1751.32</strong>, which sits below where the stock trades now.</p>
+<h2>Why Now</h2>
+<p>The near-term catalyst is earnings, and it is pending but not immediate. That fits inside a one-to-three month hold, but it is a large binary volatility event rather than a two-week trigger, so plan for the stock to move hard in either direction on the print. There is no FDA or Fed angle to lean on here.</p>
+<p>The flow leans bullish. Buyers paid up for upside more aggressively than for protection. That is the positioning you want under a snapback thesis, and it confirms the chain is liquid enough to trade in size.</p>
+<p>The macro pull is the memory theme itself. AI storage demand and a tighter NAND supply picture are the forces repricing this stock, and SanDisk is the cleanest pure-play way to own that move. The setup asks you to buy a leader that pulled back <strong>22.2%</strong> while the structural demand story stayed intact.</p>
+<h2>Risk Factors</h2>
+<p>The first risk is the one the bear case names directly. You could be catching a falling knife. SanDisk fell inside an ongoing memory-sector selloff, and if the NAND cycle is turning rather than dipping, this high-beta, cyclical stock keeps bleeding and the calls decay to zero. Premium is expensive with the stock at <strong>1816.01</strong>, so timing the entry is most of the trade.</p>
+<p>The second risk is broad. A tech-wide pullback drags SanDisk regardless of its own merits, and with the sector reading neutral and decelerating there is no sector tailwind to cushion that. High beta cuts both ways.</p>
+<p>The invalidation is clean. A decisive close below the <strong>1001.98</strong> stop ends the thesis outright. More practically, failure to hold above the <strong>1467.14</strong> entry as the memory selloff continues means the mean-reversion signal has already failed, and you should not need the stop to tell you that.</p>
+<h2>Bringing It All Together</h2>
+<p>- Dual pull: a pure-play NAND maker riding the AI memory theme while sitting <strong>22.2%</strong> under its 52-week high of <strong>2354.39</strong>.<br>- Momentum reset: 14-week RSI at <strong>49.4</strong> and relative strength of <strong>+102.6%</strong> versus the market over 63 days, a leader that cooled without breaking.</p>
+<p>- Flow: calls outspent puts <strong>$1,055.72 million</strong> to <strong>$651.21 million</strong> on <strong>2026-07-09</strong>, a bullish tilt in a liquid chain.<br>- Levels: entry <strong>1467.14</strong>, stop <strong>1001.98</strong>, targets <strong>2335.00</strong> and <strong>2513.75</strong>, reward-to-risk near <strong>1.9</strong>, with the stock currently above entry at <strong>1816.01</strong>.</p>
+<h2>Conclusion</h2>
+<p>SanDisk is the sharpest way to trade a memory-cycle snapback, and the evidence lines up: a steep uptrend, a cooled RSI at <strong>49.4</strong>, doubled relative strength, a fortress balance sheet, and call buyers paying up. The honest problem is that the stock trades at <strong>1816.01</strong>, above the <strong>1467.14</strong> entry, in the middle of an active NAND selloff. That makes this a medium-conviction, defined-risk trade best expressed through calls you can afford to lose, ideally on a pull back toward the entry zone rather than a chase at current levels. If it closes below <strong>1001.98</strong>, or fails to hold <strong>1467.14</strong> while the selloff runs, the signal is dead and you step aside.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Sandisk Corporation (SNDK) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $293.23B; 52-week range $40-$2,354; Revenue $13.18B +251% YoY; Net income $4.51B; Free cash flow/share $15.26; Debt-to-equity 0.02; Return on equity 39%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Sandisk Corporation (SNDK) inside the Technology space, specifically the &quot;The Five Layers of Memory (AI)&quot; theme. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): SanDisk sits **22.2%** under its high with RSI at a cool **49.4**, the freshest reading of the group, and huge relative strength of **+102.6%** versus the market.. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Cleanest Way to Own the Memory Squeeze
+
+*SanDisk pulled back hard inside a strong uptrend. The chart, the flow and the balance sheet all point the same way. The catch is that the entry sits below where the stock trades today.*
+
+## The Big Picture
+
+AI runs on memory, and the market has started paying up for the companies that make it. The theme the desk tracks, &quot;The Five Layers of Memory,&quot; puts NAND flash storage under the same demand pull that repriced logic chips and high-bandwidth memory. SanDisk ($SNDK) sits at the center of that pull as a pure-play NAND maker, and its stock has moved **+113.3%** over the last 63 sessions to prove it.
+
+The broader technology sector is cooling even as the memory story runs hot. The desk reads the sector as neutral and decelerating, so this is a stock-specific setup rather than a rising-tide trade. That distinction should shape how you size it. You are betting on one company&#x27;s snapback, not on tech beta lifting everything.
+
+NAND has always been a brutal commodity cycle. Prices boom, capacity floods in, prices crater, and the pure-play makers get crushed on the down leg. What changed is the shift toward long-term supply contracts that smooth the swings, plus AI storage demand that raises the floor under bit shipments. If that structural shift holds, a stock like SanDisk earns a higher multiple than the old cycle ever gave it.
+
+Here is why this backdrop rewards a name like SNDK. It has repriced violently to the upside, yet it still trades **22.2%** below its 52-week high after an early-July memory selloff. You get a proven uptrend and a discount in the same chart. That combination is what the desk went looking for.
+
+## Introducing $SNDK
+
+SanDisk makes data storage built on NAND flash, and it sells that storage into almost every device that holds data. The lineup runs from solid state drives for desktops, notebooks, gaming consoles and set-top boxes, to embedded flash for phones, tablets, wearables, cars and connected-home gear, to the removable cards and USB drives you know from retail shelves, plus raw wafers and components sold to other builders.
+
+The customer base is broad. SanDisk sells to computer makers and OEMs, to datacenters and private-cloud buyers, to cloud service providers, and to resellers, distributors and retailers through its own sales force and channel partners. That mix gives it both high-volume enterprise demand and a sticky consumer franchise.
+
+That recent structure matters. You are looking at a clean, pure-play flash maker rather than a diversified storage conglomerate, so the stock trades directly on the memory cycle and the market&#x27;s read of where that cycle is headed.
+
+## The Thesis
+
+The core call is a mean reversion inside an uptrend, expressed through call options. SanDisk sold off roughly a fifth to a third from its high in an early-July NAND selloff and now sits **22.2%** under that high with the 14-week RSI at a cool **49.4**. Relative strength versus the market runs **+102.6%** over 63 days. You have a leader that pulled back, not a broken chart.
+
+The reason to use calls rather than shares comes down to the chain. Options volume is deep and the premium is liquid, so you can define risk while keeping exposure to a fast snapback toward the **2335.00** target zone. The desk&#x27;s read is that the freshest momentum reset in this group, combined with the widest room back to the high, makes SanDisk the sharpest expression of the memory rebound.
+
+Be honest about conviction. The desk stamped this high, but the pressure test pulls it back to medium for one reason: you are buying into an active sector selloff, and catching a falling knife is exactly how mean-reversion trades go to zero. Treat this as a medium-conviction, defined-risk position. Size it small enough that a continued memory rout costs you premium you were willing to lose, and no more.
+
+## Technical Analysis
+
+&gt; 📈 Insert the SNDK weekly chart here (TradingView): SNDK weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $2,335.00 · mark support near $1,001.98.
+
+SanDisk trades above its rising 30-week line, and that line is steep, with a slope reading of **+116.7%**. That is the primary tell. The long-term trend is up and accelerating. After a **+113.3%** run over the last 63 sessions and a **+10.3%** gain over the last 21, the shorter 8 and 21 week averages sit above that 30-week line, so the near-term structure still leads the longer one.
+
+Price closed at **1816.01**. That is **77.1%** of the 52-week high of **2354.39** and leaves the stock **22.2%** under that high. Inside its 1-year range it sits in the top **23%**, so this is a leader that gave back some ground, not a laggard trying to base. The 14-week RSI at **49.4** sits right at the midpoint, which means the selloff cooled momentum without breaking the trend. There is no overbought condition left to work off.
+
+Relative strength versus the market reads **+102.6%** over 63 days. SanDisk has more than doubled the market&#x27;s return over that window, and that kind of leadership is what you want under a pullback buy. The reference levels frame the trade: entry at **1467.14**, a stop at **1001.98**, and a first target at **2335.00**, with a second objective at **2513.75**. Risk to the stop from the entry is **31.7%**, upside to the first target is **59.2%**, and to the second target **71.3%**, which sets a reward-to-risk near **1.9**.
+
+The timing problem is plain. At **1816.01**, the stock trades well above the **1467.14** entry, so you are either paying up here or waiting for a pullback into that zone. An ATR of **232.58** tells you moves of a couple hundred points are normal, so any stop needs that much room or it gets tagged on noise.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $293.23B |
+| Enterprise value | $289.70B |
+| 52-week range | $40.10 - $2,354.39 |
+| Dividend yield | None |
+| Trailing P/E | 67.6 |
+| Forward P/E | 10.8 |
+| Price / sales | 22.2 |
+| Price / book | 21.3 |
+| Revenue (TTM) | $13.18B  (+251.0% YoY) |
+| Revenue / share | $89.99 |
+| Net income (TTM) | $4.51B |
+| EPS (TTM / fwd) | 29.31 / 183.05 |
+| Gross margin | 56.0% |
+| Operating margin | 70.0% |
+| Profit margin | 34.2% |
+| Operating cash flow / share | $31.33 |
+| Free cash flow / share | $15.26 |
+| Total cash / share | $25.22 |
+| Debt / equity | 0.02 |
+| Current ratio | 4.78 |
+| Return on equity | 39.3% |
+| Analyst consensus | buy - mean target $1,751.32 (22 analysts) |
+
+The growth line is the headline. Gross margin sits at **56.0%** and profit margin at **34.2%**. The reported operating margin near **70%** reflects the recent spike in memory pricing more than a steady run rate, so read it as a cycle-high figure rather than a durable one.
+
+Cash generation is real but lighter than the income statement suggests. The balance sheet is the quiet strength here. Returns are strong, with ROE at **39.3%** and ROA at **22.8%**.
+
+Valuation is where you stay honest. The trailing P/E of **67.6** looks rich, but the forward P/E collapses to **10.8** because the market expects EPS to jump from **29.31** trailing to **183.05** forward as the cycle plays out. Price-to-sales at **22.2** and price-to-book at **21.3** are steep on any absolute basis. The whole bull case rests on those forward earnings arriving. If the NAND cycle rolls over instead, that forward multiple stops being cheap and starts being a trap. The 22 analysts covering it carry a buy rating and a mean target of **1751.32**, which sits below where the stock trades now.
+
+## Why Now
+
+The near-term catalyst is earnings, and it is pending but not immediate. That fits inside a one-to-three month hold, but it is a large binary volatility event rather than a two-week trigger, so plan for the stock to move hard in either direction on the print. There is no FDA or Fed angle to lean on here.
+
+The flow leans bullish. Buyers paid up for upside more aggressively than for protection. That is the positioning you want under a snapback thesis, and it confirms the chain is liquid enough to trade in size.
+
+The macro pull is the memory theme itself. AI storage demand and a tighter NAND supply picture are the forces repricing this stock, and SanDisk is the cleanest pure-play way to own that move. The setup asks you to buy a leader that pulled back **22.2%** while the structural demand story stayed intact.
+
+## Risk Factors
+
+The first risk is the one the bear case names directly. You could be catching a falling knife. SanDisk fell inside an ongoing memory-sector selloff, and if the NAND cycle is turning rather than dipping, this high-beta, cyclical stock keeps bleeding and the calls decay to zero. Premium is expensive with the stock at **1816.01**, so timing the entry is most of the trade.
+
+The second risk is broad. A tech-wide pullback drags SanDisk regardless of its own merits, and with the sector reading neutral and decelerating there is no sector tailwind to cushion that. High beta cuts both ways.
+
+The invalidation is clean. A decisive close below the **1001.98** stop ends the thesis outright. More practically, failure to hold above the **1467.14** entry as the memory selloff continues means the mean-reversion signal has already failed, and you should not need the stop to tell you that.
+
+## Bringing It All Together
+
+- Dual pull: a pure-play NAND maker riding the AI memory theme while sitting **22.2%** under its 52-week high of **2354.39**.
+- Momentum reset: 14-week RSI at **49.4** and relative strength of **+102.6%** versus the market over 63 days, a leader that cooled without breaking.
+
+- Flow: calls outspent puts **$1,055.72 million** to **$651.21 million** on **2026-07-09**, a bullish tilt in a liquid chain.
+- Levels: entry **1467.14**, stop **1001.98**, targets **2335.00** and **2513.75**, reward-to-risk near **1.9**, with the stock currently above entry at **1816.01**.
+
+## Conclusion
+
+SanDisk is the sharpest way to trade a memory-cycle snapback, and the evidence lines up: a steep uptrend, a cooled RSI at **49.4**, doubled relative strength, a fortress balance sheet, and call buyers paying up. The honest problem is that the stock trades at **1816.01**, above the **1467.14** entry, in the middle of an active NAND selloff. That makes this a medium-conviction, defined-risk trade best expressed through calls you can afford to lose, ideally on a pull back toward the entry zone rather than a chase at current levels. If it closes below **1001.98**, or fails to hold **1467.14** while the selloff runs, the signal is dead and you step aside.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
