@@ -1,0 +1,235 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A Mean-Reversion Bet on Healthy Fast Food — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>A Mean-Reversion Bet on Healthy Fast Food</h1>
+<div class="subtitle">Sweetgreen holds a rising trend and leads the market by a wide margin, yet the entry hasn&#x27;t fired and the business is still shrinking. Here&#x27;s how to read it.</div>
+<div class="meta">EOD 2026-07-13 · SG · written from the desk · model claude-opus-4-8</div>
+<div class="chips"><span class="chip">SG</span>
+<span class="chip">Consumer Cyclical</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-07-13: entry <b>$7.79</b> &rarr; <b>$8.72</b> (as of 2026-07-13) · <span class="pos">+12.0%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>US restaurants offer no tailwind right now, so this is a stock-picker&#x27;s group. The desk reads Consumer Cyclical as neutral, and the momentum inside it has just turned lower for the first time this cycle. That combination punishes broad exposure and rewards selection. You want a name with its own chart and its own catalyst, because the sector will not carry it.</p>
+<p>The consumer is the pressure point. Household budgets have tightened, and healthy fast food sits at the expensive end of the lunch decision. A premium salad competes with a packed lunch when money gets careful, and that shows up first in restaurant traffic. It shows up fastest at chains that skew urban and office-heavy, where the return-to-office pattern is uneven and lunch counts swing week to week.</p>
+<p>Digital ordering is the one structural shift still working in the category&#x27;s favor. Mobile and app-based ordering lifts average tickets, smooths peak-hour throughput, and builds a loyalty file that a soft quarter cannot erase. The operators that lean on their own apps keep more margin than those renting demand from delivery marketplaces.</p>
+<p>This backdrop rewards a beaten-down operator whose longer-term trend has already turned up. A stock down hard from its high, but sitting above a rising multi-month average, can mean-revert even while the broad market drifts sideways. Sweetgreen fits that shape. The question is whether the chart bounce can survive the fundamentals underneath it.</p>
+<h2>Introducing $SG</h2>
+<p>Sweetgreen runs fast-casual restaurants built around salads, warm grain bowls, and made-to-order healthy plates. It sells through its own online and mobile ordering platforms, plus in-store, and it issues gift cards that never expire.</p>
+<p>The edge is positioning and digital mix. Sweetgreen owns the healthy-fast-food identity in a way few national chains can copy, and it built a digital-first ordering system early. A large share of orders flow through its own app rather than third-party delivery, which keeps more of each dollar inside the business and gives it a direct line to its most frequent guests.</p>
+<p>The growth story has always rested on two things: opening new stores and pushing automation into the kitchen to lift store-level margins. Both are capital-hungry, and both take time to pay off. That is the tension you are underwriting here. A brand people know, a model that still burns cash, and a stock that fell far enough to interest a mean-reversion desk.</p>
+<h2>The Thesis</h2>
+<p>This is a mean-reversion trade on a stock that fell hard and is now trying to base above a rising trend. The relative strength is the headline: Sweetgreen has outrun the broad market by <strong>+30.7%</strong> over the last three months. Its <strong>30</strong>-week average is rising at <strong>+6.5%</strong>, and price holds above it. Risk to reward on the desk&#x27;s levels is <strong>2.0</strong> to one, and the <strong>14</strong>-day RSI sits at <strong>53.3</strong>, dead in the middle of its range, which points to neutral momentum with room to run either way.</p>
+<p>Here is the honest catch. The desk&#x27;s entry is <strong>7.79</strong>, and the stock last printed <strong>8.72</strong>. The trigger sits below today&#x27;s price, so the setup has not fired. This is a name to stalk on a pullback, and it only becomes a position if price comes back down to <strong>7.79</strong> and holds.</p>
+<p>Conviction is medium, and it earns no more than that. The read comes from a single desk view, not a wall of confirmation, and the underlying business is still shrinking. Treat this as a small, patient line: a limit order down at the entry, sized for the fact that the chart is fighting the income statement. The reward-to-risk pays you <strong>2.0</strong> to one only if you get filled at the level and the base holds.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-07-13-SG.png" alt="SG weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=SG&interval=1W" target="_blank" rel="noopener">📈 Open the SG weekly chart on TradingView ↗</a><figcaption>SG weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $10.21 · mark support near $6.55.</figcaption></figure>
+<p>The medium-term trend is up, and that is the whole reason this name qualifies. Price sits above a <strong>30</strong>-week average that is climbing at <strong>+6.5%</strong>, which tells you the longer trend turned higher months ago. The last close of <strong>8.72</strong> trades at <strong>52.2%</strong> of the <strong>52</strong>-week high of <strong>16.7</strong>, sits <strong>-46.3%</strong> below that high, and rests <strong>+85.6%</strong> above the <strong>52</strong>-week low of <strong>4.49</strong>. In its yearly range, the stock sits in the bottom <strong>35%</strong>, low enough to have room, high enough to have already begun repairing.</p>
+<p>The faster averages have stalled, and that matters for timing. Over three months the stock is up <strong>+41.6%</strong>, but over the last month it has added only <strong>+1.5%</strong>. That gap tells you the <strong>8</strong>-week and <strong>21</strong>-week EMAs have flattened toward each other after a strong run, which is what a healthy pause looks like before a base either resolves up or rolls back to the entry. RSI at <strong>53.3</strong> confirms the stall: neutral, not overbought, not washed out.</p>
+<p>The levels are clean. The desk marks entry at <strong>7.79</strong>, a stop at <strong>6.55</strong>, and a first target at <strong>10.21</strong>, which lines up with the recent swing high of <strong>10.21</strong>. The swing low sits at <strong>6.51</strong>, just under the stop, so the invalidation is anchored to real structure. A second target extends to <strong>10.58</strong>. From the <strong>7.79</strong> entry, that is <strong>+31.1%</strong> of upside to the first target against <strong>15.9%</strong> of risk to the stop.</p>
+<p>Relative strength is the strongest signal on the chart. Beating the broad market by <strong>+30.7%</strong> over three months while most consumer names drift is real leadership, and it is the reason a low-quality business earns a look at all. Volume is the missing confirmation. A drift up on thin volume is the tell that the bounce is running out of buyers.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$1.08B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$1.28B</td></tr><tr><td class="k">52-week range</td><td class="v">$4.49 - $16.70</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">2.16</td></tr><tr><td class="k">Trailing P/E</td><td class="v">75.6</td></tr><tr><td class="k">Forward P/E</td><td class="v">-16.3</td></tr><tr><td class="k">Price / sales</td><td class="v">1.6</td></tr><tr><td class="k">Price / book</td><td class="v">2.2</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$675M  (-2.9% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$5.70</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$17M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">0.12 / -0.56</td></tr><tr><td class="k">Gross margin</td><td class="v">14.4%</td></tr><tr><td class="k">Operating margin</td><td class="v">-20.3%</td></tr><tr><td class="k">Profit margin</td><td class="v">2.5%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$-0.16</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$-0.75</td></tr><tr><td class="k">Total cash / share</td><td class="v">$1.32</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.73</td></tr><tr><td class="k">Current ratio</td><td class="v">1.61</td></tr><tr><td class="k">Return on equity</td><td class="v">3.6%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">hold - mean target $7.81 (13 analysts)</td></tr></tbody></table>
+<p>The growth engine has stalled, and you should not pretend otherwise. Trailing net income of <strong>$16.78M</strong> and EPS of <strong>$0.12</strong> look like a profit, yet the operating margin is <strong>-20.3%</strong>, which means the reported bottom line leans on items below the operating line rather than on the restaurants earning their keep. Gross margin of <strong>14.4%</strong> is thin even for the industry. Forward EPS is estimated at <strong>-$0.56</strong>, and the forward P/E of <strong>-16.3</strong> simply reflects expected losses ahead.</p>
+<p>Cash generation is the clearest weakness. A company that burns cash while revenue shrinks is spending to grow into a market that is currently contracting. That is a tolerable bet in a rising sector and a dangerous one in a group the desk reads as neutral and turning down.</p>
+<p>The balance sheet buys time, which is what keeps this from being a falling-knife trade. Cash stands at about <strong>$1.32</strong> per share, the current ratio is <strong>1.61</strong>, and the quick ratio is <strong>1.50</strong>, so near-term liquidity is fine. Book value is <strong>$4.12</strong> per share, giving a price-to-book of <strong>2.2</strong> and a price-to-sales of <strong>1.6</strong>. Return on equity is a slim <strong>3.6%</strong>, and return on assets is <strong>-9.2%</strong>. One number to sit with: the average analyst target is <strong>7.81</strong>, below the current <strong>8.72</strong> print and right at the desk&#x27;s <strong>7.79</strong> entry. Wall Street rates it a hold across <strong>13</strong> analysts. The chart is bullish. The people modeling the cash flows are not.</p>
+<h2>Why Now</h2>
+<p>The timing here is a wait, not a buy, and that is the most useful thing to say about it. The entry at <strong>7.79</strong> sits below the <strong>8.72</strong> last price, so nothing has triggered. The near-term job is patience: place the level and let the market come to you, or pass.</p>
+<p>The one dated catalyst is Q2 earnings, confirmed for <strong>August 6, 2026</strong>, about <strong>23</strong> days out. That sits just outside a two-week window but well inside any multi-week hold, which changes how you treat the trade. Any position taken before then straddles a binary report that can gap the stock through either the stop or the target overnight. There is no options-flow signal to lean on here, so you have no positioning tell to confirm how the market is leaning into the print.</p>
+<p>The macro gives you no help. The sector is neutral and its momentum just turned lower, so this is a name-specific bet with no group tailwind pushing behind it. The only reason to be involved is the chart leadership, the rising <strong>30</strong>-week trend, and the <strong>2.0</strong>-to-one payout if the <strong>7.79</strong> entry fills and holds.</p>
+<h2>Risk Factors</h2>
+<p>The bear case is that the drop is fundamentals, not noise. Q1 same-store sales fell about <strong>-12.8%</strong> with foot traffic down roughly <strong>-11%</strong> on a squeezed consumer. If that trend holds, this is a value trap that keeps grinding lower on soft guidance, and a chart bounce fighting a deteriorating business tends to lose.</p>
+<p>Beta of <strong>2.16</strong> is a second-order risk. This stock moves more than twice the market, so any broad risk-off day hits it harder than the group. In a sector already reading neutral and turning down, that amplification cuts against you far more often than it helps.</p>
+<p>The invalidation is precise. A daily close below the <strong>6.55</strong> stop ends the mean-reversion thesis, and that level sits just under the <strong>6.51</strong> swing low, so a break there is a real structural failure rather than noise. Risk to that stop from the entry is <strong>15.9%</strong>. The other way to lose is subtler: if price never falls to the <strong>7.79</strong> entry, the setup never triggers and you simply miss it, which is the correct outcome, not a loss.</p>
+<p>Timing risk sits on top of all of it. Earnings on <strong>August 6, 2026</strong> land inside any hold longer than a few weeks, and a gap through the stop on a bad print skips your exit. The average analyst target of <strong>7.81</strong> below the current price is the market telling you the fundamental case is thin. Respect that.</p>
+<h2>Bringing It All Together</h2>
+<p>- Dual driver: a brand-leading, digital-first restaurant model with real relative strength of <strong>+30.7%</strong> over three months, set against a business whose revenue fell <strong>-2.9%</strong>.<br>- Market need: healthy fast food still holds a loyal, app-driven customer base, but a squeezed consumer cut traffic about <strong>-11%</strong> in the last reported quarter.</p>
+<p>- Catalyst: Q2 earnings on <strong>August 6, 2026</strong>, about <strong>23</strong> days out, a binary event with no options-flow signal to read.<br>- Levels: entry <strong>7.79</strong>, stop <strong>6.55</strong>, target <strong>10.21</strong>, second target <strong>10.58</strong>, for <strong>2.0</strong>-to-one reward against risk, with the trade untriggered above at <strong>8.72</strong>.</p>
+<h2>Conclusion</h2>
+<p>Sweetgreen is a watch, not a buy, and you should hold that line. The chart earns interest: leadership over the broad market of <strong>+30.7%</strong>, a <strong>30</strong>-week trend rising at <strong>+6.5%</strong>, and a clean <strong>2.0</strong>-to-one setup from the <strong>7.79</strong> entry to the <strong>10.21</strong> target. The business does not back it up. That is why conviction stays medium and size stays small.</p>
+<p>The discipline is the trade here. Set the limit at <strong>7.79</strong>, respect the <strong>6.55</strong> stop on a daily close, and keep the position small enough that the <strong>August 6, 2026</strong> earnings gap cannot hurt you. If price never comes down to the level, you lose nothing by passing. If it does and holds, you get a leader with a <strong>2.0</strong>-to-one payout in a group where almost nothing else is leading at all.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Sweetgreen, Inc. (SG) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $1.08B; 52-week range $4-$17; Revenue $675M -3% YoY; Net income $17M; Free cash flow/share $-0.75; Debt-to-equity 0.73; Return on equity 4%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Sweetgreen, Inc. (SG) inside the Consumer Cyclical space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Sweetgreen gives a proven pullback (tested, risk-adjusted return **1.10**) with relative strength **+30.7%** over the market and the 30-week average rising **+6.5%**. RSI at **53.3** sits mid-range and risk/reward is **2.0** to one. It hold. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># A Mean-Reversion Bet on Healthy Fast Food
+
+*Sweetgreen holds a rising trend and leads the market by a wide margin, yet the entry hasn&#x27;t fired and the business is still shrinking. Here&#x27;s how to read it.*
+
+## The Big Picture
+
+US restaurants offer no tailwind right now, so this is a stock-picker&#x27;s group. The desk reads Consumer Cyclical as neutral, and the momentum inside it has just turned lower for the first time this cycle. That combination punishes broad exposure and rewards selection. You want a name with its own chart and its own catalyst, because the sector will not carry it.
+
+The consumer is the pressure point. Household budgets have tightened, and healthy fast food sits at the expensive end of the lunch decision. A premium salad competes with a packed lunch when money gets careful, and that shows up first in restaurant traffic. It shows up fastest at chains that skew urban and office-heavy, where the return-to-office pattern is uneven and lunch counts swing week to week.
+
+Digital ordering is the one structural shift still working in the category&#x27;s favor. Mobile and app-based ordering lifts average tickets, smooths peak-hour throughput, and builds a loyalty file that a soft quarter cannot erase. The operators that lean on their own apps keep more margin than those renting demand from delivery marketplaces.
+
+This backdrop rewards a beaten-down operator whose longer-term trend has already turned up. A stock down hard from its high, but sitting above a rising multi-month average, can mean-revert even while the broad market drifts sideways. Sweetgreen fits that shape. The question is whether the chart bounce can survive the fundamentals underneath it.
+
+## Introducing $SG
+
+Sweetgreen runs fast-casual restaurants built around salads, warm grain bowls, and made-to-order healthy plates. It sells through its own online and mobile ordering platforms, plus in-store, and it issues gift cards that never expire.
+
+The edge is positioning and digital mix. Sweetgreen owns the healthy-fast-food identity in a way few national chains can copy, and it built a digital-first ordering system early. A large share of orders flow through its own app rather than third-party delivery, which keeps more of each dollar inside the business and gives it a direct line to its most frequent guests.
+
+The growth story has always rested on two things: opening new stores and pushing automation into the kitchen to lift store-level margins. Both are capital-hungry, and both take time to pay off. That is the tension you are underwriting here. A brand people know, a model that still burns cash, and a stock that fell far enough to interest a mean-reversion desk.
+
+## The Thesis
+
+This is a mean-reversion trade on a stock that fell hard and is now trying to base above a rising trend. The relative strength is the headline: Sweetgreen has outrun the broad market by **+30.7%** over the last three months. Its **30**-week average is rising at **+6.5%**, and price holds above it. Risk to reward on the desk&#x27;s levels is **2.0** to one, and the **14**-day RSI sits at **53.3**, dead in the middle of its range, which points to neutral momentum with room to run either way.
+
+Here is the honest catch. The desk&#x27;s entry is **7.79**, and the stock last printed **8.72**. The trigger sits below today&#x27;s price, so the setup has not fired. This is a name to stalk on a pullback, and it only becomes a position if price comes back down to **7.79** and holds.
+
+Conviction is medium, and it earns no more than that. The read comes from a single desk view, not a wall of confirmation, and the underlying business is still shrinking. Treat this as a small, patient line: a limit order down at the entry, sized for the fact that the chart is fighting the income statement. The reward-to-risk pays you **2.0** to one only if you get filled at the level and the base holds.
+
+## Technical Analysis
+
+&gt; 📈 Insert the SG weekly chart here (TradingView): SG weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $10.21 · mark support near $6.55.
+
+The medium-term trend is up, and that is the whole reason this name qualifies. Price sits above a **30**-week average that is climbing at **+6.5%**, which tells you the longer trend turned higher months ago. The last close of **8.72** trades at **52.2%** of the **52**-week high of **16.7**, sits **-46.3%** below that high, and rests **+85.6%** above the **52**-week low of **4.49**. In its yearly range, the stock sits in the bottom **35%**, low enough to have room, high enough to have already begun repairing.
+
+The faster averages have stalled, and that matters for timing. Over three months the stock is up **+41.6%**, but over the last month it has added only **+1.5%**. That gap tells you the **8**-week and **21**-week EMAs have flattened toward each other after a strong run, which is what a healthy pause looks like before a base either resolves up or rolls back to the entry. RSI at **53.3** confirms the stall: neutral, not overbought, not washed out.
+
+The levels are clean. The desk marks entry at **7.79**, a stop at **6.55**, and a first target at **10.21**, which lines up with the recent swing high of **10.21**. The swing low sits at **6.51**, just under the stop, so the invalidation is anchored to real structure. A second target extends to **10.58**. From the **7.79** entry, that is **+31.1%** of upside to the first target against **15.9%** of risk to the stop.
+
+Relative strength is the strongest signal on the chart. Beating the broad market by **+30.7%** over three months while most consumer names drift is real leadership, and it is the reason a low-quality business earns a look at all. Volume is the missing confirmation. A drift up on thin volume is the tell that the bounce is running out of buyers.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $1.08B |
+| Enterprise value | $1.28B |
+| 52-week range | $4.49 - $16.70 |
+| Dividend yield | None |
+| Beta | 2.16 |
+| Trailing P/E | 75.6 |
+| Forward P/E | -16.3 |
+| Price / sales | 1.6 |
+| Price / book | 2.2 |
+| Revenue (TTM) | $675M  (-2.9% YoY) |
+| Revenue / share | $5.70 |
+| Net income (TTM) | $17M |
+| EPS (TTM / fwd) | 0.12 / -0.56 |
+| Gross margin | 14.4% |
+| Operating margin | -20.3% |
+| Profit margin | 2.5% |
+| Operating cash flow / share | $-0.16 |
+| Free cash flow / share | $-0.75 |
+| Total cash / share | $1.32 |
+| Debt / equity | 0.73 |
+| Current ratio | 1.61 |
+| Return on equity | 3.6% |
+| Analyst consensus | hold - mean target $7.81 (13 analysts) |
+
+The growth engine has stalled, and you should not pretend otherwise. Trailing net income of **$16.78M** and EPS of **$0.12** look like a profit, yet the operating margin is **-20.3%**, which means the reported bottom line leans on items below the operating line rather than on the restaurants earning their keep. Gross margin of **14.4%** is thin even for the industry. Forward EPS is estimated at **-$0.56**, and the forward P/E of **-16.3** simply reflects expected losses ahead.
+
+Cash generation is the clearest weakness. A company that burns cash while revenue shrinks is spending to grow into a market that is currently contracting. That is a tolerable bet in a rising sector and a dangerous one in a group the desk reads as neutral and turning down.
+
+The balance sheet buys time, which is what keeps this from being a falling-knife trade. Cash stands at about **$1.32** per share, the current ratio is **1.61**, and the quick ratio is **1.50**, so near-term liquidity is fine. Book value is **$4.12** per share, giving a price-to-book of **2.2** and a price-to-sales of **1.6**. Return on equity is a slim **3.6%**, and return on assets is **-9.2%**. One number to sit with: the average analyst target is **7.81**, below the current **8.72** print and right at the desk&#x27;s **7.79** entry. Wall Street rates it a hold across **13** analysts. The chart is bullish. The people modeling the cash flows are not.
+
+## Why Now
+
+The timing here is a wait, not a buy, and that is the most useful thing to say about it. The entry at **7.79** sits below the **8.72** last price, so nothing has triggered. The near-term job is patience: place the level and let the market come to you, or pass.
+
+The one dated catalyst is Q2 earnings, confirmed for **August 6, 2026**, about **23** days out. That sits just outside a two-week window but well inside any multi-week hold, which changes how you treat the trade. Any position taken before then straddles a binary report that can gap the stock through either the stop or the target overnight. There is no options-flow signal to lean on here, so you have no positioning tell to confirm how the market is leaning into the print.
+
+The macro gives you no help. The sector is neutral and its momentum just turned lower, so this is a name-specific bet with no group tailwind pushing behind it. The only reason to be involved is the chart leadership, the rising **30**-week trend, and the **2.0**-to-one payout if the **7.79** entry fills and holds.
+
+## Risk Factors
+
+The bear case is that the drop is fundamentals, not noise. Q1 same-store sales fell about **-12.8%** with foot traffic down roughly **-11%** on a squeezed consumer. If that trend holds, this is a value trap that keeps grinding lower on soft guidance, and a chart bounce fighting a deteriorating business tends to lose.
+
+Beta of **2.16** is a second-order risk. This stock moves more than twice the market, so any broad risk-off day hits it harder than the group. In a sector already reading neutral and turning down, that amplification cuts against you far more often than it helps.
+
+The invalidation is precise. A daily close below the **6.55** stop ends the mean-reversion thesis, and that level sits just under the **6.51** swing low, so a break there is a real structural failure rather than noise. Risk to that stop from the entry is **15.9%**. The other way to lose is subtler: if price never falls to the **7.79** entry, the setup never triggers and you simply miss it, which is the correct outcome, not a loss.
+
+Timing risk sits on top of all of it. Earnings on **August 6, 2026** land inside any hold longer than a few weeks, and a gap through the stop on a bad print skips your exit. The average analyst target of **7.81** below the current price is the market telling you the fundamental case is thin. Respect that.
+
+## Bringing It All Together
+
+- Dual driver: a brand-leading, digital-first restaurant model with real relative strength of **+30.7%** over three months, set against a business whose revenue fell **-2.9%**.
+- Market need: healthy fast food still holds a loyal, app-driven customer base, but a squeezed consumer cut traffic about **-11%** in the last reported quarter.
+
+- Catalyst: Q2 earnings on **August 6, 2026**, about **23** days out, a binary event with no options-flow signal to read.
+- Levels: entry **7.79**, stop **6.55**, target **10.21**, second target **10.58**, for **2.0**-to-one reward against risk, with the trade untriggered above at **8.72**.
+
+## Conclusion
+
+Sweetgreen is a watch, not a buy, and you should hold that line. The chart earns interest: leadership over the broad market of **+30.7%**, a **30**-week trend rising at **+6.5%**, and a clean **2.0**-to-one setup from the **7.79** entry to the **10.21** target. The business does not back it up. That is why conviction stays medium and size stays small.
+
+The discipline is the trade here. Set the limit at **7.79**, respect the **6.55** stop on a daily close, and keep the position small enough that the **August 6, 2026** earnings gap cannot hurt you. If price never comes down to the level, you lose nothing by passing. If it does and holds, you get a leader with a **2.0**-to-one payout in a group where almost nothing else is leading at all.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
