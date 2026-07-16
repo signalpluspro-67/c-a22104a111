@@ -1,0 +1,238 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Salt Mine Nobody&#x27;s Watching — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Salt Mine Nobody&#x27;s Watching</h1>
+<div class="subtitle">Compass Minerals is up 63% from its lows. The easy money is gone. The setup is still alive.</div>
+<div class="meta">EOD 2026-07-15 · CMP · written from the desk · model glm-5.2</div>
+<div class="chips"><span class="chip">CMP</span>
+<span class="chip">Basic Materials</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-07-15: entry <b>$28.14</b> &rarr; <b>$30.02</b> (as of 2026-07-15) · <span class="pos">+6.7%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Basic Materials sits in neutral. The sector is neither accelerating nor breaking down. That makes stock selection matter more than macro tailwinds. You need a name with its own engine, not one riding a sector wave.</p>
+<p>Compass Minerals fits that profile. The stock has outrun its sector by <strong>12.8%</strong> over the past <strong>63</strong> days. That gap tells you buyers are responding to company-specific factors, not a broad bid for materials. When the sector is flat, relative strength is the signal that matters.</p>
+<p>The structural case for essential minerals is simple. Road salt does not go out of fashion. Fertilizer demand tracks population and diets, not sentiment cycles. You are buying cash flows tied to winter weather and crop nutrition. The business is boring on purpose. That boredom is what creates the dislocation you can exploit.</p>
+<p>A neutral sector rewards names with internal momentum and a clean trend. CMP has both. The question is whether you get the entry you need, or whether the stock runs without you.</p>
+<h2>Introducing CMP</h2>
+<p>Compass Minerals International mines and sells two things: salt and plant nutrition. The Salt segment produces rock salt, evaporated salt, and magnesium chloride for highway deicing, water treatment, chemical production, and consumer use. This is the core business. Highways need salt every winter. The revenue is recurring and weather-driven.</p>
+<p>The Plant Nutrition segment makes sulfate of potash specialty fertilizers under the Protassium+ brand. These products go to distributors, retailers, and growers who need low-chloride fertilizer for high-value crops. The segment is smaller but carries higher margins and growth potential.</p>
+<p>The company was founded in <strong>1844</strong> and is headquartered in Overland Park, Kansas. The salt business gives you steady cash flow. The plant nutrition business gives you upside. You are buying a <strong>$1.25B</strong> market-cap company with real assets, real revenue, and a narrow moat in essential minerals. The edge is in the assets. You cannot manufacture a salt mine quickly or cheaply. The barriers to entry are physical.</p>
+<h2>The Thesis</h2>
+<p>The desk rated CMP at <strong>95</strong> on its internal read, the highest score in the current pool. The tested risk-adjusted return sits at <strong>1.10</strong>, which means the setup has a real but modest edge. The stock is <strong>10.4%</strong> below its <strong>52</strong>-week high of <strong>$34.50</strong>, with the <strong>30</strong>-week average climbing at <strong>+18.0%</strong> slope. Relative strength versus SPY is <strong>+12.8%</strong> over <strong>63</strong> days. The risk-to-reward ratio is <strong>2.1</strong>.</p>
+<p>That is the setup in one breath. You have a small-cap in an uptrend, outperforming the market, pulling back from its highs. The entry is <strong>$28.14</strong>. The stop is <strong>$25.64</strong>. The target is <strong>$33.51</strong>. That gives you <strong>8.9%</strong> risk to the stop and <strong>19.1%</strong> upside to the target. The second target extends to <strong>$33.77</strong>, or <strong>20.0%</strong> upside.</p>
+<p>The conviction is MEDIUM. The score is strong, the trend is intact, and the setup is clean. But the stock is at <strong>$30.02</strong>, above the <strong>$28.14</strong> entry. You need a pullback to trigger the trade. If it never comes, you do not chase. Patience is part of the thesis.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-07-15-CMP.png" alt="CMP weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=CMP&interval=1W" target="_blank" rel="noopener">📈 Open the CMP weekly chart on TradingView ↗</a><figcaption>CMP weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $33.51 · mark support near $25.64.</figcaption></figure>
+<p>The trend is up and the chart confirms it. CMP closed at <strong>$30.02</strong>, sitting <strong>87.0%</strong> of its <strong>52</strong>-week high and in the upper portion of its yearly range. The <strong>30</strong>-week moving average is climbing at <strong>+18.0%</strong> slope, and price is above it. That is the structural trend telling you the path of least resistance is higher.</p>
+<p>The <strong>21</strong>-day return is <strong>-4.6%</strong>. The <strong>63</strong>-day return is <strong>+21.5%</strong>. That combination tells you the stock rallied hard, then pulled back. This is a shallow dip in an uptrend, not a reversal. The swing high is <strong>$33.51</strong>, which aligns with the target. The swing low is <strong>$25.31</strong>, which sits just below the <strong>$25.64</strong> stop. The chart structure matches the trade plan.</p>
+<p>RSI is <strong>59.9</strong> on the daily, which is neutral with a slight bullish lean. Price is not overbought. The <strong>14</strong>-day ATR is <strong>$1.25</strong>, so expect normal daily swings of roughly <strong>4%</strong>. That is thin. You are trading roughly <strong>$13.3M</strong> in daily dollar volume. That liquidity constraint matters for sizing.</p>
+<p>The invalidation is clear. A daily close below <strong>$25.64</strong> breaks the trend and kills the setup. Above that level, the dip-buy thesis holds. The entry at <strong>$28.14</strong> is the level you want. Price is at <strong>$30.02</strong> now, so you wait. Volume confirmation would look like expanding volume on the next push higher, signaling buyers are stepping in at the dip. Without volume, the bounce is suspect.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$1.25B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$1.92B</td></tr><tr><td class="k">52-week range</td><td class="v">$16.39 - $34.50</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">1.26</td></tr><tr><td class="k">Trailing P/E</td><td class="v">186.7</td></tr><tr><td class="k">Forward P/E</td><td class="v">25.3</td></tr><tr><td class="k">Price / sales</td><td class="v">1.0</td></tr><tr><td class="k">Price / book</td><td class="v">4.6</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$1.29B  (-8.4% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$30.64</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$7M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">0.16 / 1.18</td></tr><tr><td class="k">Gross margin</td><td class="v">17.5%</td></tr><tr><td class="k">Operating margin</td><td class="v">12.4%</td></tr><tr><td class="k">Profit margin</td><td class="v">0.5%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$4.18</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$1.97</td></tr><tr><td class="k">Total cash / share</td><td class="v">$1.77</td></tr><tr><td class="k">Debt / equity</td><td class="v">2.83</td></tr><tr><td class="k">Current ratio</td><td class="v">2.06</td></tr><tr><td class="k">Return on equity</td><td class="v">2.8%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">buy - mean target $32.25 (4 analysts)</td></tr></tbody></table>
+<p>The fundamentals are a mixed bag. The top line is shrinking. That is the weak spot. The Salt segment has execution issues around mining costs, and the prior Q2 print in May <strong>2026</strong> already cut Salt EBITDA guidance. You are buying a company with declining revenue and recent guidance reductions.</p>
+<p>Profitability is thin. The forward P/E is <strong>25.3</strong> on forward EPS of <strong>$1.18</strong>. The gap between trailing and forward earnings tells you the market expects a sharp recovery. Gross margin is <strong>17.5%</strong>. Operating margin is <strong>12.4%</strong>. Net margin is <strong>0.5%</strong>. The operating margin is decent. The net margin is almost nothing.</p>
+<p>Cash generation is the saving grace. That is real money from a real business. The current ratio is <strong>2.06</strong> and the quick ratio is <strong>1.21</strong>. Short-term liquidity is fine. That is elevated. The company is levered. Return on equity is <strong>2.8%</strong>. Return on assets is <strong>5.2%</strong>. Neither number is impressive.</p>
+<p>The analyst picture is constructive. Four analysts cover the stock. The mean target is <strong>$32.25</strong>. The recommendation is buy. Your trade target of <strong>$33.51</strong> is above that consensus, which means you are betting the earnings print pushes estimates higher. The forward P/E of <strong>25.3</strong> is reasonable if the company delivers on forward EPS. If Salt costs remain elevated, that estimate comes down.</p>
+<h2>Why Now</h2>
+<p>The catalyst is the earnings print. Q3 FY2026 earnings are confirmed for July 30, <strong>2026</strong>, which is roughly <strong>15</strong> days from the session date. There is a separate catalyst date of August 10, <strong>2026</strong>, about <strong>25</strong> days out. Your hold window straddles the July 30 print. That is the risk and the opportunity in one event.</p>
+<p>The prior Q2 print in May <strong>2026</strong> cut Salt EBITDA guidance on mining-cost execution. The market knows there is a problem. If Q3 shows cost improvement or reiterates guidance, the stock likely moves higher. If Salt costs are still running behind plan, the stock reprices lower. You are entering into an event with known uncertainty.</p>
+<p>The macro backdrop is neutral for Basic Materials. The sector is not accelerating. You get no sector tailwind here. The trade relies entirely on company-specific execution and the technical setup. That is fine. The relative strength of <strong>+12.8%</strong> versus SPY tells you buyers are already rewarding CMP for something. The earnings print is the test of whether that conviction is justified.</p>
+<p>There is no options flow data to read. You have no positioning signal from the derivatives market. You are flying on price action and fundamentals. That limits your edge on timing.</p>
+<h2>Risk Factors</h2>
+<p>The earnings print is the primary risk. You are holding into July 30, <strong>2026</strong>. If Salt segment costs are still behind plan, the guidance cut repeats and the stock gaps lower. The bear case is straightforward. CMP has rallied <strong>63%</strong> from its <strong>52</strong>-week low of <strong>$16.39</strong>. The stock sits near the top of the analyst fair-value range of <strong>$26</strong> to <strong>$31</strong>. You are buying a name that has already made its move. The forward P/E of <strong>25.3</strong> assumes earnings recovery. If that recovery slips, the multiple compresses.</p>
+<p>Liquidity is the second risk. Daily dollar volume is <strong>$13.3M</strong>. That is thin for a small-cap. You cannot size this like a large-cap. Entries and exits will move the stock. Use limit orders and scale in over time.</p>
+<p>The entry is unfilled. Price is <strong>$30.02</strong>. The entry is <strong>$28.14</strong>. If the stock never pulls back, the setup does not trigger. Buying at <strong>$30.02</strong> is chasing. The stop at <strong>$25.64</strong> is <strong>8.9%</strong> below the entry. A daily close below that level invalidates the thesis. The swing low at <strong>$25.31</strong> is just below the stop, which means the stop sits at a level where price has already found support. If that support fails, the breakdown is real.</p>
+<p>The conviction is LOW on the pressure test. The entry is above current price. The catalyst is pending and dangerous. The stock is near its fair-value ceiling. The sector is neutral. Every one of those factors reduces your margin of safety. You take this trade only if the pullback to <strong>$28.14</strong> comes and the setup triggers cleanly.</p>
+<h2>Bringing It All Together</h2>
+<p>- CMP carries the highest desk read score in the pool at <strong>95</strong>, with a tested risk-adjusted return of <strong>1.10</strong> and a <strong>2.1</strong> risk-to-reward ratio.<br>- The <strong>30</strong>-week average is climbing at <strong>+18.0%</strong> slope, price sits above it, and relative strength versus SPY is <strong>+12.8%</strong> over <strong>63</strong> days.<br>- Entry is <strong>$28.14</strong>, stop is <strong>$25.64</strong>, target is <strong>$33.51</strong> with a second target at <strong>$33.77</strong>. Price is <strong>$30.02</strong>, so you need a pullback to trigger.<br>The business generates real cash despite <strong>-8.4%</strong> revenue growth and <strong>0.5%</strong> net margin.<br>- Q3 FY2026 earnings on July 30, <strong>2026</strong> straddle the hold window. Prior Q2 cut Salt EBITDA guidance on mining-cost execution. The print is the binary event.<br>- Daily dollar volume is <strong>$13.3M</strong>. The stock is thin. Size accordingly and use limit orders.</p>
+<h2>Conclusion</h2>
+<p>This is a real setup with a real edge, but the entry is unfilled and the earnings print is <strong>15</strong> days out. You wait for <strong>$28.14</strong>. If it comes, you take the trade with the stop at <strong>$25.64</strong> and the target at <strong>$33.51</strong>. If it does not come, you walk away. The conviction is MEDIUM on the desk read and LOW on the pressure test. That tension is the trade. You are betting on a shallow dip snapping back within an uptrend, into a catalyst that could go either way. Size small. Use limits. Respect the stop.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Compass Minerals International, Inc. (CMP) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $1.25B; 52-week range $16-$34; Revenue $1.29B -8% YoY; Net income $7M; Free cash flow/share $1.97; Debt-to-equity 2.83; Return on equity 3%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Compass Minerals International, Inc. (CMP) inside the Basic Materials space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): CMP carries the highest a proprietary desk read score in the pool at **95**, tested with a risk-adjusted return of **1.10**. It sits **10.4%** below its high with the 30-week average climbing **+18.0%** and relative strength of **+12.8%** v. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Salt Mine Nobody&#x27;s Watching
+
+*Compass Minerals is up 63% from its lows. The easy money is gone. The setup is still alive.*
+
+## The Big Picture
+
+Basic Materials sits in neutral. The sector is neither accelerating nor breaking down. That makes stock selection matter more than macro tailwinds. You need a name with its own engine, not one riding a sector wave.
+
+Compass Minerals fits that profile. The stock has outrun its sector by **12.8%** over the past **63** days. That gap tells you buyers are responding to company-specific factors, not a broad bid for materials. When the sector is flat, relative strength is the signal that matters.
+
+The structural case for essential minerals is simple. Road salt does not go out of fashion. Fertilizer demand tracks population and diets, not sentiment cycles. You are buying cash flows tied to winter weather and crop nutrition. The business is boring on purpose. That boredom is what creates the dislocation you can exploit.
+
+A neutral sector rewards names with internal momentum and a clean trend. CMP has both. The question is whether you get the entry you need, or whether the stock runs without you.
+
+## Introducing CMP
+
+Compass Minerals International mines and sells two things: salt and plant nutrition. The Salt segment produces rock salt, evaporated salt, and magnesium chloride for highway deicing, water treatment, chemical production, and consumer use. This is the core business. Highways need salt every winter. The revenue is recurring and weather-driven.
+
+The Plant Nutrition segment makes sulfate of potash specialty fertilizers under the Protassium+ brand. These products go to distributors, retailers, and growers who need low-chloride fertilizer for high-value crops. The segment is smaller but carries higher margins and growth potential.
+
+The company was founded in **1844** and is headquartered in Overland Park, Kansas. The salt business gives you steady cash flow. The plant nutrition business gives you upside. You are buying a **$1.25B** market-cap company with real assets, real revenue, and a narrow moat in essential minerals. The edge is in the assets. You cannot manufacture a salt mine quickly or cheaply. The barriers to entry are physical.
+
+## The Thesis
+
+The desk rated CMP at **95** on its internal read, the highest score in the current pool. The tested risk-adjusted return sits at **1.10**, which means the setup has a real but modest edge. The stock is **10.4%** below its **52**-week high of **$34.50**, with the **30**-week average climbing at **+18.0%** slope. Relative strength versus SPY is **+12.8%** over **63** days. The risk-to-reward ratio is **2.1**.
+
+That is the setup in one breath. You have a small-cap in an uptrend, outperforming the market, pulling back from its highs. The entry is **$28.14**. The stop is **$25.64**. The target is **$33.51**. That gives you **8.9%** risk to the stop and **19.1%** upside to the target. The second target extends to **$33.77**, or **20.0%** upside.
+
+The conviction is MEDIUM. The score is strong, the trend is intact, and the setup is clean. But the stock is at **$30.02**, above the **$28.14** entry. You need a pullback to trigger the trade. If it never comes, you do not chase. Patience is part of the thesis.
+
+## Technical Analysis
+
+&gt; 📈 Insert the CMP weekly chart here (TradingView): CMP weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $33.51 · mark support near $25.64.
+
+The trend is up and the chart confirms it. CMP closed at **$30.02**, sitting **87.0%** of its **52**-week high and in the upper portion of its yearly range. The **30**-week moving average is climbing at **+18.0%** slope, and price is above it. That is the structural trend telling you the path of least resistance is higher.
+
+The **21**-day return is **-4.6%**. The **63**-day return is **+21.5%**. That combination tells you the stock rallied hard, then pulled back. This is a shallow dip in an uptrend, not a reversal. The swing high is **$33.51**, which aligns with the target. The swing low is **$25.31**, which sits just below the **$25.64** stop. The chart structure matches the trade plan.
+
+RSI is **59.9** on the daily, which is neutral with a slight bullish lean. Price is not overbought. The **14**-day ATR is **$1.25**, so expect normal daily swings of roughly **4%**. That is thin. You are trading roughly **$13.3M** in daily dollar volume. That liquidity constraint matters for sizing.
+
+The invalidation is clear. A daily close below **$25.64** breaks the trend and kills the setup. Above that level, the dip-buy thesis holds. The entry at **$28.14** is the level you want. Price is at **$30.02** now, so you wait. Volume confirmation would look like expanding volume on the next push higher, signaling buyers are stepping in at the dip. Without volume, the bounce is suspect.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $1.25B |
+| Enterprise value | $1.92B |
+| 52-week range | $16.39 - $34.50 |
+| Dividend yield | None |
+| Beta | 1.26 |
+| Trailing P/E | 186.7 |
+| Forward P/E | 25.3 |
+| Price / sales | 1.0 |
+| Price / book | 4.6 |
+| Revenue (TTM) | $1.29B  (-8.4% YoY) |
+| Revenue / share | $30.64 |
+| Net income (TTM) | $7M |
+| EPS (TTM / fwd) | 0.16 / 1.18 |
+| Gross margin | 17.5% |
+| Operating margin | 12.4% |
+| Profit margin | 0.5% |
+| Operating cash flow / share | $4.18 |
+| Free cash flow / share | $1.97 |
+| Total cash / share | $1.77 |
+| Debt / equity | 2.83 |
+| Current ratio | 2.06 |
+| Return on equity | 2.8% |
+| Analyst consensus | buy - mean target $32.25 (4 analysts) |
+
+The fundamentals are a mixed bag. The top line is shrinking. That is the weak spot. The Salt segment has execution issues around mining costs, and the prior Q2 print in May **2026** already cut Salt EBITDA guidance. You are buying a company with declining revenue and recent guidance reductions.
+
+Profitability is thin. The forward P/E is **25.3** on forward EPS of **$1.18**. The gap between trailing and forward earnings tells you the market expects a sharp recovery. Gross margin is **17.5%**. Operating margin is **12.4%**. Net margin is **0.5%**. The operating margin is decent. The net margin is almost nothing.
+
+Cash generation is the saving grace. That is real money from a real business. The current ratio is **2.06** and the quick ratio is **1.21**. Short-term liquidity is fine. That is elevated. The company is levered. Return on equity is **2.8%**. Return on assets is **5.2%**. Neither number is impressive.
+
+The analyst picture is constructive. Four analysts cover the stock. The mean target is **$32.25**. The recommendation is buy. Your trade target of **$33.51** is above that consensus, which means you are betting the earnings print pushes estimates higher. The forward P/E of **25.3** is reasonable if the company delivers on forward EPS. If Salt costs remain elevated, that estimate comes down.
+
+## Why Now
+
+The catalyst is the earnings print. Q3 FY2026 earnings are confirmed for July 30, **2026**, which is roughly **15** days from the session date. There is a separate catalyst date of August 10, **2026**, about **25** days out. Your hold window straddles the July 30 print. That is the risk and the opportunity in one event.
+
+The prior Q2 print in May **2026** cut Salt EBITDA guidance on mining-cost execution. The market knows there is a problem. If Q3 shows cost improvement or reiterates guidance, the stock likely moves higher. If Salt costs are still running behind plan, the stock reprices lower. You are entering into an event with known uncertainty.
+
+The macro backdrop is neutral for Basic Materials. The sector is not accelerating. You get no sector tailwind here. The trade relies entirely on company-specific execution and the technical setup. That is fine. The relative strength of **+12.8%** versus SPY tells you buyers are already rewarding CMP for something. The earnings print is the test of whether that conviction is justified.
+
+There is no options flow data to read. You have no positioning signal from the derivatives market. You are flying on price action and fundamentals. That limits your edge on timing.
+
+## Risk Factors
+
+The earnings print is the primary risk. You are holding into July 30, **2026**. If Salt segment costs are still behind plan, the guidance cut repeats and the stock gaps lower. The bear case is straightforward. CMP has rallied **63%** from its **52**-week low of **$16.39**. The stock sits near the top of the analyst fair-value range of **$26** to **$31**. You are buying a name that has already made its move. The forward P/E of **25.3** assumes earnings recovery. If that recovery slips, the multiple compresses.
+
+Liquidity is the second risk. Daily dollar volume is **$13.3M**. That is thin for a small-cap. You cannot size this like a large-cap. Entries and exits will move the stock. Use limit orders and scale in over time.
+
+The entry is unfilled. Price is **$30.02**. The entry is **$28.14**. If the stock never pulls back, the setup does not trigger. Buying at **$30.02** is chasing. The stop at **$25.64** is **8.9%** below the entry. A daily close below that level invalidates the thesis. The swing low at **$25.31** is just below the stop, which means the stop sits at a level where price has already found support. If that support fails, the breakdown is real.
+
+The conviction is LOW on the pressure test. The entry is above current price. The catalyst is pending and dangerous. The stock is near its fair-value ceiling. The sector is neutral. Every one of those factors reduces your margin of safety. You take this trade only if the pullback to **$28.14** comes and the setup triggers cleanly.
+
+## Bringing It All Together
+
+- CMP carries the highest desk read score in the pool at **95**, with a tested risk-adjusted return of **1.10** and a **2.1** risk-to-reward ratio.
+- The **30**-week average is climbing at **+18.0%** slope, price sits above it, and relative strength versus SPY is **+12.8%** over **63** days.
+- Entry is **$28.14**, stop is **$25.64**, target is **$33.51** with a second target at **$33.77**. Price is **$30.02**, so you need a pullback to trigger.
+The business generates real cash despite **-8.4%** revenue growth and **0.5%** net margin.
+- Q3 FY2026 earnings on July 30, **2026** straddle the hold window. Prior Q2 cut Salt EBITDA guidance on mining-cost execution. The print is the binary event.
+- Daily dollar volume is **$13.3M**. The stock is thin. Size accordingly and use limit orders.
+
+## Conclusion
+
+This is a real setup with a real edge, but the entry is unfilled and the earnings print is **15** days out. You wait for **$28.14**. If it comes, you take the trade with the stop at **$25.64** and the target at **$33.51**. If it does not come, you walk away. The conviction is MEDIUM on the desk read and LOW on the pressure test. That tension is the trade. You are betting on a shallow dip snapping back within an uptrend, into a catalyst that could go either way. Size small. Use limits. Respect the stop.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
