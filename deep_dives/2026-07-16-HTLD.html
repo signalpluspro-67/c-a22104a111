@@ -1,0 +1,240 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A Trucking Pullback with an Earnings Guillotine Hanging — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>A Trucking Pullback with an Earnings Guillotine Hanging</h1>
+<div class="subtitle">Heartland Express has the chart. The calendar is the problem.</div>
+<div class="meta">EOD 2026-07-16 · HTLD · written from the desk · model glm-5.2</div>
+<div class="chips"><span class="chip">HTLD</span>
+<span class="chip">Industrials</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-07-16: entry <b>$14.58</b> &rarr; <b>$15.30</b> (as of 2026-07-16) · <span class="pos">+4.9%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>The Industrials sector sits in neutral and is decelerating. That backdrop caps the tailwind for any cyclical name inside it. You are operating without a sector-level bid right now.</p>
+<p>Trucking is a freight-recession story. Rates compressed through 2024 and 2025. Carriers with weak balance sheets bled cash. The survivors consolidated capacity and waited for the cycle to turn. Heartland Express is one of those survivors. It carries a low debt-to-equity ratio of <strong>0.2</strong> and sits on a clean long-term chart.</p>
+<p>A neutral and decelerating sector means you need a stock-specific catalyst to drive upside. The broad market will not do the work for you. This backdrop rewards a name with an intact technical trend and a specific reason to reprice higher.</p>
+<h2>Introducing HTLD</h2>
+<p>Heartland Express is a dry van truckload carrier operating across the United States, Mexico, and Canada. The company runs short, medium, and long-haul routes under the Heartland Express, Millis Transfer, Smith Transport, and CFI brands. It serves retailers, manufacturers, and parcel carriers in consumer goods, food products, and automotive industries.</p>
+<p>It is headquartered in North Liberty, Iowa, and was founded in <strong>1978</strong>. Heartland built its reputation on a debt-free balance sheet and disciplined cost management. That edge matters in a freight recession when overleveraged competitors are forced to park trucks.</p>
+<p>The company has acquired several carriers over the years to expand its network. Those deals added capacity and geographic reach. They also added integration costs that weigh on current margins. You are buying a consolidator in a consolidating industry.</p>
+<h2>The Thesis</h2>
+<p>This is a technical pullback long in an intact uptrend. Heartland is down <strong>-3.3%</strong> over <strong>21 days</strong> but up <strong>+42.3%</strong> over <strong>63 days</strong>. The stock holds above a <strong>30-week</strong> average rising at <strong>+22.6%</strong>.</p>
+<p>The setup is a shallow dip off a recent high. The stock sits <strong>-5.7%</strong> below its <strong>52-week</strong> high of <strong>$16.64</strong>. RSI reads <strong>55.9</strong>, which is neutral and leaves room before overbought. The validated risk-adjusted return on this pullback pattern is <strong>1.10</strong>, tested and confirmed. You treat that as a modest edge, not a high-conviction signal.</p>
+<p>Conviction is MEDIUM on the desk thesis. The chart is spotless. The fundamental backdrop is weak. The reward-to-risk ratio is <strong>1.7</strong> at the desk levels. You size this with restraint because the edge is real but thin.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-07-16-HTLD.png" alt="HTLD weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=HTLD&interval=1W" target="_blank" rel="noopener">📈 Open the HTLD weekly chart on TradingView ↗</a><figcaption>HTLD weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $16.22 · mark support near $13.62.</figcaption></figure>
+<p>The trend is up and the chart is clean. Price at <strong>$15.30</strong> holds above a <strong>30-week</strong> average sloping at <strong>+22.6%</strong>. The stock sits at <strong>92.0%</strong> of its <strong>52-week</strong> high and <strong>86.2%</strong> of its total <strong>52-week</strong> range. That is strong momentum with a mild pullback.</p>
+<p>Price is <strong>-5.7%</strong> from the <strong>$16.64</strong> high and <strong>+116.1%</strong> from the <strong>$7.00</strong> low. The swing high sits at <strong>$16.22</strong> and the swing low at <strong>$11.58</strong>. RSI at <strong>55.9</strong> confirms the pullback is shallow and the stock has not rolled over.</p>
+<p>Your reference levels are the entry at <strong>$14.58</strong>, the stop at <strong>$13.62</strong>, and the target at <strong>$16.22</strong>. A second target extends to <strong>$16.74</strong>. The risk to stop is <strong>6.6%</strong> from entry. The upside to the first target is <strong>11.2%</strong> and <strong>14.8%</strong> to the second. That is light. You need to see volume expand on a push above <strong>$15.30</strong> to confirm the bounce is real. Without volume, this setup stalls.</p>
+<p>The tension here is the gap between price and entry. The stock closed at <strong>$15.30</strong>. The entry is <strong>$14.58</strong>. Buying here means chasing. You have less than a full stop of cushion before the trade is underwater to the intended entry.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$1.13B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$1.27B</td></tr><tr><td class="k">52-week range</td><td class="v">$7.00 - $16.64</td></tr><tr><td class="k">Dividend yield</td><td class="v">0.55%</td></tr><tr><td class="k">Beta</td><td class="v">1.3</td></tr><tr><td class="k">Forward P/E</td><td class="v">26.5</td></tr><tr><td class="k">Price / sales</td><td class="v">1.5</td></tr><tr><td class="k">Price / book</td><td class="v">1.5</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$763M  (-19.7% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$9.83</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$-43M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">-0.55 / 0.55</td></tr><tr><td class="k">Gross margin</td><td class="v">28.1%</td></tr><tr><td class="k">Operating margin</td><td class="v">-6.0%</td></tr><tr><td class="k">Profit margin</td><td class="v">-5.7%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$1.12</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$-0.63</td></tr><tr><td class="k">Total cash / share</td><td class="v">$0.57</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.2</td></tr><tr><td class="k">Current ratio</td><td class="v">1.27</td></tr><tr><td class="k">Return on equity</td><td class="v">-5.6%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">hold - mean target $13.20 (5 analysts)</td></tr></tbody></table>
+<p>Growth is contracting. This is the freight recession showing up in the income statement. Shippers pushed rates lower and Heartland absorbed the hit.</p>
+<p>Profitability is negative. EPS is <strong>-$0.55</strong>. The operating margin is <strong>-6.0%</strong> and the profit margin is <strong>-5.7%</strong>. Gross margin holds at <strong>28.1%</strong>, which tells you revenue compression is the problem, not pricing execution. The company is losing money on depressed volumes, not on broken unit economics. Forward EPS is <strong>$0.55</strong>, a clear improvement from the trailing loss. Analysts expect the cycle to inflect.</p>
+<p>The balance sheet is the strongest part of this name. Debt-to-equity is <strong>0.2</strong>. The current ratio is <strong>1.27</strong> and the quick ratio is <strong>1.11</strong>. The company can pay its short-term obligations. Return on equity is <strong>-5.6%</strong> and return on assets is <strong>-2.8%</strong>, which confirms the earnings drag.</p>
+<p>Cash generation is mixed. Operating cash flow is <strong>$86.6 million</strong> at <strong>$1.12</strong> per share. The company generates cash from operations but spends it on fleet maintenance and capex. Cash per share is <strong>$0.57</strong>. The dividend yields <strong>0.55%</strong> at <strong>$0.08</strong> per share with a payout ratio of <strong>0.42%</strong> of operating cash flow. The forward P/E is <strong>26.5</strong> on expected earnings of <strong>$0.55</strong>. Price-to-sales is <strong>1.5</strong> and price-to-book is <strong>1.5</strong> with book value at <strong>$9.67</strong> per share.</p>
+<p>The weak spot is the analyst community. Five analysts cover the stock with a mean target of <strong>$13.20</strong>. That target sits below the current price of <strong>$15.30</strong>. The recommendation is a hold. You are buying above where Wall Street thinks this trades fair.</p>
+<h2>Why Now</h2>
+<p>The catalyst is Q2 2026 earnings estimated for July 22, <strong>2026</strong>. That is <strong>5</strong> days from the session date. This is the single most important data point for the trade.</p>
+<p>The pressure test flags this as an unhedged earnings-event trade. The bear case is specific. After a Q1 loss and a freight recession, a soft print or weak guidance could gap the stock through the <strong>$13.62</strong> stop overnight. The recovery in forward EPS to <strong>$0.55</strong> may already be priced in at <strong>26.5</strong> times forward earnings.</p>
+<p>There is no options flow data to read. The stock trades <strong>$7 million</strong> a day in notional value. That is thin. You cannot rely on the options market for positioning signals here.</p>
+<p>The macro tailwind is absent. Industrials are neutral and decelerating. You are relying entirely on the chart and the earnings print to drive the next move.</p>
+<h2>Risk Factors</h2>
+<p>The earnings print on July 22 is the primary risk. A soft number gaps the stock below your stop before you can act. The bear case is clear. The freight recession persists, Q2 mirrors the Q1 loss, and forward guidance disappoints. The stock&#x27;s <strong>+42.3%</strong> three-month run has already priced in a recovery.</p>
+<p>Valuation risk is real. The stock trades at <strong>26.5</strong> times forward earnings. The analyst mean target is <strong>$13.20</strong>, which is below the current price of <strong>$15.30</strong>. Wall Street sees downside from here.</p>
+<p>Liquidity is thin. That is roughly <strong>$7 million</strong> in daily notional turnover. Slippage on entry and exit will cost you. You cannot size this aggressively without moving the price against yourself.</p>
+<p>The stop is <strong>$13.62</strong>. A close below that level kills the thesis. The risk to stop from the entry at <strong>$14.58</strong> is <strong>6.6%</strong>. From the current price of <strong>$15.30</strong>, your cushion to the stop is even thinner. The invalidation is mechanical. You do not hold through a close below <strong>$13.62</strong>.</p>
+<p>The entry problem compounds the earnings risk. You are chasing a setup that already moved. The conviction on the pressure test is LOW for this reason. You accept a worse entry or you wait for a pullback that may not come before earnings.</p>
+<h2>Bringing It All Together</h2>
+<p>- The chart is spotless. Price holds above a <strong>30-week</strong> average rising <strong>+22.6%</strong> with relative strength of <strong>+35.1%</strong> over three months.<br>- The balance sheet is clean. Debt-to-equity is <strong>0.2</strong> and the current ratio is <strong>1.27</strong>. This company survives a freight recession.<br>- Revenue is down <strong>-19.7%</strong> and the operating margin is <strong>-6.0%</strong>. Forward EPS of <strong>$0.55</strong> signals an expected inflection.<br>- Earnings hit on July 22, <strong>5</strong> days out. This is an unhedged event trade with binary outcome risk.<br>- Entry at <strong>$14.58</strong> with a stop at <strong>$13.62</strong> and a target at <strong>$16.22</strong> gives you a <strong>1.7</strong> reward-to-risk ratio. The stock is already at <strong>$15.30</strong>.<br>- Five analysts have a mean target of <strong>$13.20</strong>, below the current price. You are trading against Wall Street&#x27;s view.</p>
+<h2>Conclusion</h2>
+<p>This is a trade, not an investment. The chart is strong. The fundamentals are weak. The earnings print in <strong>5</strong> days determines the outcome. You take a small position at current levels or you wait for a pullback to <strong>$14.58</strong> before committing. If the stock closes below <strong>$13.62</strong>, you exit with no debate. The edge is real but the timing is brutal.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Heartland Express, Inc. (HTLD) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $1.13B; 52-week range $7-$17; Revenue $763M -20% YoY; Net income $-43M; Free cash flow/share $-0.63; Debt-to-equity 0.2; Return on equity -6%; Dividend yield 0.6%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Heartland Express, Inc. (HTLD) inside the Industrials space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Heartland Express is a clean truckload pullback, RSI **55.9**, beating the market by **+35.1%** over three months and holding a 30-week average rising **+22.6%**. The pullback grades tested · risk-adjusted return **1.10**.. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># A Trucking Pullback with an Earnings Guillotine Hanging
+
+*Heartland Express has the chart. The calendar is the problem.*
+
+## The Big Picture
+
+The Industrials sector sits in neutral and is decelerating. That backdrop caps the tailwind for any cyclical name inside it. You are operating without a sector-level bid right now.
+
+Trucking is a freight-recession story. Rates compressed through 2024 and 2025. Carriers with weak balance sheets bled cash. The survivors consolidated capacity and waited for the cycle to turn. Heartland Express is one of those survivors. It carries a low debt-to-equity ratio of **0.2** and sits on a clean long-term chart.
+
+A neutral and decelerating sector means you need a stock-specific catalyst to drive upside. The broad market will not do the work for you. This backdrop rewards a name with an intact technical trend and a specific reason to reprice higher.
+
+## Introducing HTLD
+
+Heartland Express is a dry van truckload carrier operating across the United States, Mexico, and Canada. The company runs short, medium, and long-haul routes under the Heartland Express, Millis Transfer, Smith Transport, and CFI brands. It serves retailers, manufacturers, and parcel carriers in consumer goods, food products, and automotive industries.
+
+It is headquartered in North Liberty, Iowa, and was founded in **1978**. Heartland built its reputation on a debt-free balance sheet and disciplined cost management. That edge matters in a freight recession when overleveraged competitors are forced to park trucks.
+
+The company has acquired several carriers over the years to expand its network. Those deals added capacity and geographic reach. They also added integration costs that weigh on current margins. You are buying a consolidator in a consolidating industry.
+
+## The Thesis
+
+This is a technical pullback long in an intact uptrend. Heartland is down **-3.3%** over **21 days** but up **+42.3%** over **63 days**. The stock holds above a **30-week** average rising at **+22.6%**.
+
+The setup is a shallow dip off a recent high. The stock sits **-5.7%** below its **52-week** high of **$16.64**. RSI reads **55.9**, which is neutral and leaves room before overbought. The validated risk-adjusted return on this pullback pattern is **1.10**, tested and confirmed. You treat that as a modest edge, not a high-conviction signal.
+
+Conviction is MEDIUM on the desk thesis. The chart is spotless. The fundamental backdrop is weak. The reward-to-risk ratio is **1.7** at the desk levels. You size this with restraint because the edge is real but thin.
+
+## Technical Analysis
+
+&gt; 📈 Insert the HTLD weekly chart here (TradingView): HTLD weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $16.22 · mark support near $13.62.
+
+The trend is up and the chart is clean. Price at **$15.30** holds above a **30-week** average sloping at **+22.6%**. The stock sits at **92.0%** of its **52-week** high and **86.2%** of its total **52-week** range. That is strong momentum with a mild pullback.
+
+Price is **-5.7%** from the **$16.64** high and **+116.1%** from the **$7.00** low. The swing high sits at **$16.22** and the swing low at **$11.58**. RSI at **55.9** confirms the pullback is shallow and the stock has not rolled over.
+
+Your reference levels are the entry at **$14.58**, the stop at **$13.62**, and the target at **$16.22**. A second target extends to **$16.74**. The risk to stop is **6.6%** from entry. The upside to the first target is **11.2%** and **14.8%** to the second. That is light. You need to see volume expand on a push above **$15.30** to confirm the bounce is real. Without volume, this setup stalls.
+
+The tension here is the gap between price and entry. The stock closed at **$15.30**. The entry is **$14.58**. Buying here means chasing. You have less than a full stop of cushion before the trade is underwater to the intended entry.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $1.13B |
+| Enterprise value | $1.27B |
+| 52-week range | $7.00 - $16.64 |
+| Dividend yield | 0.55% |
+| Beta | 1.3 |
+| Forward P/E | 26.5 |
+| Price / sales | 1.5 |
+| Price / book | 1.5 |
+| Revenue (TTM) | $763M  (-19.7% YoY) |
+| Revenue / share | $9.83 |
+| Net income (TTM) | $-43M |
+| EPS (TTM / fwd) | -0.55 / 0.55 |
+| Gross margin | 28.1% |
+| Operating margin | -6.0% |
+| Profit margin | -5.7% |
+| Operating cash flow / share | $1.12 |
+| Free cash flow / share | $-0.63 |
+| Total cash / share | $0.57 |
+| Debt / equity | 0.2 |
+| Current ratio | 1.27 |
+| Return on equity | -5.6% |
+| Analyst consensus | hold - mean target $13.20 (5 analysts) |
+
+Growth is contracting. This is the freight recession showing up in the income statement. Shippers pushed rates lower and Heartland absorbed the hit.
+
+Profitability is negative. EPS is **-$0.55**. The operating margin is **-6.0%** and the profit margin is **-5.7%**. Gross margin holds at **28.1%**, which tells you revenue compression is the problem, not pricing execution. The company is losing money on depressed volumes, not on broken unit economics. Forward EPS is **$0.55**, a clear improvement from the trailing loss. Analysts expect the cycle to inflect.
+
+The balance sheet is the strongest part of this name. Debt-to-equity is **0.2**. The current ratio is **1.27** and the quick ratio is **1.11**. The company can pay its short-term obligations. Return on equity is **-5.6%** and return on assets is **-2.8%**, which confirms the earnings drag.
+
+Cash generation is mixed. Operating cash flow is **$86.6 million** at **$1.12** per share. The company generates cash from operations but spends it on fleet maintenance and capex. Cash per share is **$0.57**. The dividend yields **0.55%** at **$0.08** per share with a payout ratio of **0.42%** of operating cash flow. The forward P/E is **26.5** on expected earnings of **$0.55**. Price-to-sales is **1.5** and price-to-book is **1.5** with book value at **$9.67** per share.
+
+The weak spot is the analyst community. Five analysts cover the stock with a mean target of **$13.20**. That target sits below the current price of **$15.30**. The recommendation is a hold. You are buying above where Wall Street thinks this trades fair.
+
+## Why Now
+
+The catalyst is Q2 2026 earnings estimated for July 22, **2026**. That is **5** days from the session date. This is the single most important data point for the trade.
+
+The pressure test flags this as an unhedged earnings-event trade. The bear case is specific. After a Q1 loss and a freight recession, a soft print or weak guidance could gap the stock through the **$13.62** stop overnight. The recovery in forward EPS to **$0.55** may already be priced in at **26.5** times forward earnings.
+
+There is no options flow data to read. The stock trades **$7 million** a day in notional value. That is thin. You cannot rely on the options market for positioning signals here.
+
+The macro tailwind is absent. Industrials are neutral and decelerating. You are relying entirely on the chart and the earnings print to drive the next move.
+
+## Risk Factors
+
+The earnings print on July 22 is the primary risk. A soft number gaps the stock below your stop before you can act. The bear case is clear. The freight recession persists, Q2 mirrors the Q1 loss, and forward guidance disappoints. The stock&#x27;s **+42.3%** three-month run has already priced in a recovery.
+
+Valuation risk is real. The stock trades at **26.5** times forward earnings. The analyst mean target is **$13.20**, which is below the current price of **$15.30**. Wall Street sees downside from here.
+
+Liquidity is thin. That is roughly **$7 million** in daily notional turnover. Slippage on entry and exit will cost you. You cannot size this aggressively without moving the price against yourself.
+
+The stop is **$13.62**. A close below that level kills the thesis. The risk to stop from the entry at **$14.58** is **6.6%**. From the current price of **$15.30**, your cushion to the stop is even thinner. The invalidation is mechanical. You do not hold through a close below **$13.62**.
+
+The entry problem compounds the earnings risk. You are chasing a setup that already moved. The conviction on the pressure test is LOW for this reason. You accept a worse entry or you wait for a pullback that may not come before earnings.
+
+## Bringing It All Together
+
+- The chart is spotless. Price holds above a **30-week** average rising **+22.6%** with relative strength of **+35.1%** over three months.
+- The balance sheet is clean. Debt-to-equity is **0.2** and the current ratio is **1.27**. This company survives a freight recession.
+- Revenue is down **-19.7%** and the operating margin is **-6.0%**. Forward EPS of **$0.55** signals an expected inflection.
+- Earnings hit on July 22, **5** days out. This is an unhedged event trade with binary outcome risk.
+- Entry at **$14.58** with a stop at **$13.62** and a target at **$16.22** gives you a **1.7** reward-to-risk ratio. The stock is already at **$15.30**.
+- Five analysts have a mean target of **$13.20**, below the current price. You are trading against Wall Street&#x27;s view.
+
+## Conclusion
+
+This is a trade, not an investment. The chart is strong. The fundamentals are weak. The earnings print in **5** days determines the outcome. You take a small position at current levels or you wait for a pullback to **$14.58** before committing. If the stock closes below **$13.62**, you exit with no debate. The edge is real but the timing is brutal.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
