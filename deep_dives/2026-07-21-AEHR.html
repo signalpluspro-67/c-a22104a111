@@ -1,0 +1,225 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Catching the Drift in Silicon Carbide Test Equipment — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>Catching the Drift in Silicon Carbide Test Equipment</h1>
+<div class="subtitle">Aehr Test Systems gapped on a blowout guide. The question is whether you chase it or wait for the fade.</div>
+<div class="meta">EOD 2026-07-21 · AEHR · written from the desk · model glm-5.2</div>
+<div class="chips"><span class="chip">AEHR</span>
+<span class="chip">Technology</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-07-21: entry <b>$80.20</b> &rarr; <b>$98.91</b> (as of 2026-07-21) · <span class="pos">+23.3%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Semiconductor test equipment is a quiet compounder thesis hiding inside a loud AI narrative. The sector sits in neutral on both momentum and acceleration, which means you are hunting for stock-specific catalysts rather than riding a wave.</p>
+<p>Silicon carbide power semiconductors are the structural tailwind underneath Aehr. EVs, grid inverters, and industrial power management all require SiC devices, and those devices need burn-in testing before they ship. That demand is independent of the AI accelerator cycle.</p>
+<p>A neutral sector backdrop with a stock-specific gap event is exactly the setup where post-earnings drift works. You are buying a proven edge inside a quiet sector, paying for the catalyst that already fired.</p>
+<h2>Introducing AEHR</h2>
+<p>Aehr Test Systems makes burn-in and test equipment for semiconductor devices. The company&#x27;s core products are the FOX-XP and FOX-NP systems, which test and stabilize devices at the wafer level and as singulated die. That matters because testing before packaging catches defects earlier and saves money.</p>
+<p>Aehr&#x27;s edge is silicon carbide. SiC power semiconductors require extensive burn-in to prove reliability, and Aehr&#x27;s WaferPak and DiePak systems handle that workload for customers pushing into EV power electronics and advanced sensors. The company is headquartered in Fremont, California, and was incorporated in <strong>1977</strong>.</p>
+<p>That combination of thin float and high beta (<strong>3.18</strong>) means the stock moves hard on catalysts. The gap you are looking at is real, and so is the risk of a fade.</p>
+<h2>The Thesis</h2>
+<p>The core thesis is post-earnings drift. Aehr reported fiscal Q4 and full-year <strong>2026</strong> earnings on July <strong>14</strong>, <strong>2026</strong>, gapping from roughly <strong>$72</strong> to <strong>$110</strong> on a beat and a blowout fiscal <strong>2027</strong> guide of <strong>$130</strong> to <strong>$150M</strong> in revenue versus roughly <strong>$85M</strong> consensus. Post-earnings-announcement drift, or PEAD, is the tendency for stocks to keep moving in the direction of a surprise after an initial gap. The desk&#x27;s historical study of this pattern produced a validated risk-adjusted return of <strong>1.10</strong>, and that edge has been tested in live conditions.</p>
+<p>Three independent desk reads agree on the bullish setup. The stock sits <strong>15.2%</strong> below its <strong>52-week</strong> high of <strong>$126.62</strong>, which gives it room to run. Call flow printed <strong>3360</strong> contracts on July <strong>20</strong>, <strong>2026</strong>.</p>
+<p>The conviction is MEDIUM. The desk ranked it behind its top pick because two of the three desk reads are unproven and the recent price action is jumpy. You are buying a real edge, but you are buying it late. The reward-to-risk ratio is <strong>1.5</strong> to the first target of <strong>$116.58</strong>, and the second target sits at <strong>$136.31</strong> for <strong>70.0%</strong> upside. The stop is <strong>$55.27</strong>, which is <strong>31.1%</strong> below the model entry of <strong>$80.20</strong>.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-07-21-AEHR.png" alt="AEHR weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=AEHR&interval=1W" target="_blank" rel="noopener">📈 Open the AEHR weekly chart on TradingView ↗</a><figcaption>AEHR weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $116.58 · mark support near $55.27.</figcaption></figure>
+<p>The trend is intact and the stock is pulling back within an uptrend. The stock is above its <strong>30-week</strong> moving average, and that average is sloping up at <strong>62.9%</strong>, which tells you the structural trend is strong.</p>
+<p>The short-term picture is choppier. The <strong>21-day</strong> return is <strong>-14.2%</strong>, so the post-gap excitement has cooled. That means Aehr is outperforming the broad market over the intermediate term even after the recent pullback. RSI sits at <strong>51.4</strong> to <strong>57.0</strong> depending on the lookback, which is neutral. The stock is neither overbought nor oversold.</p>
+<p>The swing high is <strong>$116.58</strong>, which is also the first target. The swing low is <strong>$66.94</strong>. ATR is <strong>$12.47</strong>, so you should expect normal daily swings of roughly <strong>$12</strong> in this name. You want to see volume expand on up days and contract on down days to confirm the pullback is orderly. A close below <strong>$66.94</strong> would break the swing low and signal the uptrend is in trouble.</p>
+<p>You are roughly <strong>23%</strong> above the planned entry, which means the easy money has been made. The target of <strong>$116.58</strong> was already touched intraday at <strong>$110.20</strong> on July <strong>15</strong>. You are buying a drift trade after most of the drift has happened.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$2.68B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$2.63B</td></tr><tr><td class="k">52-week range</td><td class="v">$12.19 - $126.62</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">3.18</td></tr><tr><td class="k">Forward P/E</td><td class="v">59.6</td></tr><tr><td class="k">Price / sales</td><td class="v">53.6</td></tr><tr><td class="k">Price / book</td><td class="v">12.2</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$50M  (+33.7% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$1.63</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$-7M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">-0.23 / 1.38</td></tr><tr><td class="k">Gross margin</td><td class="v">38.5%</td></tr><tr><td class="k">Operating margin</td><td class="v">-4.2%</td></tr><tr><td class="k">Profit margin</td><td class="v">-14.3%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$-0.10</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$-0.03</td></tr><tr><td class="k">Total cash / share</td><td class="v">$3.58</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.05</td></tr><tr><td class="k">Current ratio</td><td class="v">10.33</td></tr><tr><td class="k">Return on equity</td><td class="v">-4.2%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">strong buy - mean target $108.33 (3 analysts)</td></tr></tbody></table>
+<p>Revenue growth is the headline number. Trailing twelve-month revenue is <strong>$50.0M</strong>, up <strong>33.7%</strong> year over year. That growth rate supports the bull case for a company exposed to SiC ramp cycles. The forward EPS estimate is <strong>$1.38</strong>, which implies a meaningful swing from the trailing EPS of <strong>-$0.23</strong>.</p>
+<p>The valuation is rich. Forward P/E is <strong>59.6</strong>, price-to-sales is <strong>53.6</strong>, and price-to-book is <strong>12.2</strong>. You are paying a premium for growth and the SiC exposure. The analyst mean target is <strong>$108.33</strong> across <strong>3</strong> analysts with a strong buy recommendation. That target sits above the current price of <strong>$98.91</strong> but below the first desk target of <strong>$116.58</strong>.</p>
+<p>The balance sheet is clean. Cash per share is <strong>$3.58</strong>, total debt is only <strong>$9.88M</strong>, and debt-to-equity is <strong>0.05</strong>. The current ratio is <strong>10.33</strong> and the quick ratio is <strong>7.5</strong>. Liquidity is not a concern. The company is burning cash today and betting on the fiscal <strong>2027</strong> revenue guide to flip the model profitable. If that guide proves aggressive, the valuation has no floor.</p>
+<h2>Why Now</h2>
+<p>The catalyst has already fired. Fiscal Q4 and full-year <strong>2026</strong> earnings landed on July <strong>14</strong>, <strong>2026</strong>, and the gap from <strong>$72</strong> to <strong>$110</strong> is the market&#x27;s verdict. The fiscal <strong>2027</strong> guide of <strong>$130</strong> to <strong>$150M</strong> versus <strong>$85M</strong> consensus is the fuel for the drift. No fresh catalyst is pending. The next earnings report, fiscal Q1 <strong>2027</strong>, is roughly <strong>3</strong> months out.</p>
+<p>Options flow is mixed. Call volume on July <strong>20</strong> was <strong>3360</strong> contracts against <strong>5941</strong> puts. Put premium was <strong>$2.98M</strong> versus <strong>$1.85M</strong> in call premium. That put skew could mean hedging into the drift, or it could mean smart money is buying downside protection against a post-gap fade. You cannot know which without seeing the strikes and expirations, but the put-heavy flow tempers the bullish read.</p>
+<p>The macro backdrop is neutral. The technology sector shows no acceleration and no deceleration. You are relying entirely on stock-specific drift, which is a real edge but a narrow one. If the broad market rolls over, a <strong>3.18</strong> beta stock will not care about your thesis.</p>
+<h2>Risk Factors</h2>
+<p>The biggest risk is that you are chasing. The model entry is <strong>$80.20</strong> and the stock is at <strong>$98.91</strong>, which is <strong>23%</strong> above plan. The first target of <strong>$116.58</strong> was already touched intraday. The stated stop at <strong>$55.27</strong> sits <strong>44%</strong> below the current price, which makes the <strong>1.5</strong> reward-to-risk ratio stale. If you enter here, your real reward-to-risk is worse than the desk model assumes.</p>
+<p>The stock fell <strong>14.2%</strong> over the last <strong>21</strong> days. Momentum is choppy. A volatile chip-equipment name with a <strong>3.18</strong> beta can gap in both directions. A post-gap fade back toward the <strong>$72</strong> pre-earnings close would erase the entire move you are trying to capture. An active ATM equity offering could dilute shares and pressure the price further.</p>
+<p>The real kill signal is not the <strong>$55.27</strong> desk stop. A close back below <strong>$72</strong>, the July <strong>14</strong> pre-gap level, means the drift is dead. That is your observable invalidation. If you are buying calls, theta bleed over a <strong>3-month</strong> hold with a stop that wide is a separate problem. You are paying time premium on a drift that may have already spent its fuel.</p>
+<h2>Bringing It All Together</h2>
+<p>- The post-earnings gap from <strong>$72</strong> to <strong>$110</strong> on July <strong>14</strong> fired a validated PEAD edge with a tested risk-adjusted return of <strong>1.10</strong>.<br>- Revenue grew <strong>33.7%</strong> TTM with a fiscal <strong>2027</strong> guide of <strong>$130</strong> to <strong>$150M</strong> versus <strong>$85M</strong> consensus.<br>- The stock sits <strong>15.2%</strong> below its <strong>52-week</strong> high, above a <strong>30-week</strong> average sloping up at <strong>62.9%</strong>.<br>- The balance sheet is clean with a <strong>10.33</strong> current ratio and only <strong>$9.88M</strong> in debt.<br>- Entry is <strong>$80.20</strong> with a target of <strong>$116.58</strong> and a stop of <strong>$55.27</strong>, but price is at <strong>$98.91</strong> and the target was already touched intraday.<br>- The real invalidation is a close below <strong>$72</strong>, not the wide desk stop.</p>
+<h2>Conclusion</h2>
+<p>The PEAD edge is real and the fiscal <strong>2027</strong> guide is a genuine fundamental catalyst. The problem is timing. You are <strong>23%</strong> above the model entry and the first target was already touched. If you want this trade, you wait for a pullback toward <strong>$80</strong> to <strong>$85</strong> and enter with defined-risk options. You do not chase <strong>$98.91</strong> with a stop <strong>44%</strong> below market. The drift is your only fuel, and a close below <strong>$72</strong> kills it.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Aehr Test Systems, Inc. (AEHR) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $2.68B; 52-week range $12-$127; Revenue $50M +34% YoY; Net income $-7M; Free cash flow/share $-0.03; Debt-to-equity 0.05; Return on equity -4%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Aehr Test Systems, Inc. (AEHR) inside the Technology space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): AEHR is a defined-risk bullish options play on a steep uptrend. Three desk reads agree, including a proven pullback (**tested · risk-adjusted return 1.10 · tested), price sits **15.2%** under its high, and call flow ran **3360** contracts o. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># Catching the Drift in Silicon Carbide Test Equipment
+
+*Aehr Test Systems gapped on a blowout guide. The question is whether you chase it or wait for the fade.*
+
+## The Big Picture
+
+Semiconductor test equipment is a quiet compounder thesis hiding inside a loud AI narrative. The sector sits in neutral on both momentum and acceleration, which means you are hunting for stock-specific catalysts rather than riding a wave.
+
+Silicon carbide power semiconductors are the structural tailwind underneath Aehr. EVs, grid inverters, and industrial power management all require SiC devices, and those devices need burn-in testing before they ship. That demand is independent of the AI accelerator cycle.
+
+A neutral sector backdrop with a stock-specific gap event is exactly the setup where post-earnings drift works. You are buying a proven edge inside a quiet sector, paying for the catalyst that already fired.
+
+## Introducing AEHR
+
+Aehr Test Systems makes burn-in and test equipment for semiconductor devices. The company&#x27;s core products are the FOX-XP and FOX-NP systems, which test and stabilize devices at the wafer level and as singulated die. That matters because testing before packaging catches defects earlier and saves money.
+
+Aehr&#x27;s edge is silicon carbide. SiC power semiconductors require extensive burn-in to prove reliability, and Aehr&#x27;s WaferPak and DiePak systems handle that workload for customers pushing into EV power electronics and advanced sensors. The company is headquartered in Fremont, California, and was incorporated in **1977**.
+
+That combination of thin float and high beta (**3.18**) means the stock moves hard on catalysts. The gap you are looking at is real, and so is the risk of a fade.
+
+## The Thesis
+
+The core thesis is post-earnings drift. Aehr reported fiscal Q4 and full-year **2026** earnings on July **14**, **2026**, gapping from roughly **$72** to **$110** on a beat and a blowout fiscal **2027** guide of **$130** to **$150M** in revenue versus roughly **$85M** consensus. Post-earnings-announcement drift, or PEAD, is the tendency for stocks to keep moving in the direction of a surprise after an initial gap. The desk&#x27;s historical study of this pattern produced a validated risk-adjusted return of **1.10**, and that edge has been tested in live conditions.
+
+Three independent desk reads agree on the bullish setup. The stock sits **15.2%** below its **52-week** high of **$126.62**, which gives it room to run. Call flow printed **3360** contracts on July **20**, **2026**.
+
+The conviction is MEDIUM. The desk ranked it behind its top pick because two of the three desk reads are unproven and the recent price action is jumpy. You are buying a real edge, but you are buying it late. The reward-to-risk ratio is **1.5** to the first target of **$116.58**, and the second target sits at **$136.31** for **70.0%** upside. The stop is **$55.27**, which is **31.1%** below the model entry of **$80.20**.
+
+## Technical Analysis
+
+&gt; 📈 Insert the AEHR weekly chart here (TradingView): AEHR weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $116.58 · mark support near $55.27.
+
+The trend is intact and the stock is pulling back within an uptrend. The stock is above its **30-week** moving average, and that average is sloping up at **62.9%**, which tells you the structural trend is strong.
+
+The short-term picture is choppier. The **21-day** return is **-14.2%**, so the post-gap excitement has cooled. That means Aehr is outperforming the broad market over the intermediate term even after the recent pullback. RSI sits at **51.4** to **57.0** depending on the lookback, which is neutral. The stock is neither overbought nor oversold.
+
+The swing high is **$116.58**, which is also the first target. The swing low is **$66.94**. ATR is **$12.47**, so you should expect normal daily swings of roughly **$12** in this name. You want to see volume expand on up days and contract on down days to confirm the pullback is orderly. A close below **$66.94** would break the swing low and signal the uptrend is in trouble.
+
+You are roughly **23%** above the planned entry, which means the easy money has been made. The target of **$116.58** was already touched intraday at **$110.20** on July **15**. You are buying a drift trade after most of the drift has happened.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $2.68B |
+| Enterprise value | $2.63B |
+| 52-week range | $12.19 - $126.62 |
+| Dividend yield | None |
+| Beta | 3.18 |
+| Forward P/E | 59.6 |
+| Price / sales | 53.6 |
+| Price / book | 12.2 |
+| Revenue (TTM) | $50M  (+33.7% YoY) |
+| Revenue / share | $1.63 |
+| Net income (TTM) | $-7M |
+| EPS (TTM / fwd) | -0.23 / 1.38 |
+| Gross margin | 38.5% |
+| Operating margin | -4.2% |
+| Profit margin | -14.3% |
+| Operating cash flow / share | $-0.10 |
+| Free cash flow / share | $-0.03 |
+| Total cash / share | $3.58 |
+| Debt / equity | 0.05 |
+| Current ratio | 10.33 |
+| Return on equity | -4.2% |
+| Analyst consensus | strong buy - mean target $108.33 (3 analysts) |
+
+Revenue growth is the headline number. Trailing twelve-month revenue is **$50.0M**, up **33.7%** year over year. That growth rate supports the bull case for a company exposed to SiC ramp cycles. The forward EPS estimate is **$1.38**, which implies a meaningful swing from the trailing EPS of **-$0.23**.
+
+The valuation is rich. Forward P/E is **59.6**, price-to-sales is **53.6**, and price-to-book is **12.2**. You are paying a premium for growth and the SiC exposure. The analyst mean target is **$108.33** across **3** analysts with a strong buy recommendation. That target sits above the current price of **$98.91** but below the first desk target of **$116.58**.
+
+The balance sheet is clean. Cash per share is **$3.58**, total debt is only **$9.88M**, and debt-to-equity is **0.05**. The current ratio is **10.33** and the quick ratio is **7.5**. Liquidity is not a concern. The company is burning cash today and betting on the fiscal **2027** revenue guide to flip the model profitable. If that guide proves aggressive, the valuation has no floor.
+
+## Why Now
+
+The catalyst has already fired. Fiscal Q4 and full-year **2026** earnings landed on July **14**, **2026**, and the gap from **$72** to **$110** is the market&#x27;s verdict. The fiscal **2027** guide of **$130** to **$150M** versus **$85M** consensus is the fuel for the drift. No fresh catalyst is pending. The next earnings report, fiscal Q1 **2027**, is roughly **3** months out.
+
+Options flow is mixed. Call volume on July **20** was **3360** contracts against **5941** puts. Put premium was **$2.98M** versus **$1.85M** in call premium. That put skew could mean hedging into the drift, or it could mean smart money is buying downside protection against a post-gap fade. You cannot know which without seeing the strikes and expirations, but the put-heavy flow tempers the bullish read.
+
+The macro backdrop is neutral. The technology sector shows no acceleration and no deceleration. You are relying entirely on stock-specific drift, which is a real edge but a narrow one. If the broad market rolls over, a **3.18** beta stock will not care about your thesis.
+
+## Risk Factors
+
+The biggest risk is that you are chasing. The model entry is **$80.20** and the stock is at **$98.91**, which is **23%** above plan. The first target of **$116.58** was already touched intraday. The stated stop at **$55.27** sits **44%** below the current price, which makes the **1.5** reward-to-risk ratio stale. If you enter here, your real reward-to-risk is worse than the desk model assumes.
+
+The stock fell **14.2%** over the last **21** days. Momentum is choppy. A volatile chip-equipment name with a **3.18** beta can gap in both directions. A post-gap fade back toward the **$72** pre-earnings close would erase the entire move you are trying to capture. An active ATM equity offering could dilute shares and pressure the price further.
+
+The real kill signal is not the **$55.27** desk stop. A close back below **$72**, the July **14** pre-gap level, means the drift is dead. That is your observable invalidation. If you are buying calls, theta bleed over a **3-month** hold with a stop that wide is a separate problem. You are paying time premium on a drift that may have already spent its fuel.
+
+## Bringing It All Together
+
+- The post-earnings gap from **$72** to **$110** on July **14** fired a validated PEAD edge with a tested risk-adjusted return of **1.10**.
+- Revenue grew **33.7%** TTM with a fiscal **2027** guide of **$130** to **$150M** versus **$85M** consensus.
+- The stock sits **15.2%** below its **52-week** high, above a **30-week** average sloping up at **62.9%**.
+- The balance sheet is clean with a **10.33** current ratio and only **$9.88M** in debt.
+- Entry is **$80.20** with a target of **$116.58** and a stop of **$55.27**, but price is at **$98.91** and the target was already touched intraday.
+- The real invalidation is a close below **$72**, not the wide desk stop.
+
+## Conclusion
+
+The PEAD edge is real and the fiscal **2027** guide is a genuine fundamental catalyst. The problem is timing. You are **23%** above the model entry and the first target was already touched. If you want this trade, you wait for a pullback toward **$80** to **$85** and enter with defined-risk options. You do not chase **$98.91** with a stop **44%** below market. The drift is your only fuel, and a close below **$72** kills it.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
