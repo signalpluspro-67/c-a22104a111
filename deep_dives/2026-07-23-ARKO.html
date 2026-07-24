@@ -1,0 +1,200 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Convenience Store Operator Quietly Outperforming — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Convenience Store Operator Quietly Outperforming</h1>
+<div class="subtitle">Arko held its uptrend through a sector deceleration. The pullback setup is clean and the reward asymmetry is real.</div>
+<div class="meta">EOD 2026-07-23 · ARKO · written from the desk · model glm-5.2</div>
+<div class="chips"><span class="chip">ARKO</span>
+<span class="chip">Consumer Cyclical</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-07-23: entry <b>$7.50</b> &rarr; <b>$7.98</b> (as of 2026-07-23) · <span class="pos">+6.4%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Consumer cyclical is losing momentum. The sector reads neutral on state with a fresh downward acceleration, meaning the tailwind that lifted most discretionary names has faded.<br>You would expect a small convenience-store operator to get swept up in that cooling. Most did.<br>This backdrop rewards stock-picking over broad exposure. When a sector rolls over, the companies that hold their uptrend are telling you something about their own demand. The gap between sector direction and individual price action is where you find readable setups.<br>Arko is doing exactly that. It held its trend while the sector turned. That divergence is the setup.</p>
+<h2>Introducing ARKO</h2>
+<p>Arko Corp. runs one of the largest independent convenience store chains in the United States. The company operates through four segments. Retail sells fuel, merchandise, prepared foods, beverages, and tobacco directly to consumers. Wholesale supplies fuel to dealers and sub-wholesalers. Fleet Fueling runs cardlock locations and sells fuel through proprietary cards. GPMP handles wholesale fuel distribution across the retail and wholesale segments.<br>Arko moves a massive volume of fuel and captures margin at multiple points in the chain. The wholesale and fleet segments give it revenue stability that pure retail c-store operators lack.<br>You are buying a fuel-distribution business with a retail overlay. The retail side drives brand visibility and merchandise margin. The wholesale side drives volume. Together they produce <strong>$6.49 billion</strong> in trailing revenue from a company with a market cap under <strong>$1 billion</strong>.</p>
+<h2>The Thesis</h2>
+<p>Arko held its uptrend while the consumer cyclical sector rolled into a downward acceleration. That is the entire thesis in one sentence.<br>The stock trades <strong>7.6%</strong> below its 52-week high at <strong>$7.98</strong>. RSI sits at <strong>52.7</strong>, which is neutral and constructive after a pullback. The 30-week moving average is rising at a <strong>21.0%</strong> slope, confirming the structural trend is intact.<br>The risk-to-reward ratio is <strong>1.8</strong> to <strong>1</strong>. Entry at <strong>$7.50</strong>, stop at <strong>$6.86</strong>, target at <strong>$8.64</strong>. The pullback has been tested with a risk-adjusted return of <strong>1.10</strong>, meaning the setup has precedent on this chart pattern.<br>Conviction is medium. The chart is clean. The trend is up. The sector is a headwind. You size for the asymmetry and respect the stop.</p>
+<h2>Technical Analysis</h2>
+<p><figure class="chart"><img src="img/2026-07-23-ARKO.png" alt="ARKO weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=ARKO&interval=1W" target="_blank" rel="noopener">📈 Open the ARKO weekly chart on TradingView ↗</a><figcaption>ARKO weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $8.64 · mark support near $6.86.</figcaption></figure><br>The trend is up and the pullback is shallow. Arko closed at <strong>$7.98</strong>, which is <strong>91.1%</strong> of its 52-week high of <strong>$8.76</strong>. That places it in the top <strong>8%</strong> of its yearly range, close to breakout territory.<br>The 30-week moving average is rising at <strong>21.0%</strong> and price is above it. That is your structural bull signal. The 8-week and 21-week exponential moving averages define the short-term posture. Price is pulling back into the zone where those averages should offer support.<br>RSI reads <strong>52.7</strong> on the 14-period. That is mid-range. No overbought exhaustion, no oversold capitulation. The stock is resting after a <strong>+22.8%</strong> three-month run. The 21-day return is <strong>+3.5%</strong>, so the near-term momentum has cooled but not broken.<br>Relative strength versus SPY over <strong>63</strong> days is <strong>+19.0%</strong>. Arko is outperforming the broad market by a wide margin. That outperformance during a sector deceleration is the signal that separates this from the rest of consumer cyclical.<br>Dollar volume near <strong>$4.6 million</strong> a day is thin. You need to work entries and exits carefully. A volume spike above the <strong>20</strong>-day average on a push above <strong>$8.64</strong> would confirm the breakout. The swing high at <strong>$8.64</strong> is your first target. The swing low at <strong>$6.29</strong> is the floor that predates this entire move.<br>ATR is <strong>$0.32</strong>. That is roughly <strong>4.0%</strong> of the current price. Expect normal day-to-day noise in that range. That gives the trade room to breathe without getting stopped on noise.<br>The chart would flip bearish on a close below <strong>$6.86</strong>. That level is your invalidation.</p>
+<h2>Fundamentals</h2>
+<p><table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$891M</td></tr><tr><td class="k">Enterprise value</td><td class="v">$3.13B</td></tr><tr><td class="k">52-week range</td><td class="v">$3.71 - $8.76</td></tr><tr><td class="k">Dividend yield</td><td class="v">1.51%</td></tr><tr><td class="k">Beta</td><td class="v">0.98</td></tr><tr><td class="k">Trailing P/E</td><td class="v">39.7</td></tr><tr><td class="k">Forward P/E</td><td class="v">158.8</td></tr><tr><td class="k">Price / sales</td><td class="v">0.1</td></tr><tr><td class="k">Price / book</td><td class="v">2.3</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$6.49B  (-3.1% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$57.84</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$23M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">0.2 / 0.05</td></tr><tr><td class="k">Gross margin</td><td class="v">18.0%</td></tr><tr><td class="k">Operating margin</td><td class="v">0.7%</td></tr><tr><td class="k">Profit margin</td><td class="v">0.4%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$1.50</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$0.11</td></tr><tr><td class="k">Total cash / share</td><td class="v">$2.49</td></tr><tr><td class="k">Debt / equity</td><td class="v">4.2</td></tr><tr><td class="k">Current ratio</td><td class="v">1.62</td></tr><tr><td class="k">Return on equity</td><td class="v">6.5%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">none - mean target $8.50 (2 analysts)</td></tr></tbody></table><br>The revenue base is enormous for the market cap. Price-to-sales is <strong>0.1</strong>. You are paying almost nothing for top-line scale.<br>Profitability is the weak spot. Net income trailing twelve months is <strong>$23.0 million</strong>, producing a profit margin of <strong>0.4%</strong>. Operating margin is <strong>0.7%</strong>. Gross margin is <strong>18.0%</strong>. These are thin even for convenience retail. Fuel is a low-margin business and merchandise has to carry the weight.<br>Earnings reflect that pressure. Trailing EPS is <strong>$0.20</strong>. Forward EPS is <strong>$0.05</strong>. The trailing P/E is <strong>39.7</strong> and the forward P/E is <strong>158.8</strong>. Those multiples look expensive on the surface. The low forward EPS suggests analysts expect margin compression ahead. You need to watch the next earnings print closely.<br>Cash generation is the counterweight. OCF per share is <strong>$1.50</strong> against a stock price of <strong>$7.98</strong>. That is a healthy cash yield relative to the share price even if net income is thin.<br>The balance sheet carries real risk. That is high. The current ratio is <strong>1.62</strong> and quick ratio is <strong>0.93</strong>. Short-term liquidity covers obligations but the quick ratio below <strong>1.0</strong> means inventory is doing heavy lifting. Return on equity is <strong>6.5%</strong> and return on assets is <strong>2.1%</strong>. Modest returns on a leveraged structure.<br>The dividend is <strong>$0.12</strong> annually for a yield of <strong>1.51%</strong>. Payout ratio is <strong>0.6</strong>, so the dividend is sustainable from earnings. Cash per share is <strong>$2.49</strong>, giving the company some buffer.<br>Beta is <strong>0.98</strong>, so the stock moves roughly in line with the market. That is unusual for a small cap and reflects the defensive nature of fuel distribution revenue.<br>Two analysts cover the name with a mean target of <strong>$8.50</strong>. That target sits above the current price of <strong>$7.98</strong> and below the first chart target of <strong>$8.64</strong>.</p>
+<h2>Why Now</h2>
+<p>The catalyst is earnings on <strong>August 4, 2026</strong>, which is <strong>11</strong> days out from the session date. That is your timing window.<br>You have a stock that has outperformed by <strong>19.0%</strong> over three months pulling back <strong>7.6%</strong> from its high into a support zone. RSI is neutral at <strong>52.7</strong>. The 30-week trend is rising. This is the textbook pullback-in-an-uptrend setup, and the earnings print is the binary event that either confirms the move or invalidates it.<br>The sector headwind is actually helpful for entry timing. Consumer cyclical is showing new downward acceleration, which means most investors are rotating away. That selling pressure in the sector is keeping Arko&#x27;s price suppressed near <strong>$7.98</strong> even as its own relative strength stays strong. You get to buy a divergent name at a discount because the sector is out of favor.<br>No options flow data is available. The thin dollar volume at <strong>$4.6 million</strong> daily means the options market is likely too illiquid to signal anything useful. You rely on the chart and the fundamental setup here.<br>Entering before earnings carries binary risk. The forward EPS estimate of <strong>$0.05</strong> tells you the Street expects weakness. A beat against that low bar could drive a fast move toward <strong>$8.64</strong>. A miss could send the stock to the stop at <strong>$6.86</strong> quickly.</p>
+<h2>Risk Factors</h2>
+<p>The single biggest risk is the balance sheet. If fuel margins compress or demand softens, that debt service becomes a drag on equity holders.<br>Convenience store margins ride fuel spreads. When wholesale fuel costs spike faster than retail prices can adjust, gross margin contracts. Gross margin is already thin at <strong>18.0%</strong> and operating margin is <strong>0.7%</strong>. There is little cushion.<br>Forward EPS of <strong>$0.05</strong> versus trailing EPS of <strong>$0.20</strong> signals analyst expectation of significant earnings decline. If that decline materializes, the forward P/E of <strong>158.8</strong> becomes the anchor and the stock reprices lower.<br>Liquidity is a practical risk. Dollar volume near <strong>$4.6 million</strong> makes exits clumsy. In a fast move down toward the stop at <strong>$6.86</strong>, slippage could cost you <strong>$0.10</strong> to <strong>$0.20</strong> per share. That is real on a stock trading under <strong>$8.00</strong>.<br>The sector is decelerating. Consumer cyclical state is neutral with new downward acceleration. If that accelerates, even a strong individual name can get dragged down by sector selling pressure.<br>Invalidation is a close below <strong>$6.86</strong>. That is <strong>8.5%</strong> below current price and marks the level where the uptrend structure breaks. You exit there with no debate.<br>Earnings on <strong>August 4</strong> introduce timing risk. A gap down through the stop is possible on a bad print. You can size down before earnings or accept the binary outcome depending on your risk tolerance.</p>
+<h2>Bringing It All Together</h2>
+<p>- The setup is a tested pullback in a rising trend. Price is <strong>7.6%</strong> below the 52-week high with RSI at <strong>52.7</strong> and the 30-week average rising <strong>21.0%</strong>.<br>- Risk-to-reward is <strong>1.8</strong> to <strong>1</strong>. Entry at <strong>$7.50</strong>, stop at <strong>$6.86</strong>, target at <strong>$8.64</strong>. Upside to target is <strong>15.2%</strong>. Risk to stop is <strong>8.5%</strong>.</p>
+<p>- Earnings on <strong>August 4</strong> is the catalyst. Forward EPS of <strong>$0.05</strong> sets a low bar. A beat drives the move to <strong>$8.64</strong>. A miss tests <strong>$6.86</strong>.<br>- Debt-to-equity of <strong>4.2</strong> is the fundamental risk. You respect it by sizing for medium conviction and honoring the stop.</p>
+<h2>Conclusion</h2>
+<p>Arko is a medium-conviction long with a clean chart and real fundamental risk. The trend is intact, the relative strength is exceptional, and the pullback is shallow. You buy the setup at <strong>$7.50</strong> with a stop at <strong>$6.86</strong> and a target at <strong>$8.64</strong>. The earnings print on <strong>August 4</strong> is your catalyst. The balance sheet is your risk. Size accordingly.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Arko Corp. (ARKO) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $891M; 52-week range $4-$9; Revenue $6.49B -3% YoY; Net income $23M; Free cash flow/share $0.11; Debt-to-equity 4.2; Return on equity 6%; Dividend yield 1.5%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Arko Corp. (ARKO) inside the Consumer Cyclical space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Arko held its uptrend, trading **7.6%** below the 52-week high with RSI at **52.7** above a 30-week average rising **21.0%**. The pullback rule is graded tested at risk-adjusted return **1.10** on a clean chart.. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Convenience Store Operator Quietly Outperforming
+
+*Arko held its uptrend through a sector deceleration. The pullback setup is clean and the reward asymmetry is real.*
+
+## The Big Picture
+Consumer cyclical is losing momentum. The sector reads neutral on state with a fresh downward acceleration, meaning the tailwind that lifted most discretionary names has faded.
+You would expect a small convenience-store operator to get swept up in that cooling. Most did.
+This backdrop rewards stock-picking over broad exposure. When a sector rolls over, the companies that hold their uptrend are telling you something about their own demand. The gap between sector direction and individual price action is where you find readable setups.
+Arko is doing exactly that. It held its trend while the sector turned. That divergence is the setup.
+
+## Introducing ARKO
+Arko Corp. runs one of the largest independent convenience store chains in the United States. The company operates through four segments. Retail sells fuel, merchandise, prepared foods, beverages, and tobacco directly to consumers. Wholesale supplies fuel to dealers and sub-wholesalers. Fleet Fueling runs cardlock locations and sells fuel through proprietary cards. GPMP handles wholesale fuel distribution across the retail and wholesale segments.
+Arko moves a massive volume of fuel and captures margin at multiple points in the chain. The wholesale and fleet segments give it revenue stability that pure retail c-store operators lack.
+You are buying a fuel-distribution business with a retail overlay. The retail side drives brand visibility and merchandise margin. The wholesale side drives volume. Together they produce **$6.49 billion** in trailing revenue from a company with a market cap under **$1 billion**.
+
+## The Thesis
+Arko held its uptrend while the consumer cyclical sector rolled into a downward acceleration. That is the entire thesis in one sentence.
+The stock trades **7.6%** below its 52-week high at **$7.98**. RSI sits at **52.7**, which is neutral and constructive after a pullback. The 30-week moving average is rising at a **21.0%** slope, confirming the structural trend is intact.
+The risk-to-reward ratio is **1.8** to **1**. Entry at **$7.50**, stop at **$6.86**, target at **$8.64**. The pullback has been tested with a risk-adjusted return of **1.10**, meaning the setup has precedent on this chart pattern.
+Conviction is medium. The chart is clean. The trend is up. The sector is a headwind. You size for the asymmetry and respect the stop.
+
+## Technical Analysis
+&gt; 📈 Insert the ARKO weekly chart here (TradingView): ARKO weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $8.64 · mark support near $6.86.
+The trend is up and the pullback is shallow. Arko closed at **$7.98**, which is **91.1%** of its 52-week high of **$8.76**. That places it in the top **8%** of its yearly range, close to breakout territory.
+The 30-week moving average is rising at **21.0%** and price is above it. That is your structural bull signal. The 8-week and 21-week exponential moving averages define the short-term posture. Price is pulling back into the zone where those averages should offer support.
+RSI reads **52.7** on the 14-period. That is mid-range. No overbought exhaustion, no oversold capitulation. The stock is resting after a **+22.8%** three-month run. The 21-day return is **+3.5%**, so the near-term momentum has cooled but not broken.
+Relative strength versus SPY over **63** days is **+19.0%**. Arko is outperforming the broad market by a wide margin. That outperformance during a sector deceleration is the signal that separates this from the rest of consumer cyclical.
+Dollar volume near **$4.6 million** a day is thin. You need to work entries and exits carefully. A volume spike above the **20**-day average on a push above **$8.64** would confirm the breakout. The swing high at **$8.64** is your first target. The swing low at **$6.29** is the floor that predates this entire move.
+ATR is **$0.32**. That is roughly **4.0%** of the current price. Expect normal day-to-day noise in that range. That gives the trade room to breathe without getting stopped on noise.
+The chart would flip bearish on a close below **$6.86**. That level is your invalidation.
+
+## Fundamentals
+| Metric | Value |
+|---|---|
+| Market cap | $891M |
+| Enterprise value | $3.13B |
+| 52-week range | $3.71 - $8.76 |
+| Dividend yield | 1.51% |
+| Beta | 0.98 |
+| Trailing P/E | 39.7 |
+| Forward P/E | 158.8 |
+| Price / sales | 0.1 |
+| Price / book | 2.3 |
+| Revenue (TTM) | $6.49B  (-3.1% YoY) |
+| Revenue / share | $57.84 |
+| Net income (TTM) | $23M |
+| EPS (TTM / fwd) | 0.2 / 0.05 |
+| Gross margin | 18.0% |
+| Operating margin | 0.7% |
+| Profit margin | 0.4% |
+| Operating cash flow / share | $1.50 |
+| Free cash flow / share | $0.11 |
+| Total cash / share | $2.49 |
+| Debt / equity | 4.2 |
+| Current ratio | 1.62 |
+| Return on equity | 6.5% |
+| Analyst consensus | none - mean target $8.50 (2 analysts) |
+The revenue base is enormous for the market cap. Price-to-sales is **0.1**. You are paying almost nothing for top-line scale.
+Profitability is the weak spot. Net income trailing twelve months is **$23.0 million**, producing a profit margin of **0.4%**. Operating margin is **0.7%**. Gross margin is **18.0%**. These are thin even for convenience retail. Fuel is a low-margin business and merchandise has to carry the weight.
+Earnings reflect that pressure. Trailing EPS is **$0.20**. Forward EPS is **$0.05**. The trailing P/E is **39.7** and the forward P/E is **158.8**. Those multiples look expensive on the surface. The low forward EPS suggests analysts expect margin compression ahead. You need to watch the next earnings print closely.
+Cash generation is the counterweight. OCF per share is **$1.50** against a stock price of **$7.98**. That is a healthy cash yield relative to the share price even if net income is thin.
+The balance sheet carries real risk. That is high. The current ratio is **1.62** and quick ratio is **0.93**. Short-term liquidity covers obligations but the quick ratio below **1.0** means inventory is doing heavy lifting. Return on equity is **6.5%** and return on assets is **2.1%**. Modest returns on a leveraged structure.
+The dividend is **$0.12** annually for a yield of **1.51%**. Payout ratio is **0.6**, so the dividend is sustainable from earnings. Cash per share is **$2.49**, giving the company some buffer.
+Beta is **0.98**, so the stock moves roughly in line with the market. That is unusual for a small cap and reflects the defensive nature of fuel distribution revenue.
+Two analysts cover the name with a mean target of **$8.50**. That target sits above the current price of **$7.98** and below the first chart target of **$8.64**.
+
+## Why Now
+The catalyst is earnings on **August 4, 2026**, which is **11** days out from the session date. That is your timing window.
+You have a stock that has outperformed by **19.0%** over three months pulling back **7.6%** from its high into a support zone. RSI is neutral at **52.7**. The 30-week trend is rising. This is the textbook pullback-in-an-uptrend setup, and the earnings print is the binary event that either confirms the move or invalidates it.
+The sector headwind is actually helpful for entry timing. Consumer cyclical is showing new downward acceleration, which means most investors are rotating away. That selling pressure in the sector is keeping Arko&#x27;s price suppressed near **$7.98** even as its own relative strength stays strong. You get to buy a divergent name at a discount because the sector is out of favor.
+No options flow data is available. The thin dollar volume at **$4.6 million** daily means the options market is likely too illiquid to signal anything useful. You rely on the chart and the fundamental setup here.
+Entering before earnings carries binary risk. The forward EPS estimate of **$0.05** tells you the Street expects weakness. A beat against that low bar could drive a fast move toward **$8.64**. A miss could send the stock to the stop at **$6.86** quickly.
+
+## Risk Factors
+The single biggest risk is the balance sheet. If fuel margins compress or demand softens, that debt service becomes a drag on equity holders.
+Convenience store margins ride fuel spreads. When wholesale fuel costs spike faster than retail prices can adjust, gross margin contracts. Gross margin is already thin at **18.0%** and operating margin is **0.7%**. There is little cushion.
+Forward EPS of **$0.05** versus trailing EPS of **$0.20** signals analyst expectation of significant earnings decline. If that decline materializes, the forward P/E of **158.8** becomes the anchor and the stock reprices lower.
+Liquidity is a practical risk. Dollar volume near **$4.6 million** makes exits clumsy. In a fast move down toward the stop at **$6.86**, slippage could cost you **$0.10** to **$0.20** per share. That is real on a stock trading under **$8.00**.
+The sector is decelerating. Consumer cyclical state is neutral with new downward acceleration. If that accelerates, even a strong individual name can get dragged down by sector selling pressure.
+Invalidation is a close below **$6.86**. That is **8.5%** below current price and marks the level where the uptrend structure breaks. You exit there with no debate.
+Earnings on **August 4** introduce timing risk. A gap down through the stop is possible on a bad print. You can size down before earnings or accept the binary outcome depending on your risk tolerance.
+
+## Bringing It All Together
+
+- The setup is a tested pullback in a rising trend. Price is **7.6%** below the 52-week high with RSI at **52.7** and the 30-week average rising **21.0%**.
+- Risk-to-reward is **1.8** to **1**. Entry at **$7.50**, stop at **$6.86**, target at **$8.64**. Upside to target is **15.2%**. Risk to stop is **8.5%**.
+
+- Earnings on **August 4** is the catalyst. Forward EPS of **$0.05** sets a low bar. A beat drives the move to **$8.64**. A miss tests **$6.86**.
+- Debt-to-equity of **4.2** is the fundamental risk. You respect it by sizing for medium conviction and honoring the stop.
+
+## Conclusion
+Arko is a medium-conviction long with a clean chart and real fundamental risk. The trend is intact, the relative strength is exceptional, and the pullback is shallow. You buy the setup at **$7.50** with a stop at **$6.86** and a target at **$8.64**. The earnings print on **August 4** is your catalyst. The balance sheet is your risk. Size accordingly.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

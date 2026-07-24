@@ -1,0 +1,229 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The AI Infrastructure Pullback Worth Taking Seriously — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The AI Infrastructure Pullback Worth Taking Seriously</h1>
+<div class="subtitle">Nebius sold off hard, the chart is basing, and the options chain is deep enough to play it.</div>
+<div class="meta">EOD 2026-07-23 · NBIS · written from the desk · model glm-5.2</div>
+<div class="chips"><span class="chip">NBIS</span>
+<span class="chip">Communication Services</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-07-23: entry <b>$220.97</b> &rarr; <b>$220.97</b> (as of 2026-07-23) · <span class="pos">+0.0%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>AI infrastructure is the part of the cycle where capital intensity meets real demand. The companies building GPU clusters, cloud platforms, and developer tooling are absorbing enormous upfront spend. Free cash flow is negative across most of the space. The market is pricing future revenue, not current profitability.</p>
+<p>The Communication Services sector sits in a NEUTRAL state right now, with a NEW DOWN acceleration signal. That tells you the sector momentum is fading at the margin. Most stocks in the group are losing their bid. The broad market is rotating away from the highest-beta AI names.</p>
+<p>That rotation is exactly what creates the opportunity. A proven AI infrastructure name that pulls back <strong>22.9%</strong> from its highs, with relative strength still <strong>37.7%</strong> ahead of the market over <strong>63</strong> days, is a different animal than a sector that is breaking down. The backdrop rewards stock selection inside a cooling sector. You want the name that already proved itself, sold off on macro noise, and is now basing at a level where the risk is defined.</p>
+<h2>Introducing NBIS</h2>
+<p>Nebius Group is an AI infrastructure company built on the remains of Yandex. The company changed its name in August 2024 and pivoted hard into full-stack AI computing. It builds large-scale GPU clusters, cloud platforms, and developer tools. It has a strategic alliance with NVIDIA to support the expansion of its AI cloud infrastructure. That NVIDIA relationship is the edge. It gives Nebius access to the GPUs that every AI developer needs and cannot easily get.</p>
+<p>The company operates <strong>3</strong> segments. The core AI cloud business is the revenue engine. TripleTen is an edtech platform that re-skills people for technology careers. Avride develops autonomous driving technology for self-driving cars and delivery robotics. The AI cloud segment is where the growth and the valuation live. The other two are optionality.</p>
+<p>It serves the United States, the United Kingdom, and international markets. The company was founded in <strong>1989</strong>, but the current incarnation is barely <strong>2</strong> years old. You are buying a post-restructuring AI pure-play with a clean strategic focus and a real partnership with the dominant chipmaker in the world.</p>
+<h2>The Thesis</h2>
+<p>Nebius sold off hard and is basing at a level where the risk is defined. The stock trades at <strong>$220.97</strong>, which is <strong>22.9%</strong> below the <strong>52</strong>-week high of <strong>$299.86</strong>. RSI sits at <strong>51.4</strong>, which is neutral. Relative strength versus the market over the past <strong>63</strong> days is <strong>+37.7%</strong>. The pullback is real, but the uptrend is intact.</p>
+<p>The thesis is a tested pullback in a proven AI name. The stock is up <strong>41.5%</strong> over the past <strong>63</strong> days even after a <strong>19.7%</strong> decline over the past <strong>21</strong> days. That tells you the selling is a correction inside an uptrend, not a trend reversal. The <strong>30</strong>-week moving average is rising at a <strong>36.3%</strong> slope, and the stock is above it. The chart is clean. There are no violation flags.</p>
+<p>The options chain is the reason this name made the desk. It has the cleanest liquid options chain among the proven pullbacks the desk reviewed. Call premium is <strong>$168.02M</strong> and put premium is <strong>$167.57M</strong>. That depth means you can structure a trade with tight spreads and real liquidity. The desk conviction is MEDIUM. You size it accordingly. The entry is <strong>$220.97</strong>, the stop is <strong>$178.23</strong>, and the primary target is <strong>$286.69</strong>. That is a risk-reward of <strong>1.5</strong> to <strong>1</strong>. Risk to stop is <strong>19.3%</strong>. Upside to the primary target is <strong>29.7%</strong>. The second target is <strong>$317.13</strong>, which is <strong>43.5%</strong> upside.</p>
+<h2>Technical Analysis</h2>
+<p><figure class="chart"><img src="img/2026-07-23-NBIS.png" alt="NBIS weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=NBIS&interval=1W" target="_blank" rel="noopener">📈 Open the NBIS weekly chart on TradingView ↗</a><figcaption>NBIS weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $286.69 · mark support near $178.23.</figcaption></figure><br>The trend is up and the stock is correcting inside that trend. The <strong>30</strong>-week moving average is rising at a <strong>36.3%</strong> slope and the stock closed above it at <strong>$220.97</strong>. That is the structural support. The <strong>8</strong>-week and <strong>21</strong>-week exponential moving averages define the short-term posture. The stock is below both after the <strong>21</strong>-day decline of <strong>19.7%</strong>, which tells you the short-term momentum is still soft.</p>
+<p>The stock sits at <strong>73.7%</strong> of its <strong>52</strong>-week high and in the upper portion of its yearly range. It is <strong>22.9%</strong> below the high of <strong>$299.86</strong> and <strong>398.8%</strong> above the low of <strong>$43.89</strong>. The swing high is <strong>$286.69</strong> and the swing low is <strong>$135.51</strong>. The <strong>52</strong>-week range is wide because this stock went from <strong>$49.00</strong> to <strong>$299.86</strong> in the past year. You are buying a pullback in a stock that has already demonstrated massive range expansion.</p>
+<p>RSI is <strong>51.4</strong>, which is dead neutral. The stock is not oversold and it is not overbought. ATR is <strong>$21.37</strong>, which means you should expect normal daily swings of roughly <strong>$21</strong> on a <strong>$221</strong> stock. This is a high-volatility name. That is real liquidity.</p>
+<p>The entry is <strong>$220.97</strong>. The stop is <strong>$178.23</strong>, which sits below the swing low area and gives the trade room to absorb normal volatility. The primary target is <strong>$286.69</strong>, which is the swing high. The second target is <strong>$317.13</strong>, which projects beyond the <strong>52</strong>-week high. Relative strength versus the market is <strong>+37.7%</strong> over <strong>63</strong> days. The stock is outperforming the market even after the pullback. What would flip the read is a close below <strong>$178.23</strong> on heavy volume. That would break the <strong>30</strong>-week line and signal a trend change.</p>
+<p>The put volume is noteworthy. That kind of put skew can signal hedging or it can signal bearish positioning. With put premium at <strong>$167.57M</strong> nearly matching call premium at <strong>$168.02M</strong>, the flow is balanced in dollar terms even though contract volume skews bearish. You treat that as unresolved positioning. A surge in call volume with shrinking put open interest would confirm the basing pattern.</p>
+<h2>Fundamentals</h2>
+<p><table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$45.12B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$45.73B</td></tr><tr><td class="k">52-week range</td><td class="v">$43.89 - $299.86</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">1.4</td></tr><tr><td class="k">Trailing P/E</td><td class="v">68.6</td></tr><tr><td class="k">Forward P/E</td><td class="v">492.0</td></tr><tr><td class="k">Price / sales</td><td class="v">51.4</td></tr><tr><td class="k">Price / book</td><td class="v">6.3</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$878M  (+683.9% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$3.54</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$735M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">2.59 / 0.36</td></tr><tr><td class="k">Gross margin</td><td class="v">72.1%</td></tr><tr><td class="k">Operating margin</td><td class="v">-32.1%</td></tr><tr><td class="k">Profit margin</td><td class="v">93.1%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$12.89</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$-27.89</td></tr><tr><td class="k">Total cash / share</td><td class="v">$36.60</td></tr><tr><td class="k">Debt / equity</td><td class="v">1.32</td></tr><tr><td class="k">Current ratio</td><td class="v">8.33</td></tr><tr><td class="k">Return on equity</td><td class="v">14.1%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">buy - mean target $244.21 (14 analysts)</td></tr></tbody></table><br>The growth numbers are explosive. That is the kind of growth you see in an early-stage AI infrastructure ramp. That number is misleading. It includes non-operating gains, probably from the Yandex divestiture. The real operating story is different.</p>
+<p>The operating margin is <strong>-32.1%</strong>. The company is spending heavily to build GPU clusters and cloud infrastructure. That negative free cash flow is the capital intensity of the AI infrastructure business. The company is investing ahead of revenue. The free cash flow per share is <strong>-$27.89</strong>. That is a big number. It tells you this company burns cash to grow.</p>
+<p>The balance sheet has strengths and risks. Total cash per share is <strong>$36.60</strong>, and the current ratio is <strong>8.33</strong> with a quick ratio of <strong>8.14</strong>. Liquidity is strong. The company is funding its buildout with debt and cash reserves. Return on equity is <strong>14.1%</strong> but return on assets is <strong>-3.0%</strong>. The equity return is helped by the non-operating income. The asset return tells you the core business is not yet profitable on an operating basis.</p>
+<p>Valuation is steep. The trailing price to earnings is <strong>68.6</strong> and the forward price to earnings is <strong>492.0</strong>. The forward earnings estimate of <strong>$0.36</strong> per share versus trailing earnings of <strong>$2.59</strong> per share tells you analysts expect a sharp earnings decline. That is likely the non-operating gains rolling off. Price to sales is <strong>51.4</strong> and price to book is <strong>6.3</strong>. The analyst target mean is <strong>$244.21</strong> across <strong>14</strong> analysts with a buy recommendation. The beta is <strong>1.4</strong>, so expect the stock to move <strong>1.4</strong> times the market on any given day.</p>
+<h2>Why Now</h2>
+<p>The catalyst is earnings on <strong>August 6, 2026</strong>, which is <strong>13</strong> days out from the session date of <strong>July 23, 2026</strong>. That is the near-term event. You are entering a position ahead of a binary outcome. The <strong>63</strong>-day return of <strong>+41.5%</strong> shows the market was excited about this name before the pullback. The <strong>21</strong>-day return of <strong>-19.7%</strong> shows the market took profits or de-risked. You are buying into that de-risking.</p>
+<p>The macro backdrop is mixed. The Communication Services sector is NEUTRAL with a NEW DOWN acceleration. That is a headwind for the sector. But Nebius has relative strength of <strong>+37.7%</strong> versus the market over <strong>63</strong> days. The stock is decoupling from its sector on the upside. The sector is cooling, and the stock is still outperforming. That divergence is what you want to see in a pullback buy.</p>
+<p>The options flow matters here. Put premium is <strong>$167.57M</strong> versus call premium at <strong>$168.02M</strong>. The dollar balance is almost perfect. That suggests the market is hedging, not fleeing. If earnings on <strong>August 6</strong> delivers on the revenue growth trajectory, the put skew unwinds fast and the stock snaps back toward the swing high at <strong>$286.69</strong>.</p>
+<p>The forward earnings estimate of <strong>$0.36</strong> versus trailing earnings of <strong>$2.59</strong> sets up a low bar for the print. The market already knows the non-operating gains are rolling off. If Nebius shows accelerating AI cloud revenue and guidance that supports the infrastructure build thesis, the stock has room to run. The <strong>14</strong> analysts covering the stock have a buy recommendation and a mean target of <strong>$244.21</strong>.</p>
+<h2>Risk Factors</h2>
+<p>This is a high-beta AI name with a beta of <strong>1.4</strong> and ATR of <strong>$21.37</strong>. A growth scare would hit this stock harder than the market. If the <strong>August 6</strong> earnings print disappoints on AI cloud revenue or guides below expectations, the stock drops fast. The <strong>19.3%</strong> distance to the stop at <strong>$178.23</strong> is real risk. You can lose nearly <strong>20%</strong> of your position if the stop triggers.</p>
+<p>If the AI infrastructure demand slows or the NVIDIA alliance loosens, the company is left with heavy debt and negative free cash flow. The operating margin of <strong>-32.1%</strong> means the core business loses money on every dollar of revenue before non-operating items.</p>
+<p>The options chain has wide bid-ask spreads on some strikes. The desk flagged this as a risk. A wide bid-ask on the chain eats the edge on entry and exit. You need to use limit orders and avoid market orders.</p>
+<p>The single invalidation is a close below <strong>$178.23</strong>. That is the stop. It sits below the <strong>30</strong>-week moving average and the swing low zone. If the stock closes below that level on heavy volume, the basing pattern is broken and the trend has reversed. You exit. No exceptions.</p>
+<p>The timing risk is the <strong>13</strong>-day window to earnings. You are putting capital at risk ahead of a binary event. The stock could gap down on a bad print and blow through your stop. If you want to reduce timing risk, you can wait for the earnings print and enter on the reaction. You give up some upside but you remove the binary risk.</p>
+<h2>Bringing It All Together</h2>
+<p>- Nebius is a proven AI infrastructure name in a tested pullback, down <strong>22.9%</strong> from highs with relative strength of <strong>+37.7%</strong> versus the market over <strong>63</strong> days.</p>
+<p>- The chart is clean with the stock above a rising <strong>30</strong>-week moving average at a <strong>36.3%</strong> slope, no violation flags, and RSI at <strong>51.4</strong> in neutral territory.<br>- The options chain is the deepest among the desk&#x27;s pullback candidates, with <strong>$168.02M</strong> in call premium and <strong>$167.57M</strong> in put premium on the day.<br>- Entry at <strong>$220.97</strong>, stop at <strong>$178.23</strong>, primary target at <strong>$286.69</strong> for a <strong>1.5</strong> risk-reward, with a second target at <strong>$317.13</strong> offering <strong>43.5%</strong> upside.<br>- Earnings on <strong>August 6, 2026</strong> is the catalyst, <strong>13</strong> days out, with a low forward earnings bar of <strong>$0.36</strong> per share that the market has already discounted.</p>
+<h2>Conclusion</h2>
+<p>Nebius is a MEDIUM conviction long. The pullback is real, the chart is clean, and the options chain is liquid enough to trade with defined risk. The growth profile is exceptional but the cash burn is serious. You are buying a basing AI infrastructure name ahead of earnings with a defined stop at <strong>$178.23</strong> and a primary target at <strong>$286.69</strong>. The sector headwind is a concern. The relative strength offsets it. You take the trade with size that reflects a MEDIUM conviction and a <strong>19.3%</strong> risk to stop. If the stock closes below <strong>$178.23</strong>, you are out.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Nebius Group N.V. (NBIS) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $45.12B; 52-week range $44-$300; Revenue $878M +684% YoY; Net income $735M; Free cash flow/share $-27.89; Debt-to-equity 1.32; Return on equity 14%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Nebius Group N.V. (NBIS) inside the Communication Services space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Nebius sold off hard and is basing, trading **22.9%** below the 52-week high with RSI at **51.4** and relative strength **37.7%** ahead of the market. The pullback rule is graded tested at risk-adjusted return **1.10**, the chart is clean, . Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The AI Infrastructure Pullback Worth Taking Seriously
+
+*Nebius sold off hard, the chart is basing, and the options chain is deep enough to play it.*
+
+## The Big Picture
+AI infrastructure is the part of the cycle where capital intensity meets real demand. The companies building GPU clusters, cloud platforms, and developer tooling are absorbing enormous upfront spend. Free cash flow is negative across most of the space. The market is pricing future revenue, not current profitability.
+
+The Communication Services sector sits in a NEUTRAL state right now, with a NEW DOWN acceleration signal. That tells you the sector momentum is fading at the margin. Most stocks in the group are losing their bid. The broad market is rotating away from the highest-beta AI names.
+
+That rotation is exactly what creates the opportunity. A proven AI infrastructure name that pulls back **22.9%** from its highs, with relative strength still **37.7%** ahead of the market over **63** days, is a different animal than a sector that is breaking down. The backdrop rewards stock selection inside a cooling sector. You want the name that already proved itself, sold off on macro noise, and is now basing at a level where the risk is defined.
+
+## Introducing NBIS
+Nebius Group is an AI infrastructure company built on the remains of Yandex. The company changed its name in August 2024 and pivoted hard into full-stack AI computing. It builds large-scale GPU clusters, cloud platforms, and developer tools. It has a strategic alliance with NVIDIA to support the expansion of its AI cloud infrastructure. That NVIDIA relationship is the edge. It gives Nebius access to the GPUs that every AI developer needs and cannot easily get.
+
+The company operates **3** segments. The core AI cloud business is the revenue engine. TripleTen is an edtech platform that re-skills people for technology careers. Avride develops autonomous driving technology for self-driving cars and delivery robotics. The AI cloud segment is where the growth and the valuation live. The other two are optionality.
+
+It serves the United States, the United Kingdom, and international markets. The company was founded in **1989**, but the current incarnation is barely **2** years old. You are buying a post-restructuring AI pure-play with a clean strategic focus and a real partnership with the dominant chipmaker in the world.
+
+## The Thesis
+Nebius sold off hard and is basing at a level where the risk is defined. The stock trades at **$220.97**, which is **22.9%** below the **52**-week high of **$299.86**. RSI sits at **51.4**, which is neutral. Relative strength versus the market over the past **63** days is **+37.7%**. The pullback is real, but the uptrend is intact.
+
+The thesis is a tested pullback in a proven AI name. The stock is up **41.5%** over the past **63** days even after a **19.7%** decline over the past **21** days. That tells you the selling is a correction inside an uptrend, not a trend reversal. The **30**-week moving average is rising at a **36.3%** slope, and the stock is above it. The chart is clean. There are no violation flags.
+
+The options chain is the reason this name made the desk. It has the cleanest liquid options chain among the proven pullbacks the desk reviewed. Call premium is **$168.02M** and put premium is **$167.57M**. That depth means you can structure a trade with tight spreads and real liquidity. The desk conviction is MEDIUM. You size it accordingly. The entry is **$220.97**, the stop is **$178.23**, and the primary target is **$286.69**. That is a risk-reward of **1.5** to **1**. Risk to stop is **19.3%**. Upside to the primary target is **29.7%**. The second target is **$317.13**, which is **43.5%** upside.
+
+## Technical Analysis
+&gt; 📈 Insert the NBIS weekly chart here (TradingView): NBIS weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $286.69 · mark support near $178.23.
+The trend is up and the stock is correcting inside that trend. The **30**-week moving average is rising at a **36.3%** slope and the stock closed above it at **$220.97**. That is the structural support. The **8**-week and **21**-week exponential moving averages define the short-term posture. The stock is below both after the **21**-day decline of **19.7%**, which tells you the short-term momentum is still soft.
+
+The stock sits at **73.7%** of its **52**-week high and in the upper portion of its yearly range. It is **22.9%** below the high of **$299.86** and **398.8%** above the low of **$43.89**. The swing high is **$286.69** and the swing low is **$135.51**. The **52**-week range is wide because this stock went from **$49.00** to **$299.86** in the past year. You are buying a pullback in a stock that has already demonstrated massive range expansion.
+
+RSI is **51.4**, which is dead neutral. The stock is not oversold and it is not overbought. ATR is **$21.37**, which means you should expect normal daily swings of roughly **$21** on a **$221** stock. This is a high-volatility name. That is real liquidity.
+
+The entry is **$220.97**. The stop is **$178.23**, which sits below the swing low area and gives the trade room to absorb normal volatility. The primary target is **$286.69**, which is the swing high. The second target is **$317.13**, which projects beyond the **52**-week high. Relative strength versus the market is **+37.7%** over **63** days. The stock is outperforming the market even after the pullback. What would flip the read is a close below **$178.23** on heavy volume. That would break the **30**-week line and signal a trend change.
+
+The put volume is noteworthy. That kind of put skew can signal hedging or it can signal bearish positioning. With put premium at **$167.57M** nearly matching call premium at **$168.02M**, the flow is balanced in dollar terms even though contract volume skews bearish. You treat that as unresolved positioning. A surge in call volume with shrinking put open interest would confirm the basing pattern.
+
+## Fundamentals
+| Metric | Value |
+|---|---|
+| Market cap | $45.12B |
+| Enterprise value | $45.73B |
+| 52-week range | $43.89 - $299.86 |
+| Dividend yield | None |
+| Beta | 1.4 |
+| Trailing P/E | 68.6 |
+| Forward P/E | 492.0 |
+| Price / sales | 51.4 |
+| Price / book | 6.3 |
+| Revenue (TTM) | $878M  (+683.9% YoY) |
+| Revenue / share | $3.54 |
+| Net income (TTM) | $735M |
+| EPS (TTM / fwd) | 2.59 / 0.36 |
+| Gross margin | 72.1% |
+| Operating margin | -32.1% |
+| Profit margin | 93.1% |
+| Operating cash flow / share | $12.89 |
+| Free cash flow / share | $-27.89 |
+| Total cash / share | $36.60 |
+| Debt / equity | 1.32 |
+| Current ratio | 8.33 |
+| Return on equity | 14.1% |
+| Analyst consensus | buy - mean target $244.21 (14 analysts) |
+The growth numbers are explosive. That is the kind of growth you see in an early-stage AI infrastructure ramp. That number is misleading. It includes non-operating gains, probably from the Yandex divestiture. The real operating story is different.
+
+The operating margin is **-32.1%**. The company is spending heavily to build GPU clusters and cloud infrastructure. That negative free cash flow is the capital intensity of the AI infrastructure business. The company is investing ahead of revenue. The free cash flow per share is **-$27.89**. That is a big number. It tells you this company burns cash to grow.
+
+The balance sheet has strengths and risks. Total cash per share is **$36.60**, and the current ratio is **8.33** with a quick ratio of **8.14**. Liquidity is strong. The company is funding its buildout with debt and cash reserves. Return on equity is **14.1%** but return on assets is **-3.0%**. The equity return is helped by the non-operating income. The asset return tells you the core business is not yet profitable on an operating basis.
+
+Valuation is steep. The trailing price to earnings is **68.6** and the forward price to earnings is **492.0**. The forward earnings estimate of **$0.36** per share versus trailing earnings of **$2.59** per share tells you analysts expect a sharp earnings decline. That is likely the non-operating gains rolling off. Price to sales is **51.4** and price to book is **6.3**. The analyst target mean is **$244.21** across **14** analysts with a buy recommendation. The beta is **1.4**, so expect the stock to move **1.4** times the market on any given day.
+
+## Why Now
+The catalyst is earnings on **August 6, 2026**, which is **13** days out from the session date of **July 23, 2026**. That is the near-term event. You are entering a position ahead of a binary outcome. The **63**-day return of **+41.5%** shows the market was excited about this name before the pullback. The **21**-day return of **-19.7%** shows the market took profits or de-risked. You are buying into that de-risking.
+
+The macro backdrop is mixed. The Communication Services sector is NEUTRAL with a NEW DOWN acceleration. That is a headwind for the sector. But Nebius has relative strength of **+37.7%** versus the market over **63** days. The stock is decoupling from its sector on the upside. The sector is cooling, and the stock is still outperforming. That divergence is what you want to see in a pullback buy.
+
+The options flow matters here. Put premium is **$167.57M** versus call premium at **$168.02M**. The dollar balance is almost perfect. That suggests the market is hedging, not fleeing. If earnings on **August 6** delivers on the revenue growth trajectory, the put skew unwinds fast and the stock snaps back toward the swing high at **$286.69**.
+
+The forward earnings estimate of **$0.36** versus trailing earnings of **$2.59** sets up a low bar for the print. The market already knows the non-operating gains are rolling off. If Nebius shows accelerating AI cloud revenue and guidance that supports the infrastructure build thesis, the stock has room to run. The **14** analysts covering the stock have a buy recommendation and a mean target of **$244.21**.
+
+## Risk Factors
+This is a high-beta AI name with a beta of **1.4** and ATR of **$21.37**. A growth scare would hit this stock harder than the market. If the **August 6** earnings print disappoints on AI cloud revenue or guides below expectations, the stock drops fast. The **19.3%** distance to the stop at **$178.23** is real risk. You can lose nearly **20%** of your position if the stop triggers.
+
+If the AI infrastructure demand slows or the NVIDIA alliance loosens, the company is left with heavy debt and negative free cash flow. The operating margin of **-32.1%** means the core business loses money on every dollar of revenue before non-operating items.
+
+The options chain has wide bid-ask spreads on some strikes. The desk flagged this as a risk. A wide bid-ask on the chain eats the edge on entry and exit. You need to use limit orders and avoid market orders.
+
+The single invalidation is a close below **$178.23**. That is the stop. It sits below the **30**-week moving average and the swing low zone. If the stock closes below that level on heavy volume, the basing pattern is broken and the trend has reversed. You exit. No exceptions.
+
+The timing risk is the **13**-day window to earnings. You are putting capital at risk ahead of a binary event. The stock could gap down on a bad print and blow through your stop. If you want to reduce timing risk, you can wait for the earnings print and enter on the reaction. You give up some upside but you remove the binary risk.
+
+## Bringing It All Together
+- Nebius is a proven AI infrastructure name in a tested pullback, down **22.9%** from highs with relative strength of **+37.7%** versus the market over **63** days.
+
+- The chart is clean with the stock above a rising **30**-week moving average at a **36.3%** slope, no violation flags, and RSI at **51.4** in neutral territory.
+- The options chain is the deepest among the desk&#x27;s pullback candidates, with **$168.02M** in call premium and **$167.57M** in put premium on the day.
+- Entry at **$220.97**, stop at **$178.23**, primary target at **$286.69** for a **1.5** risk-reward, with a second target at **$317.13** offering **43.5%** upside.
+- Earnings on **August 6, 2026** is the catalyst, **13** days out, with a low forward earnings bar of **$0.36** per share that the market has already discounted.
+
+## Conclusion
+Nebius is a MEDIUM conviction long. The pullback is real, the chart is clean, and the options chain is liquid enough to trade with defined risk. The growth profile is exceptional but the cash burn is serious. You are buying a basing AI infrastructure name ahead of earnings with a defined stop at **$178.23** and a primary target at **$286.69**. The sector headwind is a concern. The relative strength offsets it. You take the trade with size that reflects a MEDIUM conviction and a **19.3%** risk to stop. If the stock closes below **$178.23**, you are out.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
