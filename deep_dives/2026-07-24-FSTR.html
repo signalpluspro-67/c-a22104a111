@@ -1,0 +1,233 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A Quiet Infrastructure Name With Real Relative Strength — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>A Quiet Infrastructure Name With Real Relative Strength</h1>
+<div class="subtitle">L.B. Foster is up 37% versus SPY over three months. The chart says the pullback is buyable.</div>
+<div class="meta">EOD 2026-07-24 · FSTR · written from the desk · model glm-5.2</div>
+<div class="chips"><span class="chip">FSTR</span>
+<span class="chip">Industrials</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-07-24: entry <b>$40.05</b> &rarr; <b>$42.40</b> (as of 2026-07-24) · <span class="pos">+5.9%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>The industrials sector is in a tricky spot. It trades with a NEUTRAL read overall, but the acceleration is DECELERATING. That means the tailwind that lifted most industrial stocks earlier in the cycle is fading. You can&#x27;t buy the whole sector and expect easy gains.</p>
+<p>The structural story underneath still holds. U.S. infrastructure spending is real. Railroads need maintenance, bridges need steel, and transit systems need upgraded track. That work does not disappear when the sector ETF pauses. It keeps flowing to the companies that actually supply the parts.</p>
+<p>The companies that win in a decelerating tape are the ones with their own momentum. When the sector stops lifting every boat, relative strength tells you where real demand sits. A small industrial supplier outperforming the market by double digits over a quarter is telling you something. That divergence is where you find the next leg.</p>
+<p>This backdrop rewards a name that has already proven it can rise when the sector stalls. You want the stock that separates from the pack. The one with rising revenue, a clean trend, and a chart that says buyers are stepping in on every dip.</p>
+<h2>Introducing FSTR</h2>
+<p>L.B. Foster Company has been building and supplying infrastructure since <strong>1902</strong>. It operates two segments: Rail, Technologies, and Services, and Infrastructure Solutions.</p>
+<p>The Rail segment is the heritage business. Foster sells new and used rail to passenger and short line freight railroads, industrial companies, and rail contractors. It supplies track spikes, bolts, angle bars, tie plates, insulated rail joints, fixation fasteners, coverboards, power rail, and trackwork products. It also builds friction management systems, wheel impact load detection equipment, wayside data collection systems, and monitoring for rockfall, flood, earthworks, and bridge strikes. Aftermarket services round out the segment.</p>
+<p>The Infrastructure Solutions segment manufactures precast concrete products under the CXT brand. That includes restrooms, concession stands, and protective storage buildings for national, state, and municipal parks. It also produces sound walls, bridge beams, and wet and dry utility concrete products. The segment supplies steel bridge products, corrosion protection solutions, pipe threading and painting for oil and gas production, fabricated steel and aluminum, and protective pipeline coating services. The company serves the United States, Canada, the United Kingdom, and international markets.</p>
+<h2>The Thesis</h2>
+<p>Foster is a proven pullback with standout relative strength. The stock is up <strong>37.1%</strong> versus SPY over three months. That is the strongest relative strength in the group. It sits just <strong>6.1%</strong> under its 52-week high with RSI at <strong>51.0</strong> on a 30-week average rising <strong>17.1%</strong>.</p>
+<p>The setup is a stock that ran hard, pulled back modestly, and is now resting near the top of its range. RSI at <strong>51.0</strong> tells you the momentum reset is mostly done. The 30-week average sloping up at <strong>17.1%</strong> tells you the structural trend is intact. You are buying a breather in a strong move, not a breakdown.</p>
+<p>The desk read confirms the setup. The tested, risk-adjusted return is <strong>1.10</strong>. The reward-to-risk is <strong>1.6</strong> with entry at <strong>40.05</strong>, stop at <strong>36.91</strong>, and target at <strong>45.17</strong>. Risk to stop is <strong>7.8%</strong>. Upside to the first target is <strong>12.8%</strong>. A second derived target sits at <strong>47.11</strong>, good for <strong>17.6%</strong> upside.</p>
+<p>Conviction is MEDIUM. The relative strength and trend quality earn the rating. The liquidity profile keeps it from going higher. You size this small and accept the thin tape as the cost of admission.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-07-24-FSTR.png" alt="FSTR weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=FSTR&interval=1W" target="_blank" rel="noopener">📈 Open the FSTR weekly chart on TradingView ↗</a><figcaption>FSTR weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $45.17 · mark support near $36.91.</figcaption></figure>
+<p>The trend is up and the chart is in a rest phase. The stock closed at <strong>42.4</strong> on the session, sitting at <strong>92.6%</strong> of its 52-week high of <strong>45.81</strong>. It is <strong>6.1%</strong> below that high and <strong>92.0%</strong> above the 52-week low of <strong>21.67</strong>. The position in the 52-week range is <strong>85.9%</strong>, which places it in the top <strong>14%</strong> of its yearly range.</p>
+<p>The 30-week average is rising at <strong>17.1%</strong> and the stock is above it. That is your structural support. The stock has pulled back <strong>2.1%</strong> over <strong>21</strong> trading days after gaining <strong>41.4%</strong> over <strong>63</strong> trading days. That is a shallow, orderly pullback in a strong uptrend. RSI at <strong>51.0</strong> confirms the cooldown. There is no overbought risk and no oversold damage.</p>
+<p>The reference levels are tight. Entry sits at <strong>40.05</strong>. Stop sits at <strong>36.91</strong>. Target sits at <strong>45.17</strong>, which lines up with the swing high. The second target at <strong>47.11</strong> sits just above the 52-week high. ATR is <strong>1.57</strong>, so expect normal daily swings under <strong>2</strong> points. That is thin. You need to see volume expand on up days to confirm the next leg. A breakout above <strong>45.17</strong> on volume above the <strong>20</strong>-day average would tell you buyers are committing. A close below <strong>40.05</strong> would tell you the pullback is becoming something worse.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$439M</td></tr><tr><td class="k">Enterprise value</td><td class="v">$518M</td></tr><tr><td class="k">52-week range</td><td class="v">$21.67 - $45.81</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">1.14</td></tr><tr><td class="k">Trailing P/E</td><td class="v">40.7</td></tr><tr><td class="k">Forward P/E</td><td class="v">21.2</td></tr><tr><td class="k">Price / sales</td><td class="v">0.8</td></tr><tr><td class="k">Price / book</td><td class="v">2.5</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$563M  (+23.9% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$54.76</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$11M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">1.03 / 1.98</td></tr><tr><td class="k">Gross margin</td><td class="v">21.5%</td></tr><tr><td class="k">Operating margin</td><td class="v">1.7%</td></tr><tr><td class="k">Profit margin</td><td class="v">2.0%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$4.91</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$3.36</td></tr><tr><td class="k">Total cash / share</td><td class="v">$0.38</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.48</td></tr><tr><td class="k">Current ratio</td><td class="v">2.22</td></tr><tr><td class="k">Return on equity</td><td class="v">6.4%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">none - mean target $40.00 (2 analysts)</td></tr></tbody></table>
+<p>Revenue growth is the headline number. That is a strong top-line pace for a small-cap industrial. Revenue per share is <strong>$54.76</strong>, well above the stock price, which gives you a price-to-sales ratio of <strong>0.8</strong>. The market is paying less than <strong>1</strong> times sales for a company growing near <strong>24%</strong>.</p>
+<p>Profitability is the weak spot. EPS trailing is <strong>$1.03</strong>. Gross margin is <strong>21.5%</strong> and operating margin is <strong>1.7%</strong>. The operating margin is thin. Any revenue slowdown would compress it fast. The forward EPS estimate is <strong>$1.98</strong>, which implies the market expects margins to expand. That gives you a forward P/E of <strong>21.2</strong> versus a trailing P/E of <strong>40.7</strong>. The compression from <strong>40.7</strong> to <strong>21.2</strong> tells you analysts see earnings nearly doubling.</p>
+<p>The balance sheet is clean enough. Debt to equity is <strong>0.48</strong>. The current ratio is <strong>2.22</strong> and the quick ratio is <strong>1.17</strong>. Free cash flow per share is <strong>$3.36</strong>, which gives the company real cash generation despite the thin margins. Cash per share is only <strong>$0.38</strong>, so liquidity comes from operations, not the balance sheet. Return on equity is <strong>6.4%</strong> and return on assets is <strong>5.4%</strong>. The company has <strong>2</strong> analysts covering it with a mean target of <strong>$40.0</strong>, which sits below the current price. That tells you the Street has not caught up to the move.</p>
+<h2>Why Now</h2>
+<p>That is your near-term catalyst. The stock pulled back <strong>2.1%</strong> over <strong>21</strong> days into this date. A company growing revenue at <strong>23.9%</strong> with forward EPS estimates nearly double the trailing figure has a setup where positive surprise is asymmetric. The mean analyst target is <strong>$40.0</strong> and the stock trades at <strong>$42.4</strong>. The Street is already behind.</p>
+<p>The sector is NEUTRAL and DECELERATING, so you cannot rely on a broad industrials bid. The relative strength of <strong>37.1%</strong> versus SPY over <strong>63</strong> days tells you this stock has its own driver. When a stock outperforms by that margin in a flat sector, the demand is stock-specific. That is the kind of divergence you want ahead of a print.</p>
+<p>There is no options flow data available. The catalyst is purely fundamental. If the print confirms the revenue trajectory, the thin float works in your favor. If it disappoints, the thin float works against you.</p>
+<h2>Risk Factors</h2>
+<p>Liquidity is the primary risk. Daily volume near <strong>3.1M</strong> dollars is at the low end of the gate. That is a small pool of liquidity. You cannot size this like a large-cap industrial. This is a small-size position.</p>
+<p>A broad industrials fade is the main macro threat. The sector is already DECELERATING. If industrials roll over, even a stock with <strong>37.1%</strong> relative strength can get pulled down.</p>
+<p>The profit margin is <strong>2.0%</strong> and the operating margin is <strong>1.7%</strong>. That is razor thin. Any cost pressure or revenue miss would hit earnings hard. The forward EPS estimate of <strong>$1.98</strong> is an expectation, and the market is pricing it in with a forward P/E of <strong>21.2</strong>. If the company misses that trajectory, the stock has room to fall.</p>
+<p>The invalidation is a close below <strong>36.91</strong>. That is your stop. It sits <strong>7.8%</strong> below the entry at <strong>40.05</strong> and well under the 30-week average. A close there breaks the trend structure and tells you the pullback is done being a pullback.</p>
+<h2>Bringing It All Together</h2>
+<p>- Revenue growth of <strong>23.9%</strong> with a price-to-sales of <strong>0.8</strong> gives you a cheap entry on a growing industrial supplier.<br>- Relative strength of <strong>37.1%</strong> versus SPY over <strong>63</strong> days is the strongest in the group, signaling stock-specific demand.<br>- The 30-week average is rising <strong>17.1%</strong> with RSI at <strong>51.0</strong>, so the trend is intact and the momentum reset is nearly complete.<br>- Entry at <strong>40.05</strong> with stop at <strong>36.91</strong> gives you <strong>7.8%</strong> risk, with target at <strong>45.17</strong> for <strong>12.8%</strong> upside and a second target at <strong>47.11</strong> for <strong>17.6%</strong>.</p>
+<p>- Daily volume near <strong>$3.1M</strong> keeps this a small-size position, and a close below <strong>36.91</strong> is the hard invalidation.</p>
+<h2>Conclusion</h2>
+<p>L.B. Foster gives you a rare combination. Strong revenue growth, clean relative strength, and a chart resting near the top of its range. The pullback is shallow, the trend is intact, and earnings in <strong>16</strong> days provide a clear catalyst. The thin liquidity and razor-thin margins are real risks. You size small, enter at <strong>40.05</strong>, and exit at <strong>36.91</strong> if the structure breaks. The relative strength says this stock has its own story, and the fundamentals say that story is backed by real growth.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;L.B. Foster Company (FSTR) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $439M; 52-week range $22-$46; Revenue $563M +24% YoY; Net income $11M; Free cash flow/share $3.36; Debt-to-equity 0.48; Return on equity 6%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for L.B. Foster Company (FSTR) inside the Industrials space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Foster is a proven pullback with standout relative strength, up **37.1%** versus SPY over three months. It sits just **6.1%** under its 52-week high with RSI **51.0** on a 30-week average rising **17.1%**. The a proprietary desk read read i. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># A Quiet Infrastructure Name With Real Relative Strength
+
+*L.B. Foster is up 37% versus SPY over three months. The chart says the pullback is buyable.*
+
+## The Big Picture
+
+The industrials sector is in a tricky spot. It trades with a NEUTRAL read overall, but the acceleration is DECELERATING. That means the tailwind that lifted most industrial stocks earlier in the cycle is fading. You can&#x27;t buy the whole sector and expect easy gains.
+
+The structural story underneath still holds. U.S. infrastructure spending is real. Railroads need maintenance, bridges need steel, and transit systems need upgraded track. That work does not disappear when the sector ETF pauses. It keeps flowing to the companies that actually supply the parts.
+
+The companies that win in a decelerating tape are the ones with their own momentum. When the sector stops lifting every boat, relative strength tells you where real demand sits. A small industrial supplier outperforming the market by double digits over a quarter is telling you something. That divergence is where you find the next leg.
+
+This backdrop rewards a name that has already proven it can rise when the sector stalls. You want the stock that separates from the pack. The one with rising revenue, a clean trend, and a chart that says buyers are stepping in on every dip.
+
+## Introducing FSTR
+
+L.B. Foster Company has been building and supplying infrastructure since **1902**. It operates two segments: Rail, Technologies, and Services, and Infrastructure Solutions.
+
+The Rail segment is the heritage business. Foster sells new and used rail to passenger and short line freight railroads, industrial companies, and rail contractors. It supplies track spikes, bolts, angle bars, tie plates, insulated rail joints, fixation fasteners, coverboards, power rail, and trackwork products. It also builds friction management systems, wheel impact load detection equipment, wayside data collection systems, and monitoring for rockfall, flood, earthworks, and bridge strikes. Aftermarket services round out the segment.
+
+The Infrastructure Solutions segment manufactures precast concrete products under the CXT brand. That includes restrooms, concession stands, and protective storage buildings for national, state, and municipal parks. It also produces sound walls, bridge beams, and wet and dry utility concrete products. The segment supplies steel bridge products, corrosion protection solutions, pipe threading and painting for oil and gas production, fabricated steel and aluminum, and protective pipeline coating services. The company serves the United States, Canada, the United Kingdom, and international markets.
+
+## The Thesis
+
+Foster is a proven pullback with standout relative strength. The stock is up **37.1%** versus SPY over three months. That is the strongest relative strength in the group. It sits just **6.1%** under its 52-week high with RSI at **51.0** on a 30-week average rising **17.1%**.
+
+The setup is a stock that ran hard, pulled back modestly, and is now resting near the top of its range. RSI at **51.0** tells you the momentum reset is mostly done. The 30-week average sloping up at **17.1%** tells you the structural trend is intact. You are buying a breather in a strong move, not a breakdown.
+
+The desk read confirms the setup. The tested, risk-adjusted return is **1.10**. The reward-to-risk is **1.6** with entry at **40.05**, stop at **36.91**, and target at **45.17**. Risk to stop is **7.8%**. Upside to the first target is **12.8%**. A second derived target sits at **47.11**, good for **17.6%** upside.
+
+Conviction is MEDIUM. The relative strength and trend quality earn the rating. The liquidity profile keeps it from going higher. You size this small and accept the thin tape as the cost of admission.
+
+## Technical Analysis
+
+&gt; 📈 Insert the FSTR weekly chart here (TradingView): FSTR weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $45.17 · mark support near $36.91.
+
+The trend is up and the chart is in a rest phase. The stock closed at **42.4** on the session, sitting at **92.6%** of its 52-week high of **45.81**. It is **6.1%** below that high and **92.0%** above the 52-week low of **21.67**. The position in the 52-week range is **85.9%**, which places it in the top **14%** of its yearly range.
+
+The 30-week average is rising at **17.1%** and the stock is above it. That is your structural support. The stock has pulled back **2.1%** over **21** trading days after gaining **41.4%** over **63** trading days. That is a shallow, orderly pullback in a strong uptrend. RSI at **51.0** confirms the cooldown. There is no overbought risk and no oversold damage.
+
+The reference levels are tight. Entry sits at **40.05**. Stop sits at **36.91**. Target sits at **45.17**, which lines up with the swing high. The second target at **47.11** sits just above the 52-week high. ATR is **1.57**, so expect normal daily swings under **2** points. That is thin. You need to see volume expand on up days to confirm the next leg. A breakout above **45.17** on volume above the **20**-day average would tell you buyers are committing. A close below **40.05** would tell you the pullback is becoming something worse.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $439M |
+| Enterprise value | $518M |
+| 52-week range | $21.67 - $45.81 |
+| Dividend yield | None |
+| Beta | 1.14 |
+| Trailing P/E | 40.7 |
+| Forward P/E | 21.2 |
+| Price / sales | 0.8 |
+| Price / book | 2.5 |
+| Revenue (TTM) | $563M  (+23.9% YoY) |
+| Revenue / share | $54.76 |
+| Net income (TTM) | $11M |
+| EPS (TTM / fwd) | 1.03 / 1.98 |
+| Gross margin | 21.5% |
+| Operating margin | 1.7% |
+| Profit margin | 2.0% |
+| Operating cash flow / share | $4.91 |
+| Free cash flow / share | $3.36 |
+| Total cash / share | $0.38 |
+| Debt / equity | 0.48 |
+| Current ratio | 2.22 |
+| Return on equity | 6.4% |
+| Analyst consensus | none - mean target $40.00 (2 analysts) |
+
+Revenue growth is the headline number. That is a strong top-line pace for a small-cap industrial. Revenue per share is **$54.76**, well above the stock price, which gives you a price-to-sales ratio of **0.8**. The market is paying less than **1** times sales for a company growing near **24%**.
+
+Profitability is the weak spot. EPS trailing is **$1.03**. Gross margin is **21.5%** and operating margin is **1.7%**. The operating margin is thin. Any revenue slowdown would compress it fast. The forward EPS estimate is **$1.98**, which implies the market expects margins to expand. That gives you a forward P/E of **21.2** versus a trailing P/E of **40.7**. The compression from **40.7** to **21.2** tells you analysts see earnings nearly doubling.
+
+The balance sheet is clean enough. Debt to equity is **0.48**. The current ratio is **2.22** and the quick ratio is **1.17**. Free cash flow per share is **$3.36**, which gives the company real cash generation despite the thin margins. Cash per share is only **$0.38**, so liquidity comes from operations, not the balance sheet. Return on equity is **6.4%** and return on assets is **5.4%**. The company has **2** analysts covering it with a mean target of **$40.0**, which sits below the current price. That tells you the Street has not caught up to the move.
+
+## Why Now
+
+That is your near-term catalyst. The stock pulled back **2.1%** over **21** days into this date. A company growing revenue at **23.9%** with forward EPS estimates nearly double the trailing figure has a setup where positive surprise is asymmetric. The mean analyst target is **$40.0** and the stock trades at **$42.4**. The Street is already behind.
+
+The sector is NEUTRAL and DECELERATING, so you cannot rely on a broad industrials bid. The relative strength of **37.1%** versus SPY over **63** days tells you this stock has its own driver. When a stock outperforms by that margin in a flat sector, the demand is stock-specific. That is the kind of divergence you want ahead of a print.
+
+There is no options flow data available. The catalyst is purely fundamental. If the print confirms the revenue trajectory, the thin float works in your favor. If it disappoints, the thin float works against you.
+
+## Risk Factors
+
+Liquidity is the primary risk. Daily volume near **3.1M** dollars is at the low end of the gate. That is a small pool of liquidity. You cannot size this like a large-cap industrial. This is a small-size position.
+
+A broad industrials fade is the main macro threat. The sector is already DECELERATING. If industrials roll over, even a stock with **37.1%** relative strength can get pulled down.
+
+The profit margin is **2.0%** and the operating margin is **1.7%**. That is razor thin. Any cost pressure or revenue miss would hit earnings hard. The forward EPS estimate of **$1.98** is an expectation, and the market is pricing it in with a forward P/E of **21.2**. If the company misses that trajectory, the stock has room to fall.
+
+The invalidation is a close below **36.91**. That is your stop. It sits **7.8%** below the entry at **40.05** and well under the 30-week average. A close there breaks the trend structure and tells you the pullback is done being a pullback.
+
+## Bringing It All Together
+
+- Revenue growth of **23.9%** with a price-to-sales of **0.8** gives you a cheap entry on a growing industrial supplier.
+- Relative strength of **37.1%** versus SPY over **63** days is the strongest in the group, signaling stock-specific demand.
+- The 30-week average is rising **17.1%** with RSI at **51.0**, so the trend is intact and the momentum reset is nearly complete.
+- Entry at **40.05** with stop at **36.91** gives you **7.8%** risk, with target at **45.17** for **12.8%** upside and a second target at **47.11** for **17.6%**.
+
+- Daily volume near **$3.1M** keeps this a small-size position, and a close below **36.91** is the hard invalidation.
+
+## Conclusion
+
+L.B. Foster gives you a rare combination. Strong revenue growth, clean relative strength, and a chart resting near the top of its range. The pullback is shallow, the trend is intact, and earnings in **16** days provide a clear catalyst. The thin liquidity and razor-thin margins are real risks. You size small, enter at **40.05**, and exit at **36.91** if the structure breaks. The relative strength says this stock has its own story, and the fundamentals say that story is backed by real growth.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
