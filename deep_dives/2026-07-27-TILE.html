@@ -1,0 +1,186 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Interface Floors the Competition — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>Interface Floors the Competition</h1>
+<div class="subtitle">A small-cap commercial flooring play pulling back to support with the best risk-adjusted read on the desk.</div>
+<div class="meta">EOD 2026-07-27 · TILE · written from the desk · model glm-5.2</div>
+<div class="chips"><span class="chip">TILE</span>
+<span class="chip">Consumer Cyclical</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-07-27: entry <b>$32.02</b> &rarr; <b>$33.73</b> (as of 2026-07-27) · <span class="pos">+5.3%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>The Consumer Cyclical sector is treading water. It sits NEUTRAL in its current cycle state with sector acceleration flagged as DEAD. That tells you the broad sector tailwind is absent. You are trading stock-specific setup quality, not a rising tide.<br>Commercial construction and renovation tell a different story underneath that flat sector read. Office retrofits, healthcare builds, and airport upgrades drive steady demand for commercial interiors. The back-to-office push, uneven as it is, keeps flooring replacement cycles moving. Schools and hospitality venues also anchor recurring revenue.<br>This backdrop rewards a name with proven earnings momentum trading at a reasonable multiple. You want a company that can outgrow its sector label. Interface fits that profile.</p>
+<h2>Introducing TILE</h2>
+<p>Interface designs and manufactures modular carpet tile and luxury vinyl flooring for commercial interiors. Its products ship into offices, schools, hospitals, airports, retail spaces, and hospitality venues. The company operates under the Interface, FLOR, NORAPLAN, and NORAMENT brands across the United States, Canada, Latin America, Europe, Africa, Asia, and Australia.<br>The business mixes direct sales to end users with indirect channels through contractors and distributors. Interface also sells installation systems like TacTiles, adhesives, and project management services. That services layer deepens customer relationships and creates recurring touchpoints beyond the initial product sale.<br>The company competes on design innovation, sustainability credentials, and product breadth across carpet tile and resilient flooring.</p>
+<h2>The Thesis</h2>
+<p>Interface is the cleanest pullback setup in the small-cap set. The proprietary desk score reads <strong>95</strong>, the highest in the group, with a validated risk-adjusted return of <strong>1.10</strong>. That score tells you the setup has been tested and holds up under scrutiny.<br>The stock has pulled back <strong>5.0%</strong> over <strong>21</strong> trading days after a <strong>20.0%</strong> run over <strong>63</strong> days. You are buying a stock that outperformed the market by a wide margin and is now resting at support, not a name rolling over.<br>Conviction is MEDIUM. The limitation is real. Interface sits <strong>6.1%</strong> below its <strong>52</strong>-week high of <strong>$36.66</strong>, and the reward-to-risk ratio is <strong>1.7</strong>. That caps the upside case relative to the downside you are accepting. The swing high at <strong>$35.94</strong> and the secondary target at <strong>$37.15</strong> define your ceiling. You size this as a moderate position, not a max-weight bet, because the distance from current price to overhead resistance is tight.</p>
+<h2>Technical Analysis</h2>
+<p><figure class="chart"><img src="img/2026-07-27-TILE.png" alt="TILE weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=TILE&interval=1W" target="_blank" rel="noopener">📈 Open the TILE weekly chart on TradingView ↗</a><figcaption>TILE weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $35.94 · mark support near $29.74.</figcaption></figure><br>The trend is up and the stock is holding above its rising <strong>30</strong>-week moving average. That average is sloping at <strong>+5.6%</strong>, confirming the intermediate trend remains intact. Interface closed at <strong>$33.73</strong> on the session.<br>The <strong>52</strong>-week high is <strong>$36.66</strong> and the <strong>52</strong>-week low is <strong>$20.37</strong>. The stock sits <strong>92.0%</strong> of its <strong>52</strong>-week high and <strong>6.1%</strong> below that peak. Its position in the <strong>52</strong>-week range is <strong>82.0%</strong>, meaning it has recovered most of its yearly range. The <strong>21</strong>-day return of <strong>-5.0%</strong> shows a mild pullback after the <strong>63</strong>-day advance of <strong>+20.0%</strong>.<br>RSI reads <strong>55.6</strong> on the <strong>14</strong>-period measure. That is neutral momentum, neither overbought nor oversold. It gives the stock room to run without a momentum ceiling overhead. The <strong>14</strong>-day ATR is <strong>$1.14</strong>, so expect normal session swings around <strong>$1</strong> to <strong>$1.50</strong>. You need to use limit orders and be patient with fills.<br>The entry level is <strong>$32.02</strong>. The stop sits at <strong>$29.74</strong>, which is <strong>7.1%</strong> below the entry. The primary target is <strong>$35.94</strong>, the swing high. The secondary target is <strong>$37.15</strong>, which represents <strong>16.0%</strong> upside from the entry. The reward-to-risk ratio is <strong>1.7</strong> to the primary target. The swing low at <strong>$26.68</strong> is the deep support level below the stop.<br>The setup needs volume confirmation on the bounce off support. You want to see above-average volume on green sessions as price approaches the entry zone at <strong>$32.02</strong>. Without volume, this is a low-conviction drift. The <strong>21</strong>-day pullback of <strong>5.0%</strong> on declining interest is normal profit-taking. What would flip this read bearish is a close below <strong>$29.74</strong>, which breaks the <strong>30</strong>-week line and invalidates the trend structure.</p>
+<h2>Fundamentals</h2>
+<p><table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$1.85B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$2.07B</td></tr><tr><td class="k">52-week range</td><td class="v">$20.37 - $36.66</td></tr><tr><td class="k">Dividend yield</td><td class="v">0.38%</td></tr><tr><td class="k">Beta</td><td class="v">1.93</td></tr><tr><td class="k">Trailing P/E</td><td class="v">14.9</td></tr><tr><td class="k">Forward P/E</td><td class="v">13.7</td></tr><tr><td class="k">Price / sales</td><td class="v">1.3</td></tr><tr><td class="k">Price / book</td><td class="v">2.9</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$1.42B  (+11.3% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$24.37</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$127M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">2.14 / 2.33</td></tr><tr><td class="k">Gross margin</td><td class="v">38.9%</td></tr><tr><td class="k">Operating margin</td><td class="v">9.5%</td></tr><tr><td class="k">Profit margin</td><td class="v">8.9%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$2.92</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$1.62</td></tr><tr><td class="k">Total cash / share</td><td class="v">$1.05</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.45</td></tr><tr><td class="k">Current ratio</td><td class="v">2.43</td></tr><tr><td class="k">Return on equity</td><td class="v">22.1%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">strong buy - mean target $36.75 (4 analysts)</td></tr></tbody></table><br>Interface is growing revenue and earnings at rates that dwarf its sector profile. Earnings growth is <strong>81.8%</strong> year over year. EPS on a trailing basis is <strong>$2.14</strong> and forward EPS is <strong>$2.33</strong>.<br>The valuation reflects a company in the middle of an earnings acceleration, not a peak. Trailing P/E is <strong>14.9</strong> and forward P/E is <strong>13.7</strong>. Price to sales is <strong>1.3</strong> and price to book is <strong>2.9</strong>. Book value per share is <strong>$10.93</strong>. The analyst mean target is <strong>$36.75</strong> with a strong buy recommendation from <strong>4</strong> analysts covering the name.<br>Profitability is solid across the board. Gross margin is <strong>38.9%</strong>, operating margin is <strong>9.5%</strong>, and net margin is <strong>8.9%</strong>. Return on equity is <strong>22.1%</strong> and return on assets is <strong>8.9%</strong>. Operating cash flow per share is <strong>$2.92</strong> and free cash flow per share is <strong>$1.62</strong>.<br>The balance sheet is clean. The current ratio is <strong>2.43</strong> and the quick ratio is <strong>0.97</strong>. Cash per share is <strong>$1.05</strong>. The dividend yield is <strong>0.38%</strong> at a rate of <strong>$0.12</strong> per share, with a payout ratio of <strong>0.04</strong>, meaning the company retains nearly all earnings. The beta of <strong>1.93</strong> tells you this stock moves roughly twice as much as the market. That cuts both ways. It amplifies gains in an up move and magnifies losses in a drawdown.</p>
+<h2>Why Now</h2>
+<p>The catalyst is <strong>10</strong> days out. Interface reports earnings on <strong>2026-08-07</strong>. That date is the pressure point for this trade. You are entering a pullback-to-support setup with a known binary event on the horizon.<br>The macro backdrop is neutral for Consumer Cyclicals with dead sector acceleration. That means you are relying on company-specific execution, not a sector wave. The <strong>11.3%</strong> revenue growth and <strong>81.8%</strong> earnings growth give you a fundamental floor.<br>No options flow data is available for this name. You are trading the stock directly. The entry at <strong>$32.02</strong> sits below the current close of <strong>$33.73</strong>, so you need a pullback to get filled at the ideal level.</p>
+<h2>Risk Factors</h2>
+<p>The biggest risk is the thin tape. A small-cap with low volume means wider spreads and slippage on exits. You can get filled poorly on a stop if the stock gaps down through <strong>$29.74</strong>.<br>The <strong>6.1%</strong> distance to the <strong>52</strong>-week high caps your reward. The reward-to-risk ratio of <strong>1.7</strong> is acceptable but not generous. You are accepting <strong>7.1%</strong> downside risk to the stop for <strong>12.2%</strong> upside to the primary target. The secondary target at <strong>$37.15</strong> extends that to <strong>16.0%</strong>, but that level is above the <strong>52</strong>-week high and requires the stock to break new ground.<br>The earnings catalyst on <strong>2026-08-07</strong> is a double-edged sword. A strong print could gap the stock through <strong>$35.94</strong> and toward <strong>$37.15</strong>. A weak print could gap it below <strong>$29.74</strong> and blow the stop. The beta of <strong>1.93</strong> amplifies the post-earnings move in either direction. You need to decide whether to hold through the print or take the trade off before the binary event.<br>The invalidation level is <strong>$29.74</strong>. A daily close below that price breaks the <strong>30</strong>-week moving average and the swing-low support structure. If that happens, the trend read is broken and you exit. No exceptions.</p>
+<h2>Bringing It All Together</h2>
+<p>- Desk score of <strong>95</strong> with a validated risk-adjusted return of <strong>1.10</strong>, the highest read in the small-cap set.<br>- Revenue growing <strong>11.3%</strong> with earnings growth of <strong>81.8%</strong> at a <strong>14.9</strong> trailing P/E and <strong>13.7</strong> forward P/E.<br>- Stock holding above a rising <strong>30</strong>-week average at <strong>+5.6%</strong> slope, <strong>6.1%</strong> off the <strong>52</strong>-week high, RSI at <strong>55.6</strong>.<br>- Entry at <strong>$32.02</strong>, stop at <strong>$29.74</strong>, target at <strong>$35.94</strong>, with a secondary target at <strong>$37.15</strong> and a <strong>1.7</strong> reward-to-risk.<br>- Earnings on <strong>2026-08-07</strong> as the near-term catalyst, <strong>10</strong> days from the session date.</p>
+<h2>Conclusion</h2>
+<p>Interface is a MEDIUM conviction long. The setup quality is the best the desk found in the small-cap set, and the fundamentals back it with real growth and clean cash generation. The tradeoff is a tight <strong>6.1%</strong> window to the <strong>52</strong>-week high and a thin tape that punishes sloppy execution. You enter at <strong>$32.02</strong> with a hard stop at <strong>$29.74</strong> and you respect it. The earnings print on <strong>2026-08-07</strong> is your make-or-break moment. If you do not want binary risk, take the position off before the report.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Interface, Inc. (TILE) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $1.85B; 52-week range $20-$37; Revenue $1.42B +11% YoY; Net income $127M; Free cash flow/share $1.62; Debt-to-equity 0.45; Return on equity 22%; Dividend yield 0.4%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Interface, Inc. (TILE) inside the Consumer Cyclical space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Interface pulled back to support with the strongest a proprietary desk read reading in the group (score **95**, validated risk-adjusted return **1.10**, tested). It sits **6.1%** below its high, RSI **55.6**, holding a rising 30-week line.. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># Interface Floors the Competition
+
+*A small-cap commercial flooring play pulling back to support with the best risk-adjusted read on the desk.*
+
+## The Big Picture
+The Consumer Cyclical sector is treading water. It sits NEUTRAL in its current cycle state with sector acceleration flagged as DEAD. That tells you the broad sector tailwind is absent. You are trading stock-specific setup quality, not a rising tide.
+Commercial construction and renovation tell a different story underneath that flat sector read. Office retrofits, healthcare builds, and airport upgrades drive steady demand for commercial interiors. The back-to-office push, uneven as it is, keeps flooring replacement cycles moving. Schools and hospitality venues also anchor recurring revenue.
+This backdrop rewards a name with proven earnings momentum trading at a reasonable multiple. You want a company that can outgrow its sector label. Interface fits that profile.
+
+## Introducing TILE
+Interface designs and manufactures modular carpet tile and luxury vinyl flooring for commercial interiors. Its products ship into offices, schools, hospitals, airports, retail spaces, and hospitality venues. The company operates under the Interface, FLOR, NORAPLAN, and NORAMENT brands across the United States, Canada, Latin America, Europe, Africa, Asia, and Australia.
+The business mixes direct sales to end users with indirect channels through contractors and distributors. Interface also sells installation systems like TacTiles, adhesives, and project management services. That services layer deepens customer relationships and creates recurring touchpoints beyond the initial product sale.
+The company competes on design innovation, sustainability credentials, and product breadth across carpet tile and resilient flooring.
+
+## The Thesis
+Interface is the cleanest pullback setup in the small-cap set. The proprietary desk score reads **95**, the highest in the group, with a validated risk-adjusted return of **1.10**. That score tells you the setup has been tested and holds up under scrutiny.
+The stock has pulled back **5.0%** over **21** trading days after a **20.0%** run over **63** days. You are buying a stock that outperformed the market by a wide margin and is now resting at support, not a name rolling over.
+Conviction is MEDIUM. The limitation is real. Interface sits **6.1%** below its **52**-week high of **$36.66**, and the reward-to-risk ratio is **1.7**. That caps the upside case relative to the downside you are accepting. The swing high at **$35.94** and the secondary target at **$37.15** define your ceiling. You size this as a moderate position, not a max-weight bet, because the distance from current price to overhead resistance is tight.
+
+## Technical Analysis
+&gt; 📈 Insert the TILE weekly chart here (TradingView): TILE weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $35.94 · mark support near $29.74.
+The trend is up and the stock is holding above its rising **30**-week moving average. That average is sloping at **+5.6%**, confirming the intermediate trend remains intact. Interface closed at **$33.73** on the session.
+The **52**-week high is **$36.66** and the **52**-week low is **$20.37**. The stock sits **92.0%** of its **52**-week high and **6.1%** below that peak. Its position in the **52**-week range is **82.0%**, meaning it has recovered most of its yearly range. The **21**-day return of **-5.0%** shows a mild pullback after the **63**-day advance of **+20.0%**.
+RSI reads **55.6** on the **14**-period measure. That is neutral momentum, neither overbought nor oversold. It gives the stock room to run without a momentum ceiling overhead. The **14**-day ATR is **$1.14**, so expect normal session swings around **$1** to **$1.50**. You need to use limit orders and be patient with fills.
+The entry level is **$32.02**. The stop sits at **$29.74**, which is **7.1%** below the entry. The primary target is **$35.94**, the swing high. The secondary target is **$37.15**, which represents **16.0%** upside from the entry. The reward-to-risk ratio is **1.7** to the primary target. The swing low at **$26.68** is the deep support level below the stop.
+The setup needs volume confirmation on the bounce off support. You want to see above-average volume on green sessions as price approaches the entry zone at **$32.02**. Without volume, this is a low-conviction drift. The **21**-day pullback of **5.0%** on declining interest is normal profit-taking. What would flip this read bearish is a close below **$29.74**, which breaks the **30**-week line and invalidates the trend structure.
+
+## Fundamentals
+| Metric | Value |
+|---|---|
+| Market cap | $1.85B |
+| Enterprise value | $2.07B |
+| 52-week range | $20.37 - $36.66 |
+| Dividend yield | 0.38% |
+| Beta | 1.93 |
+| Trailing P/E | 14.9 |
+| Forward P/E | 13.7 |
+| Price / sales | 1.3 |
+| Price / book | 2.9 |
+| Revenue (TTM) | $1.42B  (+11.3% YoY) |
+| Revenue / share | $24.37 |
+| Net income (TTM) | $127M |
+| EPS (TTM / fwd) | 2.14 / 2.33 |
+| Gross margin | 38.9% |
+| Operating margin | 9.5% |
+| Profit margin | 8.9% |
+| Operating cash flow / share | $2.92 |
+| Free cash flow / share | $1.62 |
+| Total cash / share | $1.05 |
+| Debt / equity | 0.45 |
+| Current ratio | 2.43 |
+| Return on equity | 22.1% |
+| Analyst consensus | strong buy - mean target $36.75 (4 analysts) |
+Interface is growing revenue and earnings at rates that dwarf its sector profile. Earnings growth is **81.8%** year over year. EPS on a trailing basis is **$2.14** and forward EPS is **$2.33**.
+The valuation reflects a company in the middle of an earnings acceleration, not a peak. Trailing P/E is **14.9** and forward P/E is **13.7**. Price to sales is **1.3** and price to book is **2.9**. Book value per share is **$10.93**. The analyst mean target is **$36.75** with a strong buy recommendation from **4** analysts covering the name.
+Profitability is solid across the board. Gross margin is **38.9%**, operating margin is **9.5%**, and net margin is **8.9%**. Return on equity is **22.1%** and return on assets is **8.9%**. Operating cash flow per share is **$2.92** and free cash flow per share is **$1.62**.
+The balance sheet is clean. The current ratio is **2.43** and the quick ratio is **0.97**. Cash per share is **$1.05**. The dividend yield is **0.38%** at a rate of **$0.12** per share, with a payout ratio of **0.04**, meaning the company retains nearly all earnings. The beta of **1.93** tells you this stock moves roughly twice as much as the market. That cuts both ways. It amplifies gains in an up move and magnifies losses in a drawdown.
+
+## Why Now
+The catalyst is **10** days out. Interface reports earnings on **2026-08-07**. That date is the pressure point for this trade. You are entering a pullback-to-support setup with a known binary event on the horizon.
+The macro backdrop is neutral for Consumer Cyclicals with dead sector acceleration. That means you are relying on company-specific execution, not a sector wave. The **11.3%** revenue growth and **81.8%** earnings growth give you a fundamental floor.
+No options flow data is available for this name. You are trading the stock directly. The entry at **$32.02** sits below the current close of **$33.73**, so you need a pullback to get filled at the ideal level.
+
+## Risk Factors
+The biggest risk is the thin tape. A small-cap with low volume means wider spreads and slippage on exits. You can get filled poorly on a stop if the stock gaps down through **$29.74**.
+The **6.1%** distance to the **52**-week high caps your reward. The reward-to-risk ratio of **1.7** is acceptable but not generous. You are accepting **7.1%** downside risk to the stop for **12.2%** upside to the primary target. The secondary target at **$37.15** extends that to **16.0%**, but that level is above the **52**-week high and requires the stock to break new ground.
+The earnings catalyst on **2026-08-07** is a double-edged sword. A strong print could gap the stock through **$35.94** and toward **$37.15**. A weak print could gap it below **$29.74** and blow the stop. The beta of **1.93** amplifies the post-earnings move in either direction. You need to decide whether to hold through the print or take the trade off before the binary event.
+The invalidation level is **$29.74**. A daily close below that price breaks the **30**-week moving average and the swing-low support structure. If that happens, the trend read is broken and you exit. No exceptions.
+
+## Bringing It All Together
+- Desk score of **95** with a validated risk-adjusted return of **1.10**, the highest read in the small-cap set.
+- Revenue growing **11.3%** with earnings growth of **81.8%** at a **14.9** trailing P/E and **13.7** forward P/E.
+- Stock holding above a rising **30**-week average at **+5.6%** slope, **6.1%** off the **52**-week high, RSI at **55.6**.
+- Entry at **$32.02**, stop at **$29.74**, target at **$35.94**, with a secondary target at **$37.15** and a **1.7** reward-to-risk.
+- Earnings on **2026-08-07** as the near-term catalyst, **10** days from the session date.
+
+
+## Conclusion
+Interface is a MEDIUM conviction long. The setup quality is the best the desk found in the small-cap set, and the fundamentals back it with real growth and clean cash generation. The tradeoff is a tight **6.1%** window to the **52**-week high and a thin tape that punishes sloppy execution. You enter at **$32.02** with a hard stop at **$29.74** and you respect it. The earnings print on **2026-08-07** is your make-or-break moment. If you do not want binary risk, take the position off before the report.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
