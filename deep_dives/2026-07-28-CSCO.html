@@ -1,0 +1,229 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cisco&#x27;s Quiet Outperformance Has Room to Run — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>Cisco&#x27;s Quiet Outperformance Has Room to Run</h1>
+<div class="subtitle">A proven pullback in an unloved sector, with earnings as the gate.</div>
+<div class="meta">EOD 2026-07-28 · CSCO · written from the desk · model glm-5.2</div>
+<div class="chips"><span class="chip">CSCO</span>
+<span class="chip">Technology</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-07-28: entry <b>$115.58</b> &rarr; <b>$115.58</b> (as of 2026-07-28) · <span class="pos">+0.0%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Technology as a sector is neutral. It is dead in terms of acceleration. The momentum trade that carried the broad market for the last year has cooled. Money is looking for the next group to lead. This kind of backdrop rewards relative strength. When a sector goes flat, the stocks still rising stand out. They carry less crowd risk. They have already proven demand.</p>
+<p>You are operating in a market where sector tailwinds are absent. The Technology sector is not pushing stocks higher on its own. That means stock-specific setups carry the work. You want names with their own engines. A stock outperforming its sector by a wide margin tells you real money is committing to that specific company. It tells you the buyer has a reason that goes beyond index ETF flows.</p>
+<p>This backdrop rewards a name pulling back from strength. It rewards stocks that have already run, digested, and held their structure. You get a better entry than chasing. You get a stock the market has already vetted.</p>
+<h2>Introducing CSCO</h2>
+<p>Cisco Systems sells the plumbing of the internet. The company designs, develops, and sells the networking equipment that moves data through campuses, data centers, and branch offices worldwide. It builds the switches, routers, and wireless access points that connect everything. It also sells the security layer that protects those connections, the collaboration tools through Webex, and the observability software that monitors network health.</p>
+<p>The business has shifted. Cisco spent years as a hardware vendor selling boxes with perpetual licenses. That model flattened out. The company pivoted to recurring revenue. Software subscriptions, cloud-delivered security, and services now drive an increasing share of the top line. That transition matters because recurring revenue compounds differently. It carries higher margins over time and creates a stickier customer base.</p>
+<p>Cisco acquired Splunk, a massive data platform, to deepen its software and observability footprint. That deal expanded the addressable market. It brought Cisco deeper into the data pipeline. The company now sells network infrastructure plus the analytics layer that sits on top of it.</p>
+<h2>The Thesis</h2>
+<p>Cisco pulled back to a healthy entry point after a strong run. The stock sits <strong>11.1%</strong> below its 52-week high of <strong>130.37</strong>. Its RSI has cooled to <strong>53.2</strong>. That is room to buy without chasing an overheated reading. The relative strength versus the market over the trailing <strong>63</strong> days is <strong>+27.4%</strong>. This stock has been outperforming the broad market aggressively.</p>
+<p>The thesis is a pullback entry into a proven leader. Cisco returned <strong>31.0%</strong> over the last <strong>63</strong> trading days. That kind of outperformance does not happen by accident. It signals institutional accumulation. The pullback to <strong>115.58</strong> gives you a second chance at a stock that already proved its bid. The stop sits at <strong>107.94</strong>. The target sits at <strong>130.0</strong>. That is a <strong>1.9</strong> reward-to-risk ratio. The second target extends to <strong>132.77</strong>, which would be a <strong>14.9%</strong> upside from current price.</p>
+<p>Conviction is MEDIUM. The catalyst is earnings in <strong>14</strong> days. That event cuts both ways. A strong print confirms the run. A weak print unwinds the setup. You size light into the print or you wait for it. The desk thesis is clear on this point. The pullback is real, the options chain is liquid, and the RSI room is there. The earnings risk is the variable that keeps conviction at MEDIUM.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-07-28-CSCO.png" alt="CSCO weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=CSCO&interval=1W" target="_blank" rel="noopener">📈 Open the CSCO weekly chart on TradingView ↗</a><figcaption>CSCO weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $130.00 · mark support near $107.94.</figcaption></figure>
+<p>The trend is up and the structure is intact. Cisco closed at <strong>115.58</strong>. It trades above its 30-week moving average. That average is sloping upward at <strong>18.4%</strong>. The stock is <strong>74.6%</strong> above its 52-week low of <strong>65.75</strong>. It has come a long way. The question is whether the pullback is a buy or a top.</p>
+<p>It is a buy. The RSI at <strong>53.2</strong> confirms the cooling. This is a stock that ran from <strong>91.64</strong> to <strong>130.37</strong> and pulled back to <strong>115.58</strong>. The pullback is shallow. It reclaimed <strong>11.1%</strong> from the high. The swing low at <strong>91.64</strong> holds as the major floor. The 30-week average gives you a structural reference below price. The slope of <strong>18.4%</strong> on that average tells you the trend force is strong.</p>
+<p>Price sits near the entry zone at <strong>115.58</strong>. The stop at <strong>107.94</strong> sits below the current structure. It gives the trade <strong>6.6%</strong> of risk. The average true range over <strong>14</strong> periods is <strong>3.82</strong>. That means the stock moves roughly <strong>3.82</strong> per day on average. The stop is roughly <strong>2</strong> ATR units away. That is tight enough to cap loss. It is wide enough to avoid a normal swing.</p>
+<p>Relative strength is the standout signal. Cisco is up <strong>31.0%</strong> over <strong>63</strong> days while the market lags. The <strong>+27.4%</strong> gap is extreme. It places Cisco in the top tier of relative performance. The 21-day return of <strong>1.6%</strong> shows the stock digesting that move. It is consolidating, not rolling over. You want to see that volume expand on up days to confirm the next leg. A close above <strong>130.0</strong> on heavy volume targets <strong>132.77</strong>. A close below <strong>107.94</strong> invalidates the setup.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$446.01B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$460.80B</td></tr><tr><td class="k">52-week range</td><td class="v">$65.75 - $130.37</td></tr><tr><td class="k">Dividend yield</td><td class="v">1.48%</td></tr><tr><td class="k">Beta</td><td class="v">1.01</td></tr><tr><td class="k">Trailing P/E</td><td class="v">37.7</td></tr><tr><td class="k">Forward P/E</td><td class="v">23.6</td></tr><tr><td class="k">Price / sales</td><td class="v">7.3</td></tr><tr><td class="k">Price / book</td><td class="v">9.1</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$60.75B  (+12.0% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$15.36</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$11.96B</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">3.0 / 4.79</td></tr><tr><td class="k">Gross margin</td><td class="v">64.3%</td></tr><tr><td class="k">Operating margin</td><td class="v">25.0%</td></tr><tr><td class="k">Profit margin</td><td class="v">19.7%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$3.30</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$2.36</td></tr><tr><td class="k">Total cash / share</td><td class="v">$4.22</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.68</td></tr><tr><td class="k">Current ratio</td><td class="v">0.93</td></tr><tr><td class="k">Return on equity</td><td class="v">25.2%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">buy - mean target $130.23 (22 analysts)</td></tr></tbody></table>
+<p>The growth numbers tell a turnaround story. Revenue grew <strong>12.0%</strong> over the trailing twelve months. Earnings grew <strong>37.1%</strong>. That earnings growth outpacing revenue growth tells you margins are expanding. The Splunk integration is contributing. The software mix shift is working.</p>
+<p>Profitability is strong. Gross margin sits at <strong>64.3%</strong>. Operating margin sits at <strong>25.0%</strong>. Net margin sits at <strong>19.7%</strong>. These are solid numbers for a company of this size. Return on equity is <strong>25.2%</strong>. Return on assets is <strong>7.3%</strong>. Cisco generates real returns on deployed capital. The trailing PE is <strong>37.7</strong>. The forward PE is <strong>23.6</strong>. That compression tells you the market expects earnings to keep growing. Earnings per share trailing is <strong>3.0</strong>. Forward EPS is <strong>4.79</strong>. The analysts covering this name see significant growth ahead.</p>
+<p>Cash generation is the bedrock. Free cash flow per share is <strong>2.36</strong>. The company pays a dividend of <strong>1.68</strong> per share for a yield of <strong>1.48%</strong>. The payout ratio is <strong>0.55</strong>. That dividend is safe and covered by cash flow. The balance sheet has a wrinkle. Debt to equity is <strong>0.68</strong>. The current ratio is <strong>0.93</strong>. The quick ratio is <strong>0.7</strong>. Both are below <strong>1.0</strong>. Cisco carries enough debt and short-term obligations that you should be aware of the leverage. The cash generation covers it. The balance sheet is workable. It is not pristine.</p>
+<p>The analyst community is constructive. Twenty-two analysts cover the stock. The mean target is <strong>130.23</strong>. The recommendation is a buy. That target aligns almost exactly with the technical swing high at <strong>130.0</strong>. When independent analyst models and chart structure point to the same level, you have convergence. The target at <strong>130.0</strong> is not a wish. It is a level where fundamental valuation and technical supply meet.</p>
+<h2>Why Now</h2>
+<p>The timing centers on earnings. That is <strong>14</strong> days out. The catalyst is binary. A strong report with upbeat guidance sends the stock through <strong>130.0</strong>. A miss or cautious commentary sends it toward the stop at <strong>107.94</strong>. You have two ways to play this. You enter now at <strong>115.58</strong> with light size and accept the earnings risk. Or you wait for the print and enter on the reaction. The desk recommends keeping size light into the print.</p>
+<p>The macro backdrop is neutral for Technology. The sector is not accelerating. That means the earnings print has to carry the move. There is no sector tailwind to rescue a soft report. Cisco has to stand on its own numbers. The relative strength of <strong>+27.4%</strong> over <strong>63</strong> days tells you the market has been buying this stock ahead of the print. Call premium is <strong>$6.0M</strong>. Put premium is <strong>$3.88M</strong>. The options market leans bullish. That is a mild edge, not a landslide. It confirms the direction but does not signal an overcrowded trade.</p>
+<h2>Risk Factors</h2>
+<p>Earnings in <strong>15</strong> days is the primary risk. The hold window contains the print. That means you are holding through a binary event. The desk flags this directly. A negative reaction could gap the stock below the stop at <strong>107.94</strong>. A gap down would mean your exit price is worse than the stop level. You cannot control slippage on a gap. This is the core timing risk.</p>
+<p>The balance sheet has a soft spot. The current ratio is <strong>0.93</strong>. The quick ratio is <strong>0.7</strong>. Both are below <strong>1.0</strong>. That means short-term obligations exceed liquid assets. Cisco generates enough cash to handle this. But in a stress scenario, the balance sheet is not a cushion. The debt to equity at <strong>0.68</strong> is manageable. It is not a fortress.</p>
+<p>The trailing PE of <strong>37.7</strong> is rich for a communication equipment company. The forward PE of <strong>23.6</strong> is more reasonable. But that multiple depends on Cisco delivering the <strong>4.79</strong> forward EPS. If earnings disappoint, the multiple compresses alongside the price. You get a double hit.</p>
+<p>The single invalidation is a close below <strong>107.94</strong>. That level is the stop. It sits below the current structure. If price closes below it, the pullback setup is broken. The trend has flipped. You exit. No debate.</p>
+<h2>Bringing It All Together</h2>
+<p>- Cisco is outperforming the broad market by <strong>+27.4%</strong> over <strong>63</strong> days while the Technology sector is flat. The stock has its own engine.<br>- The pullback to <strong>115.58</strong> from a high of <strong>130.37</strong> gives you a <strong>11.1%</strong> discount from the peak. RSI at <strong>53.2</strong> confirms the cooling.<br>- Revenue grew <strong>12.0%</strong> and earnings grew <strong>37.1%</strong>. Margins are expanding.<br>- The analyst mean target of <strong>130.23</strong> converges with the technical swing high at <strong>130.0</strong>. The target is grounded in both fundamentals and chart structure.<br>The options flow leans bullish with <strong>$6.0M</strong> in call premium versus <strong>$3.88M</strong> in put premium.<br>- The stop at <strong>107.94</strong> gives you <strong>6.6%</strong> of risk. The target at <strong>130.0</strong> gives you <strong>12.5%</strong> of upside. The reward-to-risk is <strong>1.9</strong>.</p>
+<h2>Conclusion</h2>
+<p>Cisco is a proven leader pulling back to a buyable level. The relative strength is exceptional. The fundamentals confirm the move. The earnings print in <strong>14</strong> days is the gate. You enter light at <strong>115.58</strong> or you wait for the print. The stop at <strong>107.94</strong> is your line. The target at <strong>130.0</strong> is your objective. This is a MEDIUM conviction setup with defined risk and a clear catalyst.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Cisco Systems, Inc. (CSCO) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $446.01B; 52-week range $66-$130; Revenue $60.75B +12% YoY; Net income $11.96B; Free cash flow/share $2.36; Debt-to-equity 0.68; Return on equity 25%; Dividend yield 1.5%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Cisco Systems, Inc. (CSCO) inside the Technology space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Cisco pulled back to RSI **51.8** and sits **11.1%** below its 52-week high while showing strong relative strength of **+27.4%** versus the market.. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># Cisco&#x27;s Quiet Outperformance Has Room to Run
+
+*A proven pullback in an unloved sector, with earnings as the gate.*
+
+## The Big Picture
+
+Technology as a sector is neutral. It is dead in terms of acceleration. The momentum trade that carried the broad market for the last year has cooled. Money is looking for the next group to lead. This kind of backdrop rewards relative strength. When a sector goes flat, the stocks still rising stand out. They carry less crowd risk. They have already proven demand.
+
+You are operating in a market where sector tailwinds are absent. The Technology sector is not pushing stocks higher on its own. That means stock-specific setups carry the work. You want names with their own engines. A stock outperforming its sector by a wide margin tells you real money is committing to that specific company. It tells you the buyer has a reason that goes beyond index ETF flows.
+
+This backdrop rewards a name pulling back from strength. It rewards stocks that have already run, digested, and held their structure. You get a better entry than chasing. You get a stock the market has already vetted.
+
+## Introducing CSCO
+
+Cisco Systems sells the plumbing of the internet. The company designs, develops, and sells the networking equipment that moves data through campuses, data centers, and branch offices worldwide. It builds the switches, routers, and wireless access points that connect everything. It also sells the security layer that protects those connections, the collaboration tools through Webex, and the observability software that monitors network health.
+
+The business has shifted. Cisco spent years as a hardware vendor selling boxes with perpetual licenses. That model flattened out. The company pivoted to recurring revenue. Software subscriptions, cloud-delivered security, and services now drive an increasing share of the top line. That transition matters because recurring revenue compounds differently. It carries higher margins over time and creates a stickier customer base.
+
+Cisco acquired Splunk, a massive data platform, to deepen its software and observability footprint. That deal expanded the addressable market. It brought Cisco deeper into the data pipeline. The company now sells network infrastructure plus the analytics layer that sits on top of it.
+
+## The Thesis
+
+Cisco pulled back to a healthy entry point after a strong run. The stock sits **11.1%** below its 52-week high of **130.37**. Its RSI has cooled to **53.2**. That is room to buy without chasing an overheated reading. The relative strength versus the market over the trailing **63** days is **+27.4%**. This stock has been outperforming the broad market aggressively.
+
+The thesis is a pullback entry into a proven leader. Cisco returned **31.0%** over the last **63** trading days. That kind of outperformance does not happen by accident. It signals institutional accumulation. The pullback to **115.58** gives you a second chance at a stock that already proved its bid. The stop sits at **107.94**. The target sits at **130.0**. That is a **1.9** reward-to-risk ratio. The second target extends to **132.77**, which would be a **14.9%** upside from current price.
+
+Conviction is MEDIUM. The catalyst is earnings in **14** days. That event cuts both ways. A strong print confirms the run. A weak print unwinds the setup. You size light into the print or you wait for it. The desk thesis is clear on this point. The pullback is real, the options chain is liquid, and the RSI room is there. The earnings risk is the variable that keeps conviction at MEDIUM.
+
+## Technical Analysis
+
+&gt; 📈 Insert the CSCO weekly chart here (TradingView): CSCO weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $130.00 · mark support near $107.94.
+
+The trend is up and the structure is intact. Cisco closed at **115.58**. It trades above its 30-week moving average. That average is sloping upward at **18.4%**. The stock is **74.6%** above its 52-week low of **65.75**. It has come a long way. The question is whether the pullback is a buy or a top.
+
+It is a buy. The RSI at **53.2** confirms the cooling. This is a stock that ran from **91.64** to **130.37** and pulled back to **115.58**. The pullback is shallow. It reclaimed **11.1%** from the high. The swing low at **91.64** holds as the major floor. The 30-week average gives you a structural reference below price. The slope of **18.4%** on that average tells you the trend force is strong.
+
+Price sits near the entry zone at **115.58**. The stop at **107.94** sits below the current structure. It gives the trade **6.6%** of risk. The average true range over **14** periods is **3.82**. That means the stock moves roughly **3.82** per day on average. The stop is roughly **2** ATR units away. That is tight enough to cap loss. It is wide enough to avoid a normal swing.
+
+Relative strength is the standout signal. Cisco is up **31.0%** over **63** days while the market lags. The **+27.4%** gap is extreme. It places Cisco in the top tier of relative performance. The 21-day return of **1.6%** shows the stock digesting that move. It is consolidating, not rolling over. You want to see that volume expand on up days to confirm the next leg. A close above **130.0** on heavy volume targets **132.77**. A close below **107.94** invalidates the setup.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $446.01B |
+| Enterprise value | $460.80B |
+| 52-week range | $65.75 - $130.37 |
+| Dividend yield | 1.48% |
+| Beta | 1.01 |
+| Trailing P/E | 37.7 |
+| Forward P/E | 23.6 |
+| Price / sales | 7.3 |
+| Price / book | 9.1 |
+| Revenue (TTM) | $60.75B  (+12.0% YoY) |
+| Revenue / share | $15.36 |
+| Net income (TTM) | $11.96B |
+| EPS (TTM / fwd) | 3.0 / 4.79 |
+| Gross margin | 64.3% |
+| Operating margin | 25.0% |
+| Profit margin | 19.7% |
+| Operating cash flow / share | $3.30 |
+| Free cash flow / share | $2.36 |
+| Total cash / share | $4.22 |
+| Debt / equity | 0.68 |
+| Current ratio | 0.93 |
+| Return on equity | 25.2% |
+| Analyst consensus | buy - mean target $130.23 (22 analysts) |
+
+The growth numbers tell a turnaround story. Revenue grew **12.0%** over the trailing twelve months. Earnings grew **37.1%**. That earnings growth outpacing revenue growth tells you margins are expanding. The Splunk integration is contributing. The software mix shift is working.
+
+Profitability is strong. Gross margin sits at **64.3%**. Operating margin sits at **25.0%**. Net margin sits at **19.7%**. These are solid numbers for a company of this size. Return on equity is **25.2%**. Return on assets is **7.3%**. Cisco generates real returns on deployed capital. The trailing PE is **37.7**. The forward PE is **23.6**. That compression tells you the market expects earnings to keep growing. Earnings per share trailing is **3.0**. Forward EPS is **4.79**. The analysts covering this name see significant growth ahead.
+
+Cash generation is the bedrock. Free cash flow per share is **2.36**. The company pays a dividend of **1.68** per share for a yield of **1.48%**. The payout ratio is **0.55**. That dividend is safe and covered by cash flow. The balance sheet has a wrinkle. Debt to equity is **0.68**. The current ratio is **0.93**. The quick ratio is **0.7**. Both are below **1.0**. Cisco carries enough debt and short-term obligations that you should be aware of the leverage. The cash generation covers it. The balance sheet is workable. It is not pristine.
+
+The analyst community is constructive. Twenty-two analysts cover the stock. The mean target is **130.23**. The recommendation is a buy. That target aligns almost exactly with the technical swing high at **130.0**. When independent analyst models and chart structure point to the same level, you have convergence. The target at **130.0** is not a wish. It is a level where fundamental valuation and technical supply meet.
+
+## Why Now
+
+The timing centers on earnings. That is **14** days out. The catalyst is binary. A strong report with upbeat guidance sends the stock through **130.0**. A miss or cautious commentary sends it toward the stop at **107.94**. You have two ways to play this. You enter now at **115.58** with light size and accept the earnings risk. Or you wait for the print and enter on the reaction. The desk recommends keeping size light into the print.
+
+The macro backdrop is neutral for Technology. The sector is not accelerating. That means the earnings print has to carry the move. There is no sector tailwind to rescue a soft report. Cisco has to stand on its own numbers. The relative strength of **+27.4%** over **63** days tells you the market has been buying this stock ahead of the print. Call premium is **$6.0M**. Put premium is **$3.88M**. The options market leans bullish. That is a mild edge, not a landslide. It confirms the direction but does not signal an overcrowded trade.
+
+## Risk Factors
+
+Earnings in **15** days is the primary risk. The hold window contains the print. That means you are holding through a binary event. The desk flags this directly. A negative reaction could gap the stock below the stop at **107.94**. A gap down would mean your exit price is worse than the stop level. You cannot control slippage on a gap. This is the core timing risk.
+
+The balance sheet has a soft spot. The current ratio is **0.93**. The quick ratio is **0.7**. Both are below **1.0**. That means short-term obligations exceed liquid assets. Cisco generates enough cash to handle this. But in a stress scenario, the balance sheet is not a cushion. The debt to equity at **0.68** is manageable. It is not a fortress.
+
+The trailing PE of **37.7** is rich for a communication equipment company. The forward PE of **23.6** is more reasonable. But that multiple depends on Cisco delivering the **4.79** forward EPS. If earnings disappoint, the multiple compresses alongside the price. You get a double hit.
+
+The single invalidation is a close below **107.94**. That level is the stop. It sits below the current structure. If price closes below it, the pullback setup is broken. The trend has flipped. You exit. No debate.
+
+## Bringing It All Together
+
+- Cisco is outperforming the broad market by **+27.4%** over **63** days while the Technology sector is flat. The stock has its own engine.
+- The pullback to **115.58** from a high of **130.37** gives you a **11.1%** discount from the peak. RSI at **53.2** confirms the cooling.
+- Revenue grew **12.0%** and earnings grew **37.1%**. Margins are expanding.
+- The analyst mean target of **130.23** converges with the technical swing high at **130.0**. The target is grounded in both fundamentals and chart structure.
+The options flow leans bullish with **$6.0M** in call premium versus **$3.88M** in put premium.
+- The stop at **107.94** gives you **6.6%** of risk. The target at **130.0** gives you **12.5%** of upside. The reward-to-risk is **1.9**.
+
+## Conclusion
+
+Cisco is a proven leader pulling back to a buyable level. The relative strength is exceptional. The fundamentals confirm the move. The earnings print in **14** days is the gate. You enter light at **115.58** or you wait for the print. The stop at **107.94** is your line. The target at **130.0** is your objective. This is a MEDIUM conviction setup with defined risk and a clear catalyst.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

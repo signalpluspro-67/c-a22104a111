@@ -1,0 +1,237 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Oversold and Overshadowed in Medical Devices — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>Oversold and Overshadowed in Medical Devices</h1>
+<div class="subtitle">A structural-heart microcap with insider backing, a clean uptrend, and a chart washed out to RSI 24.</div>
+<div class="meta">EOD 2026-07-28 · AVR · written from the desk · model glm-5.2</div>
+<div class="chips"><span class="chip">AVR</span>
+<span class="chip">Healthcare</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-07-28: entry <b>$8.17</b> &rarr; <b>$8.17</b> (as of 2026-07-28) · <span class="pos">+0.0%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Healthcare is exhausted. The sector sits in a late-chase state, meaning money has been piling in after the move has already happened. That creates a problem for anyone trying to buy strength. You are paying premium prices in a tired group.</p>
+<p>The structural shift underneath medical devices is still intact. Aging populations drive demand for minimally invasive procedures. Structural heart treatments are growing as patients who cannot tolerate open surgery need alternatives. Device companies with novel platforms and clean regulatory pathways are capturing that demand.</p>
+<p>An exhausted sector punishes the obvious longs. It rewards you for finding washed-out names inside an otherwise tired group. You want the stock that has already corrected, where the selling has run its course, and where informed buyers are stepping in. That is exactly the setup here.</p>
+<h2>Introducing AVR</h2>
+<p>Anteris Technologies Global Corp. is a structural heart company based in Toowong, Australia. The company develops and commercializes minimally invasive medical devices to treat heart valve diseases.</p>
+<p>The flagship product is the DurAVR transcatheter heart valve system. It is a novel transcatheter aortic valve designed to treat severe aortic stenosis. The valve is shaped to mimic the performance of a healthy human aortic valve. That design matters because it addresses a core limitation of older transcatheter valves, which do not replicate natural blood flow.</p>
+<p>Anteris also develops ADAPT anti-calcification tissue. This technology transforms xenograft tissue into durable bioscaffolds that mimic human tissue for surgical repair. The ComASUR delivery system rounds out the platform, giving physicians a steerable catheter for precise navigation through heart anatomy. Together these products form a coherent platform in a high-growth corner of medical devices.</p>
+<h2>The Thesis</h2>
+<p>The core thesis is an oversold pullback in a clean uptrend, backed by insider cash. Avior pulled back to an RSI of <strong>37.8</strong> on a 14-day basis while riding a 30-week trend rising <strong>28.9%</strong>. The stock sits <strong>22.7%</strong> below its 52-week high of <strong>$11.05</strong>. The pullback is proven, with a tested risk-adjusted return of <strong>1.10</strong>. An insider committed <strong>$28.8M</strong> of open-market cash near <strong>$5.75</strong>.</p>
+<p>That insider buy is the anchor. When someone with inside knowledge puts <strong>$28.8M</strong> into a microcap at <strong>$5.75</strong>, they are making a statement about value. The stock now trades at <strong>$8.17</strong>, well above that level. You are buying above the insider price, but the chart is washed out and the trend is intact.</p>
+<p>Conviction is MEDIUM. The reward-to-risk is <strong>2.4</strong>, with <strong>29.4%</strong> upside to the primary target of <strong>$10.57</strong> and <strong>12.2%</strong> risk to the stop at <strong>$7.17</strong>. This is the most oversold clean small cap on the desk&#x27;s radar with a real insider buy behind it. Size it as a medium-conviction long. You are accepting thin liquidity and a tired sector for a setup where the selling has likely exhausted itself.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-07-28-AVR.png" alt="AVR weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=AVR&interval=1W" target="_blank" rel="noopener">📈 Open the AVR weekly chart on TradingView ↗</a><figcaption>AVR weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $10.57 · mark support near $7.17.</figcaption></figure>
+<p>The chart is in an uptrend with a fresh pullback. The stock trades above its 30-week moving average, and that average is sloping up at <strong>28.9%</strong>. Price sits <strong>22.7%</strong> below the 52-week high of <strong>$11.05</strong> and <strong>181.7%</strong> above the 52-week low of <strong>$2.85</strong>. It holds <strong>73.9%</strong> of its 52-week high and sits in the <strong>64.8%</strong> position of its yearly range.</p>
+<p>The 21-day return is <strong>-15.7%</strong>. That is the pullback. This stock has been outperforming the broad market aggressively, then corrected. The short-term washout is real.</p>
+<p>RSI reads <strong>23.8</strong> on a <strong>14</strong>-day basis, with another calculation at <strong>37.8</strong>. Either way, this is oversold territory. The stock is washed out. ATR is <strong>$0.50</strong>, meaning you can expect normal daily swings of roughly <strong>6%</strong> of the current price. The swing high is <strong>$10.57</strong>, which is also the primary target. The swing low is <strong>$6.13</strong>, which sits below the stop.</p>
+<p>You enter at <strong>$8.17</strong>. Your stop is <strong>$7.17</strong>, giving you <strong>12.2%</strong> of risk. The primary target is <strong>$10.57</strong>, offering <strong>29.4%</strong> upside and a reward-to-risk of <strong>2.4</strong>. A secondary target sits at <strong>$10.42</strong>, offering <strong>27.5%</strong> upside. Volume confirmation would look like expanding volume on green days as price reclaims the 8-week and 21-week exponential moving averages. Right now the posture is oversold within an intact uptrend. You are buying the dip in a trend that has not broken.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$792M</td></tr><tr><td class="k">Enterprise value</td><td class="v">$518M</td></tr><tr><td class="k">52-week range</td><td class="v">$2.85 - $11.05</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">0.73</td></tr><tr><td class="k">Forward P/E</td><td class="v">-8.3</td></tr><tr><td class="k">Price / sales</td><td class="v">428.1</td></tr><tr><td class="k">Price / book</td><td class="v">2.8</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$2M  (-11.2% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$0.04</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$-95M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">-2.22 / -0.98</td></tr><tr><td class="k">Gross margin</td><td class="v">74.3%</td></tr><tr><td class="k">Operating margin</td><td class="v">-4859.7%</td></tr><tr><td class="k">Profit margin</td><td class="v">0.0%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$-0.87</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$-0.54</td></tr><tr><td class="k">Total cash / share</td><td class="v">$2.90</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.01</td></tr><tr><td class="k">Current ratio</td><td class="v">20.93</td></tr><tr><td class="k">Return on equity</td><td class="v">-59.2%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">none - mean target $15.33 (3 analysts)</td></tr></tbody></table>
+<p>This is an early-stage medical device company. Revenue per share is <strong>$0.04</strong>. Revenue growth is <strong>-11.2%</strong>. That is a weak spot. The company is not yet scaling commercial sales, and the slight revenue decline tells you adoption is still in its early phase.</p>
+<p>Profitability is negative and expected to be so. EPS is <strong>-$2.22</strong> trailing and <strong>-$0.98</strong> forward. The forward PE is <strong>-8.3</strong>, which simply tells you the company is losing money. Operating margin is <strong>-4859.7%</strong>. This is a pre-profitability story funded by capital raises and insider backing.</p>
+<p>The balance sheet is the strength. Total cash per share is <strong>$2.90</strong>. Debt to equity is <strong>0.01</strong>. The current ratio is <strong>20.93</strong> and the quick ratio is <strong>20.66</strong>. The company has almost no debt and a massive cash cushion relative to near-term obligations. Return on equity is <strong>-59.2%</strong> and return on assets is <strong>-34.0%</strong>, which reflects the burn rate but also the clean capital structure. Beta is <strong>0.73</strong>, meaning the stock moves less than the market on average. Three analysts cover the name with a mean target of <strong>$15.33</strong>, well above the current price of <strong>$8.17</strong>.</p>
+<p>The gross margin is <strong>74.3%</strong>. That tells you the product economics work once volume arrives. The gap between <strong>74.3%</strong> gross margin and <strong>-4859.7%</strong> operating margin is the cost of building a commercial platform. You are investing in that bridge.</p>
+<h2>Why Now</h2>
+<p>The timing is driven by three converging signals. First, the chart is washed out. RSI at <strong>23.8</strong> after a <strong>-15.7%</strong> pullback in a stock up <strong>44.3%</strong> over <strong>63</strong> days tells you the selling has likely run its course. Second, the insider buy of <strong>$28.8M</strong> near <strong>$5.75</strong> gives you a reference point. Informed money committed at a lower level, and the stock has held well above it.</p>
+<p>Third, there is a catalyst on the calendar. The next event is dated <strong>2026-08-10</strong>, which is <strong>12</strong> days out from the session date of <strong>2026-07-28</strong>. That near-term event gives the setup a timing anchor. You are entering an oversold condition with a known catalyst approaching.</p>
+<p>The macro backdrop is mixed. Healthcare is in an exhausted state with late-chase acceleration. That means the sector is not going to carry this stock higher on its own. The setup has to work on its own merits. The insider buy and the washed-out chart are the drivers here. Sector tailwinds are absent.</p>
+<p>There is no options data to read. You will not find meaningful put-call signals or institutional flow in the options market. Read the insider action and the chart structure instead.</p>
+<h2>Risk Factors</h2>
+<p>The most credible way this loses money is a sector fade. Healthcare reads exhausted with late-chase acceleration. If the broad sector rolls over, a thin small cap inside that sector gets hit harder. The stock has a beta of <strong>0.73</strong>, so it moves less than the market on average. But thin volume can amplify selloffs when bid support disappears.</p>
+<p>Liquidity is a real risk. That means normal daily moves are large relative to price. Entering or exiting a meaningful position can move the stock against you. Use limit orders and scale in.</p>
+<p>The fundamental risk is the burn rate. The company has <strong>$2.90</strong> per share in cash and almost no debt, so the runway is there for now. But if commercial adoption does not accelerate, the cash cushion erodes and the story shifts to dilution risk. Revenue growth is <strong>-11.2%</strong>, which is moving in the wrong direction.</p>
+<p>The single invalidation is the stop at <strong>$7.17</strong>. That is <strong>12.2%</strong> below entry. If price closes below <strong>$7.17</strong>, the 30-week uptrend is in question and the oversold bounce thesis is wrong. You exit. No averaging down into a broken trend on a thin small cap.</p>
+<p>Timing risk around the catalyst is real. The event on <strong>2026-08-10</strong> is <strong>12</strong> days out. If the news disappoints, the stock gaps below the stop and you take more than the expected <strong>12.2%</strong> loss. You cannot control slippage on a thin name post-event. Decide before the event whether you hold through it or reduce ahead of it.</p>
+<h2>Bringing It All Together</h2>
+<p>- The stock is the most oversold clean small cap on the radar, with RSI at <strong>23.8</strong> and a <strong>-15.7%</strong> pullback inside a <strong>44.3%</strong> uptrend over <strong>63</strong> days.<br>- An insider committed <strong>$28.8M</strong> near <strong>$5.75</strong>, giving you a concrete reference point from informed money.<br>- The balance sheet is clean with <strong>$2.90</strong> per share in cash, debt to equity of <strong>0.01</strong>, and a current ratio of <strong>20.93</strong>.<br>- A catalyst sits <strong>12</strong> days out on <strong>2026-08-10</strong>, providing a timing anchor for the oversold bounce.<br>- Entry at <strong>$8.17</strong> with a stop at <strong>$7.17</strong> gives <strong>12.2%</strong> risk. Target at <strong>$10.57</strong> gives <strong>29.4%</strong> upside and a reward-to-risk of <strong>2.4</strong>.<br>- The 30-week moving average slopes up at <strong>28.9%</strong> and the stock trades above it. The trend is intact. The pullback is the opportunity.</p>
+<h2>Conclusion</h2>
+<p>Avior is a medium-conviction long. The setup is an oversold pullback inside an intact uptrend, backed by a <strong>$28.8M</strong> insider buy, with a catalyst <strong>12</strong> days out and a clean balance sheet. You accept thin liquidity, a tired sector, and a pre-profitability business for a <strong>2.4</strong> reward-to-risk with <strong>29.4%</strong> upside. Enter at <strong>$8.17</strong>. Stop at <strong>$7.17</strong>. Target at <strong>$10.57</strong>.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Anteris Technologies Global Corp. (AVR) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $792M; 52-week range $3-$11; Revenue $2M -11% YoY; Net income $-95M; Free cash flow/share $-0.54; Debt-to-equity 0.01; Return on equity -59%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Anteris Technologies Global Corp. (AVR) inside the Healthcare space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Avior pulled back to an oversold RSI of **37.8** while riding a 30-week trend rising **28.9%**, and it sits **22.7%** below its 52-week high. The pullback is proven (**tested, risk-adjusted return 1.10**), and an insider committed **$28.8M*. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># Oversold and Overshadowed in Medical Devices
+
+*A structural-heart microcap with insider backing, a clean uptrend, and a chart washed out to RSI 24.*
+
+## The Big Picture
+
+Healthcare is exhausted. The sector sits in a late-chase state, meaning money has been piling in after the move has already happened. That creates a problem for anyone trying to buy strength. You are paying premium prices in a tired group.
+
+The structural shift underneath medical devices is still intact. Aging populations drive demand for minimally invasive procedures. Structural heart treatments are growing as patients who cannot tolerate open surgery need alternatives. Device companies with novel platforms and clean regulatory pathways are capturing that demand.
+
+An exhausted sector punishes the obvious longs. It rewards you for finding washed-out names inside an otherwise tired group. You want the stock that has already corrected, where the selling has run its course, and where informed buyers are stepping in. That is exactly the setup here.
+
+## Introducing AVR
+
+Anteris Technologies Global Corp. is a structural heart company based in Toowong, Australia. The company develops and commercializes minimally invasive medical devices to treat heart valve diseases.
+
+The flagship product is the DurAVR transcatheter heart valve system. It is a novel transcatheter aortic valve designed to treat severe aortic stenosis. The valve is shaped to mimic the performance of a healthy human aortic valve. That design matters because it addresses a core limitation of older transcatheter valves, which do not replicate natural blood flow.
+
+Anteris also develops ADAPT anti-calcification tissue. This technology transforms xenograft tissue into durable bioscaffolds that mimic human tissue for surgical repair. The ComASUR delivery system rounds out the platform, giving physicians a steerable catheter for precise navigation through heart anatomy. Together these products form a coherent platform in a high-growth corner of medical devices.
+
+## The Thesis
+
+The core thesis is an oversold pullback in a clean uptrend, backed by insider cash. Avior pulled back to an RSI of **37.8** on a 14-day basis while riding a 30-week trend rising **28.9%**. The stock sits **22.7%** below its 52-week high of **$11.05**. The pullback is proven, with a tested risk-adjusted return of **1.10**. An insider committed **$28.8M** of open-market cash near **$5.75**.
+
+That insider buy is the anchor. When someone with inside knowledge puts **$28.8M** into a microcap at **$5.75**, they are making a statement about value. The stock now trades at **$8.17**, well above that level. You are buying above the insider price, but the chart is washed out and the trend is intact.
+
+Conviction is MEDIUM. The reward-to-risk is **2.4**, with **29.4%** upside to the primary target of **$10.57** and **12.2%** risk to the stop at **$7.17**. This is the most oversold clean small cap on the desk&#x27;s radar with a real insider buy behind it. Size it as a medium-conviction long. You are accepting thin liquidity and a tired sector for a setup where the selling has likely exhausted itself.
+
+## Technical Analysis
+
+&gt; 📈 Insert the AVR weekly chart here (TradingView): AVR weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $10.57 · mark support near $7.17.
+
+The chart is in an uptrend with a fresh pullback. The stock trades above its 30-week moving average, and that average is sloping up at **28.9%**. Price sits **22.7%** below the 52-week high of **$11.05** and **181.7%** above the 52-week low of **$2.85**. It holds **73.9%** of its 52-week high and sits in the **64.8%** position of its yearly range.
+
+The 21-day return is **-15.7%**. That is the pullback. This stock has been outperforming the broad market aggressively, then corrected. The short-term washout is real.
+
+RSI reads **23.8** on a **14**-day basis, with another calculation at **37.8**. Either way, this is oversold territory. The stock is washed out. ATR is **$0.50**, meaning you can expect normal daily swings of roughly **6%** of the current price. The swing high is **$10.57**, which is also the primary target. The swing low is **$6.13**, which sits below the stop.
+
+You enter at **$8.17**. Your stop is **$7.17**, giving you **12.2%** of risk. The primary target is **$10.57**, offering **29.4%** upside and a reward-to-risk of **2.4**. A secondary target sits at **$10.42**, offering **27.5%** upside. Volume confirmation would look like expanding volume on green days as price reclaims the 8-week and 21-week exponential moving averages. Right now the posture is oversold within an intact uptrend. You are buying the dip in a trend that has not broken.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $792M |
+| Enterprise value | $518M |
+| 52-week range | $2.85 - $11.05 |
+| Dividend yield | None |
+| Beta | 0.73 |
+| Forward P/E | -8.3 |
+| Price / sales | 428.1 |
+| Price / book | 2.8 |
+| Revenue (TTM) | $2M  (-11.2% YoY) |
+| Revenue / share | $0.04 |
+| Net income (TTM) | $-95M |
+| EPS (TTM / fwd) | -2.22 / -0.98 |
+| Gross margin | 74.3% |
+| Operating margin | -4859.7% |
+| Profit margin | 0.0% |
+| Operating cash flow / share | $-0.87 |
+| Free cash flow / share | $-0.54 |
+| Total cash / share | $2.90 |
+| Debt / equity | 0.01 |
+| Current ratio | 20.93 |
+| Return on equity | -59.2% |
+| Analyst consensus | none - mean target $15.33 (3 analysts) |
+
+This is an early-stage medical device company. Revenue per share is **$0.04**. Revenue growth is **-11.2%**. That is a weak spot. The company is not yet scaling commercial sales, and the slight revenue decline tells you adoption is still in its early phase.
+
+Profitability is negative and expected to be so. EPS is **-$2.22** trailing and **-$0.98** forward. The forward PE is **-8.3**, which simply tells you the company is losing money. Operating margin is **-4859.7%**. This is a pre-profitability story funded by capital raises and insider backing.
+
+The balance sheet is the strength. Total cash per share is **$2.90**. Debt to equity is **0.01**. The current ratio is **20.93** and the quick ratio is **20.66**. The company has almost no debt and a massive cash cushion relative to near-term obligations. Return on equity is **-59.2%** and return on assets is **-34.0%**, which reflects the burn rate but also the clean capital structure. Beta is **0.73**, meaning the stock moves less than the market on average. Three analysts cover the name with a mean target of **$15.33**, well above the current price of **$8.17**.
+
+The gross margin is **74.3%**. That tells you the product economics work once volume arrives. The gap between **74.3%** gross margin and **-4859.7%** operating margin is the cost of building a commercial platform. You are investing in that bridge.
+
+## Why Now
+
+The timing is driven by three converging signals. First, the chart is washed out. RSI at **23.8** after a **-15.7%** pullback in a stock up **44.3%** over **63** days tells you the selling has likely run its course. Second, the insider buy of **$28.8M** near **$5.75** gives you a reference point. Informed money committed at a lower level, and the stock has held well above it.
+
+Third, there is a catalyst on the calendar. The next event is dated **2026-08-10**, which is **12** days out from the session date of **2026-07-28**. That near-term event gives the setup a timing anchor. You are entering an oversold condition with a known catalyst approaching.
+
+The macro backdrop is mixed. Healthcare is in an exhausted state with late-chase acceleration. That means the sector is not going to carry this stock higher on its own. The setup has to work on its own merits. The insider buy and the washed-out chart are the drivers here. Sector tailwinds are absent.
+
+There is no options data to read. You will not find meaningful put-call signals or institutional flow in the options market. Read the insider action and the chart structure instead.
+
+## Risk Factors
+
+The most credible way this loses money is a sector fade. Healthcare reads exhausted with late-chase acceleration. If the broad sector rolls over, a thin small cap inside that sector gets hit harder. The stock has a beta of **0.73**, so it moves less than the market on average. But thin volume can amplify selloffs when bid support disappears.
+
+Liquidity is a real risk. That means normal daily moves are large relative to price. Entering or exiting a meaningful position can move the stock against you. Use limit orders and scale in.
+
+The fundamental risk is the burn rate. The company has **$2.90** per share in cash and almost no debt, so the runway is there for now. But if commercial adoption does not accelerate, the cash cushion erodes and the story shifts to dilution risk. Revenue growth is **-11.2%**, which is moving in the wrong direction.
+
+The single invalidation is the stop at **$7.17**. That is **12.2%** below entry. If price closes below **$7.17**, the 30-week uptrend is in question and the oversold bounce thesis is wrong. You exit. No averaging down into a broken trend on a thin small cap.
+
+Timing risk around the catalyst is real. The event on **2026-08-10** is **12** days out. If the news disappoints, the stock gaps below the stop and you take more than the expected **12.2%** loss. You cannot control slippage on a thin name post-event. Decide before the event whether you hold through it or reduce ahead of it.
+
+## Bringing It All Together
+
+- The stock is the most oversold clean small cap on the radar, with RSI at **23.8** and a **-15.7%** pullback inside a **44.3%** uptrend over **63** days.
+- An insider committed **$28.8M** near **$5.75**, giving you a concrete reference point from informed money.
+- The balance sheet is clean with **$2.90** per share in cash, debt to equity of **0.01**, and a current ratio of **20.93**.
+- A catalyst sits **12** days out on **2026-08-10**, providing a timing anchor for the oversold bounce.
+- Entry at **$8.17** with a stop at **$7.17** gives **12.2%** risk. Target at **$10.57** gives **29.4%** upside and a reward-to-risk of **2.4**.
+- The 30-week moving average slopes up at **28.9%** and the stock trades above it. The trend is intact. The pullback is the opportunity.
+
+## Conclusion
+
+Avior is a medium-conviction long. The setup is an oversold pullback inside an intact uptrend, backed by a **$28.8M** insider buy, with a catalyst **12** days out and a clean balance sheet. You accept thin liquidity, a tired sector, and a pre-profitability business for a **2.4** reward-to-risk with **29.4%** upside. Enter at **$8.17**. Stop at **$7.17**. Target at **$10.57**.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
