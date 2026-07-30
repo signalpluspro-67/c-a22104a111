@@ -1,0 +1,246 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Pocket Ultrasound Pullback Nobody Is Watching — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Pocket Ultrasound Pullback Nobody Is Watching</h1>
+<div class="subtitle">Butterfly Network gave back a month of gains into a rising trend. The setup is tested, the size is small.</div>
+<div class="meta">EOD 2026-07-29 · BFLY · written from the desk · model glm-5.2</div>
+<div class="chips"><span class="chip">BFLY</span>
+<span class="chip">Healthcare</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-07-29: entry <b>$7.10</b> &rarr; <b>$7.10</b> (as of 2026-07-29) · <span class="pos">+0.0%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Healthcare is exhausted. The sector sits in a late-chase phase where most of the money has already been made and new buyers are arriving after the move. That is a hostile backdrop for most medical device stocks.</p>
+<p>The structural story in medical devices still favors companies shrinking the cost and footprint of diagnostics. Handheld ultrasound is one of the clearest expressions of that shift. The technology replaces cart-based systems that cost tens of thousands of dollars with a single probe connected to a phone or tablet. The total addressable market expands when the hardware gets cheap and portable enough for primary care, emergency response, and global health deployments.</p>
+<p>A sector in late-chase mode punishes late entries and rewards pullbacks into intact trends. You want the stock that already ran, pulled back to support, and kept its long-term slope. That is exactly what the desk surfaced here.</p>
+<h2>Introducing BFLY</h2>
+<p>Butterfly Network designs and sells handheld ultrasound probes that plug into a smartphone or tablet. The core product line, Butterfly iQ+ and the newer iQ3, performs whole-body imaging from a single silicon-based chip-on-a-tip probe. The company sells direct in the United States and through distributors internationally.</p>
+<p>The edge is the chip technology. Traditional ultrasound machines use piezoelectric crystals arranged in arrays, which makes the probes expensive and bulky. Butterfly replaced that architecture with a single silicon chip that can steer sound waves electronically. That cuts manufacturing cost and shrinks the probe to something that fits in a pocket. The software side matters too. Compass AI connects devices across hospital departments and ScanLab provides guided educational scanning for new users.</p>
+<p>The company also sells Butterfly Move, which combines the portability of the handheld with the stability of a cart system, and a veterinary version of the iQ+ and iQ3. The product portfolio covers human medicine, bladder scanning, and animal care.</p>
+<h2>The Thesis</h2>
+<p>The thesis is a tested pullback into a rising long-term trend. Butterfly gave back <strong>20.3%</strong> over the past month and now sits <strong>20.3%</strong> under its <strong>52</strong>-week high at <strong>$7.10</strong>. The <strong>30</strong>-week average is still rising at <strong>34.7%</strong> slope, which tells you the uptrend is intact despite the recent selling.</p>
+<p>Relative strength of <strong>35.1%</strong> versus the broad market over three months confirms the sellers are taking profits, not abandoning the name. A stock that outperforms by that margin and then pulls back on light volume is doing what healthy stocks do after a big run. The <strong>63</strong>-day return of <strong>+37.6%</strong> puts that outperformance in context. The three-month move was strong, the one-month giveback is orderly.</p>
+<p>Risk/reward is <strong>1.8</strong> with <strong>20.3%</strong> of room back to the high and the steepest rising long-term trend of the group. The desk ranked this under AVR on reward alone, meaning the setup is sound but the upside ceiling is slightly less generous than the top name on the list. Conviction is MEDIUM. You size this accordingly, with a clear stop and a defined target, and you do not treat it as a max-weight position.</p>
+<p>The single desk read behind the selection is the tested pullback, and the risk-adjusted return of <strong>1.10</strong> confirms the setup has been validated rather than chased. The entry at <strong>$7.10</strong> with a stop at <strong>$6.10</strong> gives you <strong>14.1%</strong> risk to the downside. The target at <strong>$8.91</strong> offers <strong>25.5%</strong> upside, and a secondary target at <strong>$9.35</strong> offers <strong>31.7%</strong>. Those numbers work for a medium-conviction position in a small-cap healthcare name.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-07-29-BFLY.png" alt="BFLY weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=BFLY&interval=1W" target="_blank" rel="noopener">📈 Open the BFLY weekly chart on TradingView ↗</a><figcaption>BFLY weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $8.91 · mark support near $6.10.</figcaption></figure>
+<p>The chart tells a story of a stock that ran hard, pulled back, and is testing support near its rising long-term average. The last close is <strong>$7.10</strong>, which is <strong>20.3%</strong> below the <strong>52</strong>-week high of <strong>$9.69</strong> and <strong>433.8%</strong> above the <strong>52</strong>-week low of <strong>$1.32</strong>. That range tells you everything about the trajectory. This stock went from <strong>$1.32</strong> to <strong>$9.69</strong> and is now digesting those gains.</p>
+<p>The <strong>30</strong>-week average is rising at <strong>34.7%</strong> and the stock is trading above it. That is the single most important technical fact. The long-term trend is up and the pullback has not broken it. The <strong>21</strong>-day return of <strong>-20.3%</strong> shows the short-term pressure, while the <strong>63</strong>-day return of <strong>+37.6%</strong> shows the intermediate trend is still positive. You are buying a pullback within an uptrend, not catching a falling knife.</p>
+<p>RSI sits at <strong>51.5</strong>, which is neutral. There is no oversold bounce signal here and no overbought sell signal. The stock is in the middle of its momentum cycle, which means the entry is driven by trend and structure rather than a stretched oscillator. The <strong>14</strong>-day ATR of <strong>$0.50</strong> tells you the daily noise is manageable. On a <strong>$7.10</strong> stock, that is roughly <strong>7%</strong> of daily movement, so expect swings but expect them within a range you can handle with a <strong>$6.10</strong> stop.</p>
+<p>The swing high at <strong>$8.91</strong> is your first target. That is the level where the prior rally stalled before the <strong>20.3%</strong> pullback. The secondary target at <strong>$9.35</strong> extends beyond the swing high toward the <strong>52</strong>-week high. Relative strength of <strong>+35.1%</strong> versus the broad market over three months means this stock has been leading. The pullback does not change that. What you want to see on the bounce is volume confirmation. A breakout day on volume above that average, ideally above <strong>10M</strong> shares, would confirm the bounce is real. Without volume, you treat the rally as a recovery within the range and you do not add.</p>
+<p>The entry is <strong>$7.10</strong>. The stop is <strong>$6.10</strong>. The target is <strong>$8.91</strong>, with a secondary at <strong>$9.35</strong>. Risk to stop is <strong>14.1%</strong>. Upside to the first target is <strong>25.5%</strong>. The risk/reward of <strong>1.8</strong> is adequate for a medium-conviction trade. The stop at <strong>$6.10</strong> sits below the rising <strong>30</strong>-week average and below the recent pullback low, which gives it structural meaning. If <strong>$6.10</strong> breaks, the trend has changed and you are out.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$1.73B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$1.61B</td></tr><tr><td class="k">52-week range</td><td class="v">$1.32 - $9.69</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">2.05</td></tr><tr><td class="k">Forward P/E</td><td class="v">-71.6</td></tr><tr><td class="k">Price / sales</td><td class="v">16.8</td></tr><tr><td class="k">Price / book</td><td class="v">9.1</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$103M  (+25.0% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$0.41</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$-76M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">-0.3 / -0.09</td></tr><tr><td class="k">Gross margin</td><td class="v">66.1%</td></tr><tr><td class="k">Operating margin</td><td class="v">-50.8%</td></tr><tr><td class="k">Profit margin</td><td class="v">-73.6%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$-0.06</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$0.04</td></tr><tr><td class="k">Total cash / share</td><td class="v">$0.53</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.1</td></tr><tr><td class="k">Current ratio</td><td class="v">4.03</td></tr><tr><td class="k">Return on equity</td><td class="v">-35.2%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">none - mean target $7.06 (4 analysts)</td></tr></tbody></table>
+<p>The growth is real and the profitability is not. That is a strong top-line rate for a medical device company of this size. The problem is the bottom line. The profit margin is <strong>-73.6%</strong> and the operating margin is <strong>-50.8%</strong>. Butterfly is burning money to fund growth.</p>
+<p>The gross margin tells a different story. At <strong>66.1%</strong>, the unit economics of the hardware plus software model are healthy. The gross profit on each probe sold is strong. The losses come from operating leverage, meaning the company is spending heavily on R&amp;D, sales, and marketing to capture market share. The forward EPS of <strong>-$0.09</strong> shows the loss rate is narrowing. If Butterfly continues growing revenue at <strong>25%</strong> while holding gross margins above <strong>60%</strong>, the operating leverage kicks in and the path to breakeven becomes visible.</p>
+<p>The balance sheet gives the company time. Total cash per share is <strong>$0.53</strong>, total debt is only <strong>$19.8M</strong>, and the debt-to-equity ratio is <strong>0.1</strong>. The current ratio is <strong>4.03</strong> and the quick ratio is <strong>2.74</strong>. There is no liquidity crisis here. The positive free cash flow figure likely reflects working capital timing or non-cash adjustments, but it means the cash burn is not accelerating.</p>
+<p>The valuation is expensive. Price-to-sales is <strong>16.8</strong> and price-to-book is <strong>9.1</strong>. The forward PE is negative because the company is losing money. You are paying for growth and platform potential, not current earnings. The analyst target mean is <strong>$7.06</strong>, which is essentially flat with the current price of <strong>$7.10</strong>. Four analysts cover the name. The beta of <strong>2.05</strong> tells you this stock moves twice as much as the market on average, which is consistent with what you see in the ATR.</p>
+<p>The weak spot is clear. If revenue growth slows from <strong>25%</strong> to something closer to <strong>15%</strong> before the company reaches operating leverage, the losses extend and the balance sheet cushion shrinks. The total cash position relative to the burn rate is the number to watch. The return on equity of <strong>-35.2%</strong> and return on assets of <strong>-11.2%</strong> reflect the current unprofitability. These are not distress levels for a company with <strong>$0.53</strong> in cash per share and minimal debt, but they tell you the clock is ticking on the path to self-funding.</p>
+<h2>Why Now</h2>
+<p>The catalyst is immediate. Earnings are scheduled for <strong>2026-07-30</strong>, which is tomorrow. The options flow from <strong>2026-07-28</strong> shows <strong>708</strong> call contracts versus <strong>194</strong> put contracts, with <strong>$0.08M</strong> in call premium and <strong>$0.03M</strong> in put premium. The options market is leaning bullish but not making a large bet.</p>
+<p>The macro backdrop is mixed. Healthcare is in an exhausted, late-chase state. That works against new breakout buys but favors pullback entries into established leaders. Butterfly&#x27;s relative strength of <strong>+35.1%</strong> over three months puts it in the leader category. You are buying a leader on a pullback into a catalyst, in a sector where most stocks are already extended.</p>
+<p>The timing risk is real. Earnings tomorrow means the stock could gap in either direction. The stop at <strong>$6.10</strong> is <strong>14.1%</strong> below entry, which means a bad earnings reaction could blow through the stop before you can react. You have two choices. You take the entry now and accept the earnings gap risk, or you wait for the earnings print and enter on the reaction. The desk is suggesting entry at <strong>$7.10</strong>, which implies accepting the catalyst risk. If you are uncomfortable with the gap, you halve the size pre-earnings and add on the post-earnings pullback if the stock holds above <strong>$6.10</strong>.</p>
+<p>The options flow does not show a large directional bet. Nobody is making a million-dollar earnings bet here. That means the move will be driven by the print itself, not by positioning. A clean beat with maintained guidance could take the stock back toward the swing high at <strong>$8.91</strong> quickly. A miss or a guide-down could test <strong>$6.10</strong> fast.</p>
+<h2>Risk Factors</h2>
+<p>The stop is <strong>$6.10</strong>. If that level breaks, the thesis is wrong and you exit. The stop sits below the rising <strong>30</strong>-week average and below the recent pullback structure. A break of <strong>$6.10</strong> means the long-term trend has rolled over and the pullback thesis is dead. You do not hope for a bounce. You sell.</p>
+<p>The earnings catalyst on <strong>2026-07-30</strong> is the primary timing risk. The stock could gap below <strong>$6.10</strong> on a bad print before the market opens. With a beta of <strong>2.05</strong> and an ATR of <strong>$0.50</strong>, the daily volatility is high. A gap down of <strong>14.1%</strong> or more is within the range of possibility on a negative earnings surprise. You accept this risk if you enter before the print. If you cannot accept it, you wait.</p>
+<p>Elevated volatility means the bounce can take longer than the stop allows. The desk flagged this explicitly. That is the opportunity cost risk. Your capital is tied up in a stock that is not going your way but has not triggered the stop either.</p>
+<p>The fundamental risk is the burn rate. The cash cushion and low debt buy time, but time is finite. If revenue growth slows from <strong>25%</strong> to the mid-teens, the path to breakeven extends and the market re-rates the stock lower. The price-to-sales ratio of <strong>16.8</strong> leaves no room for a growth disappointment.</p>
+<p>The healthcare sector is exhausted and in late-chase mode. If the sector rolls over, even the leaders get sold. Butterfly&#x27;s relative strength of <strong>+35.1%</strong> over three months protects it on a relative basis, but absolute drawdown risk remains. A sector-wide correction could pull this stock down <strong>10%</strong> to <strong>15%</strong> on no company-specific news, and that is enough to test the <strong>$6.10</strong> stop.</p>
+<h2>Bringing It All Together</h2>
+<p>- Butterfly is a pocket ultrasound platform with <strong>25%</strong> revenue growth, <strong>66.1%</strong> gross margins, and a clean balance sheet with <strong>0.1</strong> debt-to-equity and a <strong>4.03</strong> current ratio.<br>- The stock pulled back <strong>20.3%</strong> from its <strong>52</strong>-week high into a rising <strong>30</strong>-week average with a <strong>34.7%</strong> slope, which is the steepest in the group.<br>- Relative strength of <strong>+35.1%</strong> versus the broad market over three months confirms the sellers are taking profits, not capitulating.<br>- Entry at <strong>$7.10</strong>, stop at <strong>$6.10</strong>, target at <strong>$8.91</strong>, secondary at <strong>$9.35</strong>. Risk/reward of <strong>1.8</strong> with <strong>14.1%</strong> downside risk and <strong>25.5%</strong> upside to the first target.<br>- Earnings on <strong>2026-07-30</strong> is the immediate catalyst.<br>- Conviction is MEDIUM. The setup is tested and the trend is intact, but the earnings gap risk and the elevated volatility mean this is a position you size with discipline, not a max-weight bet.</p>
+<h2>Conclusion</h2>
+<p>This is a tested pullback in a leader with intact trend structure and a clean balance sheet. The entry at <strong>$7.10</strong> with a stop at <strong>$6.10</strong> gives you a defined risk of <strong>14.1%</strong> and a first target of <strong>$8.91</strong> for <strong>25.5%</strong> upside. The earnings catalyst is tomorrow and the gap risk is real. You take the entry if you can tolerate the pre-earnings volatility, or you wait for the print and enter on the reaction if the stock holds above <strong>$6.10</strong>. The <strong>30</strong>-week average rising at <strong>34.7%</strong> is your anchor. As long as that slope holds and the stock stays above <strong>$6.10</strong>, the setup is live.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Butterfly Network, Inc. (BFLY) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $1.73B; 52-week range $1-$10; Revenue $103M +25% YoY; Net income $-76M; Free cash flow/share $0.04; Debt-to-equity 0.1; Return on equity -35%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Butterfly Network, Inc. (BFLY) inside the Healthcare space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Butterfly gave back **20.3%** over the past month and now sits **20.3%** under its **52**-week high at a neutral RSI **51.5**, with its **30**-week average still rising at **34.7%**. Relative strength of **35.1%** versus the broad market ov. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Pocket Ultrasound Pullback Nobody Is Watching
+
+*Butterfly Network gave back a month of gains into a rising trend. The setup is tested, the size is small.*
+
+## The Big Picture
+
+Healthcare is exhausted. The sector sits in a late-chase phase where most of the money has already been made and new buyers are arriving after the move. That is a hostile backdrop for most medical device stocks.
+
+The structural story in medical devices still favors companies shrinking the cost and footprint of diagnostics. Handheld ultrasound is one of the clearest expressions of that shift. The technology replaces cart-based systems that cost tens of thousands of dollars with a single probe connected to a phone or tablet. The total addressable market expands when the hardware gets cheap and portable enough for primary care, emergency response, and global health deployments.
+
+A sector in late-chase mode punishes late entries and rewards pullbacks into intact trends. You want the stock that already ran, pulled back to support, and kept its long-term slope. That is exactly what the desk surfaced here.
+
+## Introducing BFLY
+
+Butterfly Network designs and sells handheld ultrasound probes that plug into a smartphone or tablet. The core product line, Butterfly iQ+ and the newer iQ3, performs whole-body imaging from a single silicon-based chip-on-a-tip probe. The company sells direct in the United States and through distributors internationally.
+
+The edge is the chip technology. Traditional ultrasound machines use piezoelectric crystals arranged in arrays, which makes the probes expensive and bulky. Butterfly replaced that architecture with a single silicon chip that can steer sound waves electronically. That cuts manufacturing cost and shrinks the probe to something that fits in a pocket. The software side matters too. Compass AI connects devices across hospital departments and ScanLab provides guided educational scanning for new users.
+
+The company also sells Butterfly Move, which combines the portability of the handheld with the stability of a cart system, and a veterinary version of the iQ+ and iQ3. The product portfolio covers human medicine, bladder scanning, and animal care.
+
+## The Thesis
+
+The thesis is a tested pullback into a rising long-term trend. Butterfly gave back **20.3%** over the past month and now sits **20.3%** under its **52**-week high at **$7.10**. The **30**-week average is still rising at **34.7%** slope, which tells you the uptrend is intact despite the recent selling.
+
+Relative strength of **35.1%** versus the broad market over three months confirms the sellers are taking profits, not abandoning the name. A stock that outperforms by that margin and then pulls back on light volume is doing what healthy stocks do after a big run. The **63**-day return of **+37.6%** puts that outperformance in context. The three-month move was strong, the one-month giveback is orderly.
+
+Risk/reward is **1.8** with **20.3%** of room back to the high and the steepest rising long-term trend of the group. The desk ranked this under AVR on reward alone, meaning the setup is sound but the upside ceiling is slightly less generous than the top name on the list. Conviction is MEDIUM. You size this accordingly, with a clear stop and a defined target, and you do not treat it as a max-weight position.
+
+The single desk read behind the selection is the tested pullback, and the risk-adjusted return of **1.10** confirms the setup has been validated rather than chased. The entry at **$7.10** with a stop at **$6.10** gives you **14.1%** risk to the downside. The target at **$8.91** offers **25.5%** upside, and a secondary target at **$9.35** offers **31.7%**. Those numbers work for a medium-conviction position in a small-cap healthcare name.
+
+## Technical Analysis
+
+&gt; 📈 Insert the BFLY weekly chart here (TradingView): BFLY weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $8.91 · mark support near $6.10.
+
+The chart tells a story of a stock that ran hard, pulled back, and is testing support near its rising long-term average. The last close is **$7.10**, which is **20.3%** below the **52**-week high of **$9.69** and **433.8%** above the **52**-week low of **$1.32**. That range tells you everything about the trajectory. This stock went from **$1.32** to **$9.69** and is now digesting those gains.
+
+The **30**-week average is rising at **34.7%** and the stock is trading above it. That is the single most important technical fact. The long-term trend is up and the pullback has not broken it. The **21**-day return of **-20.3%** shows the short-term pressure, while the **63**-day return of **+37.6%** shows the intermediate trend is still positive. You are buying a pullback within an uptrend, not catching a falling knife.
+
+RSI sits at **51.5**, which is neutral. There is no oversold bounce signal here and no overbought sell signal. The stock is in the middle of its momentum cycle, which means the entry is driven by trend and structure rather than a stretched oscillator. The **14**-day ATR of **$0.50** tells you the daily noise is manageable. On a **$7.10** stock, that is roughly **7%** of daily movement, so expect swings but expect them within a range you can handle with a **$6.10** stop.
+
+The swing high at **$8.91** is your first target. That is the level where the prior rally stalled before the **20.3%** pullback. The secondary target at **$9.35** extends beyond the swing high toward the **52**-week high. Relative strength of **+35.1%** versus the broad market over three months means this stock has been leading. The pullback does not change that. What you want to see on the bounce is volume confirmation. A breakout day on volume above that average, ideally above **10M** shares, would confirm the bounce is real. Without volume, you treat the rally as a recovery within the range and you do not add.
+
+The entry is **$7.10**. The stop is **$6.10**. The target is **$8.91**, with a secondary at **$9.35**. Risk to stop is **14.1%**. Upside to the first target is **25.5%**. The risk/reward of **1.8** is adequate for a medium-conviction trade. The stop at **$6.10** sits below the rising **30**-week average and below the recent pullback low, which gives it structural meaning. If **$6.10** breaks, the trend has changed and you are out.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $1.73B |
+| Enterprise value | $1.61B |
+| 52-week range | $1.32 - $9.69 |
+| Dividend yield | None |
+| Beta | 2.05 |
+| Forward P/E | -71.6 |
+| Price / sales | 16.8 |
+| Price / book | 9.1 |
+| Revenue (TTM) | $103M  (+25.0% YoY) |
+| Revenue / share | $0.41 |
+| Net income (TTM) | $-76M |
+| EPS (TTM / fwd) | -0.3 / -0.09 |
+| Gross margin | 66.1% |
+| Operating margin | -50.8% |
+| Profit margin | -73.6% |
+| Operating cash flow / share | $-0.06 |
+| Free cash flow / share | $0.04 |
+| Total cash / share | $0.53 |
+| Debt / equity | 0.1 |
+| Current ratio | 4.03 |
+| Return on equity | -35.2% |
+| Analyst consensus | none - mean target $7.06 (4 analysts) |
+
+The growth is real and the profitability is not. That is a strong top-line rate for a medical device company of this size. The problem is the bottom line. The profit margin is **-73.6%** and the operating margin is **-50.8%**. Butterfly is burning money to fund growth.
+
+The gross margin tells a different story. At **66.1%**, the unit economics of the hardware plus software model are healthy. The gross profit on each probe sold is strong. The losses come from operating leverage, meaning the company is spending heavily on R&amp;D, sales, and marketing to capture market share. The forward EPS of **-$0.09** shows the loss rate is narrowing. If Butterfly continues growing revenue at **25%** while holding gross margins above **60%**, the operating leverage kicks in and the path to breakeven becomes visible.
+
+The balance sheet gives the company time. Total cash per share is **$0.53**, total debt is only **$19.8M**, and the debt-to-equity ratio is **0.1**. The current ratio is **4.03** and the quick ratio is **2.74**. There is no liquidity crisis here. The positive free cash flow figure likely reflects working capital timing or non-cash adjustments, but it means the cash burn is not accelerating.
+
+The valuation is expensive. Price-to-sales is **16.8** and price-to-book is **9.1**. The forward PE is negative because the company is losing money. You are paying for growth and platform potential, not current earnings. The analyst target mean is **$7.06**, which is essentially flat with the current price of **$7.10**. Four analysts cover the name. The beta of **2.05** tells you this stock moves twice as much as the market on average, which is consistent with what you see in the ATR.
+
+The weak spot is clear. If revenue growth slows from **25%** to something closer to **15%** before the company reaches operating leverage, the losses extend and the balance sheet cushion shrinks. The total cash position relative to the burn rate is the number to watch. The return on equity of **-35.2%** and return on assets of **-11.2%** reflect the current unprofitability. These are not distress levels for a company with **$0.53** in cash per share and minimal debt, but they tell you the clock is ticking on the path to self-funding.
+
+## Why Now
+
+The catalyst is immediate. Earnings are scheduled for **2026-07-30**, which is tomorrow. The options flow from **2026-07-28** shows **708** call contracts versus **194** put contracts, with **$0.08M** in call premium and **$0.03M** in put premium. The options market is leaning bullish but not making a large bet.
+
+The macro backdrop is mixed. Healthcare is in an exhausted, late-chase state. That works against new breakout buys but favors pullback entries into established leaders. Butterfly&#x27;s relative strength of **+35.1%** over three months puts it in the leader category. You are buying a leader on a pullback into a catalyst, in a sector where most stocks are already extended.
+
+The timing risk is real. Earnings tomorrow means the stock could gap in either direction. The stop at **$6.10** is **14.1%** below entry, which means a bad earnings reaction could blow through the stop before you can react. You have two choices. You take the entry now and accept the earnings gap risk, or you wait for the earnings print and enter on the reaction. The desk is suggesting entry at **$7.10**, which implies accepting the catalyst risk. If you are uncomfortable with the gap, you halve the size pre-earnings and add on the post-earnings pullback if the stock holds above **$6.10**.
+
+The options flow does not show a large directional bet. Nobody is making a million-dollar earnings bet here. That means the move will be driven by the print itself, not by positioning. A clean beat with maintained guidance could take the stock back toward the swing high at **$8.91** quickly. A miss or a guide-down could test **$6.10** fast.
+
+## Risk Factors
+
+The stop is **$6.10**. If that level breaks, the thesis is wrong and you exit. The stop sits below the rising **30**-week average and below the recent pullback structure. A break of **$6.10** means the long-term trend has rolled over and the pullback thesis is dead. You do not hope for a bounce. You sell.
+
+The earnings catalyst on **2026-07-30** is the primary timing risk. The stock could gap below **$6.10** on a bad print before the market opens. With a beta of **2.05** and an ATR of **$0.50**, the daily volatility is high. A gap down of **14.1%** or more is within the range of possibility on a negative earnings surprise. You accept this risk if you enter before the print. If you cannot accept it, you wait.
+
+Elevated volatility means the bounce can take longer than the stop allows. The desk flagged this explicitly. That is the opportunity cost risk. Your capital is tied up in a stock that is not going your way but has not triggered the stop either.
+
+The fundamental risk is the burn rate. The cash cushion and low debt buy time, but time is finite. If revenue growth slows from **25%** to the mid-teens, the path to breakeven extends and the market re-rates the stock lower. The price-to-sales ratio of **16.8** leaves no room for a growth disappointment.
+
+The healthcare sector is exhausted and in late-chase mode. If the sector rolls over, even the leaders get sold. Butterfly&#x27;s relative strength of **+35.1%** over three months protects it on a relative basis, but absolute drawdown risk remains. A sector-wide correction could pull this stock down **10%** to **15%** on no company-specific news, and that is enough to test the **$6.10** stop.
+
+## Bringing It All Together
+
+- Butterfly is a pocket ultrasound platform with **25%** revenue growth, **66.1%** gross margins, and a clean balance sheet with **0.1** debt-to-equity and a **4.03** current ratio.
+- The stock pulled back **20.3%** from its **52**-week high into a rising **30**-week average with a **34.7%** slope, which is the steepest in the group.
+- Relative strength of **+35.1%** versus the broad market over three months confirms the sellers are taking profits, not capitulating.
+- Entry at **$7.10**, stop at **$6.10**, target at **$8.91**, secondary at **$9.35**. Risk/reward of **1.8** with **14.1%** downside risk and **25.5%** upside to the first target.
+- Earnings on **2026-07-30** is the immediate catalyst.
+- Conviction is MEDIUM. The setup is tested and the trend is intact, but the earnings gap risk and the elevated volatility mean this is a position you size with discipline, not a max-weight bet.
+
+## Conclusion
+
+This is a tested pullback in a leader with intact trend structure and a clean balance sheet. The entry at **$7.10** with a stop at **$6.10** gives you a defined risk of **14.1%** and a first target of **$8.91** for **25.5%** upside. The earnings catalyst is tomorrow and the gap risk is real. You take the entry if you can tolerate the pre-earnings volatility, or you wait for the print and enter on the reaction if the stock holds above **$6.10**. The **30**-week average rising at **34.7%** is your anchor. As long as that slope holds and the stock stays above **$6.10**, the setup is live.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

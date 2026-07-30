@@ -1,0 +1,233 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A Washed-Out AI Lender With Real Cash Flow — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>A Washed-Out AI Lender With Real Cash Flow</h1>
+<div class="subtitle">Pagaya sits 63% off its highs, outperforming the market, and profitable. The trend has not turned yet.</div>
+<div class="meta">EOD 2026-07-29 · PGY · written from the desk · model glm-5.2</div>
+<div class="chips"><span class="chip">PGY</span>
+<span class="chip">Technology</span>
+<span class="chip lo">LOW conviction</span></div>
+<div class="track">Tracking since 2026-07-29: entry <b>$14.72</b> &rarr; <b>$16.19</b> (as of 2026-07-29) · <span class="pos">+10.0%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>The technology sector is neutral and its acceleration is dead. That means the easy money from sector-wide multiple expansion is gone. You need company-specific setups to make money here.</p>
+<p>AI in financial services is a structural shift that is still in its early innings. Banks and lenders want machine-learning underwriting to approve more borrowers without taking on more credit risk. The companies that can prove they do this profitably will get paid. The ones burning cash will not.</p>
+<p>A neutral sector with dead acceleration rewards names that have already been washed out and are finding buyers on their own merits. You want companies where the fundamental story is improving while the stock has already taken its beating. That is the setup that works when the broad market is not carrying you.</p>
+<h2>Introducing PGY</h2>
+<p>Pagaya Technologies builds AI-driven credit underwriting infrastructure for lenders. The company sits between banks, fintechs, and institutional investors. Its partners send loan applications that they would otherwise decline. Pagaya&#x27;s models evaluate those applications in real time and route the approved ones to its funding network.</p>
+<p>The core products are Decline Monetization, Dual Look, and First Look. Decline Monetization takes rejected applications and finds borrowers the partner would have turned away. Dual Look runs Pagaya&#x27;s models concurrently with the partner&#x27;s own underwriting. First Look routes specific application segments to Pagaya&#x27;s network before the partner&#x27;s standard process kicks in.</p>
+<p>The customer base includes fintech lenders, incumbent banks, auto finance providers, and residential real estate services firms. Pagaya was founded in <strong>2016</strong> and is headquartered in New York. The company has <strong>511</strong> employees. It operates in the United States, Israel, and the Cayman Islands.</p>
+<h2>The Thesis</h2>
+<p>Pagaya is a washed-out name that has already found buyers. The stock trades <strong>63.0%</strong> below its <strong>52</strong>-week high of <strong>44.99</strong>. Yet it has outperformed the broad market by <strong>17.7%</strong> over the past three months. That divergence is the profile of a stock where the selling is exhausted and accumulation has started.</p>
+<p>The setup fires at an RSI of <strong>46.3</strong> with price holding above its <strong>30</strong>-week moving average. Risk-adjusted return is <strong>1.10</strong> on the desk&#x27;s tested read. Daily turnover of <strong>$39.1M</strong> gives you enough liquidity to enter and exit without slippage problems.</p>
+<p>Conviction is LOW. Risk/reward of <strong>2.1</strong> is strong, but a declining long-term average under the price caps both the ranking and the size. This is a small position. You are buying a beaten-down name with improving fundamentals and relative strength, accepting that the long-term trend has not confirmed a turn.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-07-29-PGY.png" alt="PGY weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=PGY&interval=1W" target="_blank" rel="noopener">📈 Open the PGY weekly chart on TradingView ↗</a><figcaption>PGY weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $18.77 · mark support near $12.76.</figcaption></figure>
+<p>The chart shows a stock in a damaged but stabilizing trend. Price closed at <strong>16.19</strong>. The <strong>30</strong>-week moving average sits below price, which is constructive. But that average is sloping down at <strong>-16.7%</strong>. The long-term trend has not turned yet. You are buying a recovery, not an established uptrend.</p>
+<p>Price is <strong>-2.6%</strong> over <strong>21</strong> trading days and <strong>+20.2%</strong> over <strong>63</strong> trading days. The three-month return of <strong>+20.2%</strong> against a <strong>17.7%</strong> relative strength advantage over the market tells you Pagaya is leading while most stocks are lagging. That is the kind of divergence you want to see in a washed-out name.</p>
+<p>The stock sits at <strong>36.0%</strong> of its <strong>52</strong>-week high and in the bottom <strong>16.7%</strong> of its yearly range. Distance from the <strong>52</strong>-week low of <strong>10.4</strong> is <strong>52.2%</strong>. RSI reads <strong>36.8</strong> on the daily, which is approaching oversold without being extreme. ATR is <strong>0.98</strong>, meaning you should expect roughly a <strong>$0.98</strong> daily range. The swing high at <strong>18.77</strong> is your target. The swing low at <strong>12.64</strong> defines the danger zone.</p>
+<p>Your entry is <strong>14.72</strong>. Your stop is <strong>12.76</strong>. Your primary target is <strong>18.77</strong>, which gives you <strong>27.5%</strong> upside from entry. The secondary target is <strong>19.13</strong>, or <strong>30.0%</strong> upside. Risk to stop is <strong>13.3%</strong>. You need volume to expand on up days to confirm the accumulation thesis. Watch for above-average volume on rallies and drying volume on pullbacks.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$1.31B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$1.07B</td></tr><tr><td class="k">52-week range</td><td class="v">$10.40 - $44.99</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">5.38</td></tr><tr><td class="k">Trailing P/E</td><td class="v">14.1</td></tr><tr><td class="k">Forward P/E</td><td class="v">4.5</td></tr><tr><td class="k">Price / sales</td><td class="v">1.0</td></tr><tr><td class="k">Price / book</td><td class="v">2.5</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$1.33B  (+9.6% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$16.60</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$94M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">1.12 / 3.54</td></tr><tr><td class="k">Gross margin</td><td class="v">42.9%</td></tr><tr><td class="k">Operating margin</td><td class="v">25.2%</td></tr><tr><td class="k">Profit margin</td><td class="v">7.4%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$3.46</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$2.59</td></tr><tr><td class="k">Total cash / share</td><td class="v">$15.19</td></tr><tr><td class="k">Debt / equity</td><td class="v">1.47</td></tr><tr><td class="k">Current ratio</td><td class="v">7.3</td></tr><tr><td class="k">Return on equity</td><td class="v">16.3%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">strong buy - mean target $26.90 (10 analysts)</td></tr></tbody></table>
+<p>Pagaya is profitable and growing. EPS of <strong>$1.12</strong> trailing jumps to <strong>$3.54</strong> forward. The forward P/E of <strong>4.5</strong> against a trailing P/E of <strong>14.1</strong> tells you the market is pricing in significant earnings growth. Whether that growth materializes is the core question.</p>
+<p>The balance sheet has real strengths and one clear weakness. Cash per share is <strong>$15.19</strong>. Current ratio is <strong>7.3</strong> and quick ratio is <strong>7.0</strong>. Short-term liquidity is not a problem. The company carries meaningful leverage. Return on equity is <strong>16.3%</strong> and return on assets is <strong>12.6%</strong>, so the debt is generating returns.</p>
+<p>Cash generation is the bright spot. Free cash flow is <strong>$185.51M</strong>. FCF per share is <strong>$2.59</strong> against a stock price of <strong>16.19</strong>. That is a real free cash flow yield for a company at this growth rate. Gross margin is <strong>42.9%</strong> and operating margin is <strong>25.2%</strong>. The profit margin of <strong>7.4%</strong> is thin but improving with scale.</p>
+<p>Beta of <strong>5.38</strong> is the number you cannot ignore. This stock moves more than five times the market in both directions. That is why the position stays small. The analyst picture is supportive. Ten analysts carry a mean target of <strong>26.90</strong> with a strong buy recommendation. Price to sales is <strong>1.0</strong> and price to book is <strong>2.5</strong>. Book value per share is <strong>6.39</strong>.</p>
+<h2>Why Now</h2>
+<p>The catalyst is immediate. Earnings are reported on <strong>2026-07-30</strong>, which is zero days from the session date of <strong>2026-07-29</strong>. You are walking into a binary event. The setup exists because the stock has already pulled back and found buyers, but the earnings print will determine the next move.</p>
+<p>Options flow on <strong>2026-07-28</strong> skews heavily bullish. Call premium is <strong>$0.30M</strong> versus put premium of <strong>$0.05M</strong>. That is a <strong>10:1</strong> call-to-put volume ratio. Someone is positioning for upside into the print. This is thin options volume on a small-cap name, so do not overweight it. But it confirms the direction of the desk read.</p>
+<p>The macro backdrop is neutral. Technology sector state is NEUTRAL and sector acceleration is DEAD. You get no tailwind from the sector. This trade works on company-specific momentum and the earnings catalyst, nothing else.</p>
+<h2>Risk Factors</h2>
+<p>The <strong>30</strong>-week moving average is sloping down <strong>16.7%</strong> even though price sits above it. A declining long-term average under the price means the structural trend has not turned. Price can hover above a falling average for weeks and then roll over. If the <strong>30</strong>-week average does not flatten or turn up within a few weeks, the recovery thesis is wrong.</p>
+<p>Beta of <strong>5.38</strong> means a market pullback of <strong>2%</strong> could take Pagaya down <strong>10%</strong>. Your stop at <strong>12.76</strong> is <strong>13.3%</strong> below entry. On a high-beta stock entering earnings, that stop can get gapped through. Earnings on <strong>2026-07-30</strong> are the immediate risk. A miss or weak guidance sends the stock toward the <strong>52</strong>-week low of <strong>10.4</strong>. A beat could gap it above the swing high of <strong>18.77</strong> and invalidate the entry level.</p>
+<p>If credit conditions deteriorate or Pagaya&#x27;s funding network pulls back, that debt load becomes a problem. The current ratio of <strong>7.3</strong> covers short-term obligations, but the leverage is real. Profit margin of <strong>7.4%</strong> leaves little room for error if revenue growth slows from <strong>9.6%</strong>.</p>
+<p>The invalidation is clear. If price closes below <strong>12.76</strong>, the buyers have failed and you are out. That level is <strong>52.2%</strong> above the <strong>52</strong>-week low, so there is room below the stop before total disaster. But the stop is your line.</p>
+<h2>Bringing It All Together</h2>
+<p>- Washed-out setup: stock is <strong>63.0%</strong> off its <strong>52</strong>-week high yet outperforming the market by <strong>17.7%</strong> over three months.</p>
+<p>- Forward P/E of <strong>4.5</strong> with earnings growth of <strong>183.8%</strong> and a strong buy from <strong>10</strong> analysts at a <strong>26.90</strong> mean target.<br>- Earnings catalyst on <strong>2026-07-30</strong> with <strong>10:1</strong> call-to-put volume ratio into the print.<br>- Entry at <strong>14.72</strong>, stop at <strong>12.76</strong>, target at <strong>18.77</strong> for <strong>2.1</strong> risk/reward and <strong>27.5%</strong> upside.<br>- Conviction is LOW. Beta of <strong>5.38</strong> and a declining <strong>30</strong>-week average mean this stays a small position.</p>
+<h2>Conclusion</h2>
+<p>Pagaya is a profitable AI infrastructure company trading at <strong>36.0%</strong> of its <strong>52</strong>-week high with real free cash flow and accelerating earnings. The setup is a tested pullback with relative strength and bullish options flow into earnings. The <strong>30</strong>-week average is still falling and beta is <strong>5.38</strong>, so you size it small and you respect the stop at <strong>12.76</strong>. If earnings deliver, the path to <strong>18.77</strong> is clean. If they do not, you take your loss and move on.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Pagaya Technologies Ltd. (PGY) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $1.31B; 52-week range $10-$45; Revenue $1.33B +10% YoY; Net income $94M; Free cash flow/share $2.59; Debt-to-equity 1.47; Return on equity 16%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Pagaya Technologies Ltd. (PGY) inside the Technology space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Pagaya trades **63.0%** below its **52**-week high yet still outperforms the broad market by **17.7%** over three months, which is the profile of a washed-out name that has already found buyers. The tested pullback desk read (risk-adjusted . Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># A Washed-Out AI Lender With Real Cash Flow
+
+*Pagaya sits 63% off its highs, outperforming the market, and profitable. The trend has not turned yet.*
+
+## The Big Picture
+
+The technology sector is neutral and its acceleration is dead. That means the easy money from sector-wide multiple expansion is gone. You need company-specific setups to make money here.
+
+AI in financial services is a structural shift that is still in its early innings. Banks and lenders want machine-learning underwriting to approve more borrowers without taking on more credit risk. The companies that can prove they do this profitably will get paid. The ones burning cash will not.
+
+A neutral sector with dead acceleration rewards names that have already been washed out and are finding buyers on their own merits. You want companies where the fundamental story is improving while the stock has already taken its beating. That is the setup that works when the broad market is not carrying you.
+
+## Introducing PGY
+
+Pagaya Technologies builds AI-driven credit underwriting infrastructure for lenders. The company sits between banks, fintechs, and institutional investors. Its partners send loan applications that they would otherwise decline. Pagaya&#x27;s models evaluate those applications in real time and route the approved ones to its funding network.
+
+The core products are Decline Monetization, Dual Look, and First Look. Decline Monetization takes rejected applications and finds borrowers the partner would have turned away. Dual Look runs Pagaya&#x27;s models concurrently with the partner&#x27;s own underwriting. First Look routes specific application segments to Pagaya&#x27;s network before the partner&#x27;s standard process kicks in.
+
+The customer base includes fintech lenders, incumbent banks, auto finance providers, and residential real estate services firms. Pagaya was founded in **2016** and is headquartered in New York. The company has **511** employees. It operates in the United States, Israel, and the Cayman Islands.
+
+## The Thesis
+
+Pagaya is a washed-out name that has already found buyers. The stock trades **63.0%** below its **52**-week high of **44.99**. Yet it has outperformed the broad market by **17.7%** over the past three months. That divergence is the profile of a stock where the selling is exhausted and accumulation has started.
+
+The setup fires at an RSI of **46.3** with price holding above its **30**-week moving average. Risk-adjusted return is **1.10** on the desk&#x27;s tested read. Daily turnover of **$39.1M** gives you enough liquidity to enter and exit without slippage problems.
+
+Conviction is LOW. Risk/reward of **2.1** is strong, but a declining long-term average under the price caps both the ranking and the size. This is a small position. You are buying a beaten-down name with improving fundamentals and relative strength, accepting that the long-term trend has not confirmed a turn.
+
+## Technical Analysis
+
+&gt; 📈 Insert the PGY weekly chart here (TradingView): PGY weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $18.77 · mark support near $12.76.
+
+The chart shows a stock in a damaged but stabilizing trend. Price closed at **16.19**. The **30**-week moving average sits below price, which is constructive. But that average is sloping down at **-16.7%**. The long-term trend has not turned yet. You are buying a recovery, not an established uptrend.
+
+Price is **-2.6%** over **21** trading days and **+20.2%** over **63** trading days. The three-month return of **+20.2%** against a **17.7%** relative strength advantage over the market tells you Pagaya is leading while most stocks are lagging. That is the kind of divergence you want to see in a washed-out name.
+
+The stock sits at **36.0%** of its **52**-week high and in the bottom **16.7%** of its yearly range. Distance from the **52**-week low of **10.4** is **52.2%**. RSI reads **36.8** on the daily, which is approaching oversold without being extreme. ATR is **0.98**, meaning you should expect roughly a **$0.98** daily range. The swing high at **18.77** is your target. The swing low at **12.64** defines the danger zone.
+
+Your entry is **14.72**. Your stop is **12.76**. Your primary target is **18.77**, which gives you **27.5%** upside from entry. The secondary target is **19.13**, or **30.0%** upside. Risk to stop is **13.3%**. You need volume to expand on up days to confirm the accumulation thesis. Watch for above-average volume on rallies and drying volume on pullbacks.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $1.31B |
+| Enterprise value | $1.07B |
+| 52-week range | $10.40 - $44.99 |
+| Dividend yield | None |
+| Beta | 5.38 |
+| Trailing P/E | 14.1 |
+| Forward P/E | 4.5 |
+| Price / sales | 1.0 |
+| Price / book | 2.5 |
+| Revenue (TTM) | $1.33B  (+9.6% YoY) |
+| Revenue / share | $16.60 |
+| Net income (TTM) | $94M |
+| EPS (TTM / fwd) | 1.12 / 3.54 |
+| Gross margin | 42.9% |
+| Operating margin | 25.2% |
+| Profit margin | 7.4% |
+| Operating cash flow / share | $3.46 |
+| Free cash flow / share | $2.59 |
+| Total cash / share | $15.19 |
+| Debt / equity | 1.47 |
+| Current ratio | 7.3 |
+| Return on equity | 16.3% |
+| Analyst consensus | strong buy - mean target $26.90 (10 analysts) |
+
+Pagaya is profitable and growing. EPS of **$1.12** trailing jumps to **$3.54** forward. The forward P/E of **4.5** against a trailing P/E of **14.1** tells you the market is pricing in significant earnings growth. Whether that growth materializes is the core question.
+
+The balance sheet has real strengths and one clear weakness. Cash per share is **$15.19**. Current ratio is **7.3** and quick ratio is **7.0**. Short-term liquidity is not a problem. The company carries meaningful leverage. Return on equity is **16.3%** and return on assets is **12.6%**, so the debt is generating returns.
+
+Cash generation is the bright spot. Free cash flow is **$185.51M**. FCF per share is **$2.59** against a stock price of **16.19**. That is a real free cash flow yield for a company at this growth rate. Gross margin is **42.9%** and operating margin is **25.2%**. The profit margin of **7.4%** is thin but improving with scale.
+
+Beta of **5.38** is the number you cannot ignore. This stock moves more than five times the market in both directions. That is why the position stays small. The analyst picture is supportive. Ten analysts carry a mean target of **26.90** with a strong buy recommendation. Price to sales is **1.0** and price to book is **2.5**. Book value per share is **6.39**.
+
+## Why Now
+
+The catalyst is immediate. Earnings are reported on **2026-07-30**, which is zero days from the session date of **2026-07-29**. You are walking into a binary event. The setup exists because the stock has already pulled back and found buyers, but the earnings print will determine the next move.
+
+Options flow on **2026-07-28** skews heavily bullish. Call premium is **$0.30M** versus put premium of **$0.05M**. That is a **10:1** call-to-put volume ratio. Someone is positioning for upside into the print. This is thin options volume on a small-cap name, so do not overweight it. But it confirms the direction of the desk read.
+
+The macro backdrop is neutral. Technology sector state is NEUTRAL and sector acceleration is DEAD. You get no tailwind from the sector. This trade works on company-specific momentum and the earnings catalyst, nothing else.
+
+## Risk Factors
+
+The **30**-week moving average is sloping down **16.7%** even though price sits above it. A declining long-term average under the price means the structural trend has not turned. Price can hover above a falling average for weeks and then roll over. If the **30**-week average does not flatten or turn up within a few weeks, the recovery thesis is wrong.
+
+Beta of **5.38** means a market pullback of **2%** could take Pagaya down **10%**. Your stop at **12.76** is **13.3%** below entry. On a high-beta stock entering earnings, that stop can get gapped through. Earnings on **2026-07-30** are the immediate risk. A miss or weak guidance sends the stock toward the **52**-week low of **10.4**. A beat could gap it above the swing high of **18.77** and invalidate the entry level.
+
+If credit conditions deteriorate or Pagaya&#x27;s funding network pulls back, that debt load becomes a problem. The current ratio of **7.3** covers short-term obligations, but the leverage is real. Profit margin of **7.4%** leaves little room for error if revenue growth slows from **9.6%**.
+
+The invalidation is clear. If price closes below **12.76**, the buyers have failed and you are out. That level is **52.2%** above the **52**-week low, so there is room below the stop before total disaster. But the stop is your line.
+
+## Bringing It All Together
+
+- Washed-out setup: stock is **63.0%** off its **52**-week high yet outperforming the market by **17.7%** over three months.
+
+- Forward P/E of **4.5** with earnings growth of **183.8%** and a strong buy from **10** analysts at a **26.90** mean target.
+- Earnings catalyst on **2026-07-30** with **10:1** call-to-put volume ratio into the print.
+- Entry at **14.72**, stop at **12.76**, target at **18.77** for **2.1** risk/reward and **27.5%** upside.
+- Conviction is LOW. Beta of **5.38** and a declining **30**-week average mean this stays a small position.
+
+## Conclusion
+
+Pagaya is a profitable AI infrastructure company trading at **36.0%** of its **52**-week high with real free cash flow and accelerating earnings. The setup is a tested pullback with relative strength and bullish options flow into earnings. The **30**-week average is still falling and beta is **5.38**, so you size it small and you respect the stop at **12.76**. If earnings deliver, the path to **18.77** is clean. If they do not, you take your loss and move on.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
