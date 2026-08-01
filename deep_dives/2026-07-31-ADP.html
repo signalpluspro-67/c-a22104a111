@@ -1,0 +1,233 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Payroll Compounder Nobody Gets Excited About — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Payroll Compounder Nobody Gets Excited About</h1>
+<div class="subtitle">ADP is leading the market on quiet momentum and thin evidence. Size it that way.</div>
+<div class="meta">EOD 2026-07-31 · ADP · written from the desk · model glm-5.2</div>
+<div class="chips"><span class="chip">ADP</span>
+<span class="chip">Technology</span>
+<span class="chip lo">LOW conviction</span></div>
+<div class="track">Tracking since 2026-07-31: entry <b>$252.36</b> &rarr; <b>$266.46</b> (as of 2026-07-31) · <span class="pos">+5.6%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>The Technology sector is neutral and its momentum is dead. No acceleration, no thrust, no sector-wide bid lifting everything at once. That matters because it narrows the opportunity set to individual setups with their own engines.</p>
+<p>You&#x27;re operating in a regime where beta alone will not carry you. The broad market is not handing out free rides. Stocks that move must do so on their own merit. That means you hunt for idiosyncratic leadership, names outrunning their sector without needing its help.</p>
+<p>A backdrop like this rewards a specific type of company. You want one with defensive cash flows, a chart that has already started working, and enough option liquidity to express a view cleanly. The sector will not do the work for you. The stock has to do it alone.</p>
+<h2>Introducing ADP</h2>
+<p>Automatic Data Processing is the largest payroll processor in the United States and one of the oldest technology companies still compounding at scale. Its core franchise is sticky: once a company plugs into ADP for payroll, switching costs are enormous. Rip-and-replace is painful, disruptive, and risky. So clients stay.</p>
+<p>The company runs two segments. Employer Services delivers cloud-based HCM platforms including RUN Powered by ADP for small businesses, ADP Workforce Now for mid-market clients, and ADP Lyric HCM for large enterprises. The PEO segment, under the ADP TotalSource brand, offers full HR outsourcing through a co-employment model. That gives ADP a embedded revenue stream from small businesses that want to outsource HR without building internal teams.</p>
+<p>The edge is scale and trust. ADP processes payroll for roughly one in six US workers. That data flow gives the company a real-time read on employment trends before the government reports them. Nobody else has that dataset at that depth. It is a moat built on decades of client retention and incremental platform upgrades.</p>
+<h2>The Thesis</h2>
+<p>This is a LOW conviction trade. The desk ranked it second on evidence quality with no confluence behind it. One marginal signal carries the entire case. That means you keep the expression small and treat it as a tactical momentum read, not a structural position.</p>
+<p>Price sits <strong>14.3%</strong> under the 52-week high. RSI reads <strong>65.0</strong>. The stock leads the broad market by <strong>21.8%</strong> over three months. Those three numbers tell you ADP has already moved hard and is consolidating near the top of its range. You are entering after the bounce, not before it.</p>
+<p>The thesis rests on a clean chart and real option volume. That is it. No catalyst, no pressure test, no sector acceleration. You&#x27;re buying a stock that has demonstrated relative strength and hoping the trend persists. With a risk-reward of <strong>1.1</strong> to the first target, the math does not give you much room. Size down accordingly.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-07-31-ADP.png" alt="ADP weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=ADP&interval=1W" target="_blank" rel="noopener">📈 Open the ADP weekly chart on TradingView ↗</a><figcaption>ADP weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $273.37 · mark support near $233.56.</figcaption></figure>
+<p>ADP is in an uptrend but the 30-week moving average is sloping down at <strong>-3.9%</strong>. That is a conflicting signal. Price is above the line, which is constructive. The slope is not. You&#x27;re looking at a stock that recovered faster than its trend line, which means the 30-week needs time to catch up or price needs to pull back toward it.</p>
+<p>The stock closed at <strong>266.46</strong>. It is <strong>14.3%</strong> off the 52-week high of <strong>315.98</strong> and <strong>41.1%</strong> above the 52-week low of <strong>188.16</strong>. It has returned <strong>13.0%</strong> over <strong>21</strong> trading days and <strong>25.7%</strong> over <strong>63</strong> trading days. That is a fast move in a large-cap payroll company. ADP is beating the market by a wide margin and doing it on its own, with sector momentum dead.</p>
+<p>RSI sits at <strong>65.0</strong>. That is elevated but not extreme. You&#x27;re buying into momentum that has already run hot, which means the easy money is behind you. ATR over <strong>14</strong> days is <strong>9.4</strong> points, so expect normal daily swings near <strong>$9</strong>. The swing high at <strong>273.37</strong> is your first reference overhead. The swing low at <strong>207.2</strong> is the floor below.</p>
+<p>Entry sits at <strong>252.36</strong>. Stop sits at <strong>233.56</strong>. That is <strong>7.4%</strong> of risk from entry. First target is <strong>273.37</strong>, good for <strong>8.3%</strong> upside. A second derived target at <strong>294.66</strong> extends the move to <strong>16.8%</strong>. The risk-reward to the first target is <strong>1.1</strong>. That is thin. You need the second target to make the math work, and getting there requires the trend to hold without a meaningful pullback. Volume confirmation would look like above-average accumulation on up days as price approaches <strong>273.37</strong>. Without it, the breakout stalls.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$105.56B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$106.15B</td></tr><tr><td class="k">52-week range</td><td class="v">$188.16 - $315.98</td></tr><tr><td class="k">Dividend yield</td><td class="v">2.56%</td></tr><tr><td class="k">Beta</td><td class="v">0.84</td></tr><tr><td class="k">Trailing P/E</td><td class="v">24.2</td></tr><tr><td class="k">Forward P/E</td><td class="v">19.8</td></tr><tr><td class="k">Price / sales</td><td class="v">4.8</td></tr><tr><td class="k">Price / book</td><td class="v">16.7</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$21.95B  (+6.8% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$54.55</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$4.41B</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">10.95 / 13.39</td></tr><tr><td class="k">Gross margin</td><td class="v">48.7%</td></tr><tr><td class="k">Operating margin</td><td class="v">23.1%</td></tr><tr><td class="k">Profit margin</td><td class="v">20.1%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$13.68</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$13.41</td></tr><tr><td class="k">Total cash / share</td><td class="v">$10.63</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.9</td></tr><tr><td class="k">Current ratio</td><td class="v">1.05</td></tr><tr><td class="k">Return on equity</td><td class="v">72.2%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">hold - mean target $285.67 (15 analysts)</td></tr></tbody></table>
+<p>ADP generated <strong>$21.9B</strong> in trailing twelve-month revenue, growing <strong>6.8%</strong>. EPS on a trailing basis is <strong>10.95</strong>, with a forward estimate of <strong>13.39</strong>. Earnings growth of <strong>10.0%</strong> outpaces revenue growth, which tells you the company is expanding margins while it scales. That is the signature of a well-run compounder.</p>
+<p>Profitability is strong across the board. Gross margin is <strong>48.7%</strong>. Operating margin is <strong>23.1%</strong>. Net margin is <strong>20.1%</strong>. Return on equity is <strong>72.2%</strong>, which is exceptional but partly a function of high leverage on the balance sheet. Return on assets is <strong>6.2%</strong>, a more sober measure of how efficiently the business uses its asset base. Free cash flow per share is <strong>13.41</strong> on trailing twelve months. Operating cash flow per share is <strong>13.68</strong>. The company converts nearly all of its operating cash to free cash. Capex requirements are minimal.</p>
+<p>The balance sheet has a weak spot. The current ratio is <strong>1.05</strong> and the quick ratio is <strong>0.15</strong>. That quick ratio is low because ADP carries minimal cash relative to current liabilities. This is normal for a payroll processor: client funds held in trust inflate current liabilities without representing real financial risk. But it means the headline liquidity ratios look worse than the actual credit profile. The payout ratio is <strong>0.61</strong>, and the dividend yield is <strong>2.56%</strong> at a rate of <strong>$6.80</strong> per share. ADP has raised its dividend every year for decades. That is real, visible return of capital.</p>
+<p>Valuation is full but not extreme. Trailing PE is <strong>24.2</strong>. Forward PE is <strong>19.8</strong>. Price-to-sales is <strong>4.8</strong>. Price-to-book is <strong>16.7</strong> with book value per share at <strong>15.85</strong>. The analyst mean target is <strong>285.67</strong> across <strong>15</strong> analysts with a consensus recommendation of hold. You&#x27;re paying a fair multiple for a company growing earnings at <strong>10%</strong> with <strong>20%</strong> margins and near-total cash conversion. Nothing is cheap here. Nothing is dangerous either. It is priced as a quality compounder should be.</p>
+<h2>Why Now</h2>
+<p>There is no identified catalyst on this name. The desk surfaced no near-term event, no pressure test, no earnings date that would serve as a trigger. Next earnings epoch is <strong>1793190600</strong>, which is a Unix timestamp that converts to late July <strong>2026</strong>. That is right around the session date of <strong>2026-07-31</strong>. Earnings could be the implicit catalyst, but the desk did not flag it as such.</p>
+<p>The macro backdrop offers no help. Sector state is NEUTRAL and sector acceleration is DEAD. You&#x27;re buying ADP into a sector that is going nowhere as a group. That means the move has to come from company-specific flows, not a tide lifting the sector.</p>
+<p>Options flow on <strong>2026-07-30</strong> is mixed. Call premium was <strong>$1.59M</strong> and put premium was <strong>$1.47M</strong>. Put volume exceeding call volume by nearly <strong>2x</strong> could reflect hedging into earnings. It could also reflect directional bearish positioning. Either way, the flow does not confirm a bullish squeeze. You&#x27;re leaning against the option flow here, which is another reason conviction is LOW.</p>
+<h2>Risk Factors</h2>
+<p>The single biggest risk is that the thesis is thin. One marginal momentum signal is all you have. RSI at <strong>65.0</strong> means you are buying after the bounce. Calls decay while a slow grinder grinds. If ADP drifts sideways for three weeks, theta eats your premium and the setup dies quietly.</p>
+<p>The 30-week moving average is sloping down at <strong>-3.9%</strong>. Price is above it, but a downtrending long-term average is a warning. If price fails at the <strong>273.37</strong> swing high and rolls over, the 30-week could act as a magnet pulling shares lower. The stop at <strong>233.56</strong> is your hard invalidation. If that level breaks, the trend is broken with it.</p>
+<p>The options flow tilts bearish. Someone is buying protection or betting against the move. With earnings imminent, implied volatility is likely elevated. You&#x27;re paying richer premium at exactly the moment when a disappointment could crush the implied vol. That is the timing risk: you enter before earnings, and the report does not matter. The stock gaps down on guidance, your calls are underwater, and theta accelerates the bleed.</p>
+<p>Beta is <strong>0.84</strong>. ADP moves less than the market. In a risk-off episode, the stock might hold up better than high-beta names. In a risk-on rally, it underperforms. You are buying a low-beta defensive name at <strong>65.0</strong> RSI after a <strong>25.7%</strong> three-month run. The defensive quality helps on the downside. The overbought condition limits the upside. The risk-reward of <strong>1.1</strong> to target leaves no margin for error.</p>
+<h2>Bringing It All Together</h2>
+<p>- ADP leads the broad market by <strong>21.8%</strong> over three months with sector momentum dead and no sector lift helping it.<br>- The chart is clean: price above the 30-week, <strong>14.3%</strong> off the high, <strong>25.7%</strong> three-month return, RSI at <strong>65.0</strong>.</p>
+<p>- Entry at <strong>252.36</strong>, stop at <strong>233.56</strong>, target at <strong>273.37</strong> for <strong>1.1</strong> risk-reward, with a second target at <strong>294.66</strong> if the trend extends.<br>- LOW conviction, small expression, one marginal signal. This is a tactical trade, not a position you build around.</p>
+<h2>Conclusion</h2>
+<p>ADP is a quality compounder with a chart that works and fundamentals that back it. The problem is the setup gives you one signal, no catalyst, bearish option flow, and a <strong>1.1</strong> risk-reward to target. You take the trade small or you skip it. There is no middle ground when the evidence is this thin. If price holds above <strong>252.36</strong> and volume expands on the approach to <strong>273.37</strong>, you have your confirmation. If it stalls here, theta and the downtrending 30-week will do the damage for you.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Automatic Data Processing, Inc. (ADP) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $105.56B; 52-week range $188-$316; Revenue $21.95B +7% YoY; Net income $4.41B; Free cash flow/share $13.41; Debt-to-equity 0.9; Return on equity 72%; Dividend yield 2.6%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Automatic Data Processing, Inc. (ADP) inside the Technology space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Price is **14.3%** under the 52-week high, RSI reads **65.0**, and it leads the broad market by **21.8%** over three months. One marginal desk read carries the whole case, so keep the expression small.. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Payroll Compounder Nobody Gets Excited About
+
+*ADP is leading the market on quiet momentum and thin evidence. Size it that way.*
+
+## The Big Picture
+
+The Technology sector is neutral and its momentum is dead. No acceleration, no thrust, no sector-wide bid lifting everything at once. That matters because it narrows the opportunity set to individual setups with their own engines.
+
+You&#x27;re operating in a regime where beta alone will not carry you. The broad market is not handing out free rides. Stocks that move must do so on their own merit. That means you hunt for idiosyncratic leadership, names outrunning their sector without needing its help.
+
+A backdrop like this rewards a specific type of company. You want one with defensive cash flows, a chart that has already started working, and enough option liquidity to express a view cleanly. The sector will not do the work for you. The stock has to do it alone.
+
+## Introducing ADP
+
+Automatic Data Processing is the largest payroll processor in the United States and one of the oldest technology companies still compounding at scale. Its core franchise is sticky: once a company plugs into ADP for payroll, switching costs are enormous. Rip-and-replace is painful, disruptive, and risky. So clients stay.
+
+The company runs two segments. Employer Services delivers cloud-based HCM platforms including RUN Powered by ADP for small businesses, ADP Workforce Now for mid-market clients, and ADP Lyric HCM for large enterprises. The PEO segment, under the ADP TotalSource brand, offers full HR outsourcing through a co-employment model. That gives ADP a embedded revenue stream from small businesses that want to outsource HR without building internal teams.
+
+The edge is scale and trust. ADP processes payroll for roughly one in six US workers. That data flow gives the company a real-time read on employment trends before the government reports them. Nobody else has that dataset at that depth. It is a moat built on decades of client retention and incremental platform upgrades.
+
+## The Thesis
+
+This is a LOW conviction trade. The desk ranked it second on evidence quality with no confluence behind it. One marginal signal carries the entire case. That means you keep the expression small and treat it as a tactical momentum read, not a structural position.
+
+Price sits **14.3%** under the 52-week high. RSI reads **65.0**. The stock leads the broad market by **21.8%** over three months. Those three numbers tell you ADP has already moved hard and is consolidating near the top of its range. You are entering after the bounce, not before it.
+
+The thesis rests on a clean chart and real option volume. That is it. No catalyst, no pressure test, no sector acceleration. You&#x27;re buying a stock that has demonstrated relative strength and hoping the trend persists. With a risk-reward of **1.1** to the first target, the math does not give you much room. Size down accordingly.
+
+## Technical Analysis
+
+&gt; 📈 Insert the ADP weekly chart here (TradingView): ADP weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $273.37 · mark support near $233.56.
+
+ADP is in an uptrend but the 30-week moving average is sloping down at **-3.9%**. That is a conflicting signal. Price is above the line, which is constructive. The slope is not. You&#x27;re looking at a stock that recovered faster than its trend line, which means the 30-week needs time to catch up or price needs to pull back toward it.
+
+The stock closed at **266.46**. It is **14.3%** off the 52-week high of **315.98** and **41.1%** above the 52-week low of **188.16**. It has returned **13.0%** over **21** trading days and **25.7%** over **63** trading days. That is a fast move in a large-cap payroll company. ADP is beating the market by a wide margin and doing it on its own, with sector momentum dead.
+
+RSI sits at **65.0**. That is elevated but not extreme. You&#x27;re buying into momentum that has already run hot, which means the easy money is behind you. ATR over **14** days is **9.4** points, so expect normal daily swings near **$9**. The swing high at **273.37** is your first reference overhead. The swing low at **207.2** is the floor below.
+
+Entry sits at **252.36**. Stop sits at **233.56**. That is **7.4%** of risk from entry. First target is **273.37**, good for **8.3%** upside. A second derived target at **294.66** extends the move to **16.8%**. The risk-reward to the first target is **1.1**. That is thin. You need the second target to make the math work, and getting there requires the trend to hold without a meaningful pullback. Volume confirmation would look like above-average accumulation on up days as price approaches **273.37**. Without it, the breakout stalls.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $105.56B |
+| Enterprise value | $106.15B |
+| 52-week range | $188.16 - $315.98 |
+| Dividend yield | 2.56% |
+| Beta | 0.84 |
+| Trailing P/E | 24.2 |
+| Forward P/E | 19.8 |
+| Price / sales | 4.8 |
+| Price / book | 16.7 |
+| Revenue (TTM) | $21.95B  (+6.8% YoY) |
+| Revenue / share | $54.55 |
+| Net income (TTM) | $4.41B |
+| EPS (TTM / fwd) | 10.95 / 13.39 |
+| Gross margin | 48.7% |
+| Operating margin | 23.1% |
+| Profit margin | 20.1% |
+| Operating cash flow / share | $13.68 |
+| Free cash flow / share | $13.41 |
+| Total cash / share | $10.63 |
+| Debt / equity | 0.9 |
+| Current ratio | 1.05 |
+| Return on equity | 72.2% |
+| Analyst consensus | hold - mean target $285.67 (15 analysts) |
+
+ADP generated **$21.9B** in trailing twelve-month revenue, growing **6.8%**. EPS on a trailing basis is **10.95**, with a forward estimate of **13.39**. Earnings growth of **10.0%** outpaces revenue growth, which tells you the company is expanding margins while it scales. That is the signature of a well-run compounder.
+
+Profitability is strong across the board. Gross margin is **48.7%**. Operating margin is **23.1%**. Net margin is **20.1%**. Return on equity is **72.2%**, which is exceptional but partly a function of high leverage on the balance sheet. Return on assets is **6.2%**, a more sober measure of how efficiently the business uses its asset base. Free cash flow per share is **13.41** on trailing twelve months. Operating cash flow per share is **13.68**. The company converts nearly all of its operating cash to free cash. Capex requirements are minimal.
+
+The balance sheet has a weak spot. The current ratio is **1.05** and the quick ratio is **0.15**. That quick ratio is low because ADP carries minimal cash relative to current liabilities. This is normal for a payroll processor: client funds held in trust inflate current liabilities without representing real financial risk. But it means the headline liquidity ratios look worse than the actual credit profile. The payout ratio is **0.61**, and the dividend yield is **2.56%** at a rate of **$6.80** per share. ADP has raised its dividend every year for decades. That is real, visible return of capital.
+
+Valuation is full but not extreme. Trailing PE is **24.2**. Forward PE is **19.8**. Price-to-sales is **4.8**. Price-to-book is **16.7** with book value per share at **15.85**. The analyst mean target is **285.67** across **15** analysts with a consensus recommendation of hold. You&#x27;re paying a fair multiple for a company growing earnings at **10%** with **20%** margins and near-total cash conversion. Nothing is cheap here. Nothing is dangerous either. It is priced as a quality compounder should be.
+
+## Why Now
+
+There is no identified catalyst on this name. The desk surfaced no near-term event, no pressure test, no earnings date that would serve as a trigger. Next earnings epoch is **1793190600**, which is a Unix timestamp that converts to late July **2026**. That is right around the session date of **2026-07-31**. Earnings could be the implicit catalyst, but the desk did not flag it as such.
+
+The macro backdrop offers no help. Sector state is NEUTRAL and sector acceleration is DEAD. You&#x27;re buying ADP into a sector that is going nowhere as a group. That means the move has to come from company-specific flows, not a tide lifting the sector.
+
+Options flow on **2026-07-30** is mixed. Call premium was **$1.59M** and put premium was **$1.47M**. Put volume exceeding call volume by nearly **2x** could reflect hedging into earnings. It could also reflect directional bearish positioning. Either way, the flow does not confirm a bullish squeeze. You&#x27;re leaning against the option flow here, which is another reason conviction is LOW.
+
+## Risk Factors
+
+The single biggest risk is that the thesis is thin. One marginal momentum signal is all you have. RSI at **65.0** means you are buying after the bounce. Calls decay while a slow grinder grinds. If ADP drifts sideways for three weeks, theta eats your premium and the setup dies quietly.
+
+The 30-week moving average is sloping down at **-3.9%**. Price is above it, but a downtrending long-term average is a warning. If price fails at the **273.37** swing high and rolls over, the 30-week could act as a magnet pulling shares lower. The stop at **233.56** is your hard invalidation. If that level breaks, the trend is broken with it.
+
+The options flow tilts bearish. Someone is buying protection or betting against the move. With earnings imminent, implied volatility is likely elevated. You&#x27;re paying richer premium at exactly the moment when a disappointment could crush the implied vol. That is the timing risk: you enter before earnings, and the report does not matter. The stock gaps down on guidance, your calls are underwater, and theta accelerates the bleed.
+
+Beta is **0.84**. ADP moves less than the market. In a risk-off episode, the stock might hold up better than high-beta names. In a risk-on rally, it underperforms. You are buying a low-beta defensive name at **65.0** RSI after a **25.7%** three-month run. The defensive quality helps on the downside. The overbought condition limits the upside. The risk-reward of **1.1** to target leaves no margin for error.
+
+## Bringing It All Together
+
+- ADP leads the broad market by **21.8%** over three months with sector momentum dead and no sector lift helping it.
+- The chart is clean: price above the 30-week, **14.3%** off the high, **25.7%** three-month return, RSI at **65.0**.
+
+
+- Entry at **252.36**, stop at **233.56**, target at **273.37** for **1.1** risk-reward, with a second target at **294.66** if the trend extends.
+- LOW conviction, small expression, one marginal signal. This is a tactical trade, not a position you build around.
+
+## Conclusion
+
+ADP is a quality compounder with a chart that works and fundamentals that back it. The problem is the setup gives you one signal, no catalyst, bearish option flow, and a **1.1** risk-reward to target. You take the trade small or you skip it. There is no middle ground when the evidence is this thin. If price holds above **252.36** and volume expands on the approach to **273.37**, you have your confirmation. If it stalls here, theta and the downtrending 30-week will do the damage for you.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
