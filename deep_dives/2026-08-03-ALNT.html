@@ -1,0 +1,239 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Precision Motion at a Discount — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>Precision Motion at a Discount</h1>
+<div class="subtitle">Allient is pulling back inside an uptrend, and the sector backdrop is turning favorable.</div>
+<div class="meta">EOD 2026-08-03 · ALNT · written from the desk · model glm-5.2</div>
+<div class="chips"><span class="chip">ALNT</span>
+<span class="chip">Technology</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-08-03: entry <b>$82.16</b> &rarr; <b>$90.13</b> (as of 2026-08-03) · <span class="pos">+9.7%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Technology is in a capitulation-favorable state. That means the sector has been beaten down enough that contrarian entries start to make sense. Sector acceleration is neutral, so you are catching a turn, not chasing momentum.</p>
+<p>Precision motion components sit at the intersection of industrial automation, vehicle electrification, medical devices, and aerospace defense. These are secular demand pools. They do not disappear when the broad market pulls back. They pause, then resume.</p>
+<p>The structural shift is real. Factory automation, electric vehicle drivetrains, and surgical robotics all require controlled motion. The companies that make the motors, drives, and encoders inside those systems sell into multi-year upgrade cycles. A capitulation-favorable sector backdrop rewards the names that already outran the market during the downturn. Those are the ones institutional money returns to first.</p>
+<h2>Introducing ALNT</h2>
+<p>Allient Inc. designs and manufactures precision controlled-motion components and systems. The product line spans servo motors, brushless motors, gear motors, optical encoders, servo amplifiers, motion controllers, and nano-precision positioning systems. Headquartered in Amherst, New York, the company was founded in <strong>1939</strong> and renamed from Allied Motion Technologies to Allient in August <strong>2023</strong>.</p>
+<p>The company serves four end markets: industrial, vehicle, medical, and aerospace and defense. It sells through direct sales, manufacturer representatives, and distributors across the United States, Canada, South America, Europe, and Asia-Pacific.</p>
+<p>The edge is engineering depth. Allient makes the components that make machines move with precision. That is a specialized niche with high switching costs. Once a medical device manufacturer or an aerospace contractor designs Allient motors and encoders into a platform, replacing them requires re-certification. That stickiness compounds across multi-year product cycles.</p>
+<h2>The Thesis</h2>
+<p>Allient is a clean uptrend pullback in a sector that just turned capitulation-favorable. The stock sits <strong>12.4%</strong> below its yearly high with RSI at <strong>53.7</strong>. The <strong>30-week</strong> moving average is climbing at <strong>18.8%</strong>. It has outrun SPY by <strong>13.0%</strong> over three months.</p>
+<p>The chart carries no flag and no Weinstein violation. That means the trend is intact and the structure is healthy. Relative strength of <strong>+13.0%</strong> over three months tells you buyers never left. The pullback is shallow, not broken.</p>
+<p>Conviction is MEDIUM. The reason is concentration. This setup runs on one desk read, not multiple independent signals agreeing. The reward-to-risk is <strong>2.0</strong>, which is solid for a pullback entry. You size it as a medium position because a single bad print could invalidate the whole thesis. The sector backdrop helps. A capitulation-favorable Technology sector means the macro wind is at your back for a mean reversion entry.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-08-03-ALNT.png" alt="ALNT weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=ALNT&interval=1W" target="_blank" rel="noopener">📈 Open the ALNT weekly chart on TradingView ↗</a><figcaption>ALNT weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $102.93 · mark support near $71.54.</figcaption></figure>
+<p>The trend is up and the pullback is shallow. Allient closed at <strong>$90.13</strong>, which is <strong>12.4%</strong> below the <strong>52-week</strong> high of <strong>$104.65</strong> and <strong>137.1%</strong> above the <strong>52-week</strong> low of <strong>$36.85</strong>. The stock trades above a rising <strong>30-week</strong> moving average sloping at <strong>18.8%</strong>. That is a structural uptrend with room to pull back without breaking.</p>
+<p>The <strong>8-week</strong> and <strong>21-week</strong> exponential moving averages define the medium-term posture. Price is consolidating near the short-term EMA after a <strong>+18.2%</strong> three-month run. The <strong>21-day</strong> return of <strong>+3.7%</strong> confirms the pause, not a reversal. RSI at <strong>53.7</strong> is neutral. There is no overbought risk and no oversold signal. The stock is resting.</p>
+<p>Relative strength vs. SPY is <strong>+13.0%</strong> over <strong>63</strong> days. That is significant outperformance. It tells you institutions were accumulating before the pullback and have not distributed. A volume spike above that level on an up day would confirm the next leg higher. A volume spike on a down day near support would warn of distribution.</p>
+<p>The entry zone is <strong>$82.16</strong>. The stop is <strong>$71.54</strong>, which is <strong>12.9%</strong> below entry. The primary target is <strong>$102.93</strong>, offering <strong>25.3%</strong> upside from entry. The secondary target is <strong>$106.05</strong>, offering <strong>29.1%</strong>. The swing high of <strong>$102.93</strong> aligns with the primary target, so you are trading toward a known resistance level. The swing low of <strong>$60.93</strong> sits well below the stop, giving the structure room. ATR is <strong>5.31</strong>, so expect normal session noise of roughly <strong>$5</strong>. The stock is in the top <strong>78.6%</strong> of its <strong>52-week</strong> range. It is pulling back from the upper band, not recovering from the lower.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$1.49B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$1.64B</td></tr><tr><td class="k">52-week range</td><td class="v">$36.85 - $104.65</td></tr><tr><td class="k">Dividend yield</td><td class="v">0.18%</td></tr><tr><td class="k">Beta</td><td class="v">1.59</td></tr><tr><td class="k">Trailing P/E</td><td class="v">61.2</td></tr><tr><td class="k">Forward P/E</td><td class="v">28.2</td></tr><tr><td class="k">Price / sales</td><td class="v">2.7</td></tr><tr><td class="k">Price / book</td><td class="v">4.9</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$561M  (+4.6% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$33.57</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$24M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">1.43 / 3.1</td></tr><tr><td class="k">Gross margin</td><td class="v">32.9%</td></tr><tr><td class="k">Operating margin</td><td class="v">7.3%</td></tr><tr><td class="k">Profit margin</td><td class="v">4.3%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$2.88</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$2.52</td></tr><tr><td class="k">Total cash / share</td><td class="v">$2.46</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.65</td></tr><tr><td class="k">Current ratio</td><td class="v">3.73</td></tr><tr><td class="k">Return on equity</td><td class="v">8.2%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">none - mean target $76.80 (5 analysts)</td></tr></tbody></table>
+<p>Growth is real but the valuation is stretched. Earnings grew <strong>52.4%</strong> to <strong>$1.43</strong> per share. That earnings growth rate is strong and explains why the stock outran the market. The forward EPS estimate of <strong>$3.10</strong> implies the growth story continues. On a forward basis, the P/E compresses to <strong>28.2</strong> from the trailing <strong>61.2</strong>. That is a meaningful discount if the forward number is credible.</p>
+<p>Profitability is the weak spot. Net margin is <strong>4.3%</strong>. Operating margin is <strong>7.3%</strong>. Gross margin is <strong>32.9%</strong>. These are thin for a precision manufacturer with specialized products. Return on equity is <strong>8.2%</strong> and return on assets is <strong>5.1%</strong>. The company generates cash but does not convert revenue into profit efficiently. FCF per share of <strong>$2.52</strong> gives you a cash yield cushion. The dividend is tiny at <strong>$0.16</strong> per share, a <strong>0.18%</strong> yield with an <strong>8%</strong> payout ratio. They are not stretching to pay it.</p>
+<p>The balance sheet is clean. Debt-to-equity is <strong>0.65</strong>. Current ratio is <strong>3.73</strong>. Quick ratio is <strong>1.92</strong>. Cash per share is <strong>$2.46</strong>. You are taking real volatility risk.</p>
+<p>The analyst picture is mixed. Five analysts cover the name. The mean target is <strong>$76.80</strong>, which is below the current price of <strong>$90.13</strong>. That tells you the sell-side has not caught up to the move. It also means there is no analyst-driven catalyst pushing the stock higher. The fetched price was <strong>$87.46</strong>, slightly below the last close.</p>
+<h2>Why Now</h2>
+<p>The catalyst is imminent. Earnings are due <strong>August 5, 2026</strong>, which is <strong>1</strong> day from the session date. That is a binary event. A strong print validates the <strong>52.4%</strong> earnings growth and the forward EPS of <strong>$3.10</strong>. A weak print breaks the thesis because the setup relies on one desk read.</p>
+<p>The sector timing helps. Technology is capitulation-favorable, which means sentiment has washed out. The sector acceleration is neutral, so you are entering before momentum resumes, not after. That is the ideal window for a mean reversion trade.</p>
+<p>Options activity is minimal. On <strong>July 31, 2026</strong>, call volume was <strong>75</strong> contracts and put volume was <strong>9</strong>. Call premium was <strong>$0.07M</strong>. Put premium was <strong>$0.0M</strong>. The call-to-put ratio leans bullish but the absolute volume is too low to read as a directional signal. There is no institutional options positioning to confirm or contradict the thesis.</p>
+<p>The timing risk is concentrated. You are entering one day before earnings. If you buy before the print, you accept full event risk. If you wait for the print, you may miss the entry if the stock gaps above <strong>$90.13</strong> toward the target. The cleanest approach is to wait for the earnings reaction. A hold above <strong>$82.16</strong> post-print gives you the entry with confirmed information.</p>
+<h2>Risk Factors</h2>
+<p>The single biggest risk is thesis concentration. This setup runs on one desk read with no corroboration from additional signals. One bad earnings print on <strong>August 5</strong> takes the whole thesis out. At <strong>$21.6M</strong> in average daily dollar volume, the exit is narrow. If you need to sell into a gap down, slippage will hurt.</p>
+<p>Valuation risk is real. The trailing P/E of <strong>61.2</strong> prices in perfection. If forward EPS misses or guides down, the multiple compresses fast. The analyst mean target of <strong>$76.80</strong> is below the current price. The sell-side does not see upside from here. Five analysts with a target below market is a headwind.</p>
+<p>Profit margin is <strong>4.3%</strong>. Any cost pressure or revenue softness eats into that thin cushion. Gross margin of <strong>32.9%</strong> leaves little room for input cost inflation before operating margin erodes. Beta of <strong>1.59</strong> amplifies market risk.</p>
+<p>The invalidation level is <strong>$71.54</strong>. That is the stop. A close below <strong>$71.54</strong> breaks the uptrend and exits the trade. The swing low of <strong>$60.93</strong> is the next support below the stop. If price reaches <strong>$71.54</strong>, you are out. No hoping, no averaging down.</p>
+<p>Timing risk is acute. Earnings in <strong>1</strong> day means you are buying into a binary event. The stock could gap to <strong>$102.93</strong> on a good print or gap below <strong>$82.16</strong> on a bad one. You have to decide whether to accept event risk or wait for confirmation.</p>
+<h2>Bringing It All Together</h2>
+<p>- Allient is pulling back <strong>12.4%</strong> inside a structural uptrend, sitting above a <strong>30-week</strong> line climbing at <strong>18.8%</strong>.<br>- Relative strength of <strong>+13.0%</strong> vs. SPY over three months confirms institutional accumulation.<br>- Technology is capitulation-favorable, giving the sector tailwind for a mean reversion entry.</p>
+<p>- Entry at <strong>$82.16</strong> with a stop at <strong>$71.54</strong> and a target at <strong>$102.93</strong> gives a <strong>2.0</strong> reward-to-risk.<br>- Earnings on <strong>August 5</strong> is the binary catalyst. One desk read means one bad print ends the trade.</p>
+<h2>Conclusion</h2>
+<p>Allient is a legitimate pullback entry in a healthy uptrend with a favorable sector backdrop. The chart is clean, the relative strength is strong, and the <strong>30-week</strong> trend is climbing. The fundamentals support growth with <strong>52.4%</strong> earnings growth and solid cash generation. The risks are honest: thin margins, a <strong>61.2</strong> trailing P/E, one desk read, and a binary earnings event in <strong>1</strong> day. You enter at <strong>$82.16</strong> with a <strong>2.0</strong> reward-to-risk and a hard stop at <strong>$71.54</strong>. If the earnings print confirms the growth trajectory, the path to <strong>$102.93</strong> is open. If it does not, you are out at the stop with a defined loss.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Allient Inc. (ALNT) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $1.49B; 52-week range $37-$105; Revenue $561M +5% YoY; Net income $24M; Free cash flow/share $2.52; Debt-to-equity 0.65; Return on equity 8%; Dividend yield 0.2%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Allient Inc. (ALNT) inside the Technology space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): A quiet pullback inside an uptrend, **12.4%** below the yearly high with RSI at **53.7** and the **30-week** moving average climbing at **18.8%**. It has outrun SPY by **13.0%** over three months and carries no chart flag and no Weinstein v. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># Precision Motion at a Discount
+
+*Allient is pulling back inside an uptrend, and the sector backdrop is turning favorable.*
+
+## The Big Picture
+
+Technology is in a capitulation-favorable state. That means the sector has been beaten down enough that contrarian entries start to make sense. Sector acceleration is neutral, so you are catching a turn, not chasing momentum.
+
+Precision motion components sit at the intersection of industrial automation, vehicle electrification, medical devices, and aerospace defense. These are secular demand pools. They do not disappear when the broad market pulls back. They pause, then resume.
+
+The structural shift is real. Factory automation, electric vehicle drivetrains, and surgical robotics all require controlled motion. The companies that make the motors, drives, and encoders inside those systems sell into multi-year upgrade cycles. A capitulation-favorable sector backdrop rewards the names that already outran the market during the downturn. Those are the ones institutional money returns to first.
+
+## Introducing ALNT
+
+Allient Inc. designs and manufactures precision controlled-motion components and systems. The product line spans servo motors, brushless motors, gear motors, optical encoders, servo amplifiers, motion controllers, and nano-precision positioning systems. Headquartered in Amherst, New York, the company was founded in **1939** and renamed from Allied Motion Technologies to Allient in August **2023**.
+
+The company serves four end markets: industrial, vehicle, medical, and aerospace and defense. It sells through direct sales, manufacturer representatives, and distributors across the United States, Canada, South America, Europe, and Asia-Pacific.
+
+The edge is engineering depth. Allient makes the components that make machines move with precision. That is a specialized niche with high switching costs. Once a medical device manufacturer or an aerospace contractor designs Allient motors and encoders into a platform, replacing them requires re-certification. That stickiness compounds across multi-year product cycles.
+
+## The Thesis
+
+Allient is a clean uptrend pullback in a sector that just turned capitulation-favorable. The stock sits **12.4%** below its yearly high with RSI at **53.7**. The **30-week** moving average is climbing at **18.8%**. It has outrun SPY by **13.0%** over three months.
+
+The chart carries no flag and no Weinstein violation. That means the trend is intact and the structure is healthy. Relative strength of **+13.0%** over three months tells you buyers never left. The pullback is shallow, not broken.
+
+Conviction is MEDIUM. The reason is concentration. This setup runs on one desk read, not multiple independent signals agreeing. The reward-to-risk is **2.0**, which is solid for a pullback entry. You size it as a medium position because a single bad print could invalidate the whole thesis. The sector backdrop helps. A capitulation-favorable Technology sector means the macro wind is at your back for a mean reversion entry.
+
+## Technical Analysis
+
+&gt; 📈 Insert the ALNT weekly chart here (TradingView): ALNT weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $102.93 · mark support near $71.54.
+
+The trend is up and the pullback is shallow. Allient closed at **$90.13**, which is **12.4%** below the **52-week** high of **$104.65** and **137.1%** above the **52-week** low of **$36.85**. The stock trades above a rising **30-week** moving average sloping at **18.8%**. That is a structural uptrend with room to pull back without breaking.
+
+The **8-week** and **21-week** exponential moving averages define the medium-term posture. Price is consolidating near the short-term EMA after a **+18.2%** three-month run. The **21-day** return of **+3.7%** confirms the pause, not a reversal. RSI at **53.7** is neutral. There is no overbought risk and no oversold signal. The stock is resting.
+
+Relative strength vs. SPY is **+13.0%** over **63** days. That is significant outperformance. It tells you institutions were accumulating before the pullback and have not distributed. A volume spike above that level on an up day would confirm the next leg higher. A volume spike on a down day near support would warn of distribution.
+
+The entry zone is **$82.16**. The stop is **$71.54**, which is **12.9%** below entry. The primary target is **$102.93**, offering **25.3%** upside from entry. The secondary target is **$106.05**, offering **29.1%**. The swing high of **$102.93** aligns with the primary target, so you are trading toward a known resistance level. The swing low of **$60.93** sits well below the stop, giving the structure room. ATR is **5.31**, so expect normal session noise of roughly **$5**. The stock is in the top **78.6%** of its **52-week** range. It is pulling back from the upper band, not recovering from the lower.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $1.49B |
+| Enterprise value | $1.64B |
+| 52-week range | $36.85 - $104.65 |
+| Dividend yield | 0.18% |
+| Beta | 1.59 |
+| Trailing P/E | 61.2 |
+| Forward P/E | 28.2 |
+| Price / sales | 2.7 |
+| Price / book | 4.9 |
+| Revenue (TTM) | $561M  (+4.6% YoY) |
+| Revenue / share | $33.57 |
+| Net income (TTM) | $24M |
+| EPS (TTM / fwd) | 1.43 / 3.1 |
+| Gross margin | 32.9% |
+| Operating margin | 7.3% |
+| Profit margin | 4.3% |
+| Operating cash flow / share | $2.88 |
+| Free cash flow / share | $2.52 |
+| Total cash / share | $2.46 |
+| Debt / equity | 0.65 |
+| Current ratio | 3.73 |
+| Return on equity | 8.2% |
+| Analyst consensus | none - mean target $76.80 (5 analysts) |
+
+Growth is real but the valuation is stretched. Earnings grew **52.4%** to **$1.43** per share. That earnings growth rate is strong and explains why the stock outran the market. The forward EPS estimate of **$3.10** implies the growth story continues. On a forward basis, the P/E compresses to **28.2** from the trailing **61.2**. That is a meaningful discount if the forward number is credible.
+
+Profitability is the weak spot. Net margin is **4.3%**. Operating margin is **7.3%**. Gross margin is **32.9%**. These are thin for a precision manufacturer with specialized products. Return on equity is **8.2%** and return on assets is **5.1%**. The company generates cash but does not convert revenue into profit efficiently. FCF per share of **$2.52** gives you a cash yield cushion. The dividend is tiny at **$0.16** per share, a **0.18%** yield with an **8%** payout ratio. They are not stretching to pay it.
+
+The balance sheet is clean. Debt-to-equity is **0.65**. Current ratio is **3.73**. Quick ratio is **1.92**. Cash per share is **$2.46**. You are taking real volatility risk.
+
+The analyst picture is mixed. Five analysts cover the name. The mean target is **$76.80**, which is below the current price of **$90.13**. That tells you the sell-side has not caught up to the move. It also means there is no analyst-driven catalyst pushing the stock higher. The fetched price was **$87.46**, slightly below the last close.
+
+## Why Now
+
+The catalyst is imminent. Earnings are due **August 5, 2026**, which is **1** day from the session date. That is a binary event. A strong print validates the **52.4%** earnings growth and the forward EPS of **$3.10**. A weak print breaks the thesis because the setup relies on one desk read.
+
+The sector timing helps. Technology is capitulation-favorable, which means sentiment has washed out. The sector acceleration is neutral, so you are entering before momentum resumes, not after. That is the ideal window for a mean reversion trade.
+
+Options activity is minimal. On **July 31, 2026**, call volume was **75** contracts and put volume was **9**. Call premium was **$0.07M**. Put premium was **$0.0M**. The call-to-put ratio leans bullish but the absolute volume is too low to read as a directional signal. There is no institutional options positioning to confirm or contradict the thesis.
+
+The timing risk is concentrated. You are entering one day before earnings. If you buy before the print, you accept full event risk. If you wait for the print, you may miss the entry if the stock gaps above **$90.13** toward the target. The cleanest approach is to wait for the earnings reaction. A hold above **$82.16** post-print gives you the entry with confirmed information.
+
+## Risk Factors
+
+The single biggest risk is thesis concentration. This setup runs on one desk read with no corroboration from additional signals. One bad earnings print on **August 5** takes the whole thesis out. At **$21.6M** in average daily dollar volume, the exit is narrow. If you need to sell into a gap down, slippage will hurt.
+
+Valuation risk is real. The trailing P/E of **61.2** prices in perfection. If forward EPS misses or guides down, the multiple compresses fast. The analyst mean target of **$76.80** is below the current price. The sell-side does not see upside from here. Five analysts with a target below market is a headwind.
+
+Profit margin is **4.3%**. Any cost pressure or revenue softness eats into that thin cushion. Gross margin of **32.9%** leaves little room for input cost inflation before operating margin erodes. Beta of **1.59** amplifies market risk.
+
+The invalidation level is **$71.54**. That is the stop. A close below **$71.54** breaks the uptrend and exits the trade. The swing low of **$60.93** is the next support below the stop. If price reaches **$71.54**, you are out. No hoping, no averaging down.
+
+Timing risk is acute. Earnings in **1** day means you are buying into a binary event. The stock could gap to **$102.93** on a good print or gap below **$82.16** on a bad one. You have to decide whether to accept event risk or wait for confirmation.
+
+## Bringing It All Together
+
+- Allient is pulling back **12.4%** inside a structural uptrend, sitting above a **30-week** line climbing at **18.8%**.
+- Relative strength of **+13.0%** vs. SPY over three months confirms institutional accumulation.
+- Technology is capitulation-favorable, giving the sector tailwind for a mean reversion entry.
+
+- Entry at **$82.16** with a stop at **$71.54** and a target at **$102.93** gives a **2.0** reward-to-risk.
+- Earnings on **August 5** is the binary catalyst. One desk read means one bad print ends the trade.
+
+## Conclusion
+
+Allient is a legitimate pullback entry in a healthy uptrend with a favorable sector backdrop. The chart is clean, the relative strength is strong, and the **30-week** trend is climbing. The fundamentals support growth with **52.4%** earnings growth and solid cash generation. The risks are honest: thin margins, a **61.2** trailing P/E, one desk read, and a binary earnings event in **1** day. You enter at **$82.16** with a **2.0** reward-to-risk and a hard stop at **$71.54**. If the earnings print confirms the growth trajectory, the path to **$102.93** is open. If it does not, you are out at the stop with a defined loss.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
