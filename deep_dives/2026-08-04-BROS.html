@@ -1,0 +1,232 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coffee, Cars, and a Cooling RSI — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>Coffee, Cars, and a Cooling RSI</h1>
+<div class="subtitle">Dutch Bros pulled back to a clean entry with no earnings in the window.</div>
+<div class="meta">EOD 2026-08-04 · BROS · written from the desk · model glm-5.2</div>
+<div class="chips"><span class="chip">BROS</span>
+<span class="chip">Consumer Cyclical</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-08-04: entry <b>$64.11</b> &rarr; <b>$64.11</b> (as of 2026-08-04) · <span class="pos">+0.0%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Consumer cyclical sits in a tricky spot. The sector reads as neutral on an absolute basis but the acceleration signal has flipped to new down. That tension matters for how you size anything in this group right now.</p>
+<p>The consumer is being pulled in two directions. Employment held up through the first half and wage growth stayed sticky. Inflation cooled but prices for food and services remain elevated. Discretionary spend is under pressure. People keep buying their daily coffee. That is the structural tailwind for beverage operators and it has been consistent across cycles.</p>
+<p>A neutral sector with a negative acceleration read means you are picking spots. You want a name where the pullback is technical, not fundamental. The backdrop rewards a stock that has already proven its trend, taken a breather, and sits at a level where the risk is defined and tight.</p>
+<h2>Introducing BROS</h2>
+<p>Dutch Bros runs a drive-thru coffee chain across the United States. The company operates through company-owned shops and a franchising segment. It sells coffee, its Rebel energy drink line, and related beverages. Founded in <strong>1992</strong> and based in Tempe, Arizona, the company has grown to roughly <strong>24,000</strong> employees.</p>
+<p>The edge is speed and volume. Dutch Bros shops are built for high throughput at the drive-thru window. The menu is simple. The staff is young and energetic. The brand has a cult following in its western U.S. stronghold and is expanding eastward. Unit growth is the primary engine here. New shops open, comp sales grow, and the flywheel turns.</p>
+<p>This is a growth story priced as one. You are paying for the expansion runway and the margin progression that comes with scale. The company is still early in its national footprint. That means the upside is real but the valuation leaves no room for execution slips.</p>
+<h2>The Thesis</h2>
+<p>Dutch Bros has cooled to an RSI of <strong>46.4</strong> and trades <strong>13.6%</strong> under its 52-week high. This is a dip with room above it. The pullback desk read scores a clean <strong>100</strong> with a tested verdict. The chart carries no flags and no trend violations.</p>
+<p>The setup is straightforward. The stock ran from the <strong>$48.40</strong> swing low to the <strong>$74.65</strong> 52-week high. That is a <strong>37.3%</strong> run off the low. Now it has pulled back <strong>5.8%</strong> over <strong>21</strong> trading days to <strong>$64.11</strong>. The trend is intact. The pullback is orderly.</p>
+<p>The options chain has real volume. Call premium was <strong>$1.03M</strong> versus <strong>$0.27M</strong> in put premium. The call wall sits at <strong>$75</strong> and the put wall sits at <strong>$65</strong>. That gives you a defined range to work with.</p>
+<p>Conviction is medium. The setup is clean and the entry is tight. The risk is that the consumer cyclicals sector has shifted to a negative acceleration signal. You size accordingly and you respect the stop.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-08-04-BROS.png" alt="BROS weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=BROS&interval=1W" target="_blank" rel="noopener">📈 Open the BROS weekly chart on TradingView ↗</a><figcaption>BROS weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $73.31 · mark support near $59.05.</figcaption></figure>
+<p>The trend is up and the structure is intact. The stock trades above its 30-week moving average and that average is sloping upward at <strong>3.8%</strong>. The 52-week high is <strong>$74.65</strong> and the stock sits at <strong>85.9%</strong> of that high. The 52-week low is <strong>$44.58</strong> and the stock is <strong>37.3%</strong> above it. The position in the 52-week range is <strong>64.9%</strong>, meaning you are buying in the upper half of the yearly range but off the recent peak.</p>
+<p>RSI reads <strong>46.4</strong> on the 14-period. That is neutral with a slight cooling tilt. The stock is oversold enough to offer a bounce but not so oversold that it signals distress. The 21-day return of <strong>-5.8%</strong> confirms the pullback is mild. ATR is <strong>$2.53</strong>, which tells you the stock moves about two and a half dollars on an average day. That is the noise you need to tolerate.</p>
+<p>The reference levels are tight. Entry is <strong>$64.11</strong>. Stop is <strong>$59.05</strong>, which is <strong>7.9%</strong> below entry. Target one is <strong>$73.31</strong>, the swing high. That is <strong>14.4%</strong> above entry and gives you a reward-to-risk of <strong>1.8</strong>. Target two is <strong>$75.50</strong>, which is <strong>17.8%</strong> above entry and sits right at the call wall. Relative strength versus the market is <strong>+5.4%</strong> over <strong>63</strong> days. The stock is outperforming the broad market on a three-month basis.</p>
+<p>The Weinstein violation count is zero. No trend breaks, no momentum divergences, no distribution signals flagged. That tells you buyers are stepping in at the put wall.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$11.66B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$10.10B</td></tr><tr><td class="k">52-week range</td><td class="v">$44.58 - $74.65</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">2.32</td></tr><tr><td class="k">Trailing P/E</td><td class="v">104.3</td></tr><tr><td class="k">Forward P/E</td><td class="v">52.9</td></tr><tr><td class="k">Price / sales</td><td class="v">6.7</td></tr><tr><td class="k">Price / book</td><td class="v">12.2</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$1.75B  (+30.8% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$13.77</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$81M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">0.64 / 1.26</td></tr><tr><td class="k">Gross margin</td><td class="v">25.3%</td></tr><tr><td class="k">Operating margin</td><td class="v">7.7%</td></tr><tr><td class="k">Profit margin</td><td class="v">4.6%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$2.50</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$0.29</td></tr><tr><td class="k">Total cash / share</td><td class="v">$1.93</td></tr><tr><td class="k">Debt / equity</td><td class="v">1.26</td></tr><tr><td class="k">Current ratio</td><td class="v">1.33</td></tr><tr><td class="k">Return on equity</td><td class="v">13.8%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">strong buy - mean target $79.75 (24 analysts)</td></tr></tbody></table>
+<p>Revenue growth is the headline number. That is exceptional for a restaurant operator. Earnings per share trailing is <strong>$0.64</strong> and forward EPS is <strong>$1.26</strong>, which implies the market expects earnings to nearly double. The forward P/E of <strong>52.9</strong> and trailing P/E of <strong>104.3</strong> tell you everything about the pricing. You are paying a premium multiple for a premium growth rate.</p>
+<p>Profitability is improving but thin. Gross margin is <strong>25.3%</strong>. Operating margin is <strong>7.7%</strong>. Net margin is <strong>4.6%</strong>. Return on equity is <strong>13.8%</strong> and return on assets is <strong>3.7%</strong>. These are not best-in-class margins but they are moving in the right direction as the company scales. The gap between operating and free cash flow tells you capital expenditure is heavy. That is unit growth. New shops cost money up front and pay back over time.</p>
+<p>The balance sheet has some flex but is not pristine. Current ratio is <strong>1.33</strong> and quick ratio is <strong>1.11</strong>. Cash per share is <strong>$1.93</strong>. The company carries no dividend, which is correct for a growth story at this stage. Beta is <strong>2.32</strong>. This stock moves more than twice the market. You need to size for that volatility. The analyst mean target is <strong>$79.75</strong> with <strong>24</strong> analysts covering and a strong buy recommendation.</p>
+<h2>Why Now</h2>
+<p>The catalyst is earnings on <strong>August 5</strong>. That is zero days from the session date. The window has no earnings gap risk after that print clears. The desk flagged this as the only clean bullish options candidate with real chain volume, a genuine oversold entry, and no earnings inside the window. The earnings event is the binary risk you take at entry.</p>
+<p>The options flow supports a bullish read. Call premium at <strong>$1.03M</strong> is nearly four times put premium at <strong>$0.27M</strong>. The call wall at <strong>$75</strong> aligns with the secondary target at <strong>$75.50</strong>. The put wall at <strong>$65</strong> is right below entry at <strong>$64.11</strong>. Option positioning is telling you the market expects this stock to find support here and work toward the call wall.</p>
+<p>The macro backdrop is mixed. Consumer cyclical is neutral with a negative acceleration signal. That caps how aggressive you get. The sector is not providing a tailwind. You are relying on the stock-specific setup and the earnings catalyst to carry the trade. The pullback from <strong>$74.65</strong> to <strong>$64.11</strong> happened in a sector that was rolling over. Dutch Bros held its 30-week line. That is relative strength and it is what you want to see when the sector is soft.</p>
+<h2>Risk Factors</h2>
+<p>Consumer names reprice fast on traffic data. If comps slow or guidance disappoints on the earnings call, this stock with a beta of <strong>2.32</strong> and a trailing P/E of <strong>104.3</strong> will get punished. The valuation offers no cushion. Any miss on revenue growth from the <strong>30.8%</strong> pace or any guidance cut on new unit opens will reset the multiple quickly.</p>
+<p>Time decay is the silent killer if you are buying options. A slow grind sideways at <strong>$64.11</strong> bleeds premium even if the direction is right. The ATR of <strong>$2.53</strong> means the stock oscillates within a range that may not be enough to overcome theta if it stalls for two or three weeks. You need the move toward <strong>$73.31</strong> to happen with some speed.</p>
+<p>The invalidation is <strong>$59.05</strong>. That is the stop. A close below <strong>$59.05</strong> breaks the structure and you exit. That level is <strong>7.9%</strong> below entry and represents a <strong>-37.3%</strong> retracement from the current price toward the swing low at <strong>$48.40</strong>. You do not hope for a bounce from there. You take the loss.</p>
+<p>Timing risk around the catalyst is real. Earnings on <strong>August 5</strong> means you are walking into a binary event. The stock could gap above <strong>$73.31</strong> on a strong print or gap below <strong>$59.05</strong> on a weak one. If you enter before the print, you accept that risk. If you wait for the print to clear, you may get a worse entry if the stock gaps up. The desk read is that the setup is clean enough to take the risk. Size for the binary outcome.</p>
+<h2>Bringing It All Together</h2>
+<p>- The stock trades at <strong>$64.11</strong>, <strong>13.6%</strong> off the <strong>$74.65</strong> 52-week high, with RSI at <strong>46.4</strong> and zero trend violations on the chart.<br>- Entry at <strong>$64.11</strong> sits right at the put wall of <strong>$65</strong>, with the call wall at <strong>$75</strong> aligning with the <strong>$75.50</strong> secondary target.<br>The growth engine is running.<br>- The stop is <strong>$59.05</strong> for <strong>7.9%</strong> of risk. Target one is <strong>$73.31</strong> for <strong>14.4%</strong> upside. Reward-to-risk is <strong>1.8</strong>.<br>- Call premium at <strong>$1.03M</strong> against <strong>$0.27M</strong> put premium confirms the positioning skew is bullish. Relative strength is <strong>+5.4%</strong> over <strong>63</strong> days versus the broad market.<br>- Earnings on <strong>August 5</strong> is the binary catalyst. After that clears, no earnings sit inside the window.</p>
+<h2>Conclusion</h2>
+<p>Dutch Bros is a growth story pulling back to a technical level where the risk is defined and the reward is asymmetric. The entry at <strong>$64.11</strong> offers <strong>14.4%</strong> to the swing high at <strong>$73.31</strong> against <strong>7.9%</strong> to the stop at <strong>$59.05</strong>. The chart is clean. The options flow is bullish. The fundamentals show <strong>30.8%</strong> revenue growth with margins expanding. The sector is soft and the valuation is rich. You take the setup with medium conviction and a tight stop. The earnings print on <strong>August 5</strong> is the gate you walk through first.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Dutch Bros Inc. (BROS) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $11.66B; 52-week range $45-$75; Revenue $1.75B +31% YoY; Net income $81M; Free cash flow/share $0.29; Debt-to-equity 1.26; Return on equity 14%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Dutch Bros Inc. (BROS) inside the Consumer Cyclical space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Dutch Bros has cooled to an RSI of **46.4** and trades **13.6%** under its 52-week high, a dip with room above it. The pullback desk read scores a clean **100** with a tested verdict and the chart carries no flags and no trend violations.. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># Coffee, Cars, and a Cooling RSI
+
+*Dutch Bros pulled back to a clean entry with no earnings in the window.*
+
+## The Big Picture
+
+Consumer cyclical sits in a tricky spot. The sector reads as neutral on an absolute basis but the acceleration signal has flipped to new down. That tension matters for how you size anything in this group right now.
+
+The consumer is being pulled in two directions. Employment held up through the first half and wage growth stayed sticky. Inflation cooled but prices for food and services remain elevated. Discretionary spend is under pressure. People keep buying their daily coffee. That is the structural tailwind for beverage operators and it has been consistent across cycles.
+
+A neutral sector with a negative acceleration read means you are picking spots. You want a name where the pullback is technical, not fundamental. The backdrop rewards a stock that has already proven its trend, taken a breather, and sits at a level where the risk is defined and tight.
+
+## Introducing BROS
+
+Dutch Bros runs a drive-thru coffee chain across the United States. The company operates through company-owned shops and a franchising segment. It sells coffee, its Rebel energy drink line, and related beverages. Founded in **1992** and based in Tempe, Arizona, the company has grown to roughly **24,000** employees.
+
+The edge is speed and volume. Dutch Bros shops are built for high throughput at the drive-thru window. The menu is simple. The staff is young and energetic. The brand has a cult following in its western U.S. stronghold and is expanding eastward. Unit growth is the primary engine here. New shops open, comp sales grow, and the flywheel turns.
+
+This is a growth story priced as one. You are paying for the expansion runway and the margin progression that comes with scale. The company is still early in its national footprint. That means the upside is real but the valuation leaves no room for execution slips.
+
+## The Thesis
+
+Dutch Bros has cooled to an RSI of **46.4** and trades **13.6%** under its 52-week high. This is a dip with room above it. The pullback desk read scores a clean **100** with a tested verdict. The chart carries no flags and no trend violations.
+
+The setup is straightforward. The stock ran from the **$48.40** swing low to the **$74.65** 52-week high. That is a **37.3%** run off the low. Now it has pulled back **5.8%** over **21** trading days to **$64.11**. The trend is intact. The pullback is orderly.
+
+The options chain has real volume. Call premium was **$1.03M** versus **$0.27M** in put premium. The call wall sits at **$75** and the put wall sits at **$65**. That gives you a defined range to work with.
+
+Conviction is medium. The setup is clean and the entry is tight. The risk is that the consumer cyclicals sector has shifted to a negative acceleration signal. You size accordingly and you respect the stop.
+
+## Technical Analysis
+
+&gt; 📈 Insert the BROS weekly chart here (TradingView): BROS weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $73.31 · mark support near $59.05.
+
+The trend is up and the structure is intact. The stock trades above its 30-week moving average and that average is sloping upward at **3.8%**. The 52-week high is **$74.65** and the stock sits at **85.9%** of that high. The 52-week low is **$44.58** and the stock is **37.3%** above it. The position in the 52-week range is **64.9%**, meaning you are buying in the upper half of the yearly range but off the recent peak.
+
+RSI reads **46.4** on the 14-period. That is neutral with a slight cooling tilt. The stock is oversold enough to offer a bounce but not so oversold that it signals distress. The 21-day return of **-5.8%** confirms the pullback is mild. ATR is **$2.53**, which tells you the stock moves about two and a half dollars on an average day. That is the noise you need to tolerate.
+
+The reference levels are tight. Entry is **$64.11**. Stop is **$59.05**, which is **7.9%** below entry. Target one is **$73.31**, the swing high. That is **14.4%** above entry and gives you a reward-to-risk of **1.8**. Target two is **$75.50**, which is **17.8%** above entry and sits right at the call wall. Relative strength versus the market is **+5.4%** over **63** days. The stock is outperforming the broad market on a three-month basis.
+
+The Weinstein violation count is zero. No trend breaks, no momentum divergences, no distribution signals flagged. That tells you buyers are stepping in at the put wall.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $11.66B |
+| Enterprise value | $10.10B |
+| 52-week range | $44.58 - $74.65 |
+| Dividend yield | None |
+| Beta | 2.32 |
+| Trailing P/E | 104.3 |
+| Forward P/E | 52.9 |
+| Price / sales | 6.7 |
+| Price / book | 12.2 |
+| Revenue (TTM) | $1.75B  (+30.8% YoY) |
+| Revenue / share | $13.77 |
+| Net income (TTM) | $81M |
+| EPS (TTM / fwd) | 0.64 / 1.26 |
+| Gross margin | 25.3% |
+| Operating margin | 7.7% |
+| Profit margin | 4.6% |
+| Operating cash flow / share | $2.50 |
+| Free cash flow / share | $0.29 |
+| Total cash / share | $1.93 |
+| Debt / equity | 1.26 |
+| Current ratio | 1.33 |
+| Return on equity | 13.8% |
+| Analyst consensus | strong buy - mean target $79.75 (24 analysts) |
+
+Revenue growth is the headline number. That is exceptional for a restaurant operator. Earnings per share trailing is **$0.64** and forward EPS is **$1.26**, which implies the market expects earnings to nearly double. The forward P/E of **52.9** and trailing P/E of **104.3** tell you everything about the pricing. You are paying a premium multiple for a premium growth rate.
+
+Profitability is improving but thin. Gross margin is **25.3%**. Operating margin is **7.7%**. Net margin is **4.6%**. Return on equity is **13.8%** and return on assets is **3.7%**. These are not best-in-class margins but they are moving in the right direction as the company scales. The gap between operating and free cash flow tells you capital expenditure is heavy. That is unit growth. New shops cost money up front and pay back over time.
+
+The balance sheet has some flex but is not pristine. Current ratio is **1.33** and quick ratio is **1.11**. Cash per share is **$1.93**. The company carries no dividend, which is correct for a growth story at this stage. Beta is **2.32**. This stock moves more than twice the market. You need to size for that volatility. The analyst mean target is **$79.75** with **24** analysts covering and a strong buy recommendation.
+
+## Why Now
+
+The catalyst is earnings on **August 5**. That is zero days from the session date. The window has no earnings gap risk after that print clears. The desk flagged this as the only clean bullish options candidate with real chain volume, a genuine oversold entry, and no earnings inside the window. The earnings event is the binary risk you take at entry.
+
+The options flow supports a bullish read. Call premium at **$1.03M** is nearly four times put premium at **$0.27M**. The call wall at **$75** aligns with the secondary target at **$75.50**. The put wall at **$65** is right below entry at **$64.11**. Option positioning is telling you the market expects this stock to find support here and work toward the call wall.
+
+The macro backdrop is mixed. Consumer cyclical is neutral with a negative acceleration signal. That caps how aggressive you get. The sector is not providing a tailwind. You are relying on the stock-specific setup and the earnings catalyst to carry the trade. The pullback from **$74.65** to **$64.11** happened in a sector that was rolling over. Dutch Bros held its 30-week line. That is relative strength and it is what you want to see when the sector is soft.
+
+## Risk Factors
+
+Consumer names reprice fast on traffic data. If comps slow or guidance disappoints on the earnings call, this stock with a beta of **2.32** and a trailing P/E of **104.3** will get punished. The valuation offers no cushion. Any miss on revenue growth from the **30.8%** pace or any guidance cut on new unit opens will reset the multiple quickly.
+
+Time decay is the silent killer if you are buying options. A slow grind sideways at **$64.11** bleeds premium even if the direction is right. The ATR of **$2.53** means the stock oscillates within a range that may not be enough to overcome theta if it stalls for two or three weeks. You need the move toward **$73.31** to happen with some speed.
+
+The invalidation is **$59.05**. That is the stop. A close below **$59.05** breaks the structure and you exit. That level is **7.9%** below entry and represents a **-37.3%** retracement from the current price toward the swing low at **$48.40**. You do not hope for a bounce from there. You take the loss.
+
+Timing risk around the catalyst is real. Earnings on **August 5** means you are walking into a binary event. The stock could gap above **$73.31** on a strong print or gap below **$59.05** on a weak one. If you enter before the print, you accept that risk. If you wait for the print to clear, you may get a worse entry if the stock gaps up. The desk read is that the setup is clean enough to take the risk. Size for the binary outcome.
+
+## Bringing It All Together
+
+- The stock trades at **$64.11**, **13.6%** off the **$74.65** 52-week high, with RSI at **46.4** and zero trend violations on the chart.
+- Entry at **$64.11** sits right at the put wall of **$65**, with the call wall at **$75** aligning with the **$75.50** secondary target.
+The growth engine is running.
+- The stop is **$59.05** for **7.9%** of risk. Target one is **$73.31** for **14.4%** upside. Reward-to-risk is **1.8**.
+- Call premium at **$1.03M** against **$0.27M** put premium confirms the positioning skew is bullish. Relative strength is **+5.4%** over **63** days versus the broad market.
+- Earnings on **August 5** is the binary catalyst. After that clears, no earnings sit inside the window.
+
+## Conclusion
+
+Dutch Bros is a growth story pulling back to a technical level where the risk is defined and the reward is asymmetric. The entry at **$64.11** offers **14.4%** to the swing high at **$73.31** against **7.9%** to the stop at **$59.05**. The chart is clean. The options flow is bullish. The fundamentals show **30.8%** revenue growth with margins expanding. The sector is soft and the valuation is rich. You take the setup with medium conviction and a tight stop. The earnings print on **August 5** is the gate you walk through first.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

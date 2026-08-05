@@ -1,0 +1,227 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A Structural Heart Bet at a Discount — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>A Structural Heart Bet at a Discount</h1>
+<div class="subtitle">Anteris Technologies gives back 21.7% in a month while insiders buy $28.8M near the lows.</div>
+<div class="meta">EOD 2026-08-04 · AVR · written from the desk · model glm-5.2</div>
+<div class="chips"><span class="chip">AVR</span>
+<span class="chip">Healthcare</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-08-04: entry <b>$8.28</b> &rarr; <b>$8.28</b> (as of 2026-08-04) · <span class="pos">+0.0%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Healthcare is in a tricky spot. The sector sits NEUTRAL overall but just flashed a NEW_DOWN acceleration signal. That tells you momentum is rolling over for most medical stocks. Money is leaving the group.</p>
+<p>That backdrop punishes the median name. It rewards companies with a specific catalyst or a structural edge. You do not buy healthcare broadly here. You buy selective setups where the stock has already reset and the downside is contained.</p>
+<p>A small structural heart company out of Australia fits that bill. It has pulled back hard inside an uptrend. An insider just placed a massive bet. The risk/reward is the best the desk found in small caps this week. This is the kind of setup where a bad sector works in your favor because the selling is already done.</p>
+<h2>Introducing AVR</h2>
+<p>Anteris Technologies Global Corp. is a structural heart company based in Toowong, Australia. The company develops minimally invasive medical devices to treat heart valve diseases. Its lead product is the DurAVR transcatheter heart valve system, a device designed to treat severe aortic stenosis. The valve is shaped to mimic the performance of a healthy human aortic valve.</p>
+<p>Anteris also develops ADAPT anti-calcification tissue. This technology transforms animal tissue into durable bioscaffolds that resist calcification and mimic human tissue for surgical repair. The ComASUR delivery system is a physician-developed balloon expandable catheter designed for precise navigation through heart anatomy without damaging the aorta. The full platform targets aortic valve replacement with a minimally invasive approach.</p>
+<p>This is an early commercial stage company with <strong>174</strong> employees. The pipeline is concentrated in the DurAVR platform. That means every headline about clinical results or regulatory progress moves the stock sharply. You are buying a binary story dressed in a technical setup.</p>
+<h2>The Thesis</h2>
+<p>The core thesis is a reset inside an intact uptrend. Anteris has given back <strong>21.7%</strong> in the last month to an RSI of <strong>44.4</strong>. The stock still trades above a <strong>30</strong>-week trend line rising at <strong>27.9%</strong>. The pullback is real but the trend is not broken.</p>
+<p>The desk read on this pullback scores <strong>70</strong> with a tested verdict. That means the setup has been validated through prior similar patterns. The system likes what it sees. The <strong>2.3</strong> to <strong>1</strong> risk/reward is the best on the small cap list this week.</p>
+<p>The strongest signal is insider money. An insider bought <strong>$28.8M</strong> on the open market near <strong>$5.75</strong>. That is well below the current price of <strong>$8.28</strong>. You are buying at a higher price than the insider. But the insider committed real capital at a level that gives you a concrete floor of confidence. Someone with deep knowledge of this company put nearly <strong>$29M</strong> to work.</p>
+<p>Conviction is MEDIUM. The setup is clean. The insider buy is meaningful. The risk/reward is strong. You size this as a medium position because the catalyst path is binary and the stock moves on single headlines.</p>
+<h2>Technical Analysis</h2>
+<p><figure class="chart"><img src="img/2026-08-04-AVR.png" alt="AVR weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=AVR&interval=1W" target="_blank" rel="noopener">📈 Open the AVR weekly chart on TradingView ↗</a><figcaption>AVR weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $10.57 · mark support near $7.30.</figcaption></figure><br>The trend is up and the pullback is orderly. The stock closed at <strong>$8.28</strong>, which is <strong>74.9%</strong> of the <strong>52</strong>-week high of <strong>$11.05</strong>. The <strong>30</strong>-week moving average is rising at <strong>27.9%</strong> annualized and the stock is above it. That is your structural floor.</p>
+<p>The <strong>21</strong>-day return is <strong>-21.7%</strong> but the <strong>63</strong>-day return is <strong>+35.1%</strong>. The stock ran hard, then gave back a chunk. Relative strength vs SPY over <strong>63</strong> days is <strong>+27.6%</strong>. This stock has been outperforming the broad market even after the pullback.</p>
+<p>RSI sits at <strong>42.7</strong> on the <strong>14</strong>-day measure and <strong>44.4</strong> on the alternative calculation. Both readings are in oversold territory without being extreme. The stock is washed out but not capitulating. ATR is <strong>$0.49</strong>, which means a normal day moves roughly <strong>6%</strong> of the price.</p>
+<p>The swing high is <strong>$10.57</strong> and the swing low is <strong>$6.51</strong>. The entry is <strong>$8.28</strong>. The stop is <strong>$7.30</strong>, which sits above the swing low and gives the trade <strong>11.8%</strong> of downside room. The target is <strong>$10.57</strong>, which matches the swing high exactly. That is <strong>27.7%</strong> of upside. A secondary target at <strong>$10.48</strong> gives you <strong>26.6%</strong>.</p>
+<p>The stock is <strong>-21.7%</strong> from its <strong>52</strong>-week high and <strong>+175.5%</strong> from its <strong>52</strong>-week low of <strong>$2.99</strong>. A low volume bounce off <strong>$8.28</strong> without follow through tells you the buyers are not committed yet.</p>
+<h2>Fundamentals</h2>
+<p><table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$770M</td></tr><tr><td class="k">Enterprise value</td><td class="v">$523M</td></tr><tr><td class="k">52-week range</td><td class="v">$2.99 - $11.05</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">0.73</td></tr><tr><td class="k">Forward P/E</td><td class="v">-8.1</td></tr><tr><td class="k">Price / sales</td><td class="v">416.2</td></tr><tr><td class="k">Price / book</td><td class="v">2.8</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$2M  (-11.2% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$0.04</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$-95M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">-2.22 / -0.98</td></tr><tr><td class="k">Gross margin</td><td class="v">74.3%</td></tr><tr><td class="k">Operating margin</td><td class="v">-4859.7%</td></tr><tr><td class="k">Profit margin</td><td class="v">0.0%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$-0.87</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$-0.54</td></tr><tr><td class="k">Total cash / share</td><td class="v">$2.90</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.01</td></tr><tr><td class="k">Current ratio</td><td class="v">20.93</td></tr><tr><td class="k">Return on equity</td><td class="v">-59.2%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">none - mean target $15.33 (3 analysts)</td></tr></tbody></table><br>The growth profile is early stage and the financials reflect it. Revenue growth is <strong>-11.2%</strong> year over year. That is a weak spot. The company is pre scale and revenue is not yet compounding.</p>
+<p>Profitability is negative across the board. The forward EPS is <strong>-$0.98</strong>, which shows losses are narrowing. Gross margin is <strong>74.3%</strong>. That is a strong signal. Once revenue scales, the gross profit per unit is healthy. Operating margin is <strong>-4859.7%</strong> because the company is spending heavily on development and clinical work. Burn is real.</p>
+<p>The balance sheet is the bright spot. The company has almost no debt. Total cash per share is <strong>$2.90</strong>. The current ratio is <strong>20.93</strong> and the quick ratio is <strong>20.66</strong>. Anteris can fund its burn for several quarters without raising capital. That matters because a biotech with cash and no debt does not face the dilution risk that kills most small healthcare names.</p>
+<p>Return on equity is <strong>-59.2%</strong> and return on assets is <strong>-34.0%</strong>. The forward PE is <strong>-8.1</strong> because earnings are negative. Price to sales is <strong>416.2</strong> and price to book is <strong>2.8</strong>. Book value per share is <strong>$2.86</strong>. Three analysts cover the stock with a mean target of <strong>$15.33</strong>. The next earnings date lands on <strong>2026-08-10</strong>.</p>
+<h2>Why Now</h2>
+<p>The catalyst is <strong>5</strong> days away. Earnings land on <strong>2026-08-10</strong>. You are entering this trade into a known binary event. The company will update the market on commercial progress and clinical pipeline status. A positive update on DurAVR adoption or regulatory momentum could close the gap to the <strong>$15.33</strong> analyst target quickly.</p>
+<p>The macro backdrop is mixed. Healthcare is NEUTRAL with a NEW_DOWN acceleration. That means the sector is losing momentum. A weak sector can work in your favor here because the selling pressure in Anteris may already be exhausted. The stock has dropped <strong>21.7%</strong> in <strong>21</strong> days. RSI is <strong>42.7</strong>. Most of the weak hands are likely out.</p>
+<p>The insider buy of <strong>$28.8M</strong> near <strong>$5.75</strong> happened before the earnings date. That is a strong signal. An insider does not commit that kind of capital days before a binary event unless they have confidence in the outcome. You are buying after the insider and before the catalyst. The entry at <strong>$8.28</strong> is higher than the insider price. If the stock breaks <strong>$7.30</strong>, the insider is sitting on a loss too. That alignment matters.</p>
+<h2>Risk Factors</h2>
+<p>The biggest risk is headline risk. A bad clinical or regulatory print takes out the stop in one session. You could wake up to a gap below <strong>$7.30</strong> and your <strong>11.8%</strong> risk becomes <strong>15%</strong> or <strong>20%</strong> on a gap down.</p>
+<p>Revenue is declining. Revenue growth is <strong>-11.2%</strong> year over year. If the earnings update on <strong>2026-08-10</strong> shows continued revenue contraction, the market will question the commercial trajectory. The stock could test the swing low at <strong>$6.51</strong> quickly.</p>
+<p>The sector is rolling over. Healthcare has a NEW_DOWN acceleration signal. If the broad market sells healthcare aggressively, Anteris gets caught in the draft regardless of its own fundamentals. A beta of <strong>0.73</strong> means it moves less than the market. But a beta under <strong>1.0</strong> does not protect you from sector specific selling.</p>
+<p>The invalidation is the stop at <strong>$7.30</strong>. If the stock closes below that level on volume, the <strong>30</strong>-week trend is in question and the insider buy loses its protective read. You exit. No averaging down into a biotech that is breaking support.</p>
+<p>Timing risk is concentrated in the next <strong>5</strong> days. Earnings on <strong>2026-08-10</strong> will either validate the setup or invalidate it. You can wait for the print and enter at a higher price with more clarity. Or you enter now and accept the binary risk for a better cost basis. The <strong>2.3</strong> to <strong>1</strong> risk/reward accounts for that risk. The <strong>27.7%</strong> upside to the <strong>$10.57</strong> target is your compensation.</p>
+<h2>Bringing It All Together</h2>
+<p>- The stock has reset <strong>21.7%</strong> in <strong>21</strong> days while holding above a <strong>30</strong>-week trend line rising at <strong>27.9%</strong>.<br>- An insider bought <strong>$28.8M</strong> near <strong>$5.75</strong>, committing real capital below your entry at <strong>$8.28</strong>.<br>- The risk/reward is <strong>2.3</strong> to <strong>1</strong> with <strong>11.8%</strong> downside to the <strong>$7.30</strong> stop and <strong>27.7%</strong> upside to the <strong>$10.57</strong> target.<br>Dilution risk is low.<br>- Earnings on <strong>2026-08-10</strong> serve as the near term catalyst. Three analysts see <strong>$15.33</strong> on average.<br>- RSI at <strong>42.7</strong> and <strong>63</strong>-day relative strength of <strong>+27.6%</strong> vs SPY confirm the pullback is inside an uptrend.</p>
+<h2>Conclusion</h2>
+<p>You have a washed out small cap biotech with insider money on the table, a clean trend floor, and a binary catalyst in <strong>5</strong> days. The balance sheet is strong enough to fund the burn. The technical setup is the best the desk found this week. You enter at <strong>$8.28</strong> with a stop at <strong>$7.30</strong> and a target at <strong>$10.57</strong>. Size for a MEDIUM conviction because one headline can take you out. The insider already made the bet. You are following that capital into a defined risk setup.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Anteris Technologies Global Corp. (AVR) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $770M; 52-week range $3-$11; Revenue $2M -11% YoY; Net income $-95M; Free cash flow/share $-0.54; Debt-to-equity 0.01; Return on equity -59%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Anteris Technologies Global Corp. (AVR) inside the Healthcare space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Anteris has given back **21.7%** in the last month to an RSI of **44.4** while staying above a **30**-week trend line rising at **27.9%**, which is a reset inside an uptrend. The pullback desk read reads **70** with a tested verdict, and an. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># A Structural Heart Bet at a Discount
+
+*Anteris Technologies gives back 21.7% in a month while insiders buy $28.8M near the lows.*
+
+## The Big Picture
+Healthcare is in a tricky spot. The sector sits NEUTRAL overall but just flashed a NEW_DOWN acceleration signal. That tells you momentum is rolling over for most medical stocks. Money is leaving the group.
+
+That backdrop punishes the median name. It rewards companies with a specific catalyst or a structural edge. You do not buy healthcare broadly here. You buy selective setups where the stock has already reset and the downside is contained.
+
+A small structural heart company out of Australia fits that bill. It has pulled back hard inside an uptrend. An insider just placed a massive bet. The risk/reward is the best the desk found in small caps this week. This is the kind of setup where a bad sector works in your favor because the selling is already done.
+
+## Introducing AVR
+Anteris Technologies Global Corp. is a structural heart company based in Toowong, Australia. The company develops minimally invasive medical devices to treat heart valve diseases. Its lead product is the DurAVR transcatheter heart valve system, a device designed to treat severe aortic stenosis. The valve is shaped to mimic the performance of a healthy human aortic valve.
+
+Anteris also develops ADAPT anti-calcification tissue. This technology transforms animal tissue into durable bioscaffolds that resist calcification and mimic human tissue for surgical repair. The ComASUR delivery system is a physician-developed balloon expandable catheter designed for precise navigation through heart anatomy without damaging the aorta. The full platform targets aortic valve replacement with a minimally invasive approach.
+
+This is an early commercial stage company with **174** employees. The pipeline is concentrated in the DurAVR platform. That means every headline about clinical results or regulatory progress moves the stock sharply. You are buying a binary story dressed in a technical setup.
+
+## The Thesis
+The core thesis is a reset inside an intact uptrend. Anteris has given back **21.7%** in the last month to an RSI of **44.4**. The stock still trades above a **30**-week trend line rising at **27.9%**. The pullback is real but the trend is not broken.
+
+The desk read on this pullback scores **70** with a tested verdict. That means the setup has been validated through prior similar patterns. The system likes what it sees. The **2.3** to **1** risk/reward is the best on the small cap list this week.
+
+The strongest signal is insider money. An insider bought **$28.8M** on the open market near **$5.75**. That is well below the current price of **$8.28**. You are buying at a higher price than the insider. But the insider committed real capital at a level that gives you a concrete floor of confidence. Someone with deep knowledge of this company put nearly **$29M** to work.
+
+Conviction is MEDIUM. The setup is clean. The insider buy is meaningful. The risk/reward is strong. You size this as a medium position because the catalyst path is binary and the stock moves on single headlines.
+
+## Technical Analysis
+&gt; 📈 Insert the AVR weekly chart here (TradingView): AVR weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $10.57 · mark support near $7.30.
+The trend is up and the pullback is orderly. The stock closed at **$8.28**, which is **74.9%** of the **52**-week high of **$11.05**. The **30**-week moving average is rising at **27.9%** annualized and the stock is above it. That is your structural floor.
+
+The **21**-day return is **-21.7%** but the **63**-day return is **+35.1%**. The stock ran hard, then gave back a chunk. Relative strength vs SPY over **63** days is **+27.6%**. This stock has been outperforming the broad market even after the pullback.
+
+RSI sits at **42.7** on the **14**-day measure and **44.4** on the alternative calculation. Both readings are in oversold territory without being extreme. The stock is washed out but not capitulating. ATR is **$0.49**, which means a normal day moves roughly **6%** of the price.
+
+The swing high is **$10.57** and the swing low is **$6.51**. The entry is **$8.28**. The stop is **$7.30**, which sits above the swing low and gives the trade **11.8%** of downside room. The target is **$10.57**, which matches the swing high exactly. That is **27.7%** of upside. A secondary target at **$10.48** gives you **26.6%**.
+
+The stock is **-21.7%** from its **52**-week high and **+175.5%** from its **52**-week low of **$2.99**. A low volume bounce off **$8.28** without follow through tells you the buyers are not committed yet.
+
+## Fundamentals
+| Metric | Value |
+|---|---|
+| Market cap | $770M |
+| Enterprise value | $523M |
+| 52-week range | $2.99 - $11.05 |
+| Dividend yield | None |
+| Beta | 0.73 |
+| Forward P/E | -8.1 |
+| Price / sales | 416.2 |
+| Price / book | 2.8 |
+| Revenue (TTM) | $2M  (-11.2% YoY) |
+| Revenue / share | $0.04 |
+| Net income (TTM) | $-95M |
+| EPS (TTM / fwd) | -2.22 / -0.98 |
+| Gross margin | 74.3% |
+| Operating margin | -4859.7% |
+| Profit margin | 0.0% |
+| Operating cash flow / share | $-0.87 |
+| Free cash flow / share | $-0.54 |
+| Total cash / share | $2.90 |
+| Debt / equity | 0.01 |
+| Current ratio | 20.93 |
+| Return on equity | -59.2% |
+| Analyst consensus | none - mean target $15.33 (3 analysts) |
+The growth profile is early stage and the financials reflect it. Revenue growth is **-11.2%** year over year. That is a weak spot. The company is pre scale and revenue is not yet compounding.
+
+Profitability is negative across the board. The forward EPS is **-$0.98**, which shows losses are narrowing. Gross margin is **74.3%**. That is a strong signal. Once revenue scales, the gross profit per unit is healthy. Operating margin is **-4859.7%** because the company is spending heavily on development and clinical work. Burn is real.
+
+The balance sheet is the bright spot. The company has almost no debt. Total cash per share is **$2.90**. The current ratio is **20.93** and the quick ratio is **20.66**. Anteris can fund its burn for several quarters without raising capital. That matters because a biotech with cash and no debt does not face the dilution risk that kills most small healthcare names.
+
+Return on equity is **-59.2%** and return on assets is **-34.0%**. The forward PE is **-8.1** because earnings are negative. Price to sales is **416.2** and price to book is **2.8**. Book value per share is **$2.86**. Three analysts cover the stock with a mean target of **$15.33**. The next earnings date lands on **2026-08-10**.
+
+## Why Now
+The catalyst is **5** days away. Earnings land on **2026-08-10**. You are entering this trade into a known binary event. The company will update the market on commercial progress and clinical pipeline status. A positive update on DurAVR adoption or regulatory momentum could close the gap to the **$15.33** analyst target quickly.
+
+The macro backdrop is mixed. Healthcare is NEUTRAL with a NEW_DOWN acceleration. That means the sector is losing momentum. A weak sector can work in your favor here because the selling pressure in Anteris may already be exhausted. The stock has dropped **21.7%** in **21** days. RSI is **42.7**. Most of the weak hands are likely out.
+
+The insider buy of **$28.8M** near **$5.75** happened before the earnings date. That is a strong signal. An insider does not commit that kind of capital days before a binary event unless they have confidence in the outcome. You are buying after the insider and before the catalyst. The entry at **$8.28** is higher than the insider price. If the stock breaks **$7.30**, the insider is sitting on a loss too. That alignment matters.
+
+## Risk Factors
+The biggest risk is headline risk. A bad clinical or regulatory print takes out the stop in one session. You could wake up to a gap below **$7.30** and your **11.8%** risk becomes **15%** or **20%** on a gap down.
+
+Revenue is declining. Revenue growth is **-11.2%** year over year. If the earnings update on **2026-08-10** shows continued revenue contraction, the market will question the commercial trajectory. The stock could test the swing low at **$6.51** quickly.
+
+The sector is rolling over. Healthcare has a NEW_DOWN acceleration signal. If the broad market sells healthcare aggressively, Anteris gets caught in the draft regardless of its own fundamentals. A beta of **0.73** means it moves less than the market. But a beta under **1.0** does not protect you from sector specific selling.
+
+The invalidation is the stop at **$7.30**. If the stock closes below that level on volume, the **30**-week trend is in question and the insider buy loses its protective read. You exit. No averaging down into a biotech that is breaking support.
+
+Timing risk is concentrated in the next **5** days. Earnings on **2026-08-10** will either validate the setup or invalidate it. You can wait for the print and enter at a higher price with more clarity. Or you enter now and accept the binary risk for a better cost basis. The **2.3** to **1** risk/reward accounts for that risk. The **27.7%** upside to the **$10.57** target is your compensation.
+
+## Bringing It All Together
+- The stock has reset **21.7%** in **21** days while holding above a **30**-week trend line rising at **27.9%**.
+- An insider bought **$28.8M** near **$5.75**, committing real capital below your entry at **$8.28**.
+- The risk/reward is **2.3** to **1** with **11.8%** downside to the **$7.30** stop and **27.7%** upside to the **$10.57** target.
+Dilution risk is low.
+- Earnings on **2026-08-10** serve as the near term catalyst. Three analysts see **$15.33** on average.
+- RSI at **42.7** and **63**-day relative strength of **+27.6%** vs SPY confirm the pullback is inside an uptrend.
+
+## Conclusion
+You have a washed out small cap biotech with insider money on the table, a clean trend floor, and a binary catalyst in **5** days. The balance sheet is strong enough to fund the burn. The technical setup is the best the desk found this week. You enter at **$8.28** with a stop at **$7.30** and a target at **$10.57**. Size for a MEDIUM conviction because one headline can take you out. The insider already made the bet. You are following that capital into a defined risk setup.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
