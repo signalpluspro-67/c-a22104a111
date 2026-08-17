@@ -1,0 +1,237 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Cleanest Pullback in Small-Cap Tech — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Cleanest Pullback in Small-Cap Tech</h1>
+<div class="subtitle">Methode Electronics is a $580M electronic-components play riding data-center and EV demand, down 15.7% from its high on thin volume.</div>
+<div class="meta">EOD 2026-08-10 · MEI · written from the desk · model glm-5.2</div>
+<div class="chips"><span class="chip">MEI</span>
+<span class="chip">Technology</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-08-10: entry <b>$14.32</b> &rarr; <b>$17.14</b> (as of 2026-08-14) · <span class="pos">+19.7%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>The Technology sector is in a momentum phase, and that momentum is still accelerating. Most stocks in the group are riding the trend higher. That backdrop matters for you because it means dip-buying in quality names has a tailwind behind it.</p>
+<p>The structural force here is the buildout of cloud computing and data-center infrastructure. Companies that supply power distribution, high-speed connectivity, and sensor systems into those end markets are seeing real demand. Methode Electronics sits squarely in that supply chain. It also feeds automotive electrification, which is a second leg of demand growth.</p>
+<p>When a sector is riding momentum, the best setups come from names that have already proven themselves. You want the stock that ran hard, pulled back on light volume, and is now resting near support. That is exactly what the desk surfaced in MEI. The macro backdrop rewards a name like this because the trend does the heavy lifting. Your job is to buy the pullback and let the sector momentum push it back toward its highs.</p>
+<h2>Introducing MEI</h2>
+<p>Methode Electronics is a <strong>1946</strong> company headquartered in Southfield, Michigan. It designs, engineers, and manufactures mechatronic products across four segments: Automotive, Industrial, Interface, and Medical.</p>
+<p>The Automotive segment is the largest revenue driver. It supplies power distribution solutions like busbars, smart connect systems, battery disconnect units, and integrated circuit boards to OEMs and tiered suppliers. This is where EV content per vehicle lifts the growth profile. The Industrial segment makes lighting solutions, safety radio remote controls, flexible cables, and high-current busbars for aerospace, data centers, telecommunications, and transportation.</p>
+<p>The Interface segment provides high-speed digital communication over copper media for data networking and broadband markets. That segment ties Methode directly to data-center buildout. The company occupies a niche between commodity component makers and specialized systems providers. Its edge is engineering depth in power distribution and signal integrity, which are both critical as data centers scale up power density and automotive platforms add electrical content.</p>
+<h2>The Thesis</h2>
+<p>Methode Electronics is a small-cap tech name pulling back after a large advance, and the desk&#x27;s best signal is at full strength. The proprietary desk read scored <strong>100</strong>, with a tested risk-adjusted return of <strong>1.10</strong>. That is the highest signal output the desk produces, and it is triggering on a stock that is <strong>15.7%</strong> under its <strong>52</strong>-week high.</p>
+<p>The three-month return is <strong>+70.0%</strong>, and MEI has outrun SPY by <strong>65.2%</strong> over that window. That kind of relative strength tells you buyers were aggressive. Now the stock is consolidating. RSI sits at <strong>55.8</strong>, which is neutral. It is above a <strong>30</strong>-week average that is rising at <strong>33.6%</strong>. That rising long-term line is your structural support.</p>
+<p>The risk/reward is <strong>1.9</strong>, the best among small caps the desk reviewed. Entry at <strong>$14.32</strong>, stop at <strong>$11.58</strong>, target at <strong>$19.42</strong>. The upside to target is <strong>35.6%</strong>. A second target at <strong>$20.48</strong> would deliver <strong>43.0%</strong>. Conviction is MEDIUM. You size this accordingly because liquidity is thin and the pullback is still young. The thesis is clean: a proven momentum name resting on support in a sector that is still riding.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-08-10-MEI.png" alt="MEI weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=MEI&interval=1W" target="_blank" rel="noopener">📈 Open the MEI weekly chart on TradingView ↗</a><figcaption>MEI weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $19.42 · mark support near $11.58.</figcaption></figure>
+<p>The chart tells you this stock ran hard and is now digesting those gains. The <strong>63</strong>-day return is <strong>+70.0%</strong>, and the <strong>21</strong>-day return is <strong>+3.6%</strong>. That deceleration from <strong>70%</strong> to under <strong>4%</strong> over a shorter window is the pullback in progress. The stock closed at <strong>$16.37</strong>, which is <strong>15.7%</strong> below the <strong>52</strong>-week high of <strong>$20.38</strong>. It is <strong>224.2%</strong> above the <strong>52</strong>-week low of <strong>$4.88</strong>. That range tells you how far this name has traveled.</p>
+<p>The stock is above its <strong>30</strong>-week moving average, and that average is sloping up at <strong>33.6%</strong>. That is your trend filter. As long as price holds above that line, the structural uptrend is intact. The <strong>30</strong>-week average is rising fast because the stock spent months climbing from single digits. You want to see the pullback hold above that line on a weekly closing basis.</p>
+<p>RSI reads <strong>55.8</strong> on the daily. That is mid-range, neither oversold nor overbought. It tells you there is room to run if buyers step in, and room to fall if they do not. The <strong>14</strong>-day ATR is <strong>$1.37</strong>, which means a normal day moves roughly <strong>$1.37</strong>. Against a <strong>$16.37</strong> stock, that is meaningful. The swing high is <strong>$19.42</strong>, which is your target. The swing low is <strong>$10.17</strong>, which is well below your stop at <strong>$11.58</strong>.</p>
+<p>The stock sits at <strong>80.3%</strong> of its <strong>52</strong>-week high, with its position in the <strong>52</strong>-week range at <strong>74.1%</strong>. That placement tells you it is still in the upper portion of its range despite the pullback. That is thin. Relative strength versus SPY over <strong>63</strong> days is <strong>+65.2%</strong>. That outperformance is extreme for a small cap. It means the stock led the market on the way up. The question is whether it leads on the next leg.</p>
+<p>The entry at <strong>$14.32</strong> is below the current price of <strong>$16.37</strong>. That means you are waiting for a deeper pullback to get involved. The stop at <strong>$11.58</strong> is <strong>19.1%</strong> below the entry. That is a wide stop, but it sits below the <strong>30</strong>-week average and the swing low zone. You accept the width because the structural trend demands room. The target at <strong>$19.42</strong> matches the swing high exactly. A push through that level opens the door to the second target at <strong>$20.48</strong>, which is just above the <strong>52</strong>-week high of <strong>$20.38</strong>.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$581M</td></tr><tr><td class="k">Enterprise value</td><td class="v">$803M</td></tr><tr><td class="k">52-week range</td><td class="v">$4.88 - $20.38</td></tr><tr><td class="k">Dividend yield</td><td class="v">1.22%</td></tr><tr><td class="k">Beta</td><td class="v">1.51</td></tr><tr><td class="k">Forward P/E</td><td class="v">24.8</td></tr><tr><td class="k">Price / sales</td><td class="v">0.6</td></tr><tr><td class="k">Price / book</td><td class="v">0.9</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$1.02B  (+15.9% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$28.69</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$-36M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">-1.01 / 0.66</td></tr><tr><td class="k">Gross margin</td><td class="v">19.9%</td></tr><tr><td class="k">Operating margin</td><td class="v">5.0%</td></tr><tr><td class="k">Profit margin</td><td class="v">-3.5%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$1.07</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$1.58</td></tr><tr><td class="k">Total cash / share</td><td class="v">$3.94</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.52</td></tr><tr><td class="k">Current ratio</td><td class="v">2.37</td></tr><tr><td class="k">Return on equity</td><td class="v">-5.2%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">none - mean target $19.33 (3 analysts)</td></tr></tbody></table>
+<p>Revenue growth is the headline positive. TTM revenue is <strong>$1.019B</strong>, growing at <strong>15.9%</strong>. Revenue per share is <strong>$28.69</strong>, which means the stock trades at <strong>0.6</strong> times sales. That is cheap for a tech name growing near <strong>16%</strong>.</p>
+<p>Profitability is the weak spot, and you need to be honest about it. Net income TTM is <strong>-$35.7M</strong>, with EPS at <strong>-$1.01</strong>. The profit margin is <strong>-3.5%</strong>. Return on equity is <strong>-5.2%</strong>. The company lost money on a trailing basis. Gross margin is <strong>19.9%</strong>, and operating margin is <strong>5.0%</strong>. That operating margin is positive, which means the core business generates operating profit but interest expense or one-time charges pushed the bottom line negative.</p>
+<p>The forward picture is better. Forward EPS is <strong>$0.66</strong>, which gives you a forward P/E of <strong>24.8</strong>. The stock is pricing in a return to profitability. If that forward estimate holds, the earnings inflection from <strong>-$1.01</strong> to <strong>+$0.66</strong> is a catalyst on its own. The analyst mean target is <strong>$19.33</strong>, which sits between your first and second targets. Three analysts cover the stock.</p>
+<p>Cash generation is solid despite the net loss. Free cash flow TTM is <strong>$56.2M</strong>. FCF per share is <strong>$1.58</strong>. The company is generating cash even while reporting a net loss. That divergence comes from non-cash charges like depreciation and amortization running through the income statement.</p>
+<p>The balance sheet is workable. Debt to equity is <strong>0.52</strong>. The current ratio is <strong>2.37</strong>, and the quick ratio is <strong>1.58</strong>. Both indicate adequate short-term liquidity. Total cash per share is <strong>$3.94</strong>. The book value per share is <strong>$19.11</strong>, and the stock trades at <strong>0.9</strong> times book. You are buying below book value in a company generating free cash flow and growing revenue <strong>15.9%</strong>. The dividend yield is <strong>1.22%</strong> at a <strong>$0.20</strong> annual rate, with a payout ratio of <strong>0.36</strong>. That payout is sustainable given the free cash flow generation. Beta is <strong>1.51</strong>, so expect the stock to move <strong>50%</strong> more than the market on any given day.</p>
+<h2>Why Now</h2>
+<p>The timing has two legs. First, the sector is in a momentum state and still accelerating. Technology stocks are riding the trend. When the sector is in this phase, pullbacks in leading names tend to get bought. MEI outperformed SPY by <strong>65.2%</strong> over three months. That makes it a leader within a momentum sector.</p>
+<p>Second, the next earnings date is <strong>September 7, 2026</strong>, which is <strong>27</strong> days out from the session date of <strong>August 10, 2026</strong>. Earnings is the near-term catalyst. The forward EPS estimate of <strong>$0.66</strong> implies a return to profitability. If the company confirms or raises that trajectory on the call, the stock has a fundamental reason to push toward the <strong>$19.42</strong> target. The gap between the trailing loss of <strong>-$1.01</strong> and the forward estimate of <strong>+$0.66</strong> is where the earnings surprise potential lives.</p>
+<p>Options activity is minimal. On <strong>August 7, 2026</strong>, call volume was <strong>47</strong> contracts and put volume was <strong>3</strong>. Call premium was <strong>$0.02M</strong>. Put premium was <strong>$0.00M</strong>. There is no meaningful options flow to read. That is consistent with a small-cap name where the options market is illiquid. You cannot derive a positioning signal from <strong>47</strong> call contracts. The catalyst is earnings, and the flow tells you nothing either way.</p>
+<h2>Risk Factors</h2>
+<p>Liquidity is the primary risk. The desk flags <strong>$7.7M</strong> a day in turnover. At that level, exits are slow. A single bad day in the broad market can gap the stock through your stop before you get filled. You handle this by using limit orders on exits and accepting that the stop at <strong>$11.58</strong> is a reference level, not a guaranteed fill.</p>
+<p>The stop at <strong>$11.58</strong> is <strong>19.1%</strong> below entry. That is a wide stop in dollar terms. On a thin stock with a <strong>1.51</strong> beta, a <strong>19%</strong> drawdown from entry can happen in a few sessions if the broad market sells off. You need to be comfortable with that dollar risk before you put the position on. If <strong>$11.58</strong> breaks on a weekly close, the structural uptrend is broken and you exit. That is your invalidation level.</p>
+<p>The net loss on the trailing twelve months is a fundamental risk. If the forward EPS estimate of <strong>$0.66</strong> does not materialize, the stock is expensive at <strong>24.8</strong> times forward earnings on a company that just lost money. The analyst count is only <strong>3</strong>, so estimate revisions from a single analyst can move the consensus. The earnings catalyst on <strong>September 7, 2026</strong> cuts both ways. A miss sends the stock toward the stop. A beat sends it toward the target. You are taking event risk with <strong>27</strong> days of exposure before that print.</p>
+<p>Beta at <strong>1.51</strong> means the stock amplifies market moves. In a sector correction, MEI falls harder and faster than the broad market. You size this position small enough that a gap through the stop does not damage the book.</p>
+<h2>Bringing It All Together</h2>
+<p>- Dual focus: MEI supplies both automotive electrification and data-center infrastructure, giving it two secular demand legs. Revenue growth of <strong>15.9%</strong> confirms the end-market pull.<br>- Technical structure: the stock is <strong>15.7%</strong> off its <strong>52</strong>-week high, above a <strong>30</strong>-week average rising <strong>33.6%</strong>, with RSI at <strong>55.8</strong>. That is a clean pullback in a confirmed uptrend.<br>The balance sheet carries <strong>0.52</strong> debt to equity with a <strong>2.37</strong> current ratio.<br>- Catalyst: earnings on <strong>September 7, 2026</strong> (<strong>27</strong> days out) with a return-to-profitability setup. The analyst mean target of <strong>$19.33</strong> aligns with the swing-high target of <strong>$19.42</strong>.<br>- Levels: entry <strong>$14.32</strong>, stop <strong>$11.58</strong>, target <strong>$19.42</strong>, second target <strong>$20.48</strong>. Risk/reward is <strong>1.9</strong> with <strong>35.6%</strong> upside to the first target.<br>- Sector tailwind: Technology is in a momentum state and still accelerating. MEI outperformed SPY by <strong>65.2%</strong> over three months. The trend does the work.</p>
+<h2>Conclusion</h2>
+<p>MEI is the cleanest pullback structure in the small-cap tech group. The desk&#x27;s top signal is at full strength. The fundamentals show a company growing revenue <strong>15.9%</strong>, generating <strong>$56.2M</strong> in free cash flow, and trading below book value. The earnings catalyst in <strong>27</strong> days gives you a defined window for the next move. You wait for <strong>$14.32</strong> to enter, you risk down to <strong>$11.58</strong>, and you target <strong>$19.42</strong>. The liquidity is thin and the stop is wide, so you keep the position small. Conviction is MEDIUM. The setup is real.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Methode Electronics, Inc. (MEI) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $581M; 52-week range $5-$20; Revenue $1.02B +16% YoY; Net income $-36M; Free cash flow/share $1.58; Debt-to-equity 0.52; Return on equity -5%; Dividend yield 1.2%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Methode Electronics, Inc. (MEI) inside the Technology space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Small tech name pulling back after a large advance, with the desk&#x27;s best-tested signal at full strength (a proprietary desk read **100**, tested risk-adjusted return **1.10**, tested). It sits **15.7%** under its **52**-week high, RSI **55.. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Cleanest Pullback in Small-Cap Tech
+
+*Methode Electronics is a $580M electronic-components play riding data-center and EV demand, down 15.7% from its high on thin volume.*
+
+## The Big Picture
+
+The Technology sector is in a momentum phase, and that momentum is still accelerating. Most stocks in the group are riding the trend higher. That backdrop matters for you because it means dip-buying in quality names has a tailwind behind it.
+
+The structural force here is the buildout of cloud computing and data-center infrastructure. Companies that supply power distribution, high-speed connectivity, and sensor systems into those end markets are seeing real demand. Methode Electronics sits squarely in that supply chain. It also feeds automotive electrification, which is a second leg of demand growth.
+
+When a sector is riding momentum, the best setups come from names that have already proven themselves. You want the stock that ran hard, pulled back on light volume, and is now resting near support. That is exactly what the desk surfaced in MEI. The macro backdrop rewards a name like this because the trend does the heavy lifting. Your job is to buy the pullback and let the sector momentum push it back toward its highs.
+
+## Introducing MEI
+
+Methode Electronics is a **1946** company headquartered in Southfield, Michigan. It designs, engineers, and manufactures mechatronic products across four segments: Automotive, Industrial, Interface, and Medical.
+
+The Automotive segment is the largest revenue driver. It supplies power distribution solutions like busbars, smart connect systems, battery disconnect units, and integrated circuit boards to OEMs and tiered suppliers. This is where EV content per vehicle lifts the growth profile. The Industrial segment makes lighting solutions, safety radio remote controls, flexible cables, and high-current busbars for aerospace, data centers, telecommunications, and transportation.
+
+The Interface segment provides high-speed digital communication over copper media for data networking and broadband markets. That segment ties Methode directly to data-center buildout. The company occupies a niche between commodity component makers and specialized systems providers. Its edge is engineering depth in power distribution and signal integrity, which are both critical as data centers scale up power density and automotive platforms add electrical content.
+
+## The Thesis
+
+Methode Electronics is a small-cap tech name pulling back after a large advance, and the desk&#x27;s best signal is at full strength. The proprietary desk read scored **100**, with a tested risk-adjusted return of **1.10**. That is the highest signal output the desk produces, and it is triggering on a stock that is **15.7%** under its **52**-week high.
+
+The three-month return is **+70.0%**, and MEI has outrun SPY by **65.2%** over that window. That kind of relative strength tells you buyers were aggressive. Now the stock is consolidating. RSI sits at **55.8**, which is neutral. It is above a **30**-week average that is rising at **33.6%**. That rising long-term line is your structural support.
+
+The risk/reward is **1.9**, the best among small caps the desk reviewed. Entry at **$14.32**, stop at **$11.58**, target at **$19.42**. The upside to target is **35.6%**. A second target at **$20.48** would deliver **43.0%**. Conviction is MEDIUM. You size this accordingly because liquidity is thin and the pullback is still young. The thesis is clean: a proven momentum name resting on support in a sector that is still riding.
+
+## Technical Analysis
+
+&gt; 📈 Insert the MEI weekly chart here (TradingView): MEI weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $19.42 · mark support near $11.58.
+
+The chart tells you this stock ran hard and is now digesting those gains. The **63**-day return is **+70.0%**, and the **21**-day return is **+3.6%**. That deceleration from **70%** to under **4%** over a shorter window is the pullback in progress. The stock closed at **$16.37**, which is **15.7%** below the **52**-week high of **$20.38**. It is **224.2%** above the **52**-week low of **$4.88**. That range tells you how far this name has traveled.
+
+The stock is above its **30**-week moving average, and that average is sloping up at **33.6%**. That is your trend filter. As long as price holds above that line, the structural uptrend is intact. The **30**-week average is rising fast because the stock spent months climbing from single digits. You want to see the pullback hold above that line on a weekly closing basis.
+
+RSI reads **55.8** on the daily. That is mid-range, neither oversold nor overbought. It tells you there is room to run if buyers step in, and room to fall if they do not. The **14**-day ATR is **$1.37**, which means a normal day moves roughly **$1.37**. Against a **$16.37** stock, that is meaningful. The swing high is **$19.42**, which is your target. The swing low is **$10.17**, which is well below your stop at **$11.58**.
+
+The stock sits at **80.3%** of its **52**-week high, with its position in the **52**-week range at **74.1%**. That placement tells you it is still in the upper portion of its range despite the pullback. That is thin. Relative strength versus SPY over **63** days is **+65.2%**. That outperformance is extreme for a small cap. It means the stock led the market on the way up. The question is whether it leads on the next leg.
+
+The entry at **$14.32** is below the current price of **$16.37**. That means you are waiting for a deeper pullback to get involved. The stop at **$11.58** is **19.1%** below the entry. That is a wide stop, but it sits below the **30**-week average and the swing low zone. You accept the width because the structural trend demands room. The target at **$19.42** matches the swing high exactly. A push through that level opens the door to the second target at **$20.48**, which is just above the **52**-week high of **$20.38**.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $581M |
+| Enterprise value | $803M |
+| 52-week range | $4.88 - $20.38 |
+| Dividend yield | 1.22% |
+| Beta | 1.51 |
+| Forward P/E | 24.8 |
+| Price / sales | 0.6 |
+| Price / book | 0.9 |
+| Revenue (TTM) | $1.02B  (+15.9% YoY) |
+| Revenue / share | $28.69 |
+| Net income (TTM) | $-36M |
+| EPS (TTM / fwd) | -1.01 / 0.66 |
+| Gross margin | 19.9% |
+| Operating margin | 5.0% |
+| Profit margin | -3.5% |
+| Operating cash flow / share | $1.07 |
+| Free cash flow / share | $1.58 |
+| Total cash / share | $3.94 |
+| Debt / equity | 0.52 |
+| Current ratio | 2.37 |
+| Return on equity | -5.2% |
+| Analyst consensus | none - mean target $19.33 (3 analysts) |
+
+Revenue growth is the headline positive. TTM revenue is **$1.019B**, growing at **15.9%**. Revenue per share is **$28.69**, which means the stock trades at **0.6** times sales. That is cheap for a tech name growing near **16%**.
+
+Profitability is the weak spot, and you need to be honest about it. Net income TTM is **-$35.7M**, with EPS at **-$1.01**. The profit margin is **-3.5%**. Return on equity is **-5.2%**. The company lost money on a trailing basis. Gross margin is **19.9%**, and operating margin is **5.0%**. That operating margin is positive, which means the core business generates operating profit but interest expense or one-time charges pushed the bottom line negative.
+
+The forward picture is better. Forward EPS is **$0.66**, which gives you a forward P/E of **24.8**. The stock is pricing in a return to profitability. If that forward estimate holds, the earnings inflection from **-$1.01** to **+$0.66** is a catalyst on its own. The analyst mean target is **$19.33**, which sits between your first and second targets. Three analysts cover the stock.
+
+Cash generation is solid despite the net loss. Free cash flow TTM is **$56.2M**. FCF per share is **$1.58**. The company is generating cash even while reporting a net loss. That divergence comes from non-cash charges like depreciation and amortization running through the income statement.
+
+The balance sheet is workable. Debt to equity is **0.52**. The current ratio is **2.37**, and the quick ratio is **1.58**. Both indicate adequate short-term liquidity. Total cash per share is **$3.94**. The book value per share is **$19.11**, and the stock trades at **0.9** times book. You are buying below book value in a company generating free cash flow and growing revenue **15.9%**. The dividend yield is **1.22%** at a **$0.20** annual rate, with a payout ratio of **0.36**. That payout is sustainable given the free cash flow generation. Beta is **1.51**, so expect the stock to move **50%** more than the market on any given day.
+
+## Why Now
+
+The timing has two legs. First, the sector is in a momentum state and still accelerating. Technology stocks are riding the trend. When the sector is in this phase, pullbacks in leading names tend to get bought. MEI outperformed SPY by **65.2%** over three months. That makes it a leader within a momentum sector.
+
+Second, the next earnings date is **September 7, 2026**, which is **27** days out from the session date of **August 10, 2026**. Earnings is the near-term catalyst. The forward EPS estimate of **$0.66** implies a return to profitability. If the company confirms or raises that trajectory on the call, the stock has a fundamental reason to push toward the **$19.42** target. The gap between the trailing loss of **-$1.01** and the forward estimate of **+$0.66** is where the earnings surprise potential lives.
+
+Options activity is minimal. On **August 7, 2026**, call volume was **47** contracts and put volume was **3**. Call premium was **$0.02M**. Put premium was **$0.00M**. There is no meaningful options flow to read. That is consistent with a small-cap name where the options market is illiquid. You cannot derive a positioning signal from **47** call contracts. The catalyst is earnings, and the flow tells you nothing either way.
+
+## Risk Factors
+
+Liquidity is the primary risk. The desk flags **$7.7M** a day in turnover. At that level, exits are slow. A single bad day in the broad market can gap the stock through your stop before you get filled. You handle this by using limit orders on exits and accepting that the stop at **$11.58** is a reference level, not a guaranteed fill.
+
+The stop at **$11.58** is **19.1%** below entry. That is a wide stop in dollar terms. On a thin stock with a **1.51** beta, a **19%** drawdown from entry can happen in a few sessions if the broad market sells off. You need to be comfortable with that dollar risk before you put the position on. If **$11.58** breaks on a weekly close, the structural uptrend is broken and you exit. That is your invalidation level.
+
+The net loss on the trailing twelve months is a fundamental risk. If the forward EPS estimate of **$0.66** does not materialize, the stock is expensive at **24.8** times forward earnings on a company that just lost money. The analyst count is only **3**, so estimate revisions from a single analyst can move the consensus. The earnings catalyst on **September 7, 2026** cuts both ways. A miss sends the stock toward the stop. A beat sends it toward the target. You are taking event risk with **27** days of exposure before that print.
+
+Beta at **1.51** means the stock amplifies market moves. In a sector correction, MEI falls harder and faster than the broad market. You size this position small enough that a gap through the stop does not damage the book.
+
+## Bringing It All Together
+
+- Dual focus: MEI supplies both automotive electrification and data-center infrastructure, giving it two secular demand legs. Revenue growth of **15.9%** confirms the end-market pull.
+- Technical structure: the stock is **15.7%** off its **52**-week high, above a **30**-week average rising **33.6%**, with RSI at **55.8**. That is a clean pullback in a confirmed uptrend.
+The balance sheet carries **0.52** debt to equity with a **2.37** current ratio.
+- Catalyst: earnings on **September 7, 2026** (**27** days out) with a return-to-profitability setup. The analyst mean target of **$19.33** aligns with the swing-high target of **$19.42**.
+- Levels: entry **$14.32**, stop **$11.58**, target **$19.42**, second target **$20.48**. Risk/reward is **1.9** with **35.6%** upside to the first target.
+- Sector tailwind: Technology is in a momentum state and still accelerating. MEI outperformed SPY by **65.2%** over three months. The trend does the work.
+
+## Conclusion
+
+MEI is the cleanest pullback structure in the small-cap tech group. The desk&#x27;s top signal is at full strength. The fundamentals show a company growing revenue **15.9%**, generating **$56.2M** in free cash flow, and trading below book value. The earnings catalyst in **27** days gives you a defined window for the next move. You wait for **$14.32** to enter, you risk down to **$11.58**, and you target **$19.42**. The liquidity is thin and the stop is wide, so you keep the position small. Conviction is MEDIUM. The setup is real.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

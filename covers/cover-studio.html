@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cover Studio — The Philosopher Investor</title>
+<style>
+  :root{ --bg:#F3EEDD; --card:#FBF7E0; --border:#C8B878; --text:#241F12;
+    --muted:#6B5C2A; --accent:#5C4F1A; --gold:#8A6E2A; --red:#B0392B; --cream:250,246,232; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:'Iowan Old Style','Georgia',serif;text-align:center}
+  header{background:var(--accent);color:#fff;padding:10px 20px;border-bottom:2px solid var(--gold)}
+  header h1{margin:0;font-size:15px;font-weight:600;letter-spacing:.3px}
+  .strip{display:flex;gap:8px;overflow-x:auto;padding:12px 16px;background:var(--card);
+    border-bottom:1px solid var(--border);justify-content:center;flex-wrap:wrap}
+  .sw{width:58px;height:32px;border-radius:4px;border:2px solid transparent;cursor:pointer;
+    background-size:cover;background-position:center;flex:0 0 auto;filter:grayscale(.15)}
+  .sw.on{border-color:var(--red)}
+  .stage{padding:26px 16px 8px}
+
+  /* container-type:size lets the text scale in cqh (1cqh = 1% of card height),
+     so it tracks every aspect-ratio change without any JS sizing. */
+  .card{position:relative;display:inline-block;width:820px;max-width:95vw;aspect-ratio:2/1;
+    container-type:size;background:#EDE7D6;background-size:cover;background-position:center;
+    overflow:hidden;box-shadow:0 12px 36px rgba(0,0,0,.26);text-align:left;vertical-align:top}
+
+  .scrim{position:absolute;left:0;right:0;bottom:0;height:62%;pointer-events:none;
+    background:linear-gradient(to bottom,rgba(var(--cream),0) 0%,rgba(var(--cream),.72) 48%,rgba(var(--cream),.94) 100%)}
+  .panel{display:none}
+  .band{display:none}
+  .rule{position:absolute;top:8%;bottom:8%;left:6.5%;width:3px;background:var(--red)}
+  .layer{position:absolute;inset:0;padding:7% 7.5%;display:flex;flex-direction:column;justify-content:flex-end}
+
+  .kicker{font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);
+    margin-bottom:.7em;font-size:2.4cqh}
+  .num{display:none;font-weight:800;color:var(--red);line-height:1;font-size:22cqh;margin-bottom:.12em}
+  .title{font-weight:700;color:var(--text);line-height:1.06;margin:0;font-size:8.2cqh}
+  .sub{font-style:italic;color:var(--muted);margin-top:.5em;font-size:3cqh}
+
+  /* ── Centered ────────────────────────────────────────────── */
+  .preset-centered .scrim{top:0;height:100%;
+    background:linear-gradient(to bottom,rgba(var(--cream),0) 0%,rgba(var(--cream),.58) 35%,
+      rgba(var(--cream),.80) 50%,rgba(var(--cream),.58) 65%,rgba(var(--cream),0) 100%)}
+  .preset-centered .rule{display:none}
+  .preset-centered .layer{justify-content:center;align-items:center;text-align:center;padding:7% 8%}
+  .preset-centered .title{font-size:9.5cqh}
+  .preset-centered .kicker{font-size:2.6cqh}
+  .preset-centered .sub{font-size:3.2cqh}
+
+  /* ── Big Number ──────────────────────────────────────────── */
+  .preset-bignumber .rule{display:none}
+  .preset-bignumber .num{display:block}
+  .preset-bignumber .title{font-size:4.5cqh}
+  .preset-bignumber .kicker{font-size:2.6cqh}
+
+  /* ── Quote ───────────────────────────────────────────────── */
+  .preset-quote .kicker{display:none}
+  .preset-quote .rule{display:none}
+  .preset-quote .layer::before{content:'\201C';position:absolute;left:5.5%;top:6%;
+    font-size:20cqh;color:var(--gold);opacity:.45;line-height:1;font-family:Georgia,serif}
+  .preset-quote .title{font-size:6.5cqh;font-style:italic;font-weight:600}
+  .preset-quote .sub{font-style:normal;color:var(--gold);font-weight:700;letter-spacing:1px}
+
+  /* ── Minimal ─────────────────────────────────────────────── */
+  .preset-minimal .scrim{display:none}
+  .preset-minimal .rule{display:none}
+  .preset-minimal .kicker,.preset-minimal .sub{display:none}
+  .preset-minimal .title{font-size:8.5cqh;text-shadow:0 2px 14px rgba(255,255,255,.65)}
+
+  /* ── Split (image left, cream panel right) ───────────────── */
+  .preset-split .scrim{display:none}
+  .preset-split .panel{display:block;position:absolute;top:0;right:0;width:44%;height:100%;
+    background:rgba(var(--cream),.97);box-shadow:-14px 0 34px rgba(0,0,0,.14)}
+  .preset-split .rule{left:56%;top:0;bottom:0}
+  .preset-split .layer{left:56%;right:0;padding:7% 4%;justify-content:center}
+  .preset-split .title{font-size:6.2cqh}
+  .preset-split .kicker{font-size:2.2cqh}
+  .preset-split .sub{font-size:2.8cqh}
+
+  /* ── Band (solid bottom bar) ─────────────────────────────── */
+  .preset-band .scrim,.preset-band .rule{display:none}
+  .preset-band .band{display:block;position:absolute;left:0;right:0;bottom:0;height:38%;
+    background:rgba(var(--cream),.96);border-top:3px solid var(--gold)}
+  .preset-band .layer{padding:6% 7.5%}
+  .preset-band .title{font-size:7cqh}
+
+  /* ── Tag (filled badge) ──────────────────────────────────── */
+  .preset-tag .rule{display:none}
+  .preset-tag .kicker{display:inline-block;align-self:flex-start;background:var(--red);color:#fff;
+    padding:.45em .85em;border-radius:3px;letter-spacing:1.5px;margin-bottom:.7em}
+  .preset-tag .title{font-size:7.2cqh}
+
+  /* ── Boxed (framed card on image) ────────────────────────── */
+  .preset-boxed .scrim,.preset-boxed .rule{display:none}
+  .preset-boxed .layer{inset:auto;left:6%;bottom:8%;max-width:62%;
+    background:rgba(var(--cream),.92);border:2px solid var(--gold);padding:3% 3.5%}
+  .preset-boxed .title{font-size:6cqh}
+
+  /* ── Poster (oversized caps, centered) ───────────────────── */
+  .preset-poster .rule{display:none}
+  .preset-poster .scrim{top:0;height:100%;
+    background:linear-gradient(to bottom,rgba(var(--cream),.18) 0%,rgba(var(--cream),.5) 55%,rgba(var(--cream),.92) 100%)}
+  .preset-poster .kicker{display:none}
+  .preset-poster .layer{align-items:center;text-align:center;padding:7% 7%}
+  .preset-poster .title{font-size:10cqh;text-transform:uppercase;letter-spacing:1px;line-height:1.02}
+  .preset-poster .sub{text-align:center}
+
+  /* ── Masthead (top brand bar) ────────────────────────────── */
+  .preset-masthead .rule{display:none}
+  .preset-masthead .kicker{position:absolute;top:0;left:0;right:0;margin:0;background:var(--accent);
+    color:#fff;text-align:center;padding:1.6% 0;letter-spacing:3px;font-size:2.4cqh}
+  .preset-masthead .layer{padding:7% 7.5%}
+  .preset-masthead .title{font-size:7.6cqh}
+
+  /* ── Sidebar (vertical brand strip) ──────────────────────── */
+  .preset-sidebar .rule{display:none}
+  .preset-sidebar .kicker{position:absolute;left:0;top:0;bottom:0;width:8%;margin:0;
+    background:var(--accent);color:#fff;writing-mode:vertical-rl;transform:rotate(180deg);
+    display:flex;align-items:center;justify-content:center;letter-spacing:3px;font-size:2.2cqh}
+  .preset-sidebar .layer{left:8%;padding:7% 6%}
+  .preset-sidebar .title{font-size:7cqh}
+
+  /* ── Headline (hairline rules above + below) ─────────────── */
+  .preset-headline .rule{display:none}
+  .preset-headline .scrim{top:0;height:100%;
+    background:linear-gradient(to bottom,rgba(var(--cream),0) 0%,rgba(var(--cream),.58) 35%,
+      rgba(var(--cream),.80) 50%,rgba(var(--cream),.58) 65%,rgba(var(--cream),0) 100%)}
+  .preset-headline .layer{justify-content:center;align-items:center;text-align:center;padding:7% 9%}
+  .preset-headline .kicker{font-size:2.4cqh}
+  .preset-headline .title{border-top:2px solid var(--gold);border-bottom:2px solid var(--gold);
+    padding:.35em .25em;font-size:6.8cqh}
+  .preset-headline .sub{text-align:center}
+
+  /* ── Frame (thin gold border) ────────────────────────────── */
+  .preset-frame .rule{display:none}
+  .preset-frame .band{display:block;position:absolute;inset:4%;border:2px solid var(--gold);pointer-events:none}
+  .preset-frame .layer{padding:9% 8.5%}
+
+  [contenteditable]{outline:none;cursor:text}
+  [contenteditable]:hover{box-shadow:0 0 0 2px rgba(176,57,43,.22);border-radius:2px}
+  [contenteditable]:focus{box-shadow:0 0 0 2px rgba(176,57,43,.55);border-radius:2px}
+
+  .bar{padding:4px 16px 22px}
+  .segrow{margin:8px 0}
+  .seg{display:inline-flex;flex-wrap:wrap;justify-content:center;max-width:96vw;
+    border:1px solid var(--border);border-radius:6px;overflow:hidden;vertical-align:middle}
+  .seg button{border:0;background:#fff;padding:8px 14px;cursor:pointer;font-family:inherit;font-size:13px;color:var(--text)}
+  .seg button.on{background:var(--accent);color:#fff}
+  .lbl{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-right:8px;vertical-align:middle}
+  .btn{margin-left:10px;padding:9px 20px;border:0;border-radius:6px;cursor:pointer;
+    font-family:inherit;font-weight:700;font-size:14px;background:var(--red);color:#fff;vertical-align:middle}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:11px}
+  canvas{display:none}
+</style>
+</head>
+<body>
+<header><h1>The Philosopher Investor — Cover Studio</h1></header>
+
+<div class="strip" id="strip"></div>
+
+<div class="stage">
+  <div class="card preset-classic" id="card">
+    <div class="scrim"></div>
+    <div class="panel"></div>
+    <div class="band"></div>
+    <div class="rule"></div>
+    <div class="layer">
+      <div class="kicker" id="kicker" contenteditable="true">THE PHILOSOPHER INVESTOR</div>
+      <div class="num"    id="num"    contenteditable="true">+9.6%</div>
+      <div class="title"  id="title"  contenteditable="true">Market Recap — May 31st 2026</div>
+      <div class="sub"    id="sub"    contenteditable="true"></div>
+    </div>
+  </div>
+</div>
+
+<div class="bar">
+  <div class="segrow">
+    <span class="lbl">Style</span>
+    <div class="seg" id="presets">
+      <button data-preset="classic" class="on">Classic</button>
+      <button data-preset="centered">Centered</button>
+      <button data-preset="bignumber">Big Number</button>
+      <button data-preset="quote">Quote</button>
+      <button data-preset="minimal">Minimal</button>
+      <button data-preset="split">Split</button>
+      <button data-preset="band">Band</button>
+      <button data-preset="tag">Tag</button>
+      <button data-preset="boxed">Boxed</button>
+      <button data-preset="poster">Poster</button>
+      <button data-preset="masthead">Masthead</button>
+      <button data-preset="sidebar">Sidebar</button>
+      <button data-preset="headline">Headline</button>
+      <button data-preset="frame">Frame</button>
+    </div>
+  </div>
+  <div class="segrow">
+    <span class="lbl">Format</span>
+    <div class="seg" id="fmt">
+      <button data-w="1200" data-h="600" class="on">Hero</button>
+      <button data-w="1200" data-h="675">16:9</button>
+      <button data-w="1080" data-h="1080">Carré</button>
+      <button data-w="1080" data-h="1350">Portrait</button>
+    </div>
+    <button class="btn" id="dl">⬇ Export PNG</button>
+  </div>
+  <div class="hint">Choisis un style, un fond, puis clique le texte pour l'éditer. « Big Number » affiche le champ chiffre, « Quote » utilise le titre comme citation et le sous-titre comme attribution.</div>
+</div>
+
+<canvas id="cv"></canvas>
+
+<!-- bg_list.js is a few hundred bytes: just the file names. Over http(s) the
+     backgrounds load as plain bg/*.jpg — same-origin, so the canvas stays clean
+     and Export PNG works. Only file:// needs bg_data.js (8.9 MB of base64), which
+     would taint-proof the canvas but blows up the tab's memory, so it is fetched
+     lazily and only there. -->
+<script src="bg/bg_list.js"></script>
+<script>
+const card=document.getElementById('card'), strip=document.getElementById('strip');
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+const elK=document.getElementById('kicker'), elN=document.getElementById('num'),
+      elT=document.getElementById('title'), elS=document.getElementById('sub');
+const bgImages={}; let bg=null; let fmt={w:1200,h:600}; let preset='classic';
+
+function applyBg(url,thumb){ bg=url; card.style.backgroundImage=`url('${url}')`;
+  document.querySelectorAll('.sw').forEach(s=>s.classList.remove('on')); if(thumb) thumb.classList.add('on'); }
+
+function loadBackgrounds(urlFor){
+  const FILES=window.BG_FILES||[];
+  if(FILES.length) applyBg(urlFor(FILES[0]));
+  FILES.forEach((name)=>{ const url=urlFor(name); if(!url) return; const im=new Image();
+    im.onload=()=>{ bgImages[url]=im; const d=document.createElement('div'); d.className='sw';
+      d.style.backgroundImage=`url('${url}')`; d.onclick=()=>applyBg(url,d); strip.appendChild(d);
+      if(url===bg) d.classList.add('on'); };
+    im.src=url; });
+}
+if(location.protocol==='file:'){
+  const s=document.createElement('script'); s.src='bg/bg_data.js';
+  s.onload=()=>loadBackgrounds(n=>(window.BG_DATA||{})[n]);
+  document.head.appendChild(s);
+} else {
+  loadBackgrounds(n=>'bg/'+n);
+}
+
+// preset = swap the .card class; background + aspect-ratio live on inline styles, untouched.
+function applyPreset(p){ preset=p; card.className='card preset-'+p;
+  document.querySelectorAll('#presets button').forEach(x=>x.classList.toggle('on',x.dataset.preset===p)); }
+document.querySelectorAll('#presets button').forEach(b=>b.onclick=()=>applyPreset(b.dataset.preset));
+
+document.querySelectorAll('#fmt button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#fmt button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  fmt={w:+b.dataset.w,h:+b.dataset.h}; card.style.aspectRatio=`${fmt.w}/${fmt.h}`; });
+
+function wrap(text,font,maxW){ ctx.font=font; const out=[];
+  (text||'').split('\n').forEach(p=>{ const ws=p.split(' '); let ln='';
+    ws.forEach(w=>{ const t=ln?ln+' '+w:w; if(ctx.measureText(t).width>maxW&&ln){out.push(ln);ln=w;} else ln=t; }); out.push(ln); });
+  return out; }
+
+// ── canvas helpers (mirror the CSS so Export PNG matches the preview) ──
+const CR='250,246,232';
+const fB=px=>`700 ${px}px "Iowan Old Style",Georgia,serif`;   // bold serif
+const fI=px=>`italic 600 ${px}px "Iowan Old Style",Georgia,serif`; // italic serif
+function drawBg(W,H){ if(bg&&bgImages[bg]){ const im=bgImages[bg],r=Math.max(W/im.width,H/im.height);
+    ctx.drawImage(im,(W-im.width*r)/2,(H-im.height*r)/2,im.width*r,im.height*r); }
+  else { ctx.fillStyle='#EDE7D6'; ctx.fillRect(0,0,W,H); } }
+function bottomScrim(W,H){ const sc=ctx.createLinearGradient(0,H*0.38,0,H);
+  sc.addColorStop(0,`rgba(${CR},0)`); sc.addColorStop(.55,`rgba(${CR},.72)`); sc.addColorStop(1,`rgba(${CR},.95)`);
+  ctx.fillStyle=sc; ctx.fillRect(0,H*0.38,W,H*0.62); }
+function kickerAt(text,x,y,px){ if(!text) return; ctx.font=fB(px); ctx.fillStyle='#8A6E2A';
+  ctx.save(); ctx.letterSpacing='2.5px'; ctx.fillText(text,x,y); ctx.restore(); }
+
+function draw(){
+  const W=fmt.w,H=fmt.h; cv.width=W; cv.height=H;
+  ctx.clearRect(0,0,W,H); ctx.textBaseline='alphabetic'; ctx.textAlign='left';
+  drawBg(W,H);
+  const padX=W*0.075, padB=H*0.085;
+  const kicker=(elK.innerText||'').trim().toUpperCase();
+  const title=(elT.innerText||'').trim();
+  const sub=(elS.innerText||'').trim();
+  const num=(elN.innerText||'').trim();
+
+  if(preset==='classic'||preset==='bignumber'){
+    bottomScrim(W,H);
+    const maxW=W-padX*2;
+    const kS=H*0.024, tS=(preset==='bignumber')?H*0.045:H*0.082, sS=H*0.030, nS=H*0.22;
+    const titleLines=wrap(title,fB(tS),maxW), lh=tS*1.12;
+    const blockH=(kicker?kS*2.0:0)+(preset==='bignumber'&&num?nS*1.04:0)+titleLines.length*lh+(sub?sS*1.7:0);
+    let y=H-padB-blockH;
+    if(preset==='classic'){ ctx.fillStyle='#B0392B'; ctx.fillRect(Math.round(W*0.065),Math.round(H*0.08),3,Math.round(H*0.84)); }
+    if(kicker){ kickerAt(kicker,padX,y+kS,kS); y+=kS*2.0; }
+    if(preset==='bignumber'&&num){ ctx.font=`800 ${nS}px "Iowan Old Style",Georgia,serif`;
+      ctx.fillStyle='#B0392B'; ctx.fillText(num,padX,y+nS*0.82); y+=nS*1.04; }
+    ctx.font=fB(tS); ctx.fillStyle='#241F12';
+    titleLines.forEach(ln=>{ ctx.fillText(ln,padX,y+tS*0.85); y+=lh; });
+    if(sub){ ctx.font=fI(sS); ctx.fillStyle='#6B5C2A'; ctx.fillText(sub,padX,y+sS*0.9); }
+  }
+
+  else if(preset==='centered'){
+    const sc=ctx.createLinearGradient(0,0,0,H);
+    sc.addColorStop(0,`rgba(${CR},0)`); sc.addColorStop(.35,`rgba(${CR},.58)`);
+    sc.addColorStop(.5,`rgba(${CR},.80)`); sc.addColorStop(.65,`rgba(${CR},.58)`); sc.addColorStop(1,`rgba(${CR},0)`);
+    ctx.fillStyle=sc; ctx.fillRect(0,0,W,H);
+    const maxW=W*0.84, kS=H*0.026, tS=H*0.095, sS=H*0.032;
+    const titleLines=wrap(title,fB(tS),maxW), lh=tS*1.1;
+    const blockH=(kicker?kS*1.9:0)+titleLines.length*lh+(sub?sS*1.9:0);
+    let y=(H-blockH)/2; const cx=W/2; ctx.textAlign='center';
+    if(kicker){ ctx.font=fB(kS); ctx.fillStyle='#8A6E2A'; ctx.save(); ctx.letterSpacing='3px';
+      ctx.fillText(kicker,cx,y+kS); ctx.restore(); y+=kS*1.9; }
+    ctx.font=fB(tS); ctx.fillStyle='#241F12';
+    titleLines.forEach(ln=>{ ctx.fillText(ln,cx,y+tS*0.85); y+=lh; });
+    if(sub){ ctx.font=fI(sS); ctx.fillStyle='#6B5C2A'; ctx.fillText(sub,cx,y+sS*1.2); }
+    ctx.textAlign='left';
+  }
+
+  else if(preset==='quote'){
+    bottomScrim(W,H);
+    ctx.font=`700 ${H*0.20}px Georgia,serif`; ctx.fillStyle=`rgba(138,110,42,.45)`;
+    ctx.fillText('“',padX*0.7,H*0.40);
+    const maxW=W-padX*2, tS=H*0.065, sS=H*0.032;
+    const titleLines=wrap(title,fI(tS),maxW), lh=tS*1.2;
+    const blockH=titleLines.length*lh+(sub?sS*1.9:0);
+    let y=H-H*0.10-blockH;
+    ctx.font=fI(tS); ctx.fillStyle='#241F12';
+    titleLines.forEach(ln=>{ ctx.fillText(ln,padX,y+tS*0.85); y+=lh; });
+    if(sub){ ctx.font=fB(sS); ctx.fillStyle='#8A6E2A'; ctx.save(); ctx.letterSpacing='1px';
+      ctx.fillText(sub,padX,y+sS*1.0); ctx.restore(); }
+  }
+
+  else if(preset==='minimal'){
+    const maxW=W-padX*2, tS=H*0.085;
+    const titleLines=wrap(title,fB(tS),maxW), lh=tS*1.12;
+    let y=H-padB-titleLines.length*lh;
+    ctx.font=fB(tS); ctx.fillStyle='#241F12';
+    ctx.save(); ctx.shadowColor='rgba(255,255,255,.65)'; ctx.shadowBlur=H*0.025; ctx.shadowOffsetY=H*0.004;
+    titleLines.forEach(ln=>{ ctx.fillText(ln,padX,y+tS*0.85); y+=lh; });
+    ctx.restore();
+  }
+
+  else if(preset==='split'){
+    const panelX=W*0.56, pPad=W*0.04;
+    ctx.fillStyle=`rgba(${CR},.97)`; ctx.fillRect(panelX,0,W-panelX,H);
+    ctx.fillStyle='#B0392B'; ctx.fillRect(Math.round(panelX),0,3,H);
+    const innerX=panelX+pPad, innerW=W-panelX-pPad*2;
+    const kS=H*0.024, tS=H*0.062, sS=H*0.030;
+    const titleLines=wrap(title,fB(tS),innerW), lh=tS*1.14;
+    const blockH=(kicker?kS*1.9:0)+titleLines.length*lh+(sub?sS*1.8:0);
+    let y=(H-blockH)/2;
+    if(kicker){ kickerAt(kicker,innerX,y+kS,kS); y+=kS*1.9; }
+    ctx.font=fB(tS); ctx.fillStyle='#241F12';
+    titleLines.forEach(ln=>{ ctx.fillText(ln,innerX,y+tS*0.85); y+=lh; });
+    if(sub){ ctx.font=fI(sS); ctx.fillStyle='#6B5C2A'; ctx.fillText(sub,innerX,y+sS*1.1); }
+  }
+
+  else if(preset==='band'){
+    const bh=H*0.38, top=H-bh;
+    ctx.fillStyle=`rgba(${CR},.96)`; ctx.fillRect(0,top,W,bh);
+    ctx.fillStyle='#8A6E2A'; ctx.fillRect(0,top,W,3);
+    const maxW=W-padX*2, kS=H*0.024, tS=H*0.07, sS=H*0.030;
+    const titleLines=wrap(title,fB(tS),maxW), lh=tS*1.12;
+    const blockH=(kicker?kS*2.0:0)+titleLines.length*lh+(sub?sS*1.7:0);
+    let y=H-H*0.06-blockH;
+    if(kicker){ kickerAt(kicker,padX,y+kS,kS); y+=kS*2.0; }
+    ctx.font=fB(tS); ctx.fillStyle='#241F12';
+    titleLines.forEach(ln=>{ ctx.fillText(ln,padX,y+tS*0.85); y+=lh; });
+    if(sub){ ctx.font=fI(sS); ctx.fillStyle='#6B5C2A'; ctx.fillText(sub,padX,y+sS*0.9); }
+  }
+
+  else if(preset==='tag'){
+    bottomScrim(W,H);
+    const maxW=W-padX*2, kS=H*0.024, tS=H*0.072, sS=H*0.030;
+    const titleLines=wrap(title,fB(tS),maxW), lh=tS*1.12;
+    ctx.font=fB(kS); const kw=kicker?ctx.measureText(kicker).width:0;
+    const padP=kS*0.7, ph=kS*1.85, pw=kw+padP*2, gap=H*0.022;
+    const blockH=(kicker?ph+gap:0)+titleLines.length*lh+(sub?sS*1.7:0);
+    let y=H-padB-blockH;
+    if(kicker){ ctx.fillStyle='#B0392B'; ctx.beginPath(); ctx.roundRect(padX,y,pw,ph,4); ctx.fill();
+      ctx.font=fB(kS); ctx.fillStyle='#fff'; ctx.save(); ctx.letterSpacing='1.5px'; ctx.textBaseline='middle';
+      ctx.fillText(kicker,padX+padP,y+ph/2); ctx.restore(); ctx.textBaseline='alphabetic'; y+=ph+gap; }
+    ctx.font=fB(tS); ctx.fillStyle='#241F12';
+    titleLines.forEach(ln=>{ ctx.fillText(ln,padX,y+tS*0.85); y+=lh; });
+    if(sub){ ctx.font=fI(sS); ctx.fillStyle='#6B5C2A'; ctx.fillText(sub,padX,y+sS*0.9); }
+  }
+
+  else if(preset==='boxed'){
+    const kS=H*0.024, tS=H*0.06, sS=H*0.028, innerMax=W*0.52;
+    const titleLines=wrap(title,fB(tS),innerMax), lh=tS*1.14;
+    let tw=0;
+    ctx.font=fB(kS); if(kicker) tw=Math.max(tw,ctx.measureText(kicker).width);
+    ctx.font=fB(tS); titleLines.forEach(l=>tw=Math.max(tw,ctx.measureText(l).width));
+    ctx.font=fI(sS); if(sub) tw=Math.max(tw,ctx.measureText(sub).width);
+    const padBox=H*0.04;
+    const textH=(kicker?kS*1.9:0)+titleLines.length*lh+(sub?sS*1.7:0);
+    const boxW=Math.min(tw+padBox*2,W*0.66), boxH=textH+padBox*2;
+    const boxX=W*0.06, boxY=H-H*0.08-boxH;
+    ctx.fillStyle=`rgba(${CR},.92)`; ctx.fillRect(boxX,boxY,boxW,boxH);
+    ctx.strokeStyle='#8A6E2A'; ctx.lineWidth=2; ctx.strokeRect(boxX+1,boxY+1,boxW-2,boxH-2);
+    let x=boxX+padBox, y=boxY+padBox;
+    if(kicker){ kickerAt(kicker,x,y+kS,kS); y+=kS*1.9; }
+    ctx.font=fB(tS); ctx.fillStyle='#241F12';
+    titleLines.forEach(ln=>{ ctx.fillText(ln,x,y+tS*0.82); y+=lh; });
+    if(sub){ ctx.font=fI(sS); ctx.fillStyle='#6B5C2A'; ctx.fillText(sub,x,y+sS*0.9); }
+  }
+
+  else if(preset==='poster'){
+    const sc=ctx.createLinearGradient(0,0,0,H);
+    sc.addColorStop(0,`rgba(${CR},.18)`); sc.addColorStop(.55,`rgba(${CR},.5)`); sc.addColorStop(1,`rgba(${CR},.92)`);
+    ctx.fillStyle=sc; ctx.fillRect(0,0,W,H);
+    const maxW=W*0.86, tS=H*0.10, sS=H*0.032;
+    const titleLines=wrap(title.toUpperCase(),fB(tS),maxW), lh=tS*1.02;
+    const blockH=titleLines.length*lh+(sub?sS*1.9:0);
+    let y=H-padB-blockH; const cx=W/2; ctx.textAlign='center';
+    ctx.font=fB(tS); ctx.fillStyle='#241F12'; ctx.save(); ctx.letterSpacing='1px';
+    titleLines.forEach(ln=>{ ctx.fillText(ln,cx,y+tS*0.82); y+=lh; });
+    ctx.restore();
+    if(sub){ ctx.font=fI(sS); ctx.fillStyle='#6B5C2A'; ctx.fillText(sub,cx,y+sS*1.1); }
+    ctx.textAlign='left';
+  }
+
+  else if(preset==='masthead'){
+    bottomScrim(W,H);
+    const mbH=H*0.10; ctx.fillStyle='#5C4F1A'; ctx.fillRect(0,0,W,mbH);
+    if(kicker){ ctx.fillStyle='#fff'; ctx.font=fB(H*0.026); ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.save(); ctx.letterSpacing='3px'; ctx.fillText(kicker,W/2,mbH/2); ctx.restore();
+      ctx.textAlign='left'; ctx.textBaseline='alphabetic'; }
+    const maxW=W-padX*2, tS=H*0.078, sS=H*0.030;
+    const titleLines=wrap(title,fB(tS),maxW), lh=tS*1.12;
+    const blockH=titleLines.length*lh+(sub?sS*1.7:0);
+    let y=H-padB-blockH;
+    ctx.font=fB(tS); ctx.fillStyle='#241F12';
+    titleLines.forEach(ln=>{ ctx.fillText(ln,padX,y+tS*0.85); y+=lh; });
+    if(sub){ ctx.font=fI(sS); ctx.fillStyle='#6B5C2A'; ctx.fillText(sub,padX,y+sS*0.9); }
+  }
+
+  else if(preset==='sidebar'){
+    bottomScrim(W,H);
+    const sw=W*0.08; ctx.fillStyle='#5C4F1A'; ctx.fillRect(0,0,sw,H);
+    if(kicker){ ctx.save(); ctx.translate(sw/2,H/2); ctx.rotate(-Math.PI/2);
+      ctx.fillStyle='#fff'; ctx.font=fB(H*0.024); ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.save(); ctx.letterSpacing='3px'; ctx.fillText(kicker,0,0); ctx.restore(); ctx.restore();
+      ctx.textAlign='left'; ctx.textBaseline='alphabetic'; }
+    const sx=sw+W*0.04, maxW=W-sx-W*0.06, tS=H*0.072, sS=H*0.030;
+    const titleLines=wrap(title,fB(tS),maxW), lh=tS*1.12;
+    const blockH=titleLines.length*lh+(sub?sS*1.7:0);
+    let y=H-padB-blockH;
+    ctx.font=fB(tS); ctx.fillStyle='#241F12';
+    titleLines.forEach(ln=>{ ctx.fillText(ln,sx,y+tS*0.85); y+=lh; });
+    if(sub){ ctx.font=fI(sS); ctx.fillStyle='#6B5C2A'; ctx.fillText(sub,sx,y+sS*0.9); }
+  }
+
+  else if(preset==='headline'){
+    const sc=ctx.createLinearGradient(0,0,0,H);
+    sc.addColorStop(0,`rgba(${CR},0)`); sc.addColorStop(.35,`rgba(${CR},.58)`);
+    sc.addColorStop(.5,`rgba(${CR},.80)`); sc.addColorStop(.65,`rgba(${CR},.58)`); sc.addColorStop(1,`rgba(${CR},0)`);
+    ctx.fillStyle=sc; ctx.fillRect(0,0,W,H);
+    const maxW=W*0.82, kS=H*0.024, tS=H*0.068, sS=H*0.030, rpad=H*0.03;
+    const titleLines=wrap(title,fB(tS),maxW), lh=tS*1.1;
+    let tw=0; ctx.font=fB(tS); titleLines.forEach(l=>tw=Math.max(tw,ctx.measureText(l).width));
+    const ruleW=Math.min(tw+H*0.08,W*0.86);
+    const titleH=titleLines.length*lh;
+    const blockH=(kicker?kS*1.8:0)+rpad+2+titleH+rpad+2+(sub?sS*1.9:0);
+    let y=(H-blockH)/2; const cx=W/2; ctx.textAlign='center';
+    if(kicker){ ctx.font=fB(kS); ctx.fillStyle='#8A6E2A'; ctx.save(); ctx.letterSpacing='2.5px';
+      ctx.fillText(kicker,cx,y+kS); ctx.restore(); y+=kS*1.8; }
+    ctx.fillStyle='#8A6E2A'; ctx.fillRect(cx-ruleW/2,y,ruleW,2); y+=2+rpad;
+    ctx.font=fB(tS); ctx.fillStyle='#241F12';
+    titleLines.forEach(ln=>{ ctx.fillText(ln,cx,y+tS*0.82); y+=lh; });
+    y+=rpad; ctx.fillStyle='#8A6E2A'; ctx.fillRect(cx-ruleW/2,y,ruleW,2); y+=2;
+    if(sub){ ctx.font=fI(sS); ctx.fillStyle='#6B5C2A'; ctx.fillText(sub,cx,y+sS*1.4); }
+    ctx.textAlign='left';
+  }
+
+  else if(preset==='frame'){
+    bottomScrim(W,H);
+    ctx.strokeStyle='#8A6E2A'; ctx.lineWidth=2; ctx.strokeRect(W*0.04,H*0.04,W*0.92,H*0.92);
+    const px=W*0.085, pb=H*0.10, maxW=W-px*2, kS=H*0.024, tS=H*0.072, sS=H*0.030;
+    const titleLines=wrap(title,fB(tS),maxW), lh=tS*1.12;
+    const blockH=(kicker?kS*2.0:0)+titleLines.length*lh+(sub?sS*1.7:0);
+    let y=H-pb-blockH;
+    if(kicker){ kickerAt(kicker,px,y+kS,kS); y+=kS*2.0; }
+    ctx.font=fB(tS); ctx.fillStyle='#241F12';
+    titleLines.forEach(ln=>{ ctx.fillText(ln,px,y+tS*0.85); y+=lh; });
+    if(sub){ ctx.font=fI(sS); ctx.fillStyle='#6B5C2A'; ctx.fillText(sub,px,y+sS*0.9); }
+  }
+}
+
+document.getElementById('dl').onclick=()=>{ draw(); cv.toBlob(b=>{ const a=document.createElement('a');
+  const safe=((elT.innerText||'cover').trim().replace(/[^a-z0-9]+/gi,'-').toLowerCase().slice(0,40))||'cover';
+  a.href=URL.createObjectURL(b); a.download=`cover-${preset}-${safe}.png`; a.click(); },'image/png'); };
+</script>
+</body>
+</html>

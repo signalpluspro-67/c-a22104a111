@@ -1,0 +1,229 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Convexity Play on KKR — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Convexity Play on KKR</h1>
+<div class="subtitle">A lottery-ticket call on a private equity giant trading 28% off its highs, with earnings growth doing the heavy lifting.</div>
+<div class="meta">EOD 2026-08-11 · KKR · written from the desk · model glm-5.2</div>
+<div class="chips"><span class="chip">KKR</span>
+<span class="chip">Financial Services</span>
+<span class="chip lo">LOW conviction</span></div>
+<div class="track">Tracking since 2026-08-11: entry <b>$110.97</b> &rarr; <b>$114.01</b> (as of 2026-08-14) · <span class="pos">+2.7%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Financial services is in a strange spot. The broad market keeps grinding higher, but asset managers and alternative investment firms have spent <strong>2026</strong> in a pullback. KKR sits squarely in that drawdown, and the setup is starting to get interesting for a very specific kind of trade.</p>
+<p>Private equity as a business model rewards rising markets and cheap credit. Both of those tailwinds are still intact. What has changed is sentiment. The mega-cap alternative managers ran too far, too fast, and the pullback you are seeing now is a valuation reset, equal to a sign of structural trouble.</p>
+<p>That distinction matters. A firm growing earnings at <strong>40%</strong> with a forward P/E of <strong>13.9</strong> is not broken. It is out of favor. And out-of-favor names with real earnings power are exactly where option convexity gets cheap relative to what you are buying.</p>
+<h2>Introducing KKR</h2>
+<p>KKR is one of the largest alternative investment managers in the world. You know the name. The firm runs private equity funds, real estate vehicles, credit strategies, and infrastructure investments across every major geography.</p>
+<p>The business has three engines. Private equity is the legacy franchise, deploying capital into buyouts, growth equity, and special situations across mid-market and large-cap deals. The credit platform has become a massive earnings driver, covering everything from mezzanine debt to distressed and special situations. Real assets, including real estate and infrastructure, round out the portfolio with long-duration cash flows.</p>
+<p>What separates KKR from a traditional asset manager is the carried interest model. When funds perform, KKR collects performance fees that dwarf standard management fees. That creates lumpy but explosive earnings power. In a good year, the upside is asymmetric. In a bad year, the floor is the management fee income, which is still substantial given the firm&#x27;s scale.</p>
+<h2>The Thesis</h2>
+<p>This is a lottery ticket. The desk tagged KKR as the only convexity candidate in the pool, and the conviction is LOW. You are buying a <strong>120.0</strong> strike call expiring <strong>2026-09-18</strong> on a stock trading at <strong>110.97</strong>. Implied volatility rank sits at <strong>44</strong>, which means you are paying a middling price for the option. Not cheap, expensive.</p>
+<p>The math is simple. You need KKR to move from <strong>110.97</strong> to above <strong>120.0</strong> by expiration. The stock is already showing momentum with an RSI of <strong>73.4</strong>, so the short-term trend is your friend here. But RSI at that level also means the easy money has been made.</p>
+<p>The reason you take this trade is the earnings trajectory. Forward EPS of <strong>7.39</strong> against trailing EPS of <strong>3.13</strong> implies the market is underpricing how much the earnings picture improves over the next year. A <strong>40%</strong> earnings growth rate with a forward P/E of <strong>13.9</strong> is a mismatch. If the next earnings print confirms that trajectory, the stock could re-rate quickly. Your call captures that move.</p>
+<p>Size this so a complete loss changes nothing. The desk is explicit: expiring worthless is the base case. You are paying for the possibility of a sharp repricing, equal to the probability of it. Token size, full conviction on the asymmetry, zero expectation on the outcome.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-08-11-KKR.png" alt="KKR weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=KKR&interval=1W" target="_blank" rel="noopener">📈 Open the KKR weekly chart on TradingView ↗</a><figcaption>KKR weekly candlestick · add the 8-week and 21-week EMAs.</figcaption></figure>
+<p>The chart tells a story of a stock in recovery mode, with momentum building but still far from clean. KKR closed at <strong>110.97</strong>, which puts it at <strong>72.3%</strong> of its <strong>52-week</strong> high of <strong>153.5</strong>. The <strong>52-week</strong> low is <strong>82.67</strong>, so the stock sits <strong>40%</strong> of the way through its yearly range. That is a stock that has bounced hard off the lows but still has <strong>28%</strong> of upside before it revisits its highs.</p>
+<p>RSI at <strong>73.4</strong> is the headline technical signal. That is in the top end of its range and approaching overbought territory. The stock has been running, and short-term momentum is strong. The risk is that you are buying into a momentum extension rather than a breakout.</p>
+<p>The <strong>52-week</strong> high at <strong>153.5</strong> is the ultimate target. The <strong>52-week</strong> low at <strong>82.67</strong> is the invalidation level for the broader thesis. For the option trade, the relevant level is the <strong>120.0</strong> strike. You need a close above that to have intrinsic value at expiration. Below <strong>110.97</strong>, the premium erodes fast. Watch for volume expansion on up days to confirm the momentum is real. If volume dries up while RSI stays elevated, the move is exhausting.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$95.04B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$152.84B</td></tr><tr><td class="k">52-week range</td><td class="v">$82.67 - $153.50</td></tr><tr><td class="k">Dividend yield</td><td class="v">0.76%</td></tr><tr><td class="k">Beta</td><td class="v">1.79</td></tr><tr><td class="k">Trailing P/E</td><td class="v">32.9</td></tr><tr><td class="k">Forward P/E</td><td class="v">13.9</td></tr><tr><td class="k">Price / sales</td><td class="v">3.7</td></tr><tr><td class="k">Price / book</td><td class="v">3.3</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$25.83B  (+7.8% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$28.95</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$2.99B</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">3.13 / 7.39</td></tr><tr><td class="k">Gross margin</td><td class="v">54.8%</td></tr><tr><td class="k">Operating margin</td><td class="v">20.6%</td></tr><tr><td class="k">Profit margin</td><td class="v">12.2%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$2.77</td></tr><tr><td class="k">Total cash / share</td><td class="v">$52.98</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.7</td></tr><tr><td class="k">Current ratio</td><td class="v">0.86</td></tr><tr><td class="k">Return on equity</td><td class="v">7.3%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">buy - mean target $126.53 (20 analysts)</td></tr></tbody></table>
+<p>The fundamentals are the strongest part of this setup. Earnings grew <strong>40%</strong> to <strong>$3.13</strong> per share. That earnings growth rate is the number that matters. It tells you the carried interest machine is working, and the forward EPS of <strong>7.39</strong> says the market expects it to keep working.</p>
+<p>The valuation reflects the dislocation. Trailing P/E of <strong>32.9</strong> looks expensive until you see the forward P/E of <strong>13.9</strong>. That compression happens because earnings are growing faster than the stock price. Price-to-book is <strong>3.3</strong> with book value per share at <strong>31.43</strong>. Price-to-sales is <strong>3.7</strong>. For an alternative asset manager, these are reasonable levels. The analyst consensus is a buy with a mean target of <strong>126.53</strong> across <strong>20</strong> analysts, implying <strong>+14%</strong> upside from here.</p>
+<p>The balance sheet has a weak spot you need to see clearly. The current ratio is <strong>0.86</strong> and the quick ratio is <strong>0.82</strong>, both below <strong>1.0</strong>. That is typical for an alternative asset manager because fund-level debt sits on the balance sheet, but it means the firm is carrying significant leverage. Return on equity is <strong>7.3%</strong> and return on assets is <strong>1.4%</strong>, which are low for the sector. The cash position is strong at <strong>$52.98</strong> per share. The balance sheet is workable, a picture of strength.</p>
+<h2>Why Now</h2>
+<p>The timing is driven by earnings. The next earnings epoch is <strong>1793881800</strong>, which converts to late October <strong>2026</strong>. Your option expires <strong>2026-09-18</strong>, so it does not capture the earnings print directly. That is a problem. You are betting the pre-earnings drift and the momentum carry push the stock above <strong>120.0</strong> before expiration, without the catalyst of the actual report.</p>
+<p>That makes this a pure momentum and re-rating trade. The <strong>40%</strong> earnings growth is the fundamental tailwind. The RSI at <strong>73.4</strong> is the technical tailwind. The forward P/E of <strong>13.9</strong> against trailing P/E of <strong>32.9</strong> is the valuation tailwind. All three push in the same direction. What you lack is a hard catalyst within the option&#x27;s lifespan.</p>
+<p>The macro backdrop is supportive. Financial services is in a regime where credit is available, markets are liquid, and deal activity is recovering. KKR&#x27;s business model thrives in that environment. If deal flow accelerates into the fall, the stock could get a bid before earnings even arrive. That is the scenario your call is betting on.</p>
+<h2>Risk Factors</h2>
+<p>The base case is that your option expires worthless. The desk is explicit about this. You have no proven edge and no historical study on this setup. That is a tight window with no hard catalyst inside it.</p>
+<p>The balance sheet is the fundamental risk. If credit markets tighten or deal flow slows, the earnings growth rate of <strong>40%</strong> decelerates fast. Carried interest is not recurring revenue. It comes in waves, and the wave can stop.</p>
+<p>RSI at <strong>73.4</strong> is the technical risk. You are buying momentum at a point where the move is already extended. A pullback to the <strong>100</strong> level would put your call deep underwater with time decay accelerating. The beta of <strong>1.79</strong> means the stock moves nearly twice as much as the market. A broad market drawdown of <strong>5%</strong> could translate to a <strong>9%</strong> decline in KKR, pushing it below your breakeven.</p>
+<p>The invalidation is straightforward. If KKR closes below <strong>100</strong>, the thesis is broken. The momentum is gone, the re-rating narrative is dead, and you exit with whatever premium is left. Do not hold hoping for a miracle. The whole point of a lottery ticket is that you know it is a lottery ticket.</p>
+<h2>Bringing It All Together</h2>
+<p>- KKR is trading at <strong>72.3%</strong> of its <strong>52-week</strong> high with a forward P/E of <strong>13.9</strong> and earnings growth of <strong>40%</strong>, a classic growth-at-a-discount setup.<br>- The <strong>120.0</strong> strike call expiring <strong>2026-09-18</strong> costs a middling implied volatility rank of <strong>44</strong>, giving you convexity without an extreme premium.</p>
+<p>- Forward EPS of <strong>7.39</strong> against trailing EPS of <strong>3.13</strong> tells you the earnings trajectory is accelerating, and the market has not fully priced it in.<br>- Analyst consensus is a buy with a mean target of <strong>126.53</strong> across <strong>20</strong> analysts, implying <strong>+14%</strong> upside from the current price of <strong>110.97</strong>.<br>- The trade has no hard catalyst within the option&#x27;s lifespan, so you are relying on momentum and pre-earnings drift to carry the stock above strike.</p>
+<h2>Conclusion</h2>
+<p>This is a low-conviction lottery trade. You are buying a <strong>120.0</strong> strike call on KKR because the earnings growth is real, the valuation is compressed, and the momentum is building. The option is priced at a middling implied volatility rank of <strong>44</strong>, so you are not overpaying for the convexity. The risk is that the stock stalls below <strong>120.0</strong> and the option expires worthless, which is the base case. Size it so a full loss is irrelevant to your portfolio. If the momentum carries and the re-rating begins, the payoff is asymmetric. That is the trade.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;KKR &amp; Co. Inc. (KKR) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $95.04B; 52-week range $83-$154; Revenue $25.83B +8% YoY; Net income $2.99B; Debt-to-equity 0.7; Return on equity 7%; Dividend yield 0.8%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for KKR &amp; Co. Inc. (KKR) inside the Financial Services space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): A **120.0** strike call expiring **2026-09-18** on a stock trading at **110.97** with implied volatility rank at **44**, so you are paying a middling price for the option.. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Convexity Play on KKR
+
+*A lottery-ticket call on a private equity giant trading 28% off its highs, with earnings growth doing the heavy lifting.*
+
+## The Big Picture
+
+Financial services is in a strange spot. The broad market keeps grinding higher, but asset managers and alternative investment firms have spent **2026** in a pullback. KKR sits squarely in that drawdown, and the setup is starting to get interesting for a very specific kind of trade.
+
+Private equity as a business model rewards rising markets and cheap credit. Both of those tailwinds are still intact. What has changed is sentiment. The mega-cap alternative managers ran too far, too fast, and the pullback you are seeing now is a valuation reset, equal to a sign of structural trouble.
+
+That distinction matters. A firm growing earnings at **40%** with a forward P/E of **13.9** is not broken. It is out of favor. And out-of-favor names with real earnings power are exactly where option convexity gets cheap relative to what you are buying.
+
+## Introducing KKR
+
+KKR is one of the largest alternative investment managers in the world. You know the name. The firm runs private equity funds, real estate vehicles, credit strategies, and infrastructure investments across every major geography.
+
+The business has three engines. Private equity is the legacy franchise, deploying capital into buyouts, growth equity, and special situations across mid-market and large-cap deals. The credit platform has become a massive earnings driver, covering everything from mezzanine debt to distressed and special situations. Real assets, including real estate and infrastructure, round out the portfolio with long-duration cash flows.
+
+What separates KKR from a traditional asset manager is the carried interest model. When funds perform, KKR collects performance fees that dwarf standard management fees. That creates lumpy but explosive earnings power. In a good year, the upside is asymmetric. In a bad year, the floor is the management fee income, which is still substantial given the firm&#x27;s scale.
+
+## The Thesis
+
+This is a lottery ticket. The desk tagged KKR as the only convexity candidate in the pool, and the conviction is LOW. You are buying a **120.0** strike call expiring **2026-09-18** on a stock trading at **110.97**. Implied volatility rank sits at **44**, which means you are paying a middling price for the option. Not cheap, expensive.
+
+The math is simple. You need KKR to move from **110.97** to above **120.0** by expiration. The stock is already showing momentum with an RSI of **73.4**, so the short-term trend is your friend here. But RSI at that level also means the easy money has been made.
+
+The reason you take this trade is the earnings trajectory. Forward EPS of **7.39** against trailing EPS of **3.13** implies the market is underpricing how much the earnings picture improves over the next year. A **40%** earnings growth rate with a forward P/E of **13.9** is a mismatch. If the next earnings print confirms that trajectory, the stock could re-rate quickly. Your call captures that move.
+
+Size this so a complete loss changes nothing. The desk is explicit: expiring worthless is the base case. You are paying for the possibility of a sharp repricing, equal to the probability of it. Token size, full conviction on the asymmetry, zero expectation on the outcome.
+
+## Technical Analysis
+
+&gt; 📈 Insert the KKR weekly chart here (TradingView): KKR weekly candlestick · add the 8-week and 21-week EMAs.
+
+The chart tells a story of a stock in recovery mode, with momentum building but still far from clean. KKR closed at **110.97**, which puts it at **72.3%** of its **52-week** high of **153.5**. The **52-week** low is **82.67**, so the stock sits **40%** of the way through its yearly range. That is a stock that has bounced hard off the lows but still has **28%** of upside before it revisits its highs.
+
+RSI at **73.4** is the headline technical signal. That is in the top end of its range and approaching overbought territory. The stock has been running, and short-term momentum is strong. The risk is that you are buying into a momentum extension rather than a breakout.
+
+The **52-week** high at **153.5** is the ultimate target. The **52-week** low at **82.67** is the invalidation level for the broader thesis. For the option trade, the relevant level is the **120.0** strike. You need a close above that to have intrinsic value at expiration. Below **110.97**, the premium erodes fast. Watch for volume expansion on up days to confirm the momentum is real. If volume dries up while RSI stays elevated, the move is exhausting.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $95.04B |
+| Enterprise value | $152.84B |
+| 52-week range | $82.67 - $153.50 |
+| Dividend yield | 0.76% |
+| Beta | 1.79 |
+| Trailing P/E | 32.9 |
+| Forward P/E | 13.9 |
+| Price / sales | 3.7 |
+| Price / book | 3.3 |
+| Revenue (TTM) | $25.83B  (+7.8% YoY) |
+| Revenue / share | $28.95 |
+| Net income (TTM) | $2.99B |
+| EPS (TTM / fwd) | 3.13 / 7.39 |
+| Gross margin | 54.8% |
+| Operating margin | 20.6% |
+| Profit margin | 12.2% |
+| Operating cash flow / share | $2.77 |
+| Total cash / share | $52.98 |
+| Debt / equity | 0.7 |
+| Current ratio | 0.86 |
+| Return on equity | 7.3% |
+| Analyst consensus | buy - mean target $126.53 (20 analysts) |
+
+The fundamentals are the strongest part of this setup. Earnings grew **40%** to **$3.13** per share. That earnings growth rate is the number that matters. It tells you the carried interest machine is working, and the forward EPS of **7.39** says the market expects it to keep working.
+
+The valuation reflects the dislocation. Trailing P/E of **32.9** looks expensive until you see the forward P/E of **13.9**. That compression happens because earnings are growing faster than the stock price. Price-to-book is **3.3** with book value per share at **31.43**. Price-to-sales is **3.7**. For an alternative asset manager, these are reasonable levels. The analyst consensus is a buy with a mean target of **126.53** across **20** analysts, implying **+14%** upside from here.
+
+The balance sheet has a weak spot you need to see clearly. The current ratio is **0.86** and the quick ratio is **0.82**, both below **1.0**. That is typical for an alternative asset manager because fund-level debt sits on the balance sheet, but it means the firm is carrying significant leverage. Return on equity is **7.3%** and return on assets is **1.4%**, which are low for the sector. The cash position is strong at **$52.98** per share. The balance sheet is workable, a picture of strength.
+
+## Why Now
+
+The timing is driven by earnings. The next earnings epoch is **1793881800**, which converts to late October **2026**. Your option expires **2026-09-18**, so it does not capture the earnings print directly. That is a problem. You are betting the pre-earnings drift and the momentum carry push the stock above **120.0** before expiration, without the catalyst of the actual report.
+
+That makes this a pure momentum and re-rating trade. The **40%** earnings growth is the fundamental tailwind. The RSI at **73.4** is the technical tailwind. The forward P/E of **13.9** against trailing P/E of **32.9** is the valuation tailwind. All three push in the same direction. What you lack is a hard catalyst within the option&#x27;s lifespan.
+
+The macro backdrop is supportive. Financial services is in a regime where credit is available, markets are liquid, and deal activity is recovering. KKR&#x27;s business model thrives in that environment. If deal flow accelerates into the fall, the stock could get a bid before earnings even arrive. That is the scenario your call is betting on.
+
+## Risk Factors
+
+The base case is that your option expires worthless. The desk is explicit about this. You have no proven edge and no historical study on this setup. That is a tight window with no hard catalyst inside it.
+
+The balance sheet is the fundamental risk. If credit markets tighten or deal flow slows, the earnings growth rate of **40%** decelerates fast. Carried interest is not recurring revenue. It comes in waves, and the wave can stop.
+
+RSI at **73.4** is the technical risk. You are buying momentum at a point where the move is already extended. A pullback to the **100** level would put your call deep underwater with time decay accelerating. The beta of **1.79** means the stock moves nearly twice as much as the market. A broad market drawdown of **5%** could translate to a **9%** decline in KKR, pushing it below your breakeven.
+
+The invalidation is straightforward. If KKR closes below **100**, the thesis is broken. The momentum is gone, the re-rating narrative is dead, and you exit with whatever premium is left. Do not hold hoping for a miracle. The whole point of a lottery ticket is that you know it is a lottery ticket.
+
+## Bringing It All Together
+
+- KKR is trading at **72.3%** of its **52-week** high with a forward P/E of **13.9** and earnings growth of **40%**, a classic growth-at-a-discount setup.
+- The **120.0** strike call expiring **2026-09-18** costs a middling implied volatility rank of **44**, giving you convexity without an extreme premium.
+
+- Forward EPS of **7.39** against trailing EPS of **3.13** tells you the earnings trajectory is accelerating, and the market has not fully priced it in.
+- Analyst consensus is a buy with a mean target of **126.53** across **20** analysts, implying **+14%** upside from the current price of **110.97**.
+- The trade has no hard catalyst within the option&#x27;s lifespan, so you are relying on momentum and pre-earnings drift to carry the stock above strike.
+
+## Conclusion
+
+This is a low-conviction lottery trade. You are buying a **120.0** strike call on KKR because the earnings growth is real, the valuation is compressed, and the momentum is building. The option is priced at a middling implied volatility rank of **44**, so you are not overpaying for the convexity. The risk is that the stock stalls below **120.0** and the option expires worthless, which is the base case. Size it so a full loss is irrelevant to your portfolio. If the momentum carries and the re-rating begins, the payoff is asymmetric. That is the trade.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

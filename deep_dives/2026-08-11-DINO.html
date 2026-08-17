@@ -1,0 +1,235 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Refining at a Discount with Insider Backing — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>Refining at a Discount with Insider Backing</h1>
+<div class="subtitle">HF Sinclair trades at half the market&#x27;s multiple while the CEO buys stock and call volume surges.</div>
+<div class="meta">EOD 2026-08-11 · DINO · written from the desk · model glm-5.2</div>
+<div class="chips"><span class="chip">DINO</span>
+<span class="chip">Energy</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-08-11: entry <b>$79.27</b> &rarr; <b>$92.44</b> (as of 2026-08-14) · <span class="pos">+16.6%</span> · 🟢 CLOSED — target hit</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Energy is exhausted. The sector sits in a late-chase phase, which means most of the easy money has been made and the crowd is still arriving. You do not get a clean tailwind here. You get a setup where stock selection matters more than direction.</p>
+<p>Refining is a different animal within energy. Crack spreads, the margin between crude input and refined product output, drive the cash machine. When those spreads hold, refiners print money even as E&amp;P names get punished. The structural piece is domestic refining capacity. No new major refineries have been built in the United States in decades. Supply is constrained. Demand for gasoline, diesel, and jet fuel remains sticky.</p>
+<p>HF Sinclair sits in the Rocky Mountain and Pacific Northwest markets. Those regions face less competition from Gulf Coast refiners. Logistics bottlenecks protect regional crack spreads. This backdrop rewards a refiner with low costs, a strong balance sheet, and a stock that has already digested its run. You are buying a cash generator at a single-digit multiple in a sector everyone wants to leave.</p>
+<h2>Introducing DINO</h2>
+<p>HF Sinclair Corporation is an independent refiner headquartered in Dallas, Texas. The company operates refineries in Kansas, Oklahoma, New Mexico, Wyoming, Washington, and Utah. Its refined products serve the Southwest, Rocky Mountains, and Pacific Northwest. That geographic footprint matters. These are regions where pipeline access is limited and Gulf Coast supply cannot easily reach.</p>
+<p>The company runs five segments: Refining, Renewables, Marketing, Lubricants and Specialties, and Midstream. Refining is the cash engine. Renewables gives the company a foothold in renewable diesel. Lubricants and specialties carry higher margins than plain gasoline. Midstream provides transportation and storage services. The Sinclair brand supplies fuel to <strong>1,700</strong> branded stations and licenses the brand at approximately <strong>350</strong> additional locations. That brand carries real weight in the western United States.</p>
+<p>It is a real operator with physical assets, not a financial vehicle. The refining assets are the moat. You cannot replicate them quickly or cheaply. That is the edge.</p>
+<h2>The Thesis</h2>
+<p>The setup is a tested pullback signal with insider confirmation. The desk&#x27;s tested signal fired here with a risk-adjusted return of <strong>1.10</strong> and a statistical test that clears the bar. The CEO backed it with <strong>$1.3M</strong> of open-market buying. That is real money from the person with the most information about the company.</p>
+<p>Price sits <strong>7.5%</strong> below the <strong>52</strong>-week high of <strong>$94.22</strong>. RSI reads <strong>53.5</strong>, which is neutral. The stock is not overbought and not oversold. It is coming off a pullback into a rising trend. Call premium totaled <strong>$11.93M</strong> against <strong>$0.51M</strong> in put premium. Somebody is positioning for upside.</p>
+<p>Conviction is MEDIUM. The risk/reward of <strong>1.6</strong> is acceptable but not exceptional. The stock has <strong>16.6%</strong> upside to the primary target of <strong>$92.44</strong> and <strong>23.8%</strong> to the secondary target of <strong>$98.12</strong>. Risk to the stop at <strong>$70.89</strong> is <strong>10.6%</strong>. You size this as a moderate position, not a max-risk trade. The sector headwind caps the conviction even though the company-level setup is clean.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-08-11-DINO.png" alt="DINO weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=DINO&interval=1W" target="_blank" rel="noopener">📈 Open the DINO weekly chart on TradingView ↗</a><figcaption>DINO weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $92.44 · mark support near $70.89.</figcaption></figure>
+<p>The trend is up and the slope is steep. Price trades above the <strong>30</strong>-week moving average with a <strong>15.9%</strong> slope on that line. That is a strong uptrend. The <strong>30</strong>-week line is rising at a pace that tells you institutional demand is present.</p>
+<p>The <strong>21</strong>-day return is <strong>+4.7%</strong> and the <strong>63</strong>-day return is <strong>+17.5%</strong>. The stock has outperformed the S&amp;P by <strong>+13.3%</strong> over <strong>63</strong> days. Relative strength is real. This stock is leading the broad market during a period when the energy sector is flagged as exhausted. That divergence is the tension underneath the setup. The stock is strong while the sector is weak.</p>
+<p>Price closed at <strong>$85.55</strong>, which is <strong>90.8%</strong> of the <strong>52</strong>-week high. The stock sits in the top <strong>83.3%</strong> of its yearly range. RSI at <strong>39.3</strong> on the <strong>14</strong>-day measure shows mild cooling. The swing high is <strong>$92.44</strong> and the swing low is <strong>$64.50</strong>. ATR is <strong>$4.19</strong>, which means a typical day moves roughly <strong>5%</strong> of the stock price. You need volume to expand on breakout attempts above <strong>$90</strong> to confirm the move.</p>
+<p>Entry sits at <strong>$79.27</strong>. The stop is <strong>$70.89</strong>. The primary target is <strong>$92.44</strong>, which coincides with the swing high. The secondary target is <strong>$98.12</strong>. The call wall in the options chain sits at <strong>$90</strong>, which is the level options traders are pricing as near-term resistance. The put wall sits at <strong>$80</strong>, which marks the floor where put buyers are protecting. You want to see price hold above <strong>$80</strong> and break through <strong>$90</strong> on volume above the <strong>20</strong>-day average.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$14.66B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$15.88B</td></tr><tr><td class="k">52-week range</td><td class="v">$42.16 - $94.22</td></tr><tr><td class="k">Dividend yield</td><td class="v">2.55%</td></tr><tr><td class="k">Beta</td><td class="v">0.69</td></tr><tr><td class="k">Trailing P/E</td><td class="v">7.9</td></tr><tr><td class="k">Forward P/E</td><td class="v">9.2</td></tr><tr><td class="k">Price / sales</td><td class="v">0.5</td></tr><tr><td class="k">Price / book</td><td class="v">1.4</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$31.23B  (+53.2% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$171.27</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$1.91B</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">10.49 / 9.0</td></tr><tr><td class="k">Gross margin</td><td class="v">12.9%</td></tr><tr><td class="k">Operating margin</td><td class="v">11.7%</td></tr><tr><td class="k">Profit margin</td><td class="v">6.1%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$15.66</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$11.45</td></tr><tr><td class="k">Total cash / share</td><td class="v">$12.72</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.32</td></tr><tr><td class="k">Current ratio</td><td class="v">1.97</td></tr><tr><td class="k">Return on equity</td><td class="v">19.5%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">hold - mean target $89.33 (15 analysts)</td></tr></tbody></table>
+<p>The valuation is the headline. Trailing P/E is <strong>7.9</strong> and forward P/E is <strong>9.2</strong>. Price-to-sales is <strong>0.5</strong>. Price-to-book is <strong>1.4</strong> with book value per share at <strong>$57.85</strong>. FCF per share is <strong>$11.45</strong> against a stock price of <strong>$85.55</strong>. That is a <strong>13.4%</strong> free cash flow yield.</p>
+<p>Growth is strong. Revenue grew <strong>53.2%</strong> on a trailing basis. Earnings grew <strong>348.2%</strong>. EPS on a trailing basis is <strong>$10.49</strong>. Forward EPS is <strong>$9.00</strong>, which means the market expects some compression in refining margins. That is the honest read. The backward numbers are peak-cycle. The forward numbers assume normalization. Even on the normalized estimate, the stock trades at <strong>9.2</strong> times earnings.</p>
+<p>The balance sheet is clean. Debt-to-equity is <strong>0.32</strong>. Current ratio is <strong>1.97</strong>. Quick ratio is <strong>1.07</strong>. Cash per share is <strong>$12.72</strong>. Return on equity is <strong>19.5%</strong>. Return on assets is <strong>9.2%</strong>. The dividend yields <strong>2.55%</strong> with a payout ratio of <strong>0.19</strong>. That payout ratio gives the dividend plenty of coverage. The company returns cash to shareholders while maintaining the balance sheet.</p>
+<p>The weak spot is margin sustainability. Operating margin is <strong>11.7%</strong> and net margin is <strong>6.1%</strong>. Gross margin is <strong>12.9%</strong>. These are refining margins at a favorable point in the crack spread cycle. If spreads compress, margins compress faster. The forward EPS drop from <strong>$10.49</strong> to <strong>$9.00</strong> already prices in some of that risk. Analyst consensus is hold with <strong>15</strong> analysts covering and a mean target of <strong>$89.33</strong>. That is fine. The setup is technical and tactical, not a Wall Street upgrade story.</p>
+<h2>Why Now</h2>
+<p>No specific catalyst is flagged. The next earnings date is approaching based on the epoch timestamp in the data, but no event-driven trigger is present. You are relying on the pullback setup, the insider buy, and the options flow.</p>
+<p>The CEO spent <strong>$1.3M</strong> buying stock on the open market. That is the strongest signal in this setup. Insiders sell for many reasons. They buy for one reason: they think the stock is going up. The buy came after the pullback from the highs. The CEO is buying the dip in their own stock.</p>
+<p>The options flow confirms directional positioning. Call premium was <strong>$11.93M</strong> against <strong>$0.51M</strong> in put premium. That is <strong>23</strong> times more call premium than put premium. The call wall at <strong>$90</strong> and put wall at <strong>$80</strong> define the trading channel. You want to enter near the put wall and exit near or above the call wall.</p>
+<p>The macro tailwind is muted. Energy is in an exhausted, late-chase state. The sector can roll over. You are counting on company-specific factors to overcome sector drag. The relative strength of <strong>+13.3%</strong> over <strong>63</strong> days against the S&amp;P says that divergence is already happening.</p>
+<h2>Risk Factors</h2>
+<p>The sector is the primary risk. Energy is flagged as exhausted and in late-chase mode. When a sector rolls over, even good stocks go down with it. You can be right on the company and wrong on the sector. That is the core tension in this trade.</p>
+<p>Refining margins are cyclical. The forward EPS estimate of <strong>$9.00</strong> versus trailing EPS of <strong>$10.49</strong> tells you the market expects margin compression. If crack spreads tighten faster than expected, earnings miss and the stock reprices. The low P/E provides some cushion, but a cyclical earnings decline can make the multiple look optically cheap while the stock keeps falling.</p>
+<p>The stop is <strong>$70.89</strong>. That is <strong>10.6%</strong> below the current price of <strong>$85.55</strong>. If price breaks below <strong>$70.89</strong>, the setup is invalidated. The swing low is <strong>$64.50</strong>, which means the stop sits above the swing low. A break of <strong>$70.89</strong> likely tests <strong>$64.50</strong>. You cut at the stop. You do not hope for a bounce.</p>
+<p>Timing risk is real. With no specific catalyst, the trade relies on momentum and flow. If the call flow dries up and volume does not confirm a breakout above <strong>$90</strong>, the stock can drift sideways in the <strong>$80</strong> to <strong>$90</strong> channel. That ties up capital without generating returns. Set a time limit. If the stock has not broken <strong>$90</strong> within <strong>4</strong> to <strong>6</strong> weeks, reconsider the position.</p>
+<h2>Bringing It All Together</h2>
+<p>- The stock trades at <strong>7.9</strong> times trailing earnings with a <strong>13.4%</strong> free cash flow yield and <strong>0.32</strong> debt-to-equity. The balance sheet is strong and the cash generation is real.<br>- The CEO bought <strong>$1.3M</strong> of stock on the open market. Insiders buy when they expect the stock to rise.<br>The call wall at <strong>$90</strong> defines resistance. The put wall at <strong>$80</strong> defines support.<br>- Price is <strong>7.5%</strong> below the <strong>52</strong>-week high with RSI at <strong>53.5</strong>. The pullback is shallow and the stock is in a rising trend with a <strong>15.9%</strong> slope on the <strong>30</strong>-week average.<br>- Entry at <strong>$79.27</strong>, stop at <strong>$70.89</strong>, target at <strong>$92.44</strong>. Risk/reward is <strong>1.6</strong> with <strong>10.6%</strong> downside and <strong>16.6%</strong> upside to the primary target.<br>- The energy sector is exhausted and in late-chase mode. The stock has outperformed the S&amp;P by <strong>+13.3%</strong> over <strong>63</strong> days despite the sector headwind.</p>
+<h2>Conclusion</h2>
+<p>This is a tactical long in a sector that is rolling over. You are buying a cheap refiner with insider backing, strong cash flow, and confirmed options flow at a pullback in an uptrend. The setup is clean at the company level. The sector is the risk. Size it moderately. Honor the stop at <strong>$70.89</strong>. If the stock breaks <strong>$90</strong> on volume, the path to <strong>$98.12</strong> opens. If the sector drags it below support, you are out.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;HF Sinclair Corporation (DINO) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $14.66B; 52-week range $42-$94; Revenue $31.23B +53% YoY; Net income $1.91B; Free cash flow/share $11.45; Debt-to-equity 0.32; Return on equity 20%; Dividend yield 2.5%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for HF Sinclair Corporation (DINO) inside the Energy space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): The pullback signal here is the tested one (**tested · risk-adjusted return 1.10 · p_bonf 0.0189 · tested) and the CEO backed it with **$1.3M** of open-market buying. RSI sits at **53.5** with price **7.5%** under the high, and the chain mo. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># Refining at a Discount with Insider Backing
+
+*HF Sinclair trades at half the market&#x27;s multiple while the CEO buys stock and call volume surges.*
+
+## The Big Picture
+
+Energy is exhausted. The sector sits in a late-chase phase, which means most of the easy money has been made and the crowd is still arriving. You do not get a clean tailwind here. You get a setup where stock selection matters more than direction.
+
+Refining is a different animal within energy. Crack spreads, the margin between crude input and refined product output, drive the cash machine. When those spreads hold, refiners print money even as E&amp;P names get punished. The structural piece is domestic refining capacity. No new major refineries have been built in the United States in decades. Supply is constrained. Demand for gasoline, diesel, and jet fuel remains sticky.
+
+HF Sinclair sits in the Rocky Mountain and Pacific Northwest markets. Those regions face less competition from Gulf Coast refiners. Logistics bottlenecks protect regional crack spreads. This backdrop rewards a refiner with low costs, a strong balance sheet, and a stock that has already digested its run. You are buying a cash generator at a single-digit multiple in a sector everyone wants to leave.
+
+## Introducing DINO
+
+HF Sinclair Corporation is an independent refiner headquartered in Dallas, Texas. The company operates refineries in Kansas, Oklahoma, New Mexico, Wyoming, Washington, and Utah. Its refined products serve the Southwest, Rocky Mountains, and Pacific Northwest. That geographic footprint matters. These are regions where pipeline access is limited and Gulf Coast supply cannot easily reach.
+
+The company runs five segments: Refining, Renewables, Marketing, Lubricants and Specialties, and Midstream. Refining is the cash engine. Renewables gives the company a foothold in renewable diesel. Lubricants and specialties carry higher margins than plain gasoline. Midstream provides transportation and storage services. The Sinclair brand supplies fuel to **1,700** branded stations and licenses the brand at approximately **350** additional locations. That brand carries real weight in the western United States.
+
+It is a real operator with physical assets, not a financial vehicle. The refining assets are the moat. You cannot replicate them quickly or cheaply. That is the edge.
+
+## The Thesis
+
+The setup is a tested pullback signal with insider confirmation. The desk&#x27;s tested signal fired here with a risk-adjusted return of **1.10** and a statistical test that clears the bar. The CEO backed it with **$1.3M** of open-market buying. That is real money from the person with the most information about the company.
+
+Price sits **7.5%** below the **52**-week high of **$94.22**. RSI reads **53.5**, which is neutral. The stock is not overbought and not oversold. It is coming off a pullback into a rising trend. Call premium totaled **$11.93M** against **$0.51M** in put premium. Somebody is positioning for upside.
+
+Conviction is MEDIUM. The risk/reward of **1.6** is acceptable but not exceptional. The stock has **16.6%** upside to the primary target of **$92.44** and **23.8%** to the secondary target of **$98.12**. Risk to the stop at **$70.89** is **10.6%**. You size this as a moderate position, not a max-risk trade. The sector headwind caps the conviction even though the company-level setup is clean.
+
+## Technical Analysis
+
+&gt; 📈 Insert the DINO weekly chart here (TradingView): DINO weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $92.44 · mark support near $70.89.
+
+The trend is up and the slope is steep. Price trades above the **30**-week moving average with a **15.9%** slope on that line. That is a strong uptrend. The **30**-week line is rising at a pace that tells you institutional demand is present.
+
+The **21**-day return is **+4.7%** and the **63**-day return is **+17.5%**. The stock has outperformed the S&amp;P by **+13.3%** over **63** days. Relative strength is real. This stock is leading the broad market during a period when the energy sector is flagged as exhausted. That divergence is the tension underneath the setup. The stock is strong while the sector is weak.
+
+Price closed at **$85.55**, which is **90.8%** of the **52**-week high. The stock sits in the top **83.3%** of its yearly range. RSI at **39.3** on the **14**-day measure shows mild cooling. The swing high is **$92.44** and the swing low is **$64.50**. ATR is **$4.19**, which means a typical day moves roughly **5%** of the stock price. You need volume to expand on breakout attempts above **$90** to confirm the move.
+
+Entry sits at **$79.27**. The stop is **$70.89**. The primary target is **$92.44**, which coincides with the swing high. The secondary target is **$98.12**. The call wall in the options chain sits at **$90**, which is the level options traders are pricing as near-term resistance. The put wall sits at **$80**, which marks the floor where put buyers are protecting. You want to see price hold above **$80** and break through **$90** on volume above the **20**-day average.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $14.66B |
+| Enterprise value | $15.88B |
+| 52-week range | $42.16 - $94.22 |
+| Dividend yield | 2.55% |
+| Beta | 0.69 |
+| Trailing P/E | 7.9 |
+| Forward P/E | 9.2 |
+| Price / sales | 0.5 |
+| Price / book | 1.4 |
+| Revenue (TTM) | $31.23B  (+53.2% YoY) |
+| Revenue / share | $171.27 |
+| Net income (TTM) | $1.91B |
+| EPS (TTM / fwd) | 10.49 / 9.0 |
+| Gross margin | 12.9% |
+| Operating margin | 11.7% |
+| Profit margin | 6.1% |
+| Operating cash flow / share | $15.66 |
+| Free cash flow / share | $11.45 |
+| Total cash / share | $12.72 |
+| Debt / equity | 0.32 |
+| Current ratio | 1.97 |
+| Return on equity | 19.5% |
+| Analyst consensus | hold - mean target $89.33 (15 analysts) |
+
+The valuation is the headline. Trailing P/E is **7.9** and forward P/E is **9.2**. Price-to-sales is **0.5**. Price-to-book is **1.4** with book value per share at **$57.85**. FCF per share is **$11.45** against a stock price of **$85.55**. That is a **13.4%** free cash flow yield.
+
+Growth is strong. Revenue grew **53.2%** on a trailing basis. Earnings grew **348.2%**. EPS on a trailing basis is **$10.49**. Forward EPS is **$9.00**, which means the market expects some compression in refining margins. That is the honest read. The backward numbers are peak-cycle. The forward numbers assume normalization. Even on the normalized estimate, the stock trades at **9.2** times earnings.
+
+The balance sheet is clean. Debt-to-equity is **0.32**. Current ratio is **1.97**. Quick ratio is **1.07**. Cash per share is **$12.72**. Return on equity is **19.5%**. Return on assets is **9.2%**. The dividend yields **2.55%** with a payout ratio of **0.19**. That payout ratio gives the dividend plenty of coverage. The company returns cash to shareholders while maintaining the balance sheet.
+
+The weak spot is margin sustainability. Operating margin is **11.7%** and net margin is **6.1%**. Gross margin is **12.9%**. These are refining margins at a favorable point in the crack spread cycle. If spreads compress, margins compress faster. The forward EPS drop from **$10.49** to **$9.00** already prices in some of that risk. Analyst consensus is hold with **15** analysts covering and a mean target of **$89.33**. That is fine. The setup is technical and tactical, not a Wall Street upgrade story.
+
+## Why Now
+
+No specific catalyst is flagged. The next earnings date is approaching based on the epoch timestamp in the data, but no event-driven trigger is present. You are relying on the pullback setup, the insider buy, and the options flow.
+
+The CEO spent **$1.3M** buying stock on the open market. That is the strongest signal in this setup. Insiders sell for many reasons. They buy for one reason: they think the stock is going up. The buy came after the pullback from the highs. The CEO is buying the dip in their own stock.
+
+The options flow confirms directional positioning. Call premium was **$11.93M** against **$0.51M** in put premium. That is **23** times more call premium than put premium. The call wall at **$90** and put wall at **$80** define the trading channel. You want to enter near the put wall and exit near or above the call wall.
+
+The macro tailwind is muted. Energy is in an exhausted, late-chase state. The sector can roll over. You are counting on company-specific factors to overcome sector drag. The relative strength of **+13.3%** over **63** days against the S&amp;P says that divergence is already happening.
+
+## Risk Factors
+
+The sector is the primary risk. Energy is flagged as exhausted and in late-chase mode. When a sector rolls over, even good stocks go down with it. You can be right on the company and wrong on the sector. That is the core tension in this trade.
+
+Refining margins are cyclical. The forward EPS estimate of **$9.00** versus trailing EPS of **$10.49** tells you the market expects margin compression. If crack spreads tighten faster than expected, earnings miss and the stock reprices. The low P/E provides some cushion, but a cyclical earnings decline can make the multiple look optically cheap while the stock keeps falling.
+
+The stop is **$70.89**. That is **10.6%** below the current price of **$85.55**. If price breaks below **$70.89**, the setup is invalidated. The swing low is **$64.50**, which means the stop sits above the swing low. A break of **$70.89** likely tests **$64.50**. You cut at the stop. You do not hope for a bounce.
+
+Timing risk is real. With no specific catalyst, the trade relies on momentum and flow. If the call flow dries up and volume does not confirm a breakout above **$90**, the stock can drift sideways in the **$80** to **$90** channel. That ties up capital without generating returns. Set a time limit. If the stock has not broken **$90** within **4** to **6** weeks, reconsider the position.
+
+## Bringing It All Together
+
+- The stock trades at **7.9** times trailing earnings with a **13.4%** free cash flow yield and **0.32** debt-to-equity. The balance sheet is strong and the cash generation is real.
+- The CEO bought **$1.3M** of stock on the open market. Insiders buy when they expect the stock to rise.
+The call wall at **$90** defines resistance. The put wall at **$80** defines support.
+- Price is **7.5%** below the **52**-week high with RSI at **53.5**. The pullback is shallow and the stock is in a rising trend with a **15.9%** slope on the **30**-week average.
+- Entry at **$79.27**, stop at **$70.89**, target at **$92.44**. Risk/reward is **1.6** with **10.6%** downside and **16.6%** upside to the primary target.
+- The energy sector is exhausted and in late-chase mode. The stock has outperformed the S&amp;P by **+13.3%** over **63** days despite the sector headwind.
+
+## Conclusion
+
+This is a tactical long in a sector that is rolling over. You are buying a cheap refiner with insider backing, strong cash flow, and confirmed options flow at a pullback in an uptrend. The setup is clean at the company level. The sector is the risk. Size it moderately. Honor the stop at **$70.89**. If the stock breaks **$90** on volume, the path to **$98.12** opens. If the sector drags it below support, you are out.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

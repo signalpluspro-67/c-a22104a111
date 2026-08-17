@@ -1,0 +1,224 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A Rest Inside a Longer Advance — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>A Rest Inside a Longer Advance</h1>
+<div class="subtitle">ClearPoint Neuro is down 49% from its high, up 20% over three months, and sitting in a quiet zone between support and resistance.</div>
+<div class="meta">EOD 2026-08-12 · CLPT · written from the desk · model glm-5.2</div>
+<div class="chips"><span class="chip">CLPT</span>
+<span class="chip">Healthcare</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-08-12: entry <b>$15.18</b> &rarr; <b>$15.34</b> (as of 2026-08-14) · <span class="pos">+1.1%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>The healthcare sector is exhausted. Both the sector state and sector acceleration read as <strong>EXHAUSTED</strong>, which means most healthcare stocks have already run their near-term course. You are walking into a group where the easy money has been made and late buyers are getting punished.</p>
+<p>That exhaustion is a problem for momentum chasers. It is an opportunity for anyone willing to buy a stock that has already corrected, found a floor, and started rebuilding while the broad group catches its breath. A stock that holds its trend during sector weakness is telling you something about underlying demand.</p>
+<p>Small-cap medical device companies live and die on adoption curves. The structural tailwind for minimally invasive surgical platforms is intact. Hospitals want shorter procedure times, smaller incisions, and better outcomes. That demand does not disappear because a sector ETF needs a rest. It gets ignored by traders rotating out of healthcare, which is exactly when a patient buyer gets paid.</p>
+<p>This backdrop rewards a name that has already taken its hit, held its structure, and is rebuilding on its own schedule. You want the stock that shrugged off the sector weakness, not the one that led the rally and is now rolling over.</p>
+<h2>Introducing CLPT</h2>
+<p>ClearPoint Neuro builds platforms for minimally invasive brain surgery. It is a commercial-stage medical device company, meaning it has products on the market and revenue coming in, not a pre-revenue biotech burning cash on trials.</p>
+<p>The core product line is the ClearPoint system, which combines hardware, software, and disposables into an integrated platform for surgical planning, navigation, and monitoring. The hardware includes a head fixation frame, a computer workstation, and an in-room monitor. The disposables side includes the SmartFrame trajectory device, a hand controller, and the SmartFlow Neuro cannula. The software guides the physician through planning, alignment, navigation to the target, and live procedure monitoring.</p>
+<p>ClearPoint also offers the Prism Neuro laser therapy system for tissue ablation, and the IRRAflow system, which is an active fluid exchange platform. Beyond its own products, the company provides consulting services to pharmaceutical and medical technology partners. Those services include benchtop testing, preclinical studies, clinical trial support, and regulatory consultation. The company has collaboration agreements with Philips, UCB Biopharma, Clinical Laserthermia Systems, UCSF, and NE Scientific. That partner roster matters because it means ClearPoint is embedded in drug delivery and laser therapy workflows that larger companies are building around.</p>
+<h2>The Thesis</h2>
+<p>This is a rest inside a longer advance. ClearPoint is sitting <strong>48.7%</strong> below its 52-week high of <strong>$30.1</strong>, which sounds bad until you check the three-month return. That relative strength during an exhausted healthcare sector tells you buyers are stepping in on weakness, not chasing strength.</p>
+<p>The desk thesis is built on two signals agreeing. A moving-average cross fired, and the pullback engine rated tested risk-adjusted return at <strong>1.10</strong>. The stock holds above its 30-week average while RSI sits at a neutral <strong>52.3</strong>. That combination, a trending stock pulling back on light momentum, is the setup you want when you are buying a dip in a name that is still structurally intact.</p>
+<p>Conviction is <strong>MEDIUM</strong>. The chart is the cleanest of the small caps the desk reviewed, and the risk/reward ratio of <strong>2.4</strong> gives you a defined edge. You are risking <strong>11.7%</strong> to make <strong>28.0%</strong> to the primary target. That is a trade you take with half or two-thirds of your intended size, not a full commitment, because the liquidity constraints and the exhausted sector demand respect.</p>
+<h2>Technical Analysis</h2>
+<p><figure class="chart"><img src="img/2026-08-12-CLPT.png" alt="CLPT weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=CLPT&interval=1W" target="_blank" rel="noopener">📈 Open the CLPT weekly chart on TradingView ↗</a><figcaption>CLPT weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $19.43 · mark support near $13.40.</figcaption></figure><br>The trend is up, and the 30-week line confirms it. ClearPoint trades at <strong>$15.18</strong>, above its 30-week moving average, though the slope of that average has flattened to <strong>-0.8%</strong>. That flattening is the only yellow flag in an otherwise constructive structure. It tells you the prior momentum has paused, which is consistent with a rest, not a reversal.</p>
+<p>The 8-week and 21-week exponential moving averages define the near-term posture. RSI reads <strong>54.7</strong> on a 14-period basis and <strong>52.3</strong> on the daily, both neutral. The stock is not overbought and not oversold. It is in the middle of its range, which is where rests happen. The 21-day return is <strong>-4.9%</strong>, a mild pullback after a strong three-month run. That is the kind of giveback that shakes out weak holders without breaking the trend.</p>
+<p>Distance from the 52-week high is <strong>-48.7%</strong>, and distance from the 52-week low is <strong>75.3%</strong>. The stock sits in the bottom <strong>31.7%</strong> of its 52-week range by price position, yet it holds above the 30-week line. That is the tension worth understanding. The stock is deep enough below the high to have real room, but it has not broken down. The swing high at <strong>$19.43</strong> is your target. The swing low at <strong>$11.13</strong> is the failure level below the stop.</p>
+<p>Entry is <strong>$15.18</strong>. Stop is <strong>$13.40</strong>, which is <strong>11.7%</strong> below entry. Primary target is <strong>$19.43</strong>, which is <strong>28.0%</strong> above entry. A secondary target sits at <strong>$19.18</strong>, offering <strong>26.4%</strong> upside. The risk/reward ratio is <strong>2.4</strong>. That is thin. ATR over 14 periods is <strong>$0.89</strong>, meaning a typical day moves about <strong>6%</strong> of the stock price. You need to use limit orders and give yourself room on fills. That tells you the rest is over and the next leg is starting.</p>
+<p>That is the single most important technical number on the screen. ClearPoint is outperforming the broad market while its own sector is exhausted. That divergence is rare in small-cap healthcare, and it is the signal that separates a resting stock from a dead one. The level that flips the read is <strong>$13.40</strong>. If the stock closes below that on volume, the 30-week line is meaningless and you are holding a broken chart.</p>
+<h2>Fundamentals</h2>
+<p><table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$429M</td></tr><tr><td class="k">Enterprise value</td><td class="v">$443M</td></tr><tr><td class="k">52-week range</td><td class="v">$8.27 - $30.10</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">1.27</td></tr><tr><td class="k">Forward P/E</td><td class="v">-12.7</td></tr><tr><td class="k">Price / sales</td><td class="v">10.2</td></tr><tr><td class="k">Price / book</td><td class="v">39.9</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$42M  (+18.1% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$1.45</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$-35M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">-1.18 / -1.11</td></tr><tr><td class="k">Gross margin</td><td class="v">62.6%</td></tr><tr><td class="k">Operating margin</td><td class="v">-94.2%</td></tr><tr><td class="k">Profit margin</td><td class="v">-81.8%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$-0.99</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$-0.46</td></tr><tr><td class="k">Total cash / share</td><td class="v">$0.96</td></tr><tr><td class="k">Debt / equity</td><td class="v">5.93</td></tr><tr><td class="k">Current ratio</td><td class="v">4.75</td></tr><tr><td class="k">Return on equity</td><td class="v">-226.5%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">strong buy - mean target $25.67 (3 analysts)</td></tr></tbody></table><br>Revenue is growing and margins are improving, but ClearPoint is still losing money on every path to profitability. Revenue per share is <strong>$1.45</strong>. Gross margin is <strong>62.6%</strong>, which is healthy for a medical device company and tells you the product pricing has structure. The problem is below the gross line. Operating margin is <strong>-94.2%</strong> and profit margin is <strong>-81.8%</strong>. Forward EPS is <strong>-$1.11</strong>, a slight improvement but still deeply negative. Operating cash flow is <strong>-$30.2M</strong> and free cash flow is <strong>-$14.1M</strong>. Free cash flow per share is <strong>-$0.46</strong>.</p>
+<p>The balance sheet has a tension you need to understand. Total cash per share is <strong>$0.96</strong>, which gives the company runway but not abundance. That is high. The current ratio is <strong>4.75</strong> and the quick ratio is <strong>3.75</strong>, both strong, meaning short-term obligations are covered. Return on equity is <strong>-226.5%</strong> and return on assets is <strong>-24.4%</strong>, reflecting the reality that the company is burning capital to fund growth. You are buying a company that is investing ahead of revenue, and the risk is that the investment does not scale into profitability fast enough.</p>
+<p>Valuation is expensive on every surface metric. Price-to-sales is <strong>10.2</strong> and price-to-book is <strong>39.9</strong>. Book value per share is <strong>$0.35</strong>. The forward P/E is negative at <strong>-12.7</strong>, which is meaningless as a valuation anchor because there are no earnings to capitalize. Three analysts cover the stock with a mean target of <strong>$25.67</strong> and a consensus recommendation of <strong>strong buy</strong>. Beta is <strong>1.27</strong>, so expect the stock to move faster than the broad market in both directions. The honest read is that you are paying for a growth and adoption story, and the fundamentals will not bail you out if the chart breaks.</p>
+<h2>Why Now</h2>
+<p>The timing rests on technicals and relative strength, because there is no near-term catalyst in the facts. The pressure test is absent. The catalyst field is null. What you have is a stock that has pulled back <strong>4.9%</strong> over 21 days after gaining <strong>20.1%</strong> over 63 days, outperforming the market by <strong>15.4%</strong> in the process. That is a timing setup, not an event-driven one.</p>
+<p>Options flow is minimal but tilted bullish. On <strong>2026-08-11</strong>, daily call volume was <strong>402</strong> contracts against <strong>41</strong> puts. Call premium was <strong>$0.05M</strong> and put premium was <strong>$0.0M</strong>. That is thin flow in an illiquid option chain, so do not read it as conviction. Read it as absence of bearish positioning. Nobody is buying protection, which means nobody with option market access is hedging against an imminent collapse.</p>
+<p>The macro tailwind is structural, not cyclical. Minimally invasive surgical platforms are gaining adoption as hospitals upgrade capabilities. The healthcare sector is exhausted, which suppresses the stock near term. That suppression is your entry opportunity. When the sector regroups, the stocks that held their trends during the weakness lead the next move. ClearPoint&#x27;s relative strength of <strong>+15.4%</strong> versus the S&amp;P over 63 days says it is already positioning for that rotation.</p>
+<p>Next earnings are scheduled, with the epoch timestamp <strong>1785787200</strong> marking the date. Earnings in a company losing money are a binary risk. If revenue growth accelerates and the loss narrows, the stock catches a bid. If the loss widens or guidance disappoints, the thin float amplifies the downside. You want to be positioned before that print, not after it, and you want your stop in place.</p>
+<h2>Risk Factors</h2>
+<p>Liquidity is the primary risk. The bid-ask spread will widen when the market sells off, and a stop order at <strong>$13.40</strong> may fill below that level if volume dries up. You handle this by sizing down and using limit orders for exits, not market orders.</p>
+<p>The healthcare sector is exhausted. Both sector state and sector acceleration read <strong>EXHAUSTED</strong>. A stock can outperform its group for a while, but if the entire sector rolls over, the tide pulls everything with it. If healthcare specifically catches a bid to the downside, CLPT will not be immune.</p>
+<p>The company is losing money with no near-term path to profitability. Debt-to-equity is <strong>5.93</strong>. If revenue growth stalls at <strong>18.1%</strong> or below, the cash burn accelerates and the balance sheet becomes the story. A dilution or secondary offering at these prices would crush the stock.</p>
+<p>The single invalidation is <strong>$13.40</strong>. That is the stop level, <strong>11.7%</strong> below entry. If the stock closes below <strong>$13.40</strong> on volume, the 30-week average is no longer supporting price, the trend is broken, and you exit. Do not hold and hope. The swing low at <strong>$11.13</strong> is the next support after that, and you do not want to be the one waiting for it. Timing risk around earnings is real because there is no confirmed catalyst in the facts. You are relying on technical structure and relative strength, and either one can fail in a single session.</p>
+<h2>Bringing It All Together</h2>
+<p>- ClearPoint Neuro is a commercial-stage medical device company growing revenue <strong>18.1%</strong> with <strong>62.6%</strong> gross margins, embedded in brain surgery workflows through partnerships with Philips and UCB Biopharma.<br>That relative strength during sector weakness is the strongest signal on the board.<br>- Risk/reward is <strong>2.4</strong>, with entry at <strong>$15.18</strong>, stop at <strong>$13.40</strong>, and primary target at <strong>$19.43</strong>. You risk <strong>11.7%</strong> to make <strong>28.0%</strong>.<br>- The stock holds above its 30-week average with RSI at <strong>52.3</strong>, sitting <strong>48.7%</strong> below the 52-week high. That is a rest in a longer advance, not a broken chart.<br>- Liquidity is thin at <strong>$8.4M</strong> daily volume, the company is burning <strong>$30.2M</strong> in operating cash flow, and debt-to-equity is <strong>5.93</strong>. Size down and respect the stop.</p>
+<h2>Conclusion</h2>
+<p>You are buying a rest inside a longer advance, backed by the cleanest small-cap chart on the desk and relative strength that defies an exhausted sector. The thesis is technical, the fundamentals are a growth story with real risk, and the liquidity demands discipline. Take the trade at <strong>$15.18</strong> with a stop at <strong>$13.40</strong> and a target at <strong>$19.43</strong>. Size for the liquidity you have, not the conviction you feel. If <strong>$13.40</strong> breaks, you are done with the name.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;ClearPoint Neuro, Inc. (CLPT) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $429M; 52-week range $8-$30; Revenue $42M +18% YoY; Net income $-35M; Free cash flow/share $-0.46; Debt-to-equity 5.93; Return on equity -226%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for ClearPoint Neuro, Inc. (CLPT) inside the Healthcare space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Two coherent desk reads agree, a moving-average cross plus the pullback engine rated tested risk-adjusted return **1.10** on tested. The stock holds above its 30-week average while sitting **48.7%** under the 52-week high, with RSI at a neu. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># A Rest Inside a Longer Advance
+
+*ClearPoint Neuro is down 49% from its high, up 20% over three months, and sitting in a quiet zone between support and resistance.*
+
+## The Big Picture
+The healthcare sector is exhausted. Both the sector state and sector acceleration read as **EXHAUSTED**, which means most healthcare stocks have already run their near-term course. You are walking into a group where the easy money has been made and late buyers are getting punished.
+
+That exhaustion is a problem for momentum chasers. It is an opportunity for anyone willing to buy a stock that has already corrected, found a floor, and started rebuilding while the broad group catches its breath. A stock that holds its trend during sector weakness is telling you something about underlying demand.
+
+Small-cap medical device companies live and die on adoption curves. The structural tailwind for minimally invasive surgical platforms is intact. Hospitals want shorter procedure times, smaller incisions, and better outcomes. That demand does not disappear because a sector ETF needs a rest. It gets ignored by traders rotating out of healthcare, which is exactly when a patient buyer gets paid.
+
+This backdrop rewards a name that has already taken its hit, held its structure, and is rebuilding on its own schedule. You want the stock that shrugged off the sector weakness, not the one that led the rally and is now rolling over.
+
+## Introducing CLPT
+ClearPoint Neuro builds platforms for minimally invasive brain surgery. It is a commercial-stage medical device company, meaning it has products on the market and revenue coming in, not a pre-revenue biotech burning cash on trials.
+
+The core product line is the ClearPoint system, which combines hardware, software, and disposables into an integrated platform for surgical planning, navigation, and monitoring. The hardware includes a head fixation frame, a computer workstation, and an in-room monitor. The disposables side includes the SmartFrame trajectory device, a hand controller, and the SmartFlow Neuro cannula. The software guides the physician through planning, alignment, navigation to the target, and live procedure monitoring.
+
+ClearPoint also offers the Prism Neuro laser therapy system for tissue ablation, and the IRRAflow system, which is an active fluid exchange platform. Beyond its own products, the company provides consulting services to pharmaceutical and medical technology partners. Those services include benchtop testing, preclinical studies, clinical trial support, and regulatory consultation. The company has collaboration agreements with Philips, UCB Biopharma, Clinical Laserthermia Systems, UCSF, and NE Scientific. That partner roster matters because it means ClearPoint is embedded in drug delivery and laser therapy workflows that larger companies are building around.
+
+## The Thesis
+This is a rest inside a longer advance. ClearPoint is sitting **48.7%** below its 52-week high of **$30.1**, which sounds bad until you check the three-month return. That relative strength during an exhausted healthcare sector tells you buyers are stepping in on weakness, not chasing strength.
+
+The desk thesis is built on two signals agreeing. A moving-average cross fired, and the pullback engine rated tested risk-adjusted return at **1.10**. The stock holds above its 30-week average while RSI sits at a neutral **52.3**. That combination, a trending stock pulling back on light momentum, is the setup you want when you are buying a dip in a name that is still structurally intact.
+
+Conviction is **MEDIUM**. The chart is the cleanest of the small caps the desk reviewed, and the risk/reward ratio of **2.4** gives you a defined edge. You are risking **11.7%** to make **28.0%** to the primary target. That is a trade you take with half or two-thirds of your intended size, not a full commitment, because the liquidity constraints and the exhausted sector demand respect.
+
+## Technical Analysis
+&gt; 📈 Insert the CLPT weekly chart here (TradingView): CLPT weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $19.43 · mark support near $13.40.
+The trend is up, and the 30-week line confirms it. ClearPoint trades at **$15.18**, above its 30-week moving average, though the slope of that average has flattened to **-0.8%**. That flattening is the only yellow flag in an otherwise constructive structure. It tells you the prior momentum has paused, which is consistent with a rest, not a reversal.
+
+The 8-week and 21-week exponential moving averages define the near-term posture. RSI reads **54.7** on a 14-period basis and **52.3** on the daily, both neutral. The stock is not overbought and not oversold. It is in the middle of its range, which is where rests happen. The 21-day return is **-4.9%**, a mild pullback after a strong three-month run. That is the kind of giveback that shakes out weak holders without breaking the trend.
+
+Distance from the 52-week high is **-48.7%**, and distance from the 52-week low is **75.3%**. The stock sits in the bottom **31.7%** of its 52-week range by price position, yet it holds above the 30-week line. That is the tension worth understanding. The stock is deep enough below the high to have real room, but it has not broken down. The swing high at **$19.43** is your target. The swing low at **$11.13** is the failure level below the stop.
+
+Entry is **$15.18**. Stop is **$13.40**, which is **11.7%** below entry. Primary target is **$19.43**, which is **28.0%** above entry. A secondary target sits at **$19.18**, offering **26.4%** upside. The risk/reward ratio is **2.4**. That is thin. ATR over 14 periods is **$0.89**, meaning a typical day moves about **6%** of the stock price. You need to use limit orders and give yourself room on fills. That tells you the rest is over and the next leg is starting.
+
+That is the single most important technical number on the screen. ClearPoint is outperforming the broad market while its own sector is exhausted. That divergence is rare in small-cap healthcare, and it is the signal that separates a resting stock from a dead one. The level that flips the read is **$13.40**. If the stock closes below that on volume, the 30-week line is meaningless and you are holding a broken chart.
+
+## Fundamentals
+| Metric | Value |
+|---|---|
+| Market cap | $429M |
+| Enterprise value | $443M |
+| 52-week range | $8.27 - $30.10 |
+| Dividend yield | None |
+| Beta | 1.27 |
+| Forward P/E | -12.7 |
+| Price / sales | 10.2 |
+| Price / book | 39.9 |
+| Revenue (TTM) | $42M  (+18.1% YoY) |
+| Revenue / share | $1.45 |
+| Net income (TTM) | $-35M |
+| EPS (TTM / fwd) | -1.18 / -1.11 |
+| Gross margin | 62.6% |
+| Operating margin | -94.2% |
+| Profit margin | -81.8% |
+| Operating cash flow / share | $-0.99 |
+| Free cash flow / share | $-0.46 |
+| Total cash / share | $0.96 |
+| Debt / equity | 5.93 |
+| Current ratio | 4.75 |
+| Return on equity | -226.5% |
+| Analyst consensus | strong buy - mean target $25.67 (3 analysts) |
+Revenue is growing and margins are improving, but ClearPoint is still losing money on every path to profitability. Revenue per share is **$1.45**. Gross margin is **62.6%**, which is healthy for a medical device company and tells you the product pricing has structure. The problem is below the gross line. Operating margin is **-94.2%** and profit margin is **-81.8%**. Forward EPS is **-$1.11**, a slight improvement but still deeply negative. Operating cash flow is **-$30.2M** and free cash flow is **-$14.1M**. Free cash flow per share is **-$0.46**.
+
+The balance sheet has a tension you need to understand. Total cash per share is **$0.96**, which gives the company runway but not abundance. That is high. The current ratio is **4.75** and the quick ratio is **3.75**, both strong, meaning short-term obligations are covered. Return on equity is **-226.5%** and return on assets is **-24.4%**, reflecting the reality that the company is burning capital to fund growth. You are buying a company that is investing ahead of revenue, and the risk is that the investment does not scale into profitability fast enough.
+
+Valuation is expensive on every surface metric. Price-to-sales is **10.2** and price-to-book is **39.9**. Book value per share is **$0.35**. The forward P/E is negative at **-12.7**, which is meaningless as a valuation anchor because there are no earnings to capitalize. Three analysts cover the stock with a mean target of **$25.67** and a consensus recommendation of **strong buy**. Beta is **1.27**, so expect the stock to move faster than the broad market in both directions. The honest read is that you are paying for a growth and adoption story, and the fundamentals will not bail you out if the chart breaks.
+
+## Why Now
+The timing rests on technicals and relative strength, because there is no near-term catalyst in the facts. The pressure test is absent. The catalyst field is null. What you have is a stock that has pulled back **4.9%** over 21 days after gaining **20.1%** over 63 days, outperforming the market by **15.4%** in the process. That is a timing setup, not an event-driven one.
+
+Options flow is minimal but tilted bullish. On **2026-08-11**, daily call volume was **402** contracts against **41** puts. Call premium was **$0.05M** and put premium was **$0.0M**. That is thin flow in an illiquid option chain, so do not read it as conviction. Read it as absence of bearish positioning. Nobody is buying protection, which means nobody with option market access is hedging against an imminent collapse.
+
+The macro tailwind is structural, not cyclical. Minimally invasive surgical platforms are gaining adoption as hospitals upgrade capabilities. The healthcare sector is exhausted, which suppresses the stock near term. That suppression is your entry opportunity. When the sector regroups, the stocks that held their trends during the weakness lead the next move. ClearPoint&#x27;s relative strength of **+15.4%** versus the S&amp;P over 63 days says it is already positioning for that rotation.
+
+Next earnings are scheduled, with the epoch timestamp **1785787200** marking the date. Earnings in a company losing money are a binary risk. If revenue growth accelerates and the loss narrows, the stock catches a bid. If the loss widens or guidance disappoints, the thin float amplifies the downside. You want to be positioned before that print, not after it, and you want your stop in place.
+
+## Risk Factors
+Liquidity is the primary risk. The bid-ask spread will widen when the market sells off, and a stop order at **$13.40** may fill below that level if volume dries up. You handle this by sizing down and using limit orders for exits, not market orders.
+
+The healthcare sector is exhausted. Both sector state and sector acceleration read **EXHAUSTED**. A stock can outperform its group for a while, but if the entire sector rolls over, the tide pulls everything with it. If healthcare specifically catches a bid to the downside, CLPT will not be immune.
+
+The company is losing money with no near-term path to profitability. Debt-to-equity is **5.93**. If revenue growth stalls at **18.1%** or below, the cash burn accelerates and the balance sheet becomes the story. A dilution or secondary offering at these prices would crush the stock.
+
+The single invalidation is **$13.40**. That is the stop level, **11.7%** below entry. If the stock closes below **$13.40** on volume, the 30-week average is no longer supporting price, the trend is broken, and you exit. Do not hold and hope. The swing low at **$11.13** is the next support after that, and you do not want to be the one waiting for it. Timing risk around earnings is real because there is no confirmed catalyst in the facts. You are relying on technical structure and relative strength, and either one can fail in a single session.
+
+## Bringing It All Together
+- ClearPoint Neuro is a commercial-stage medical device company growing revenue **18.1%** with **62.6%** gross margins, embedded in brain surgery workflows through partnerships with Philips and UCB Biopharma.
+That relative strength during sector weakness is the strongest signal on the board.
+- Risk/reward is **2.4**, with entry at **$15.18**, stop at **$13.40**, and primary target at **$19.43**. You risk **11.7%** to make **28.0%**.
+- The stock holds above its 30-week average with RSI at **52.3**, sitting **48.7%** below the 52-week high. That is a rest in a longer advance, not a broken chart.
+- Liquidity is thin at **$8.4M** daily volume, the company is burning **$30.2M** in operating cash flow, and debt-to-equity is **5.93**. Size down and respect the stop.
+
+
+## Conclusion
+You are buying a rest inside a longer advance, backed by the cleanest small-cap chart on the desk and relative strength that defies an exhausted sector. The thesis is technical, the fundamentals are a growth story with real risk, and the liquidity demands discipline. Take the trade at **$15.18** with a stop at **$13.40** and a target at **$19.43**. Size for the liquidity you have, not the conviction you feel. If **$13.40** breaks, you are done with the name.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

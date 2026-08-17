@@ -1,0 +1,260 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Carvana&#x27;s Flow-Driven Setup Has Real Limits — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>Carvana&#x27;s Flow-Driven Setup Has Real Limits</h1>
+<div class="subtitle">Bullish options flow and insider buying meet negative relative strength and an untested signal. Size it small or skip it.</div>
+<div class="meta">EOD 2026-08-10 · CVNA · written from the desk · model glm-5.2</div>
+<div class="chips"><span class="chip">CVNA</span>
+<span class="chip">Consumer Cyclical</span>
+<span class="chip lo">LOW conviction</span></div>
+<div class="track">Tracking since 2026-08-10: entry <b>$74.16</b> &rarr; <b>$75.59</b> (as of 2026-08-14) · <span class="pos">+1.9%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Consumer cyclical stocks still carry momentum. The sector is in a RIDING state, meaning it has been accelerating and continues to trend. That backdrop matters for a used-car e-commerce name because discretionary spending flows directly into revenue.</p>
+<p>Used cars sit at the intersection of consumer credit and vehicle supply. When the broad market rewards cyclicals, a company with <strong>52.4%</strong> revenue growth catches a bid fast. When it punishes them, the damage is swift.</p>
+<p>The macro signal here is sector momentum with no specific catalyst attached. You are operating in a tailwind environment, but one that can shift without warning. That makes stock selection critical. You want a name where the flow and the fundamental trajectory align.</p>
+<p>This backdrop rewards a name with strong top-line growth, positive earnings momentum, and visible options flow. Carvana checks those boxes. It also carries a beta of <strong>3.49</strong>, which means the stock will amplify whatever the sector does.</p>
+<h2>Introducing CVNA</h2>
+<p>Carvana runs an e-commerce platform for buying and selling used cars. The company handles vehicle acquisition, inspection, reconditioning, online search, financing, logistics, and post-sale support. It also operates auction sites.</p>
+<p>The edge is vertical integration. Carvana controls the entire transaction from sourcing to delivery. That gives it margin leverage on each unit sold and a data advantage on pricing. The reconditioning network and logistics infrastructure are hard to replicate quickly.</p>
+<p>The business model depends on volume and financing. Carvana originates loans, sells vehicles online, and fulfills through its own logistics chain. When unit economics work, the model scales fast. When credit conditions tighten or used-car prices drop, the model absorbs pain from multiple angles simultaneously.</p>
+<h2>The Thesis</h2>
+<p>The desk thesis is straightforward. A director bought <strong>$1.5M</strong> near <strong>$61.80</strong>. Call premium sits at <strong>$19.38M</strong> versus put premium at <strong>$6.22M</strong>. Price is <strong>22.5%</strong> under the <strong>52</strong>-week high with RSI at <strong>62.6</strong>, above the <strong>30</strong>-week average.</p>
+<p>The setup combines insider conviction with bullish options positioning. A director putting <strong>$1.5M</strong> to work near <strong>$61.80</strong> is a real signal. That is below the current price of <strong>$74.16</strong>, so the insider is already in profit. The options flow confirms that traders are positioning for upside, with call premium dwarfing put premium.</p>
+<p>The conviction is LOW. Risk/reward is <strong>1.5</strong>, which is thin. The stock lags SPY by <strong>9.7%</strong> over three months. The only desk read firing is a moving-average cross rated OBSERVATION, which means the signal is untested. You are looking at flow and insider activity without a confirmed technical edge underneath.</p>
+<p>This is a small-size trade if you take it. The flow is genuine and the insider buy is real. But the relative strength is negative and the technical signal is still in observation mode. You are betting on flow and fundamentals carrying the stock until the chart catches up.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-08-10-CVNA.png" alt="CVNA weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=CVNA&interval=1W" target="_blank" rel="noopener">📈 Open the CVNA weekly chart on TradingView ↗</a><figcaption>CVNA weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $86.34 · mark support near $66.04.</figcaption></figure>
+<p>The trend is mixed. Price sits above the <strong>30</strong>-week average, which is positive, but the <strong>30</strong>-week slope is <strong>-3.8%</strong>, meaning the average itself is declining. That divergence tells you the longer-term structure has not confirmed a turn. Price is holding above, but the foundation is still soft.</p>
+<p>The <strong>8</strong>-week and <strong>21</strong>-week exponential moving averages govern the intermediate trend. Price closed at <strong>$74.16</strong>, which matches the swing high exactly. The swing low sits at <strong>$60.19</strong>. You are entering near a short-term peak, not a pullback. That is a timing risk.</p>
+<p>Distance from the <strong>52</strong>-week high is <strong>-22.5%</strong>. The <strong>52</strong>-week high is <strong>$97.38</strong> and the <strong>52</strong>-week low is <strong>$54.46</strong>. Price sits at <strong>76.2%</strong> of the <strong>52</strong>-week high and in the middle of the range at <strong>45.9%</strong> from the low. RSI reads <strong>62.6</strong>, which is approaching overbought but not there yet. The <strong>14</strong>-period average true range is <strong>$4.06</strong>, so expect daily swings of roughly <strong>4</strong> to <strong>5</strong> points.</p>
+<p>Relative strength vs SPY over <strong>63</strong> days is <strong>-9.7%</strong>. The stock is underperforming the broad market by nearly <strong>10%</strong> over the past quarter. The <strong>21</strong>-day return is <strong>+12.7%</strong>, so the recent bounce is real. But the three-month return is <strong>-4.8%</strong>, which tells you the bounce has not erased the prior damage.</p>
+<p>Your reference levels are entry at <strong>$74.16</strong>, stop at <strong>$66.04</strong>, and target at <strong>$86.34</strong>. The stop sits <strong>10.9%</strong> below entry. The target sits <strong>16.4%</strong> above entry. A second target at <strong>$92.43</strong> would capture <strong>24.6%</strong> upside. Watch for volume above that baseline on green candles. If price closes below <strong>$66.04</strong>, the setup is broken.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$107.19B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$52.87B</td></tr><tr><td class="k">52-week range</td><td class="v">$54.46 - $97.38</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">3.49</td></tr><tr><td class="k">Trailing P/E</td><td class="v">38.1</td></tr><tr><td class="k">Forward P/E</td><td class="v">32.0</td></tr><tr><td class="k">Price / sales</td><td class="v">4.3</td></tr><tr><td class="k">Price / book</td><td class="v">12.9</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$25.06B  (+52.4% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$35.33</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$1.57B</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">1.89 / 2.25</td></tr><tr><td class="k">Gross margin</td><td class="v">19.4%</td></tr><tr><td class="k">Operating margin</td><td class="v">9.2%</td></tr><tr><td class="k">Profit margin</td><td class="v">6.3%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$1.56</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$0.59</td></tr><tr><td class="k">Total cash / share</td><td class="v">$4.35</td></tr><tr><td class="k">Debt / equity</td><td class="v">1.11</td></tr><tr><td class="k">Current ratio</td><td class="v">3.93</td></tr><tr><td class="k">Return on equity</td><td class="v">58.8%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">buy - mean target $82.83 (20 analysts)</td></tr></tbody></table>
+<p>Revenue growth is the headline number. Earnings growth is <strong>61.5%</strong> with TTM net income of <strong>$1.57B</strong>. EPS on a trailing basis is <strong>$1.89</strong> and forward EPS is <strong>$2.25</strong>. The growth trajectory is strong and accelerating.</p>
+<p>Profitability is improving but still moderate. Gross margin is <strong>19.4%</strong>, operating margin is <strong>9.2%</strong>, and net margin is <strong>6.3%</strong>. Return on equity is <strong>58.8%</strong> and return on assets is <strong>11.7%</strong>. Those returns are high, partly because the equity base is thin. Book value per share is <strong>$5.60</strong> and the price-to-book ratio is <strong>12.9</strong>. You are paying a premium for a leveraged structure.</p>
+<p>Cash generation is positive but tight. Operating cash flow is <strong>$1.12B</strong> trailing twelve months. The valuation is pricing in massive future growth, not current cash generation.</p>
+<p>The balance sheet has both strengths and risks. Current ratio is <strong>3.93</strong> and quick ratio is <strong>1.72</strong>, so short-term liquidity is solid. Cash per share is <strong>$4.35</strong>. The enterprise value is <strong>$52.9B</strong>, which is lower than the market cap because of the debt structure. The trailing PE is <strong>38.1</strong> and forward PE is <strong>32.0</strong>. Those multiples demand continued growth at or above the current pace.</p>
+<p>The analyst picture is constructive. Mean target across <strong>20</strong> analysts is <strong>$82.83</strong>, which is <strong>11.7%</strong> above the current price. The consensus recommendation is a buy. The next earnings date is not yet confirmed as a specific catalyst in the data, so you have no scheduled event to anchor timing around.</p>
+<p>The weak spot is valuation and beta. A PE of <strong>38.1</strong> with a beta of <strong>3.49</strong> means the stock will move hard in both directions. If growth slows, the multiple contracts fast. If the sector loses momentum, a <strong>3.49</strong> beta amplifies the drawdown. You need conviction in the growth story to hold through that volatility.</p>
+<h2>Why Now</h2>
+<p>The timing is driven by flow and insider activity, not a scheduled catalyst. No specific catalyst is present in the data. The pressure test is absent, which means the desk has not identified a near-term event that would force a resolution.</p>
+<p>The options flow from <strong>2026-08-07</strong> shows <strong>$19.38M</strong> in call premium against <strong>$6.22M</strong> in put premium. The call wall sits at <strong>$70</strong> and the put wall sits at <strong>$74</strong>. Price is at <strong>$74.16</strong>, just above the put wall. That means dealers are short puts at <strong>$74</strong> and may need to hedge by buying stock if price holds above that level. That can create a mechanical bid.</p>
+<p>The call wall at <strong>$70</strong> is below current price, which means calls at that strike are in the money. If those calls were bought to open, the dealers are short gamma and will buy stock as it rises. That flow can amplify upside moves in the short term.</p>
+<p>The sector is in a MOMENTUM state and RIDING acceleration. Consumer cyclical stocks are getting bought. Carvana has the growth profile to attract rotation into the sector. The <strong>21</strong>-day return of <strong>+12.7%</strong> shows the stock is starting to respond.</p>
+<p>The director buy near <strong>$61.80</strong> for <strong>$1.5M</strong> is the strongest timing signal. An insider committing personal capital at a lower price than where the stock trades today is a concrete vote of confidence. It is not a catalyst with a date, but it is a signal that someone with inside knowledge sees value.</p>
+<h2>Risk Factors</h2>
+<p>Relative strength is the primary risk. The stock lags SPY by <strong>9.7%</strong> over three months. If the broad market pulls back, Carvana with a beta of <strong>3.49</strong> will drop harder. You are buying a stock that has been underperforming while the sector momentum is positive. That divergence can resolve in either direction.</p>
+<p>The technical signal is untested. The only desk read firing is a moving-average cross rated OBSERVATION. That means the system has not confirmed this as a high-conviction setup. The Weinstein violations list is empty, which is clean, but the absence of violations does not equal a confirmed buy signal.</p>
+<p>Valuation risk is real. A trailing PE of <strong>38.1</strong> and forward PE of <strong>32.0</strong> price in continued growth above <strong>50%</strong>. If the next earnings report shows deceleration, the stock will re-rate lower fast. Revenue growth of <strong>52.4%</strong> and earnings growth of <strong>61.5%</strong> are exceptional, but any sequential slowdown will trigger a sharp reaction given the beta.</p>
+<p>Debt is a structural risk. Current ratio of <strong>3.93</strong> provides short-term comfort. But in a credit tightening scenario, the combination of debt and a cyclical revenue base creates downside risk.</p>
+<p>The invalidation level is <strong>$66.04</strong>. If price closes below that, the stop is hit and the setup is invalid. That is <strong>10.9%</strong> below entry. With an ATR of <strong>$4.06</strong>, the stock can reach the stop in <strong>2</strong> to <strong>3</strong> sessions of selling. You need to accept that timeline before entering.</p>
+<p>Timing risk is elevated because there is no catalyst. You are relying on flow and sector momentum to carry the stock. If the options flow reverses or the sector loses momentum, there is no scheduled event to re-energize the trade. The next earnings date is in the data but no specific catalyst is flagged by the desk.</p>
+<h2>Bringing It All Together</h2>
+<p>- Sector momentum is RIDING and consumer cyclicals are getting bought, which provides a tailwind for a growth name like Carvana.<br>- A director bought <strong>$1.5M</strong> near <strong>$61.80</strong>, confirming insider conviction at a price below where the stock trades today.</p>
+<p>- Revenue growth of <strong>52.4%</strong> and earnings growth of <strong>61.5%</strong> support the bull case, with operating margin at <strong>9.2%</strong> showing profitability improvement.<br>- The stock trades <strong>22.5%</strong> below its <strong>52</strong>-week high with RSI at <strong>62.6</strong>, above the <strong>30</strong>-week average but with a declining slope of <strong>-3.8%</strong>.<br>- Entry at <strong>$74.16</strong>, stop at <strong>$66.04</strong>, target at <strong>$86.34</strong> with a second target at <strong>$92.43</strong>. Risk/reward is <strong>1.5</strong> with LOW conviction.</p>
+<h2>Conclusion</h2>
+<p>This is a flow-driven setup with genuine insider backing and strong fundamental growth. The options skew is bullish and the sector is in a momentum state. Those are real signals. The problem is that relative strength is negative, the technical read is untested, and there is no catalyst to anchor timing. You are relying on flow to carry price until the chart confirms. That works sometimes. It also fails when the sector rotates or the flow reverses. Take a small position if you take one at all. The stop at <strong>$66.04</strong> is your line. If it breaks, you are out.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Carvana Co. (CVNA) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $107.19B; 52-week range $54-$97; Revenue $25.06B +52% YoY; Net income $1.57B; Free cash flow/share $0.59; Debt-to-equity 1.11; Return on equity 59%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Carvana Co. (CVNA) inside the Consumer Cyclical space, specifically the &quot;Trump&#x27;s Personal Portfolio&quot; theme. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): A director bought **$1.5M** near **$61.80** and the chain is busy, **44443** calls traded against **27141** puts with **$19.38M** of call premium versus **$6.22M** of put premium. Price is **22.5%** under the **52**-week high with RSI **62.. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># Carvana&#x27;s Flow-Driven Setup Has Real Limits
+
+*Bullish options flow and insider buying meet negative relative strength and an untested signal. Size it small or skip it.*
+
+## The Big Picture
+
+Consumer cyclical stocks still carry momentum. The sector is in a RIDING state, meaning it has been accelerating and continues to trend. That backdrop matters for a used-car e-commerce name because discretionary spending flows directly into revenue.
+
+Used cars sit at the intersection of consumer credit and vehicle supply. When the broad market rewards cyclicals, a company with **52.4%** revenue growth catches a bid fast. When it punishes them, the damage is swift.
+
+The macro signal here is sector momentum with no specific catalyst attached. You are operating in a tailwind environment, but one that can shift without warning. That makes stock selection critical. You want a name where the flow and the fundamental trajectory align.
+
+This backdrop rewards a name with strong top-line growth, positive earnings momentum, and visible options flow. Carvana checks those boxes. It also carries a beta of **3.49**, which means the stock will amplify whatever the sector does.
+
+## Introducing CVNA
+
+Carvana runs an e-commerce platform for buying and selling used cars. The company handles vehicle acquisition, inspection, reconditioning, online search, financing, logistics, and post-sale support. It also operates auction sites.
+
+The edge is vertical integration. Carvana controls the entire transaction from sourcing to delivery. That gives it margin leverage on each unit sold and a data advantage on pricing. The reconditioning network and logistics infrastructure are hard to replicate quickly.
+
+The business model depends on volume and financing. Carvana originates loans, sells vehicles online, and fulfills through its own logistics chain. When unit economics work, the model scales fast. When credit conditions tighten or used-car prices drop, the model absorbs pain from multiple angles simultaneously.
+
+## The Thesis
+
+The desk thesis is straightforward. A director bought **$1.5M** near **$61.80**. Call premium sits at **$19.38M** versus put premium at **$6.22M**. Price is **22.5%** under the **52**-week high with RSI at **62.6**, above the **30**-week average.
+
+The setup combines insider conviction with bullish options positioning. A director putting **$1.5M** to work near **$61.80** is a real signal. That is below the current price of **$74.16**, so the insider is already in profit. The options flow confirms that traders are positioning for upside, with call premium dwarfing put premium.
+
+The conviction is LOW. Risk/reward is **1.5**, which is thin. The stock lags SPY by **9.7%** over three months. The only desk read firing is a moving-average cross rated OBSERVATION, which means the signal is untested. You are looking at flow and insider activity without a confirmed technical edge underneath.
+
+This is a small-size trade if you take it. The flow is genuine and the insider buy is real. But the relative strength is negative and the technical signal is still in observation mode. You are betting on flow and fundamentals carrying the stock until the chart catches up.
+
+## Technical Analysis
+
+&gt; 📈 Insert the CVNA weekly chart here (TradingView): CVNA weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $86.34 · mark support near $66.04.
+
+The trend is mixed. Price sits above the **30**-week average, which is positive, but the **30**-week slope is **-3.8%**, meaning the average itself is declining. That divergence tells you the longer-term structure has not confirmed a turn. Price is holding above, but the foundation is still soft.
+
+The **8**-week and **21**-week exponential moving averages govern the intermediate trend. Price closed at **$74.16**, which matches the swing high exactly. The swing low sits at **$60.19**. You are entering near a short-term peak, not a pullback. That is a timing risk.
+
+Distance from the **52**-week high is **-22.5%**. The **52**-week high is **$97.38** and the **52**-week low is **$54.46**. Price sits at **76.2%** of the **52**-week high and in the middle of the range at **45.9%** from the low. RSI reads **62.6**, which is approaching overbought but not there yet. The **14**-period average true range is **$4.06**, so expect daily swings of roughly **4** to **5** points.
+
+Relative strength vs SPY over **63** days is **-9.7%**. The stock is underperforming the broad market by nearly **10%** over the past quarter. The **21**-day return is **+12.7%**, so the recent bounce is real. But the three-month return is **-4.8%**, which tells you the bounce has not erased the prior damage.
+
+Your reference levels are entry at **$74.16**, stop at **$66.04**, and target at **$86.34**. The stop sits **10.9%** below entry. The target sits **16.4%** above entry. A second target at **$92.43** would capture **24.6%** upside. Watch for volume above that baseline on green candles. If price closes below **$66.04**, the setup is broken.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $107.19B |
+| Enterprise value | $52.87B |
+| 52-week range | $54.46 - $97.38 |
+| Dividend yield | None |
+| Beta | 3.49 |
+| Trailing P/E | 38.1 |
+| Forward P/E | 32.0 |
+| Price / sales | 4.3 |
+| Price / book | 12.9 |
+| Revenue (TTM) | $25.06B  (+52.4% YoY) |
+| Revenue / share | $35.33 |
+| Net income (TTM) | $1.57B |
+| EPS (TTM / fwd) | 1.89 / 2.25 |
+| Gross margin | 19.4% |
+| Operating margin | 9.2% |
+| Profit margin | 6.3% |
+| Operating cash flow / share | $1.56 |
+| Free cash flow / share | $0.59 |
+| Total cash / share | $4.35 |
+| Debt / equity | 1.11 |
+| Current ratio | 3.93 |
+| Return on equity | 58.8% |
+| Analyst consensus | buy - mean target $82.83 (20 analysts) |
+
+Revenue growth is the headline number. Earnings growth is **61.5%** with TTM net income of **$1.57B**. EPS on a trailing basis is **$1.89** and forward EPS is **$2.25**. The growth trajectory is strong and accelerating.
+
+Profitability is improving but still moderate. Gross margin is **19.4%**, operating margin is **9.2%**, and net margin is **6.3%**. Return on equity is **58.8%** and return on assets is **11.7%**. Those returns are high, partly because the equity base is thin. Book value per share is **$5.60** and the price-to-book ratio is **12.9**. You are paying a premium for a leveraged structure.
+
+Cash generation is positive but tight. Operating cash flow is **$1.12B** trailing twelve months. The valuation is pricing in massive future growth, not current cash generation.
+
+The balance sheet has both strengths and risks. Current ratio is **3.93** and quick ratio is **1.72**, so short-term liquidity is solid. Cash per share is **$4.35**. The enterprise value is **$52.9B**, which is lower than the market cap because of the debt structure. The trailing PE is **38.1** and forward PE is **32.0**. Those multiples demand continued growth at or above the current pace.
+
+The analyst picture is constructive. Mean target across **20** analysts is **$82.83**, which is **11.7%** above the current price. The consensus recommendation is a buy. The next earnings date is not yet confirmed as a specific catalyst in the data, so you have no scheduled event to anchor timing around.
+
+The weak spot is valuation and beta. A PE of **38.1** with a beta of **3.49** means the stock will move hard in both directions. If growth slows, the multiple contracts fast. If the sector loses momentum, a **3.49** beta amplifies the drawdown. You need conviction in the growth story to hold through that volatility.
+
+## Why Now
+
+The timing is driven by flow and insider activity, not a scheduled catalyst. No specific catalyst is present in the data. The pressure test is absent, which means the desk has not identified a near-term event that would force a resolution.
+
+The options flow from **2026-08-07** shows **$19.38M** in call premium against **$6.22M** in put premium. The call wall sits at **$70** and the put wall sits at **$74**. Price is at **$74.16**, just above the put wall. That means dealers are short puts at **$74** and may need to hedge by buying stock if price holds above that level. That can create a mechanical bid.
+
+The call wall at **$70** is below current price, which means calls at that strike are in the money. If those calls were bought to open, the dealers are short gamma and will buy stock as it rises. That flow can amplify upside moves in the short term.
+
+The sector is in a MOMENTUM state and RIDING acceleration. Consumer cyclical stocks are getting bought. Carvana has the growth profile to attract rotation into the sector. The **21**-day return of **+12.7%** shows the stock is starting to respond.
+
+The director buy near **$61.80** for **$1.5M** is the strongest timing signal. An insider committing personal capital at a lower price than where the stock trades today is a concrete vote of confidence. It is not a catalyst with a date, but it is a signal that someone with inside knowledge sees value.
+
+## Risk Factors
+
+Relative strength is the primary risk. The stock lags SPY by **9.7%** over three months. If the broad market pulls back, Carvana with a beta of **3.49** will drop harder. You are buying a stock that has been underperforming while the sector momentum is positive. That divergence can resolve in either direction.
+
+The technical signal is untested. The only desk read firing is a moving-average cross rated OBSERVATION. That means the system has not confirmed this as a high-conviction setup. The Weinstein violations list is empty, which is clean, but the absence of violations does not equal a confirmed buy signal.
+
+Valuation risk is real. A trailing PE of **38.1** and forward PE of **32.0** price in continued growth above **50%**. If the next earnings report shows deceleration, the stock will re-rate lower fast. Revenue growth of **52.4%** and earnings growth of **61.5%** are exceptional, but any sequential slowdown will trigger a sharp reaction given the beta.
+
+Debt is a structural risk. Current ratio of **3.93** provides short-term comfort. But in a credit tightening scenario, the combination of debt and a cyclical revenue base creates downside risk.
+
+The invalidation level is **$66.04**. If price closes below that, the stop is hit and the setup is invalid. That is **10.9%** below entry. With an ATR of **$4.06**, the stock can reach the stop in **2** to **3** sessions of selling. You need to accept that timeline before entering.
+
+Timing risk is elevated because there is no catalyst. You are relying on flow and sector momentum to carry the stock. If the options flow reverses or the sector loses momentum, there is no scheduled event to re-energize the trade. The next earnings date is in the data but no specific catalyst is flagged by the desk.
+
+## Bringing It All Together
+
+- Sector momentum is RIDING and consumer cyclicals are getting bought, which provides a tailwind for a growth name like Carvana.
+- A director bought **$1.5M** near **$61.80**, confirming insider conviction at a price below where the stock trades today.
+
+- Revenue growth of **52.4%** and earnings growth of **61.5%** support the bull case, with operating margin at **9.2%** showing profitability improvement.
+- The stock trades **22.5%** below its **52**-week high with RSI at **62.6**, above the **30**-week average but with a declining slope of **-3.8%**.
+- Entry at **$74.16**, stop at **$66.04**, target at **$86.34** with a second target at **$92.43**. Risk/reward is **1.5** with LOW conviction.
+
+## Conclusion
+
+This is a flow-driven setup with genuine insider backing and strong fundamental growth. The options skew is bullish and the sector is in a momentum state. Those are real signals. The problem is that relative strength is negative, the technical read is untested, and there is no catalyst to anchor timing. You are relying on flow to carry price until the chart confirms. That works sometimes. It also fails when the sector rotates or the flow reverses. Take a small position if you take one at all. The stop at **$66.04** is your line. If it breaks, you are out.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
