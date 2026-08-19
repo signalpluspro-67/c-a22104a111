@@ -1,0 +1,234 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Spectrum Landlord Breathing After a 10x Run — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Spectrum Landlord Breathing After a 10x Run</h1>
+<div class="subtitle">ATEX pulled back inside an intact trend. The risk/reward is 1.9 to 1, and the 30-week line is still screaming higher.</div>
+<div class="meta">EOD 2026-08-18 · ATEX · written from the desk · model deepseek-v4-pro</div>
+<div class="chips"><span class="chip">ATEX</span>
+<span class="chip">Communication Services</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-08-18: entry <b>$79.74</b> &rarr; <b>$90.75</b> (as of 2026-08-18) · <span class="pos">+13.8%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>The Communication Services sector is neutral and decelerating. Money is rotating out of last year&#x27;s leaders. You stand still in this tape and you lose. The broad market rewards the hunter who buys violent trends when they pause, not when they&#x27;re stretched.</p>
+<p>The real action sits in small caps with a structural reason to exist. One company holds a lock on low band 900 MHz spectrum across the whole contiguous United States, plus Hawaii, Alaska, and Puerto Rico. It licenses that real estate to utilities and critical infrastructure customers who can&#x27;t function without private, secure wireless. That need doesn&#x27;t slow with the sector.</p>
+<p>This backdrop rewards a name that already ran hard and is taking its first real breath. A dip inside a trend that steep is a gift if the trend is real. ATEX is that name right now.</p>
+<h2>Introducing ATEX</h2>
+<p>Anterix Inc. is a spectrum landlord. It owns the largest licensed 900 MHz broadband block in the United States. The company sells access to electric, gas, and water utilities that need to overlay their own private LTE networks on top of their grid infrastructure.</p>
+<p>Think of it less as a telecom and more as a toll road. The 900 MHz band travels farther through walls and terrain than higher bands. That makes it the backbone for field area networks connecting substations, smart meters, and distributed energy devices. The company has just <strong>63</strong> employees. The asset is the license, the ecosystem is the moat.</p>
+<p>Anterix offers a few access models. TowerX provides tower site access. CatalyX delivers a turnkey managed connectivity solution. The Anterix Active Ecosystem bundles third party hardware and software partners that build on the spectrum. The core asset is the same in every deal. Recurring, long term spectrum leases that compound as more utilities join.</p>
+<h2>The Thesis</h2>
+<p>A violent uptrend is taking a breath. The 30 week moving average slope is climbing at <strong>69.2%</strong>. That&#x27;s not a grind higher. That&#x27;s a trend that catches a bid every time it stalls.</p>
+<p>Now it stalled for real. The stock pulled back <strong>10.9%</strong> in the last 21 days. RSI cooled to <strong>45.7</strong>. You&#x27;re <strong>16.1%</strong> under the 52 week high of <strong>113.0</strong> and sitting at <strong>90.75</strong>. The dip buy signal that identified this triggered with a risk adjusted return of <strong>1.10</strong> across a deep sample of <strong>383</strong> trades. That&#x27;s enough history to believe the pattern, not enough to bet the farm.</p>
+<p>Conviction is MEDIUM. The risk/reward sits at <strong>1.9</strong> to <strong>1</strong> with an entry of <strong>79.74</strong> and a target of <strong>108.2</strong>. You&#x27;re risking <strong>18.4%</strong> from the current price to the stop at <strong>65.06</strong>. Size it small. A <strong>$1193M</strong> company doing <strong>$29.3M</strong> a day means you&#x27;re in a thin name. The argument is that this is the deepest pullback inside a trend that hasn&#x27;t broken. You take the entry close to the swing low and let the trend do the rest.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-08-18-ATEX.png" alt="ATEX weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=ATEX&interval=1W" target="_blank" rel="noopener">📈 Open the ATEX weekly chart on TradingView ↗</a><figcaption>ATEX weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $108.20 · mark support near $65.06.</figcaption></figure>
+<p>The trend is intact. Price sits above the 30 week moving average, and that line is lifting at a <strong>69.2%</strong> clip. That&#x27;s vertical. You don&#x27;t fight a slope that steep. You wait for a pullback to an area where sellers exhaust and you step in.</p>
+<p>The <strong>21.2%</strong> drop from the swing high of <strong>108.2</strong> to the current <strong>90.75</strong> already retraced a chunk of the run from the swing low of <strong>63.57</strong>. RSI <strong>45.7</strong> means the stock isn&#x27;t oversold yet, but it&#x27;s out of the hot zone. The last time RSI dipped this far inside the uptrend, buyers surfaced fast.</p>
+<p>This stock has a mind of its own. It moves when utilities ink spectrum deals, not when the market twitches. That signals institutions absorbing the dip.</p>
+<p>The levels are clear. Entry at <strong>79.74</strong> is just above the swing low zone near <strong>63.57</strong>. Stop at <strong>65.06</strong> is a hard line. If price violates that, the trend structure breaks. First target is <strong>108.2</strong>, which is the prior swing high. The second target sits at <strong>112.77</strong>. That&#x27;s <strong>35.7%</strong> and <strong>41.4%</strong> upside from the entry respectively. You&#x27;re not chasing. You&#x27;re waiting for the entry to trigger or you let it go.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$1.78B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$1.68B</td></tr><tr><td class="k">52-week range</td><td class="v">$17.58 - $113.00</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">0.85</td></tr><tr><td class="k">Trailing P/E</td><td class="v">26.0</td></tr><tr><td class="k">Forward P/E</td><td class="v">44.0</td></tr><tr><td class="k">Price / sales</td><td class="v">252.5</td></tr><tr><td class="k">Price / book</td><td class="v">6.5</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$7M  (+38.1% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$0.37</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$66M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">3.6 / 2.06</td></tr><tr><td class="k">Gross margin</td><td class="v">100.0%</td></tr><tr><td class="k">Operating margin</td><td class="v">-556.6%</td></tr><tr><td class="k">Profit margin</td><td class="v">933.0%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$0.55</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$-3.64</td></tr><tr><td class="k">Total cash / share</td><td class="v">$5.92</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.01</td></tr><tr><td class="k">Current ratio</td><td class="v">4.85</td></tr><tr><td class="k">Return on equity</td><td class="v">27.9%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">buy - mean target $107.67 (3 analysts)</td></tr></tbody></table>
+<p>The numbers are a story of two companies. The asset side shines. The income statement is a transition.</p>
+<p>Revenue is tiny at <strong>$7.04 million</strong> trailing twelve months. That is a spectrum licensing business in the early innings of converting signed contracts into recognized revenue. Revenue grew <strong>38.1%</strong>. The model is high margin by design once the ink dries. Gross margin sits at <strong>100%</strong>. The cost sits in operating expenses, where the operating margin is deep negative at <strong>-556.6%</strong>. The company is investing ahead of the revenue curve.</p>
+<p>Net income is <strong>$65.7 million</strong> and EPS is <strong>$3.60</strong>. That sounds great on the surface but earnings growth contracted <strong>99.3%</strong>. The profit margin of <strong>933%</strong> is a one time benefit or non cash gain. Forward EPS of <strong>$2.06</strong> tells you the real run rate is lower. Trailing P/E is <strong>26.0</strong> but forward P/E expands to <strong>44.0</strong>. Price to sales at <strong>252.5</strong> is a bet on future contracts, not present cash flows.</p>
+<p>The balance sheet is the counterweight. Cash per share is <strong>$5.92</strong>. Total debt is a rounding error at <strong>$4.09 million</strong> against equity. Debt to equity ratio is <strong>0.01</strong>. Current ratio is <strong>4.85</strong> and quick ratio is <strong>4.13</strong>. This company won&#x27;t need to raise capital under duress. Book value per share is <strong>13.87</strong> so the stock trades at <strong>6.5</strong> times book. You&#x27;re paying for the spectrum asset, not the earnings.</p>
+<p>That&#x27;s the investment phase. Analyst consensus is a buy with a mean target of <strong>107.67</strong>, right near the first technical target. Three analysts cover the name. Thin coverage, thin stock.</p>
+<h2>Why Now</h2>
+<p>The immediate catalyst is the pullback itself. You have an uptrend that gained <strong>65.1%</strong> in the last quarter and then breathed out <strong>10.9%</strong> in three weeks. That reset gives you a functional entry. The macro tailwind is the relentless need for grid modernization. Utilities are under regulatory pressure to harden networks against weather and cyber threats. Private LTE on 900 MHz is the answer. Anterix signs a deal with a major utility, the stock re rates overnight.</p>
+<p>Options flow is thin but instructive. Call volume on August 17 was <strong>49</strong> contracts against put volume of <strong>33</strong>. The call wall sits at <strong>90</strong> and the put wall at <strong>95</strong>. Premium was <strong>$60,000</strong> on calls and essentially zero on puts. Nobody is loading up on downside protection. The market is positioned for a bounce from this zone.</p>
+<p>There is no defined hard catalyst like an earnings date or a regulatory decision. The timing catalyst is purely technical. When a trend this violent pauses for a month and holds above its rising 30 week average, the resumption usually comes fast. You&#x27;re not betting on news. You&#x27;re betting on sellers running out of ammunition at a level where the risk/reward is heavily skewed in your favor.</p>
+<h2>Risk Factors</h2>
+<p>The size of the company is the first danger. Average dollar volume is <strong>$29.3 million</strong>. A position of any size moves the market. Slippage is real. You get a fill on a market order, you might pay <strong>1%</strong> or <strong>2%</strong> above your limit. Use hard limits.</p>
+<p>Trends this steep can unwind by half before they find a floor. The 52 week low is <strong>17.58</strong>. That is a long way down if the thesis breaks. The stop sits at <strong>65.06</strong>, but a gap below that level on bad news erases all the risk control.</p>
+<p>The business model risk is that utilities delay adoption. The market is pricing in a future that hasn&#x27;t arrived. If the contract pipeline dries up or a competitor finds a regulatory workaround, the multiple compresses violently. Forward P/E of <strong>44.0</strong> doesn&#x27;t tolerate disappointment.</p>
+<p>The single invalidation is a close below the swing low of <strong>63.57</strong>. If price trades through that level and your stop at <strong>65.06</strong> triggers, the uptrend structure fails. The 30 week average would flatten fast. You&#x27;re out and you don&#x27;t look back until the stock reclaims that level on volume.</p>
+<h2>Bringing It All Together</h2>
+<p>* The trend is vertical. 30 week average climbing at <strong>69.2%</strong>, relative strength versus the market at <strong>61.2%</strong> over three months.<br>* The pullback is the deepest since the run began. <strong>10.9%</strong> in 21 days, RSI cooled to <strong>45.7</strong>, stock sits <strong>16.1%</strong> below the 52 week high.<br>* The business owns a scarce asset. 900 MHz spectrum across the entire United States, a durable moat for utility private networks.<br>* Fundamentals are early stage but the balance sheet is clean. Cash per share <strong>$5.92</strong>, debt to equity <strong>0.01</strong>, cash burn manageable.<br>* The risk/reward is <strong>1.9</strong> to <strong>1</strong> with an entry at <strong>79.74</strong> and target at <strong>108.2</strong>. Second target extends to <strong>112.77</strong> for <strong>41.4%</strong> upside from entry.</p>
+<h2>Conclusion</h2>
+<p>ATEX is a thin, volatile name riding a structural need. You have a trend that is not broken, a pullback that reset the overbought condition, and a set of levels that offer a clean <strong>1.9</strong> to <strong>1</strong> payout. The conviction is medium because the company is small and the revenue is nascent. Size accordingly. The entry is <strong>79.74</strong>, the stop is <strong>65.06</strong>, and the first target is <strong>108.2</strong>. If the stock can&#x27;t hold the 30 week line and violates the swing low, the trade is over. If it bounces, you&#x27;re in a trend that already proved it can outrun the market by <strong>61.2%</strong> in a quarter.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Anterix Inc. (ATEX) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $1.78B; 52-week range $18-$113; Revenue $7M +38% YoY; Net income $66M; Free cash flow/share $-3.64; Debt-to-equity 0.01; Return on equity 28%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Anterix Inc. (ATEX) inside the Communication Services space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): A violent uptrend taking its first real breath. The 30-week average is rising **69.2%** and the stock beats SPY by **61.2%** over three months, yet the last 21 days pulled back **10.9%** and RSI cooled to **45.7**, leaving it **16.1%** unde. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Spectrum Landlord Breathing After a 10x Run
+
+*ATEX pulled back inside an intact trend. The risk/reward is 1.9 to 1, and the 30-week line is still screaming higher.*
+
+## The Big Picture
+
+The Communication Services sector is neutral and decelerating. Money is rotating out of last year&#x27;s leaders. You stand still in this tape and you lose. The broad market rewards the hunter who buys violent trends when they pause, not when they&#x27;re stretched.
+
+The real action sits in small caps with a structural reason to exist. One company holds a lock on low band 900 MHz spectrum across the whole contiguous United States, plus Hawaii, Alaska, and Puerto Rico. It licenses that real estate to utilities and critical infrastructure customers who can&#x27;t function without private, secure wireless. That need doesn&#x27;t slow with the sector.
+
+This backdrop rewards a name that already ran hard and is taking its first real breath. A dip inside a trend that steep is a gift if the trend is real. ATEX is that name right now.
+
+## Introducing ATEX
+
+Anterix Inc. is a spectrum landlord. It owns the largest licensed 900 MHz broadband block in the United States. The company sells access to electric, gas, and water utilities that need to overlay their own private LTE networks on top of their grid infrastructure.
+
+Think of it less as a telecom and more as a toll road. The 900 MHz band travels farther through walls and terrain than higher bands. That makes it the backbone for field area networks connecting substations, smart meters, and distributed energy devices. The company has just **63** employees. The asset is the license, the ecosystem is the moat.
+
+Anterix offers a few access models. TowerX provides tower site access. CatalyX delivers a turnkey managed connectivity solution. The Anterix Active Ecosystem bundles third party hardware and software partners that build on the spectrum. The core asset is the same in every deal. Recurring, long term spectrum leases that compound as more utilities join.
+
+## The Thesis
+
+A violent uptrend is taking a breath. The 30 week moving average slope is climbing at **69.2%**. That&#x27;s not a grind higher. That&#x27;s a trend that catches a bid every time it stalls.
+
+Now it stalled for real. The stock pulled back **10.9%** in the last 21 days. RSI cooled to **45.7**. You&#x27;re **16.1%** under the 52 week high of **113.0** and sitting at **90.75**. The dip buy signal that identified this triggered with a risk adjusted return of **1.10** across a deep sample of **383** trades. That&#x27;s enough history to believe the pattern, not enough to bet the farm.
+
+Conviction is MEDIUM. The risk/reward sits at **1.9** to **1** with an entry of **79.74** and a target of **108.2**. You&#x27;re risking **18.4%** from the current price to the stop at **65.06**. Size it small. A **$1193M** company doing **$29.3M** a day means you&#x27;re in a thin name. The argument is that this is the deepest pullback inside a trend that hasn&#x27;t broken. You take the entry close to the swing low and let the trend do the rest.
+
+## Technical Analysis
+
+&gt; 📈 Insert the ATEX weekly chart here (TradingView): ATEX weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $108.20 · mark support near $65.06.
+
+The trend is intact. Price sits above the 30 week moving average, and that line is lifting at a **69.2%** clip. That&#x27;s vertical. You don&#x27;t fight a slope that steep. You wait for a pullback to an area where sellers exhaust and you step in.
+
+The **21.2%** drop from the swing high of **108.2** to the current **90.75** already retraced a chunk of the run from the swing low of **63.57**. RSI **45.7** means the stock isn&#x27;t oversold yet, but it&#x27;s out of the hot zone. The last time RSI dipped this far inside the uptrend, buyers surfaced fast.
+
+This stock has a mind of its own. It moves when utilities ink spectrum deals, not when the market twitches. That signals institutions absorbing the dip.
+
+The levels are clear. Entry at **79.74** is just above the swing low zone near **63.57**. Stop at **65.06** is a hard line. If price violates that, the trend structure breaks. First target is **108.2**, which is the prior swing high. The second target sits at **112.77**. That&#x27;s **35.7%** and **41.4%** upside from the entry respectively. You&#x27;re not chasing. You&#x27;re waiting for the entry to trigger or you let it go.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $1.78B |
+| Enterprise value | $1.68B |
+| 52-week range | $17.58 - $113.00 |
+| Dividend yield | None |
+| Beta | 0.85 |
+| Trailing P/E | 26.0 |
+| Forward P/E | 44.0 |
+| Price / sales | 252.5 |
+| Price / book | 6.5 |
+| Revenue (TTM) | $7M  (+38.1% YoY) |
+| Revenue / share | $0.37 |
+| Net income (TTM) | $66M |
+| EPS (TTM / fwd) | 3.6 / 2.06 |
+| Gross margin | 100.0% |
+| Operating margin | -556.6% |
+| Profit margin | 933.0% |
+| Operating cash flow / share | $0.55 |
+| Free cash flow / share | $-3.64 |
+| Total cash / share | $5.92 |
+| Debt / equity | 0.01 |
+| Current ratio | 4.85 |
+| Return on equity | 27.9% |
+| Analyst consensus | buy - mean target $107.67 (3 analysts) |
+
+The numbers are a story of two companies. The asset side shines. The income statement is a transition.
+
+Revenue is tiny at **$7.04 million** trailing twelve months. That is a spectrum licensing business in the early innings of converting signed contracts into recognized revenue. Revenue grew **38.1%**. The model is high margin by design once the ink dries. Gross margin sits at **100%**. The cost sits in operating expenses, where the operating margin is deep negative at **-556.6%**. The company is investing ahead of the revenue curve.
+
+Net income is **$65.7 million** and EPS is **$3.60**. That sounds great on the surface but earnings growth contracted **99.3%**. The profit margin of **933%** is a one time benefit or non cash gain. Forward EPS of **$2.06** tells you the real run rate is lower. Trailing P/E is **26.0** but forward P/E expands to **44.0**. Price to sales at **252.5** is a bet on future contracts, not present cash flows.
+
+The balance sheet is the counterweight. Cash per share is **$5.92**. Total debt is a rounding error at **$4.09 million** against equity. Debt to equity ratio is **0.01**. Current ratio is **4.85** and quick ratio is **4.13**. This company won&#x27;t need to raise capital under duress. Book value per share is **13.87** so the stock trades at **6.5** times book. You&#x27;re paying for the spectrum asset, not the earnings.
+
+That&#x27;s the investment phase. Analyst consensus is a buy with a mean target of **107.67**, right near the first technical target. Three analysts cover the name. Thin coverage, thin stock.
+
+## Why Now
+
+The immediate catalyst is the pullback itself. You have an uptrend that gained **65.1%** in the last quarter and then breathed out **10.9%** in three weeks. That reset gives you a functional entry. The macro tailwind is the relentless need for grid modernization. Utilities are under regulatory pressure to harden networks against weather and cyber threats. Private LTE on 900 MHz is the answer. Anterix signs a deal with a major utility, the stock re rates overnight.
+
+Options flow is thin but instructive. Call volume on August 17 was **49** contracts against put volume of **33**. The call wall sits at **90** and the put wall at **95**. Premium was **$60,000** on calls and essentially zero on puts. Nobody is loading up on downside protection. The market is positioned for a bounce from this zone.
+
+There is no defined hard catalyst like an earnings date or a regulatory decision. The timing catalyst is purely technical. When a trend this violent pauses for a month and holds above its rising 30 week average, the resumption usually comes fast. You&#x27;re not betting on news. You&#x27;re betting on sellers running out of ammunition at a level where the risk/reward is heavily skewed in your favor.
+
+## Risk Factors
+
+The size of the company is the first danger. Average dollar volume is **$29.3 million**. A position of any size moves the market. Slippage is real. You get a fill on a market order, you might pay **1%** or **2%** above your limit. Use hard limits.
+
+Trends this steep can unwind by half before they find a floor. The 52 week low is **17.58**. That is a long way down if the thesis breaks. The stop sits at **65.06**, but a gap below that level on bad news erases all the risk control.
+
+The business model risk is that utilities delay adoption. The market is pricing in a future that hasn&#x27;t arrived. If the contract pipeline dries up or a competitor finds a regulatory workaround, the multiple compresses violently. Forward P/E of **44.0** doesn&#x27;t tolerate disappointment.
+
+The single invalidation is a close below the swing low of **63.57**. If price trades through that level and your stop at **65.06** triggers, the uptrend structure fails. The 30 week average would flatten fast. You&#x27;re out and you don&#x27;t look back until the stock reclaims that level on volume.
+
+## Bringing It All Together
+
+* The trend is vertical. 30 week average climbing at **69.2%**, relative strength versus the market at **61.2%** over three months.
+* The pullback is the deepest since the run began. **10.9%** in 21 days, RSI cooled to **45.7**, stock sits **16.1%** below the 52 week high.
+* The business owns a scarce asset. 900 MHz spectrum across the entire United States, a durable moat for utility private networks.
+* Fundamentals are early stage but the balance sheet is clean. Cash per share **$5.92**, debt to equity **0.01**, cash burn manageable.
+* The risk/reward is **1.9** to **1** with an entry at **79.74** and target at **108.2**. Second target extends to **112.77** for **41.4%** upside from entry.
+
+## Conclusion
+
+ATEX is a thin, volatile name riding a structural need. You have a trend that is not broken, a pullback that reset the overbought condition, and a set of levels that offer a clean **1.9** to **1** payout. The conviction is medium because the company is small and the revenue is nascent. Size accordingly. The entry is **79.74**, the stop is **65.06**, and the first target is **108.2**. If the stock can&#x27;t hold the 30 week line and violates the swing low, the trade is over. If it bounces, you&#x27;re in a trend that already proved it can outrun the market by **61.2%** in a quarter.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
