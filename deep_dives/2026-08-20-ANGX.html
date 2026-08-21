@@ -1,0 +1,202 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A Contrarian Studio in Recovery Mode — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>A Contrarian Studio in Recovery Mode</h1>
+<div class="subtitle">ANGX has destroyed the market for three months, directors just wrote $1.6M in checks, and the chart is mid‑range with fuel to a tested target. Risk is real at $72.7% below the high.</div>
+<div class="meta">EOD 2026-08-20 · ANGX · written from the desk · model deepseek-v4-pro</div>
+<div class="chips"><span class="chip">ANGX</span>
+<span class="chip">Communication Services</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-08-20: entry <b>$3.85</b> &rarr; <b>$4.37</b> (as of 2026-08-20) · <span class="pos">+13.5%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Communication Services as a sector is a neutral backdrop. No tailwind. No headwind. That matters because it means a stock here has to win on its own story. It cannot ride a theme. The sector is stable, flat acceleration, which tells you big money is not rotating in or out with force. A small‑cap studio that moves <strong>+75.5%</strong> in three months against that backdrop is saying something loud.</p>
+<p>ANGX is a media and streaming company. Revenue grew <strong>27.5%</strong> over the trailing twelve months while the broad market wrestles with high rates and consumer uncertainty. The gross margin is <strong>57.9%</strong>. That is high for a distributor of films and merchandise. It suggests a business with a light physical footprint and a direct relationship with its audience. When a cyclical consumer name prints growth and high gross margins while the sector idles in neutral, you pay attention.</p>
+<p>This backdrop rewards a recovery play where internal catalysts, not macro wind, drive the repricing. Directors stepped in with <strong>$1.6M</strong> in open‑market purchases. That is the internal catalyst. Groups of insiders buying in a cluster tell you they see value before the rest of the street does. Recovery plays fail often. The sector provides no cover. But when they work, the move is fast.</p>
+<h2>Introducing ANGX</h2>
+<p>Angel Studios is a media company that produces, distributes, and streams films and series. It came out of a rebrand in 2021 from VidAngel, a filtering and streaming pioneer. The business now operates a direct‑to‑consumer platform where viewers watch original and licensed content. It also sells physical media, apparel, and books, and licenses its content. The company runs on a community‑powered model. Fans invest, vote, and promote projects through the Angel Guild.</p>
+<p>That community is the edge. Angels fund production through crowdfunding. They become distributors. The cost structure stays lean because marketing spend is partly crowd‑sourced. This is not a capital‑intensive studio that sinks hundreds of millions into marketing and prays for a theatrical opening. It is a platform that matches supply with built‑in demand.</p>
+<p>The current ratio is low at <strong>0.65</strong>. This is a company that must execute. There is no margin for a capital raise gone wrong. But the forward EPS estimate of negative <strong>$0.24</strong> is a sharp improvement from <strong>-$0.83</strong> TTM. The market is pricing in a turn.</p>
+<h2>The Thesis</h2>
+<p>The desk flagged a tested pullback signal. A desk‑level internal ranking system I rely on confirmed it. ANGX has beaten the market by <strong>72.6%</strong> over three months. Directors bought <strong>$1.6M</strong> in a coordinated cluster. Bullish call flow landed on the same day, <strong>$0.31M</strong> in call premium against <strong>$0.02M</strong> in puts. That is conviction by insiders and options traders simultaneously. The signal is not a breakout chase. It is a controlled pullback setup with a reward‑to‑risk of <strong>1.4</strong>.</p>
+<p>The recovery is young. Price is <strong>72.7%</strong> below its 52‑week high of <strong>$20.39</strong>. The 30‑week moving average still slopes down by <strong>10.6%</strong>. That means the long‑term trend is repairing, not repaired. Conviction is MEDIUM. You size accordingly. This is a position that works if the turn is real and the cluster buying is prescient. It fails if the downtrend reasserts and the insiders were early.</p>
+<h2>Technical Analysis</h2>
+<p><figure class="chart"><img src="img/2026-08-20-ANGX.png" alt="ANGX weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=ANGX&interval=1W" target="_blank" rel="noopener">📈 Open the ANGX weekly chart on TradingView ↗</a><figcaption>ANGX weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $4.85 · mark support near $3.15.</figcaption></figure><br>The stock closed at <strong>$4.37</strong>. It sits above its 30‑week moving average. That is the first requirement for a recovery. The slope is still negative at <strong>-10.6%</strong>, so the average is a ceiling getting flatter, not a rising floor. Price is in the bottom <strong>12.7%</strong> of its 52‑week range. The 8‑week and 21‑week EMAs have not crossed in a way that screams momentum. This is early stage.</p>
+<p>The 14‑day RSI is <strong>53.8</strong>. That is mid‑range. It leaves room to run before overbought conditions cap the move. The stock is destroying the index. Dollar volume is thin at about <strong>$5.5M</strong> a day. For a stock that can move <strong>$0.35</strong> in a day, its average true range, you need to manage fill risk.</p>
+<p>The reference levels are the entry at <strong>$3.85</strong>, stop at <strong>$3.15</strong>, and target at <strong>$4.85</strong>. A secondary aggressive target sits at <strong>$5.42</strong>. Upside to the first target is <strong>26.0%</strong>. Risk to the stop is <strong>18.2%</strong>. The reward‑to‑risk of <strong>1.4</strong> is acceptable for a MEDIUM conviction setup.</p>
+<h2>Fundamentals</h2>
+<p><table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$834M</td></tr><tr><td class="k">Enterprise value</td><td class="v">$888M</td></tr><tr><td class="k">52-week range</td><td class="v">$2.04 - $20.39</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">-0.0</td></tr><tr><td class="k">Forward P/E</td><td class="v">-18.6</td></tr><tr><td class="k">Price / sales</td><td class="v">2.0</td></tr><tr><td class="k">Price / book</td><td class="v">-28.6</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$413M  (+27.5% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$2.43</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$-155M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">-0.83 / -0.24</td></tr><tr><td class="k">Gross margin</td><td class="v">57.9%</td></tr><tr><td class="k">Operating margin</td><td class="v">-16.6%</td></tr><tr><td class="k">Profit margin</td><td class="v">-37.5%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$-0.34</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$0.06</td></tr><tr><td class="k">Total cash / share</td><td class="v">$0.26</td></tr><tr><td class="k">Current ratio</td><td class="v">0.65</td></tr><tr><td class="k">Analyst consensus</td><td class="v">strong buy - mean target $8.00 (5 analysts)</td></tr></tbody></table><br>Revenue growth of <strong>27.5%</strong> is the headline. Operating margin of negative <strong>16.6%</strong> and profit margin of negative <strong>37.5%</strong> show the business is still spending heavily to grow. The loss is real. The free cash flow story is better. That tells you non‑cash charges and working capital are masking a less dire underlying situation.</p>
+<p>The balance sheet is fragile. Book value per share is negative <strong>$0.16</strong>. The current ratio is <strong>0.65</strong> and the quick ratio is <strong>0.46</strong>. The company operates with little liquidity. If free cash flow turns negative again, the equity gets punished.</p>
+<p>Five analysts cover the stock. The mean target is <strong>$8.00</strong> with a strong buy rating. The forward PE is negative <strong>18.6</strong>, but the EPS estimate of negative <strong>$0.24</strong> points to narrowing losses. Returns on assets are ugly at negative <strong>44.1%</strong>. The fundamental picture is a high‑margin grower that has to prove it can control costs and produce positive net income. The top‑line growth and high gross margin are the bull case foundation.</p>
+<h2>Why Now</h2>
+<p>The insider cluster is the near‑term catalyst. Directors bought <strong>$1.6M</strong> worth of stock. Groups of insiders buying around the same time tell you something changed internally. They have the best information on the content pipeline, subscriber trends, and cost trajectory. Options flow on August 19 confirmed it. Calls printed <strong>$0.31M</strong> in premium while puts registered just <strong>$0.02M</strong>. The call‑to‑put premium ratio was above <strong>15</strong> to <strong>1</strong>. That is directional betting alongside the insiders.</p>
+<p>There is no hard event catalyst. No earnings date, no FDA decision, no regulatory ruling. The next earnings is estimated in late 2026 based on the epoch. The catalyst here is the signal itself. A tested pullback setup on a stock with this much relative strength and insider commitment is the timing mechanism. The thesis works if price holds above the 30‑week average and breaks the <strong>$4.85</strong> swing high. It fails on a close below <strong>$3.15</strong>.</p>
+<h2>Risk Factors</h2>
+<p>The stock sits <strong>72.7%</strong> below its 52‑week high. The 30‑week moving average slopes down <strong>10.6%</strong>. The recovery is green. Most recoveries fail. The primary risk is a continuation of the downtrend. A break below the <strong>$3.15</strong> stop would invalidate the pattern and likely trigger a move toward the <strong>$2.67</strong> swing low. That is a <strong>27.9%</strong> loss from current levels. The thin dollar volume magnifies this risk. On a selloff, liquidity dries up. Slippage can be brutal.</p>
+<p>The balance sheet is a secondary risk. Negative book value and low liquidity leave no room for operational missteps. If free cash flow flips negative and the company needs capital, the stock will reprice lower fast. The sector is neutral with no acceleration. There is no macro tide to lift the boat.</p>
+<p>The single invalidation is a close below <strong>$3.15</strong>. That level is your hard stop. The timing risk around the catalyst is that insiders were early and the market needs another quarter or two to price in the turn. A missed target or slower subscriber growth could delay the repricing beyond a reasonable hold period.</p>
+<h2>Bringing It All Together</h2>
+<p>| Factor | Signal |<br>|---|---|<br>| Dual Focus | Revenue growth <strong>+27.5%</strong> with <strong>57.9%</strong> gross margins, a scalable community‑driven model |<br>| Market Need | Independent studio with built‑in audience in a neutral sector, no macro headwind |<br>| Fundamentals | Top‑line growth masking losses, FCF positive at <strong>$0.06</strong>/share, balance sheet fragile |<br>| Catalyst | <strong>$1.6M</strong> insider cluster buy and <strong>15:1</strong> call‑to‑put premium, signal tested with <strong>1.4</strong> reward‑to‑risk |<br>| Levels | Entry <strong>$3.85</strong>, stop <strong>$3.15</strong>, target <strong>$4.85</strong> (upside <strong>+26.0%</strong>), aggressive target <strong>$5.42</strong> |</p>
+<h2>Conclusion</h2>
+<p>ANGX is a high‑margin studio in recovery, flagged by a tested internal signal. Insiders put <strong>$1.6M</strong> to work along with lopsided call buying. Relative strength is <strong>+72.6%</strong> over three months. The chart is mid‑range with fuel to a <strong>$4.85</strong> target. Risk is that the downtrend reasserts with a close below <strong>$3.15</strong>. This is a MEDIUM conviction setup. Size it accordingly.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Angel Studios, Inc. (ANGX) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $834M; 52-week range $2-$20; Revenue $413M +28% YoY; Net income $-155M; Free cash flow/share $0.06. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Angel Studios, Inc. (ANGX) inside the Communication Services space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Tested pullback signal (**tested · risk-adjusted return 1.10 · p_bonf 0.0189 · tested) on a communication small cap that has beaten the market by **72.6%** over three months. Directors bought **$1.6M** in a cluster and the bullish call flow. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># A Contrarian Studio in Recovery Mode
+
+*ANGX has destroyed the market for three months, directors just wrote $1.6M in checks, and the chart is mid‑range with fuel to a tested target. Risk is real at $72.7% below the high.*
+
+## The Big Picture
+Communication Services as a sector is a neutral backdrop. No tailwind. No headwind. That matters because it means a stock here has to win on its own story. It cannot ride a theme. The sector is stable, flat acceleration, which tells you big money is not rotating in or out with force. A small‑cap studio that moves **+75.5%** in three months against that backdrop is saying something loud.
+
+ANGX is a media and streaming company. Revenue grew **27.5%** over the trailing twelve months while the broad market wrestles with high rates and consumer uncertainty. The gross margin is **57.9%**. That is high for a distributor of films and merchandise. It suggests a business with a light physical footprint and a direct relationship with its audience. When a cyclical consumer name prints growth and high gross margins while the sector idles in neutral, you pay attention.
+
+This backdrop rewards a recovery play where internal catalysts, not macro wind, drive the repricing. Directors stepped in with **$1.6M** in open‑market purchases. That is the internal catalyst. Groups of insiders buying in a cluster tell you they see value before the rest of the street does. Recovery plays fail often. The sector provides no cover. But when they work, the move is fast.
+
+## Introducing ANGX
+Angel Studios is a media company that produces, distributes, and streams films and series. It came out of a rebrand in 2021 from VidAngel, a filtering and streaming pioneer. The business now operates a direct‑to‑consumer platform where viewers watch original and licensed content. It also sells physical media, apparel, and books, and licenses its content. The company runs on a community‑powered model. Fans invest, vote, and promote projects through the Angel Guild.
+
+That community is the edge. Angels fund production through crowdfunding. They become distributors. The cost structure stays lean because marketing spend is partly crowd‑sourced. This is not a capital‑intensive studio that sinks hundreds of millions into marketing and prays for a theatrical opening. It is a platform that matches supply with built‑in demand.
+
+The current ratio is low at **0.65**. This is a company that must execute. There is no margin for a capital raise gone wrong. But the forward EPS estimate of negative **$0.24** is a sharp improvement from **-$0.83** TTM. The market is pricing in a turn.
+
+## The Thesis
+The desk flagged a tested pullback signal. A desk‑level internal ranking system I rely on confirmed it. ANGX has beaten the market by **72.6%** over three months. Directors bought **$1.6M** in a coordinated cluster. Bullish call flow landed on the same day, **$0.31M** in call premium against **$0.02M** in puts. That is conviction by insiders and options traders simultaneously. The signal is not a breakout chase. It is a controlled pullback setup with a reward‑to‑risk of **1.4**.
+
+The recovery is young. Price is **72.7%** below its 52‑week high of **$20.39**. The 30‑week moving average still slopes down by **10.6%**. That means the long‑term trend is repairing, not repaired. Conviction is MEDIUM. You size accordingly. This is a position that works if the turn is real and the cluster buying is prescient. It fails if the downtrend reasserts and the insiders were early.
+
+## Technical Analysis
+&gt; 📈 Insert the ANGX weekly chart here (TradingView): ANGX weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $4.85 · mark support near $3.15.
+The stock closed at **$4.37**. It sits above its 30‑week moving average. That is the first requirement for a recovery. The slope is still negative at **-10.6%**, so the average is a ceiling getting flatter, not a rising floor. Price is in the bottom **12.7%** of its 52‑week range. The 8‑week and 21‑week EMAs have not crossed in a way that screams momentum. This is early stage.
+
+The 14‑day RSI is **53.8**. That is mid‑range. It leaves room to run before overbought conditions cap the move. The stock is destroying the index. Dollar volume is thin at about **$5.5M** a day. For a stock that can move **$0.35** in a day, its average true range, you need to manage fill risk.
+
+The reference levels are the entry at **$3.85**, stop at **$3.15**, and target at **$4.85**. A secondary aggressive target sits at **$5.42**. Upside to the first target is **26.0%**. Risk to the stop is **18.2%**. The reward‑to‑risk of **1.4** is acceptable for a MEDIUM conviction setup.
+
+## Fundamentals
+| Metric | Value |
+|---|---|
+| Market cap | $834M |
+| Enterprise value | $888M |
+| 52-week range | $2.04 - $20.39 |
+| Dividend yield | None |
+| Beta | -0.0 |
+| Forward P/E | -18.6 |
+| Price / sales | 2.0 |
+| Price / book | -28.6 |
+| Revenue (TTM) | $413M  (+27.5% YoY) |
+| Revenue / share | $2.43 |
+| Net income (TTM) | $-155M |
+| EPS (TTM / fwd) | -0.83 / -0.24 |
+| Gross margin | 57.9% |
+| Operating margin | -16.6% |
+| Profit margin | -37.5% |
+| Operating cash flow / share | $-0.34 |
+| Free cash flow / share | $0.06 |
+| Total cash / share | $0.26 |
+| Current ratio | 0.65 |
+| Analyst consensus | strong buy - mean target $8.00 (5 analysts) |
+Revenue growth of **27.5%** is the headline. Operating margin of negative **16.6%** and profit margin of negative **37.5%** show the business is still spending heavily to grow. The loss is real. The free cash flow story is better. That tells you non‑cash charges and working capital are masking a less dire underlying situation.
+
+The balance sheet is fragile. Book value per share is negative **$0.16**. The current ratio is **0.65** and the quick ratio is **0.46**. The company operates with little liquidity. If free cash flow turns negative again, the equity gets punished.
+
+Five analysts cover the stock. The mean target is **$8.00** with a strong buy rating. The forward PE is negative **18.6**, but the EPS estimate of negative **$0.24** points to narrowing losses. Returns on assets are ugly at negative **44.1%**. The fundamental picture is a high‑margin grower that has to prove it can control costs and produce positive net income. The top‑line growth and high gross margin are the bull case foundation.
+
+## Why Now
+The insider cluster is the near‑term catalyst. Directors bought **$1.6M** worth of stock. Groups of insiders buying around the same time tell you something changed internally. They have the best information on the content pipeline, subscriber trends, and cost trajectory. Options flow on August 19 confirmed it. Calls printed **$0.31M** in premium while puts registered just **$0.02M**. The call‑to‑put premium ratio was above **15** to **1**. That is directional betting alongside the insiders.
+
+There is no hard event catalyst. No earnings date, no FDA decision, no regulatory ruling. The next earnings is estimated in late 2026 based on the epoch. The catalyst here is the signal itself. A tested pullback setup on a stock with this much relative strength and insider commitment is the timing mechanism. The thesis works if price holds above the 30‑week average and breaks the **$4.85** swing high. It fails on a close below **$3.15**.
+
+## Risk Factors
+The stock sits **72.7%** below its 52‑week high. The 30‑week moving average slopes down **10.6%**. The recovery is green. Most recoveries fail. The primary risk is a continuation of the downtrend. A break below the **$3.15** stop would invalidate the pattern and likely trigger a move toward the **$2.67** swing low. That is a **27.9%** loss from current levels. The thin dollar volume magnifies this risk. On a selloff, liquidity dries up. Slippage can be brutal.
+
+The balance sheet is a secondary risk. Negative book value and low liquidity leave no room for operational missteps. If free cash flow flips negative and the company needs capital, the stock will reprice lower fast. The sector is neutral with no acceleration. There is no macro tide to lift the boat.
+
+The single invalidation is a close below **$3.15**. That level is your hard stop. The timing risk around the catalyst is that insiders were early and the market needs another quarter or two to price in the turn. A missed target or slower subscriber growth could delay the repricing beyond a reasonable hold period.
+
+## Bringing It All Together
+| Factor | Signal |
+|---|---|
+| Dual Focus | Revenue growth **+27.5%** with **57.9%** gross margins, a scalable community‑driven model |
+| Market Need | Independent studio with built‑in audience in a neutral sector, no macro headwind |
+| Fundamentals | Top‑line growth masking losses, FCF positive at **$0.06**/share, balance sheet fragile |
+| Catalyst | **$1.6M** insider cluster buy and **15:1** call‑to‑put premium, signal tested with **1.4** reward‑to‑risk |
+| Levels | Entry **$3.85**, stop **$3.15**, target **$4.85** (upside **+26.0%**), aggressive target **$5.42** |
+
+## Conclusion
+ANGX is a high‑margin studio in recovery, flagged by a tested internal signal. Insiders put **$1.6M** to work along with lopsided call buying. Relative strength is **+72.6%** over three months. The chart is mid‑range with fuel to a **$4.85** target. Risk is that the downtrend reasserts with a close below **$3.15**. This is a MEDIUM conviction setup. Size it accordingly.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
