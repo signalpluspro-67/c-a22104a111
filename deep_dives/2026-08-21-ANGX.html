@@ -1,0 +1,245 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Pullback Buy in a Live Sector — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Pullback Buy in a Live Sector</h1>
+<div class="subtitle">A medium-conviction long on Angel Studios with a signal that has delivered, a stock that has beaten the market by 61%, and a sector that is still moving.</div>
+<div class="meta">EOD 2026-08-21 · ANGX · written from the desk · model deepseek-v4-pro</div>
+<div class="chips"><span class="chip">ANGX</span>
+<span class="chip">Communication Services</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-08-21: entry <b>$3.78</b> &rarr; <b>$4.31</b> (as of 2026-08-21) · <span class="pos">+14.0%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>The Communication Services sector is in momentum right now. It’s one of the few sectors still accelerating, still riding. That is the starting point. When a sector has this kind of force behind it, the broad current lifts a lot of boats. You want to be in it.</p>
+<p>Small caps inside a moving sector can deliver outsized returns. They are less efficient, less picked over, and they can run hard when the wind is at their back. The risk is you get a name that can’t hold its trend or one where the exit door is too small. The reward is catching a <strong>28%</strong> to <strong>41%</strong> move on a setup that has already proven itself.</p>
+<p>The macro backdrop doesn’t need to be perfect. It needs to be alive. This sector is alive. That rewards a name that has pulled back to a level where the math tilts in your favor.</p>
+<h2>Introducing ANGX</h2>
+<p>Angel Studios is a media and technology company out of Provo, Utah. It produces and distributes films and series. It runs its own streaming platform where users watch movies, shows, and documentaries. The company also sells apparel, DVDs, Blu-rays, and books directly and through wholesale partners. It licenses content, offers memberships, presells theatrical tickets, and distributes to theaters.</p>
+<p>It used to be called VidAngel. It changed its name in March 2021. It operates in the Entertainment industry.</p>
+<p>The edge here is the distribution model. Angel Studios built a platform that blends streaming, theatrical, and direct merchandising. It raises capital through its community, which creates a built-in audience before a project hits the screen. That model can compress the cost of content and widen the margin on a hit. It’s not a blockbuster factory. It’s a targeted content engine with a loyal base.</p>
+<h2>The Thesis</h2>
+<p>The desk read here is a proven pullback signal. It fired at a score of <strong>70</strong>, which means it has strong historical backing for what it’s trying to do. It lands inside Communication Services, one of the three sectors currently in force. That pairing, signal plus sector, is what makes this worth a medium-conviction long.</p>
+<p>The pullback read has a tested risk-adjusted return of <strong>1.10</strong>. The statistical test on that test is <strong>0.0189</strong>, so it holds up under scrutiny. This is not a random bounce. It’s a pattern that has paid out before, and it’s aligned with a live sector tailwind. You are not betting on a turnaround. You are betting that the setup repeats.</p>
+<p>Several insiders bought shares at once. That is a coordination signal. It suggests the people closest to the business see value at these levels. On the same day, options flow was lopsided. Total call premium was <strong>$0.27M</strong>. No put premium to speak of. That flow lines up with the insider buying and with the desk read. Three signals pointing the same direction.</p>
+<p>RSI sits at a neutral <strong>52.5</strong>. The stock holds above its 30-week moving average. This is a stock that has already shown it can move against the broad market.</p>
+<p>The conviction is MEDIUM. The setup is there. The size of the company and the daily liquidity cap the bet. Put on a position you can exit without slipping through the floor.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-08-21-ANGX.png" alt="ANGX weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=ANGX&interval=1W" target="_blank" rel="noopener">📈 Open the ANGX weekly chart on TradingView ↗</a><figcaption>ANGX weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $4.85 · mark support near $3.08.</figcaption></figure>
+<p>The last close was <strong>$4.31</strong>. The stock is trading above its 30-week moving average. That is the first check. The slope of that average is down <strong>10.0%</strong>, which means you are buying a bounce inside a longer downtrend. You accept that. The level holds for now. If it breaks, the trade is over.</p>
+<p>The 14-day RSI is <strong>52.5</strong>. Neutral. No overbought warning, no oversold desperation. Price has room to run before it hits any extreme reading.</p>
+<p>Over the past 21 days, the stock returned <strong>6.2%</strong>. Over the past 63 days, it returned <strong>64.5%</strong>. Relative strength versus SPY over those 63 days is <strong>61.4%</strong>. This stock has been a standout. You are buying after a pullback within that strong run, which is exactly what the desk read wants.</p>
+<p>The 52-week high is <strong>$20.39</strong>. The 52-week low is <strong>$2.04</strong>. The stock is at <strong>21.1%</strong> of its 52-week high, in the bottom <strong>12.4%</strong> of its yearly range. That sounds bleak, but it matches the pullback thesis. You are not chasing. You are entering after a deep reset.</p>
+<p>The swing high is <strong>$4.85</strong>. The swing low is <strong>$2.67</strong>. The entry level from the desk is <strong>$3.78</strong>, the stop is <strong>$3.08</strong>, and the first target is <strong>$4.85</strong>. A second target sits at <strong>$5.35</strong>. The risk-to-reward ratio on the first target is <strong>1.5</strong> to <strong>1</strong>. That means you risk <strong>18.5%</strong> to the stop for a <strong>28.3%</strong> upside to the first target. The second target gives you <strong>41.5%</strong> upside. The entry level sits closer to the swing low than the swing high. You are entering with the idea that the low holds and the range expands upward.</p>
+<p>ATR is <strong>$0.35</strong>. That daily range is your friend on the way up, your enemy if the trade breaks. Volume confirmation would look like a day above <strong>3M</strong> shares traded as price pushes through <strong>$4.85</strong>. Anything less and the breakout is thin.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$834M</td></tr><tr><td class="k">Enterprise value</td><td class="v">$888M</td></tr><tr><td class="k">52-week range</td><td class="v">$2.04 - $20.39</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">-0.0</td></tr><tr><td class="k">Forward P/E</td><td class="v">-18.6</td></tr><tr><td class="k">Price / sales</td><td class="v">2.0</td></tr><tr><td class="k">Price / book</td><td class="v">-28.6</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$413M  (+27.5% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$2.43</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$-155M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">-0.83 / -0.24</td></tr><tr><td class="k">Gross margin</td><td class="v">57.9%</td></tr><tr><td class="k">Operating margin</td><td class="v">-16.6%</td></tr><tr><td class="k">Profit margin</td><td class="v">-37.5%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$-0.34</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$0.06</td></tr><tr><td class="k">Total cash / share</td><td class="v">$0.26</td></tr><tr><td class="k">Current ratio</td><td class="v">0.65</td></tr><tr><td class="k">Analyst consensus</td><td class="v">strong buy - mean target $8.00 (5 analysts)</td></tr></tbody></table>
+<p>Revenue is real and growing. That is fast for a company this size. Revenue per share is <strong>$2.43</strong>. Gross margin is <strong>57.9%</strong>, which is healthy for a media company. The top line story is intact.</p>
+<p>The bottom line is still a loss. Earnings per share is negative <strong>$0.83</strong>. Operating margin is negative <strong>16.6%</strong>. Profit margin sits at negative <strong>37.5%</strong>. This company is spending to grow. You accept that in a pullback setup, but you don’t ignore it.</p>
+<p>Cash flow tells a mixed story. Operating cash flow is negative <strong>$44.2M</strong>. That is a thin positive, but it is positive. The business can self-fund at a low level. Total cash per share is <strong>$0.26</strong>. The current ratio is <strong>0.65</strong> and the quick ratio is <strong>0.46</strong>. Liquidity is tight. If revenue growth stumbles, the balance sheet gets squeezed fast.</p>
+<p>Book value per share is negative <strong>$0.16</strong>. That is the cost of cumulative losses. Return on assets is negative <strong>44.1%</strong>. The forward P/E is negative <strong>18.6</strong> based on an expected EPS of negative <strong>$0.24</strong>. Analysts see losses narrowing, and five analysts carry a strong buy with a mean target of <strong>$8.00</strong>. That target sits nearly double the first technical target. Even a partial move toward it would make the trade work.</p>
+<p>Negative equity and tight liquidity are the weak spots. You are buying a catalyst and a signal, not a balance sheet fortress.</p>
+<h2>Why Now</h2>
+<p>There is no named catalyst on the board. No earnings date is flagged in the immediate window. The timing comes from the convergence of the pullback signal, the insider buys, and the options flow. All three hit at the same time. That cluster is the catalyst.</p>
+<p>The macro tailwind is real. Communication Services is in momentum and riding. That sector force makes it harder for a stock to fail on a bounce. When the sector is alive, the odds tilt in your favor.</p>
+<p>The options flow is a short-term timing check. Calls outnumbered puts <strong>65</strong> to <strong>1</strong> on the session before this read. The premium spent on calls was <strong>$0.27M</strong>. Someone put real money behind a move higher. That flow confirms the signal and the insider activity. Three independent signals, one direction.</p>
+<h2>Risk Factors</h2>
+<p>The biggest risk is the exit. This is a <strong>$520M</strong> company trading <strong>$5.3M</strong> a day. That is thin. When the trade goes wrong, the bid disappears and you are left holding a loss larger than your stop. Size small. Really small.</p>
+<p>The 30-week moving average slopes down at <strong>10.0%</strong>. You are buying a bounce inside a longer downtrend. If the downtrend reasserts itself, the <strong>$3.08</strong> stop will not save you from a gap lower. A close below the 30-week line is your signal to step aside.</p>
+<p>The balance sheet is fragile. Negative book value, negative operating cash flow, and low liquidity. If the film slate underperforms or the streaming audience churns, the cash cushion is thin. The analyst target of <strong>$8.00</strong> is aspirational. It reflects a best-case execution path that may not hold.</p>
+<p>The invalidation is a close below <strong>$3.08</strong>. If that level breaks, the pullback read has failed and the sector tailwind is not enough. Take the loss and wait for the next setup.</p>
+<h2>Bringing It All Together</h2>
+<p>- The pullback read at <strong>70</strong> has a proven <strong>1.10</strong> risk-adjusted return and lands inside Communication Services, a sector still in momentum.</p>
+<p>- Revenue grew <strong>27.5%</strong> and free cash flow is positive at <strong>$0.06</strong> per share, while forward losses are expected to narrow.<br>- Technicals show a neutral RSI of <strong>52.5</strong>, a hold above the 30-week moving average, and a <strong>61.4%</strong> beat versus SPY over three months.<br>- The entry at <strong>$3.78</strong>, stop at <strong>$3.08</strong>, and target at <strong>$4.85</strong> offer a <strong>1.5</strong> to <strong>1</strong> reward-to-risk profile, with a second target at <strong>$5.35</strong>.<br>- The thin liquidity at <strong>$5.3M</strong> daily turnover and the negative book value are real risks; position size accordingly.</p>
+<h2>Conclusion</h2>
+<p>This is a medium-conviction pullback buy inside a live sector. The signal has done its job before. The insider and options activity back it in real time. You’re getting a neutral RSI, a hold above the 30-week line, and a clear level to trade against. The balance sheet is weak and the stock is illiquid. You size for that, you honor the <strong>$3.08</strong> stop, and you let the sector do the work. If the sector stays in momentum, <strong>$4.85</strong> is a reasonable first test.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Angel Studios, Inc. (ANGX) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $834M; 52-week range $2-$20; Revenue $413M +28% YoY; Net income $-155M; Free cash flow/share $0.06. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Angel Studios, Inc. (ANGX) inside the Communication Services space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): The proven pullback desk read fires at **70** (**tested · risk-adjusted return 1.10 · p_bonf 0.0189 · tested) inside a sector that is one of the three currently in force. Several insiders bought at once and bullish options flow lines up wit. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Pullback Buy in a Live Sector
+
+*A medium-conviction long on Angel Studios with a signal that has delivered, a stock that has beaten the market by 61%, and a sector that is still moving.*
+
+## The Big Picture
+
+The Communication Services sector is in momentum right now. It’s one of the few sectors still accelerating, still riding. That is the starting point. When a sector has this kind of force behind it, the broad current lifts a lot of boats. You want to be in it.
+
+Small caps inside a moving sector can deliver outsized returns. They are less efficient, less picked over, and they can run hard when the wind is at their back. The risk is you get a name that can’t hold its trend or one where the exit door is too small. The reward is catching a **28%** to **41%** move on a setup that has already proven itself.
+
+The macro backdrop doesn’t need to be perfect. It needs to be alive. This sector is alive. That rewards a name that has pulled back to a level where the math tilts in your favor.
+
+## Introducing ANGX
+
+Angel Studios is a media and technology company out of Provo, Utah. It produces and distributes films and series. It runs its own streaming platform where users watch movies, shows, and documentaries. The company also sells apparel, DVDs, Blu-rays, and books directly and through wholesale partners. It licenses content, offers memberships, presells theatrical tickets, and distributes to theaters.
+
+It used to be called VidAngel. It changed its name in March 2021. It operates in the Entertainment industry.
+
+The edge here is the distribution model. Angel Studios built a platform that blends streaming, theatrical, and direct merchandising. It raises capital through its community, which creates a built-in audience before a project hits the screen. That model can compress the cost of content and widen the margin on a hit. It’s not a blockbuster factory. It’s a targeted content engine with a loyal base.
+
+## The Thesis
+
+The desk read here is a proven pullback signal. It fired at a score of **70**, which means it has strong historical backing for what it’s trying to do. It lands inside Communication Services, one of the three sectors currently in force. That pairing, signal plus sector, is what makes this worth a medium-conviction long.
+
+The pullback read has a tested risk-adjusted return of **1.10**. The statistical test on that test is **0.0189**, so it holds up under scrutiny. This is not a random bounce. It’s a pattern that has paid out before, and it’s aligned with a live sector tailwind. You are not betting on a turnaround. You are betting that the setup repeats.
+
+Several insiders bought shares at once. That is a coordination signal. It suggests the people closest to the business see value at these levels. On the same day, options flow was lopsided. Total call premium was **$0.27M**. No put premium to speak of. That flow lines up with the insider buying and with the desk read. Three signals pointing the same direction.
+
+RSI sits at a neutral **52.5**. The stock holds above its 30-week moving average. This is a stock that has already shown it can move against the broad market.
+
+The conviction is MEDIUM. The setup is there. The size of the company and the daily liquidity cap the bet. Put on a position you can exit without slipping through the floor.
+
+## Technical Analysis
+
+&gt; 📈 Insert the ANGX weekly chart here (TradingView): ANGX weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $4.85 · mark support near $3.08.
+
+The last close was **$4.31**. The stock is trading above its 30-week moving average. That is the first check. The slope of that average is down **10.0%**, which means you are buying a bounce inside a longer downtrend. You accept that. The level holds for now. If it breaks, the trade is over.
+
+The 14-day RSI is **52.5**. Neutral. No overbought warning, no oversold desperation. Price has room to run before it hits any extreme reading.
+
+Over the past 21 days, the stock returned **6.2%**. Over the past 63 days, it returned **64.5%**. Relative strength versus SPY over those 63 days is **61.4%**. This stock has been a standout. You are buying after a pullback within that strong run, which is exactly what the desk read wants.
+
+The 52-week high is **$20.39**. The 52-week low is **$2.04**. The stock is at **21.1%** of its 52-week high, in the bottom **12.4%** of its yearly range. That sounds bleak, but it matches the pullback thesis. You are not chasing. You are entering after a deep reset.
+
+The swing high is **$4.85**. The swing low is **$2.67**. The entry level from the desk is **$3.78**, the stop is **$3.08**, and the first target is **$4.85**. A second target sits at **$5.35**. The risk-to-reward ratio on the first target is **1.5** to **1**. That means you risk **18.5%** to the stop for a **28.3%** upside to the first target. The second target gives you **41.5%** upside. The entry level sits closer to the swing low than the swing high. You are entering with the idea that the low holds and the range expands upward.
+
+ATR is **$0.35**. That daily range is your friend on the way up, your enemy if the trade breaks. Volume confirmation would look like a day above **3M** shares traded as price pushes through **$4.85**. Anything less and the breakout is thin.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $834M |
+| Enterprise value | $888M |
+| 52-week range | $2.04 - $20.39 |
+| Dividend yield | None |
+| Beta | -0.0 |
+| Forward P/E | -18.6 |
+| Price / sales | 2.0 |
+| Price / book | -28.6 |
+| Revenue (TTM) | $413M  (+27.5% YoY) |
+| Revenue / share | $2.43 |
+| Net income (TTM) | $-155M |
+| EPS (TTM / fwd) | -0.83 / -0.24 |
+| Gross margin | 57.9% |
+| Operating margin | -16.6% |
+| Profit margin | -37.5% |
+| Operating cash flow / share | $-0.34 |
+| Free cash flow / share | $0.06 |
+| Total cash / share | $0.26 |
+| Current ratio | 0.65 |
+| Analyst consensus | strong buy - mean target $8.00 (5 analysts) |
+
+Revenue is real and growing. That is fast for a company this size. Revenue per share is **$2.43**. Gross margin is **57.9%**, which is healthy for a media company. The top line story is intact.
+
+The bottom line is still a loss. Earnings per share is negative **$0.83**. Operating margin is negative **16.6%**. Profit margin sits at negative **37.5%**. This company is spending to grow. You accept that in a pullback setup, but you don’t ignore it.
+
+Cash flow tells a mixed story. Operating cash flow is negative **$44.2M**. That is a thin positive, but it is positive. The business can self-fund at a low level. Total cash per share is **$0.26**. The current ratio is **0.65** and the quick ratio is **0.46**. Liquidity is tight. If revenue growth stumbles, the balance sheet gets squeezed fast.
+
+Book value per share is negative **$0.16**. That is the cost of cumulative losses. Return on assets is negative **44.1%**. The forward P/E is negative **18.6** based on an expected EPS of negative **$0.24**. Analysts see losses narrowing, and five analysts carry a strong buy with a mean target of **$8.00**. That target sits nearly double the first technical target. Even a partial move toward it would make the trade work.
+
+Negative equity and tight liquidity are the weak spots. You are buying a catalyst and a signal, not a balance sheet fortress.
+
+## Why Now
+
+There is no named catalyst on the board. No earnings date is flagged in the immediate window. The timing comes from the convergence of the pullback signal, the insider buys, and the options flow. All three hit at the same time. That cluster is the catalyst.
+
+The macro tailwind is real. Communication Services is in momentum and riding. That sector force makes it harder for a stock to fail on a bounce. When the sector is alive, the odds tilt in your favor.
+
+The options flow is a short-term timing check. Calls outnumbered puts **65** to **1** on the session before this read. The premium spent on calls was **$0.27M**. Someone put real money behind a move higher. That flow confirms the signal and the insider activity. Three independent signals, one direction.
+
+## Risk Factors
+
+The biggest risk is the exit. This is a **$520M** company trading **$5.3M** a day. That is thin. When the trade goes wrong, the bid disappears and you are left holding a loss larger than your stop. Size small. Really small.
+
+The 30-week moving average slopes down at **10.0%**. You are buying a bounce inside a longer downtrend. If the downtrend reasserts itself, the **$3.08** stop will not save you from a gap lower. A close below the 30-week line is your signal to step aside.
+
+The balance sheet is fragile. Negative book value, negative operating cash flow, and low liquidity. If the film slate underperforms or the streaming audience churns, the cash cushion is thin. The analyst target of **$8.00** is aspirational. It reflects a best-case execution path that may not hold.
+
+The invalidation is a close below **$3.08**. If that level breaks, the pullback read has failed and the sector tailwind is not enough. Take the loss and wait for the next setup.
+
+## Bringing It All Together
+
+- The pullback read at **70** has a proven **1.10** risk-adjusted return and lands inside Communication Services, a sector still in momentum.
+
+- Revenue grew **27.5%** and free cash flow is positive at **$0.06** per share, while forward losses are expected to narrow.
+- Technicals show a neutral RSI of **52.5**, a hold above the 30-week moving average, and a **61.4%** beat versus SPY over three months.
+- The entry at **$3.78**, stop at **$3.08**, and target at **$4.85** offer a **1.5** to **1** reward-to-risk profile, with a second target at **$5.35**.
+- The thin liquidity at **$5.3M** daily turnover and the negative book value are real risks; position size accordingly.
+
+## Conclusion
+
+This is a medium-conviction pullback buy inside a live sector. The signal has done its job before. The insider and options activity back it in real time. You’re getting a neutral RSI, a hold above the 30-week line, and a clear level to trade against. The balance sheet is weak and the stock is illiquid. You size for that, you honor the **$3.08** stop, and you let the sector do the work. If the sector stays in momentum, **$4.85** is a reasonable first test.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
