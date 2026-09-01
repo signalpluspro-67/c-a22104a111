@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Bloc app en tête d'article + paywall · The Philosopher Investor</title>
+<style>
+  :root{
+    --bg:#f4efe6; --card:#fbf8f1; --ink:#2b2620; --mute:#857c6e;
+    --line:#e3dac8; --accent:#9a6a3a; --good:#3f7d4e; --bad:#9b3b34; --chip:#efe7d6;
+    --sub:#3d7e91;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+  .wrap{max-width:900px;margin:0 auto;padding:28px 18px 100px}
+  .back{display:inline-block;margin-bottom:12px;font-size:.85rem;color:var(--accent);text-decoration:none}
+  header h1{font-size:1.65rem;margin:0 0 4px}
+  header p{color:var(--mute);margin:0 0 6px}
+  .lock{background:#f0e8d8;border:1px solid var(--line);border-left:4px solid var(--accent);
+    border-radius:12px;padding:14px 18px;margin:14px 0 6px;font-size:.92rem}
+  .lock b{color:var(--accent)}
+  .lock code{background:#fff;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:.85em}
+  .howto{background:#eef3ec;border:1px solid #cfe0cd;border-left:4px solid var(--good);
+    border-radius:12px;padding:12px 16px;margin:12px 0 6px;font-size:.9rem;color:#3f4a3d}
+  .howto b{color:var(--good)}
+  .howto code{background:#fff;border:1px solid #cfe0cd;border-radius:5px;padding:1px 6px;font-size:.85em}
+  .warnbox{background:#faf1ef;border:1px solid #e0c3bd;border-left:4px solid var(--bad);
+    border-radius:12px;padding:12px 16px;margin:12px 0;font-size:.9rem;color:#6b4a45}
+  .warnbox b{color:var(--bad)}
+  h2.grp{font-size:1.05rem;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);
+    margin:38px 0 2px;padding-bottom:6px;border-bottom:2px solid var(--line)}
+  h2.grp span{color:var(--mute);text-transform:none;letter-spacing:0;font-weight:400;font-size:.85rem}
+  section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:18px 0}
+  section>h3{font-size:1.12rem;margin:0 0 4px}
+  section>.sub{color:var(--mute);font-size:.9rem;margin:0 0 10px}
+  .field{border:1px solid var(--line);border-radius:10px;background:#fff;margin:6px 0}
+  .field .bar{display:flex;justify-content:space-between;align-items:center;gap:10px;
+    padding:7px 11px;border-bottom:1px solid var(--line);background:#fcfaf4;border-radius:10px 10px 0 0}
+  .field .bar b{font-size:.83rem}
+  .copytext{margin:0;padding:12px 15px;font:14.5px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:#33302a}
+  .copytext p{margin:0 0 11px}
+  .copytext p:last-child{margin-bottom:0}
+  .copytext ul{margin:0 0 11px;padding-left:22px}
+  .copytext li{margin:4px 0}
+  .copytext strong{font-weight:700;color:#231f19}
+  .copytext a{color:var(--accent);text-decoration:underline}
+  .copytext .kicker{font-family:ui-monospace,Menlo,monospace;font-size:.86em;letter-spacing:.03em;text-transform:uppercase}
+  button.copy{border:1px solid var(--accent);background:var(--accent);color:#fff;
+    border-radius:7px;padding:4px 11px;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap}
+  button.copy.done{background:var(--good);border-color:var(--good)}
+  button.copy.warn{background:var(--bad);border-color:var(--bad)}
+  .btnline{font-size:.86rem;color:var(--mute);margin:8px 0 0}
+  .btnline b{color:var(--ink)}
+  .btnline code{background:var(--chip);border-radius:5px;padding:1px 6px;font-size:.9em}
+  .note{color:var(--mute);font-size:.85rem;margin-top:10px}
+  .facts{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}
+  .facts span{background:#fff;border:1px solid var(--line);border-radius:8px;padding:4px 10px;font-size:.84rem}
+  .facts b{color:var(--accent)}
+  code{background:var(--chip);border-radius:5px;padding:1px 6px;font-size:.9em}
+  a{color:var(--accent)}
+  ol.rot{margin:6px 0 0;padding-left:22px;font-size:.92rem}
+  ol.rot li{margin:4px 0}
+  .vlabel{font-size:.74rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--accent);margin:14px 0 4px}
+  .vlabel .reco{background:var(--good);color:#fff;border-radius:5px;padding:1px 7px;margin-left:6px}
+  /* aperçu façon Substack */
+  .prev{background:#fff;border:1px solid var(--line);border-radius:10px;padding:22px 26px;margin:8px 0 0;
+    font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:#1f1d1a}
+  .prev .rule{border-top:2px solid var(--sub);margin:0 0 20px}
+  .prev h4{text-align:center;font-size:1.22rem;margin:0 0 12px;font-weight:800}
+  .prev .lede{text-align:center;color:#4a463f;margin:0 auto 16px;max-width:440px}
+  .prev .cta{text-align:center;margin:0 0 20px}
+  .prev .cta span{display:inline-block;background:var(--sub);color:#fff;font-weight:700;
+    border-radius:5px;padding:10px 22px;font-size:.95rem}
+  .prev .subh{font-weight:800;margin:0 0 8px}
+  .prev ul{margin:0;padding-left:20px}
+  .prev li{margin:6px 0}
+  .prevcap{font-size:.78rem;color:var(--mute);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<a class="back" href="marketing_hub.html">&larr; Marketing hub</a>
+
+<header>
+  <h1>Le bloc app en tête d'article, et le paywall en bas</h1>
+  <p>Format calé sur le best-seller que tu m'as montré : bloc court en haut avec un bouton, puis le mur « Keep reading with a 7-day free trial » en bas avec la liste de ce que l'abonnement donne. Chez lui le bouton vend 25% de remise ; chez toi il vend l'essai de 7 jours, l'offre fondateur étant finie. Tu copies, tu colles, tu ajoutes le bouton Substack.</p>
+  <div class="facts">
+    <span><b>80</b> features depuis le 4 juillet</span>
+    <span><b>26</b> boards</span>
+    <span><b>12,000+</b> noms scannés chaque nuit</span>
+    <span><b>35</b> leçons d'academy</span>
+    <span>essai <b>7 jours</b></span>
+    <span><b>$20</b>/mois ou <b>$200</b>/an</span>
+  </div>
+</header>
+
+<div class="howto">
+  <b>Le geste, en trois temps :</b> (1) clique <b>Copier</b>, colle dans Substack, le gras et les puces tiennent ; (2) sélectionne la ligne finale et remplace-la par un vrai bouton (barre d'outils Substack, bouton, colle le lien d'essai dedans) ; (3) pour le paywall, place le curseur à l'endroit de la coupe et utilise le bouton <code>Paywall</code> de Substack. Le mur du bas, Substack le génère seul : les blocs de la section 2 servent quand tu veux écrire ton propre argumentaire au-dessus du mur.
+</div>
+
+<div class="lock">
+  <b>Verrouillé partout :</b> essai <b>7 jours</b> &middot; puis <b>$20/mois</b> ou <b>$200/an</b> &middot; lien d'essai <code>https://philosopherinvestor.substack.com/subscribe?coupon=d30ae56d</code> &middot; app <code>app.thephilosopherinvestor.com</code>.
+  <div class="note">Le lien va sur Substack, c'est lui qui débloque l'app : le lecteur prend l'essai, puis se connecte à l'app avec le même email. Chiffres relus le 20/08 dans le rail de features (82 entrées, 80 depuis le 4 juillet) et dans les boards de l'app (26).</div>
+</div>
+
+<div class="warnbox">
+  <b>Interdits tenus dans tous les blocs :</b> aucune perf annoncée, aucune promesse de suivi, aucun nom de screener interne, aucun tiret cadratin, aucune remise qui n'existe plus. Le bloc du haut fait 4 à 8 lignes, jamais plus : au-delà, le lecteur décroche avant ton article.
+</div>
+
+<h2 class="grp">1. En tête d'article <span>court, un bouton, tous les numéros</span></h2>
+
+<!-- ============ A ============ -->
+<section>
+  <h3>A. Le teaser système</h3>
+  <p class="sub">Le défaut. Il dit d'où sort l'article, ce qui est l'argument le plus fort que tu aies.</p>
+
+  <div class="vlabel">Bloc à coller <span class="reco">reco</span></div>
+  <div class="field">
+    <div class="bar"><b>Texte</b><button class="copy" onclick="copyBlock(this)">Copier</button></div>
+    <div class="copytext">
+<p>Before we start, one word on where this comes from.</p>
+<p>Everything below sits on one screen I built for myself. It reads the whole US market after every close, 12,000+ names, and hands back the few worth a morning. Paid readers open that same screen, and get every issue of this letter in full.</p>
+<p>The first week is free. Then $20 a month or $200 a year, cancel in one click.</p>
+<p><a href="https://philosopherinvestor.substack.com/subscribe?coupon=d30ae56d"><strong>Start your 7-day free trial &rarr;</strong></a></p>
+    </div>
+  </div>
+  <p class="btnline">Bouton Substack : <b>Start Your 7-Day Free Trial</b> &middot; lien <code>subscribe?coupon=d30ae56d</code></p>
+</section>
+
+<!-- ============ B ============ -->
+<section>
+  <h3>B. La ligne alerte</h3>
+  <p class="sub">La forme exacte de ton best-seller : un emoji, un label en gras, deux phrases, le bouton. C'est la plus courte des cinq.</p>
+
+  <div class="field">
+    <div class="bar"><b>Texte</b><button class="copy" onclick="copyBlock(this)">Copier</button></div>
+    <div class="copytext">
+<p>🖥 <strong>Get the whole desk:</strong> every subscriber gets this letter. Paid readers also get the app behind it, where twenty-six boards run every night on 12,000+ US names and hand back the few that matter, each with its levels and one plain read of why it is there.</p>
+<p>Free for 7 days, then $20 a month.</p>
+<p><a href="https://philosopherinvestor.substack.com/subscribe?coupon=d30ae56d"><strong>Open the app &rarr;</strong></a></p>
+    </div>
+  </div>
+  <p class="btnline">Bouton Substack : <b>Open The App</b> &middot; lien <code>subscribe?coupon=d30ae56d</code></p>
+</section>
+
+<!-- ============ C ============ -->
+<section>
+  <h3>C. Le rituel du matin</h3>
+  <p class="sub">Le lecteur se projette dans une routine. C'est l'angle qui donne le plus envie de cliquer, et il ne cite aucune fonctionnalité.</p>
+
+  <div class="field">
+    <div class="bar"><b>Texte</b><button class="copy" onclick="copyBlock(this)">Copier</button></div>
+    <div class="copytext">
+<p>I open the app before I place a trade. Five minutes, in this order: what moved overnight, the boards that ran while I slept, the name itself with its levels, then my own book.</p>
+<p>Then I place a trade, or I place nothing. Most mornings it is nothing, and knowing that in five minutes is the whole point.</p>
+<p>That screen is open to paid readers, and the first week is free.</p>
+<p><a href="https://philosopherinvestor.substack.com/subscribe?coupon=d30ae56d"><strong>Try it for a week &rarr;</strong></a></p>
+    </div>
+  </div>
+  <p class="btnline">Bouton Substack : <b>Try It For A Week</b> &middot; lien <code>subscribe?coupon=d30ae56d</code></p>
+</section>
+
+<!-- ============ D ============ -->
+<section>
+  <h3>D. La version honnête</h3>
+  <p class="sub">Tu dis d'abord ce que l'app ne fait pas. Sur un lecteur déjà déçu par des vendeurs de signaux, c'est l'angle le plus crédible.</p>
+
+  <div class="field">
+    <div class="bar"><b>Texte</b><button class="copy" onclick="copyBlock(this)">Copier</button></div>
+    <div class="copytext">
+<p>One honest word before we start.</p>
+<p>The tool behind this letter predicts nothing and will never tell you what to buy. Here is what it does. Every night after the close it reads 12,000+ US names, runs twenty-six setups on them, and hands you the few that fit, each with its levels and the price that says the idea is wrong. It does the work. You keep the judgment.</p>
+<p>Free for 7 days, then $20 a month or $200 a year.</p>
+<p><a href="https://philosopherinvestor.substack.com/subscribe?coupon=d30ae56d"><strong>See it for yourself &rarr;</strong></a></p>
+    </div>
+  </div>
+  <p class="btnline">Bouton Substack : <b>See It For Yourself</b> &middot; lien <code>subscribe?coupon=d30ae56d</code></p>
+</section>
+
+<!-- ============ E ============ -->
+<section>
+  <h3>E. Ce qui vient d'être livré</h3>
+  <p class="sub">L'angle vitesse, à sortir quand tu viens de livrer une feature. Remplace le crochet, garde le reste.</p>
+
+  <div class="field">
+    <div class="bar"><b>Texte</b><button class="copy" onclick="copyBlock(this)">Copier</button></div>
+    <div class="copytext">
+<p>A word on the app behind this letter. It opened on July 4. Since then I have shipped <strong>80 improvements</strong> to it, and members got every one the day it landed.</p>
+<p>This week: [ LA FEATURE, UNE PHRASE ].</p>
+<p>You are not buying a finished product. You are joining one that moves every week. The first week is free.</p>
+<p><a href="https://philosopherinvestor.substack.com/subscribe?coupon=d30ae56d"><strong>See what landed &rarr;</strong></a></p>
+    </div>
+  </div>
+  <p class="btnline">Bouton Substack : <b>See What Landed</b> &middot; lien <code>subscribe?coupon=d30ae56d</code></p>
+  <p class="note">Le « 80 » est daté au 20 août. Demande-moi le vrai chiffre avant de recoller ce bloc dans un mois.</p>
+</section>
+
+<!-- ============ F ============ -->
+<section>
+  <h3>F. Le bouton et sa ligne</h3>
+  <p class="sub">Le format TradersPro : un bouton centré, une seule ligne dessous qui déballe tout d'un trait. C'est le plus court de tous, et il se pose au MILIEU de l'article, pas en tête. Zéro phrase de vente, une énumération sèche.</p>
+
+  <div class="field">
+    <div class="bar"><b>Texte</b><button class="copy" onclick="copyBlock(this)">Copier</button></div>
+    <div class="copytext">
+<p><a href="https://philosopherinvestor.substack.com/subscribe?coupon=d30ae56d"><strong>Open the app &rarr;</strong></a></p>
+<p>Unlock the nightly boards, any US ticker in full, the dealer map, options flow, insider and fund moves, alerts on your own names, and the academy. Free for 7 days.</p>
+    </div>
+  </div>
+
+  <div class="prev">
+    <p class="cta"><span style="background:#e8722c">Open the app</span></p>
+    <p class="lede">Unlock the nightly boards, any US ticker in full, the dealer map, options flow, insider and fund moves, alerts on your own names, and the academy. Free for 7 days.</p>
+  </div>
+  <p class="prevcap">Aperçu du rendu. Bouton Substack centré, la ligne juste en dessous, en petit.</p>
+  <p class="btnline">Bouton Substack : <b>Open The App</b> &middot; lien <code>subscribe?coupon=d30ae56d</code></p>
+  <p class="note">La ligne peut se réécrire pour coller au numéro : sur un numéro options, tu mets le dealer map et le flow en tête d'énumération. Garde-la sur une phrase.</p>
+</section>
+
+<!-- ============ G ============ -->
+<section>
+  <h3>G. La porte d'entrée</h3>
+  <p class="sub">L'autre pièce du même email : une ligne pour ceux qui découvrent, tout en haut, avant le premier titre. Elle ne vend rien, elle oriente. Elle marche sur les numéros gratuits que tu partages sur X.</p>
+
+  <div class="field">
+    <div class="bar"><b>Texte</b><button class="copy" onclick="copyBlock(this)">Copier</button></div>
+    <div class="copytext">
+<p>New here? Here is how I read a market, and the screen I do it on.</p>
+<p><a href="https://philosopherinvestor.substack.com/subscribe?coupon=d30ae56d"><strong>Start here &rarr;</strong></a></p>
+    </div>
+  </div>
+  <p class="btnline">Rendu attendu : lien en gras souligné avec une barre verticale à gauche, comme un filet de citation. Substack le fait avec le style Quote.</p>
+</section>
+
+<!-- ============ H ============ -->
+<section>
+  <h3>H. Le pied de page</h3>
+  <p class="sub">Deux lignes en italique tout en bas, sous ta signature. Elles rappellent qu'il existe autre chose que la lettre hebdo.</p>
+
+  <div class="field">
+    <div class="bar"><b>Texte</b><button class="copy" onclick="copyBlock(this)">Copier</button></div>
+    <div class="copytext">
+<p><em>Every night, the market gets read for you.</em><br>
+<a href="https://philosopherinvestor.substack.com/subscribe?coupon=d30ae56d"><em><strong>The boards, before the open</strong></em></a></p>
+    </div>
+  </div>
+  <p class="note">Centré, en italique. C'est le seul endroit où une redite ne fatigue personne, parce que le lecteur a fini l'article.</p>
+</section>
+
+<h2 class="grp">2. Le mur <span>ce que le lecteur gratuit voit quand l'article se coupe</span></h2>
+
+<div class="howto">
+  <b>Deux étages.</b> Substack pose tout seul son encart « Keep reading with a 7-day free trial » à l'endroit de ta coupe, et tu ne peux pas le réécrire. Ce que tu contrôles, c'est le paragraphe juste AVANT la coupe : c'est lui qui décide si le lecteur paie. Les quatre blocs ci-dessous sont ce paragraphe. Le premier aperçu montre l'ensemble, tel que ça rend.
+</div>
+
+<!-- ============ P1 ============ -->
+<section>
+  <h3>P1. La liste de ce que l'abonnement donne</h3>
+  <p class="sub">Le plus proche de ton modèle. À coller juste avant la coupe, puis Substack ajoute son propre encart en dessous.</p>
+
+  <div class="vlabel">Bloc à coller <span class="reco">reco</span></div>
+  <div class="field">
+    <div class="bar"><b>Texte</b><button class="copy" onclick="copyBlock(this)">Copier</button></div>
+    <div class="copytext">
+<p><strong>The rest of this post is behind the wall.</strong> Here is what a subscription gets you:</p>
+<ul>
+<li>Every issue in full, plus the whole archive</li>
+<li>The app: twenty-six boards ranked every night on 12,000+ US names</li>
+<li>Any US ticker in full: the two scores, the levels, the dealer walls, the funds and insiders in it</li>
+<li>Your own book: a read on every line, sizing to your account, and alerts when your names reach their zone</li>
+<li>The academy: 35 lessons and a glossary, so nothing on the page stays a mystery</li>
+</ul>
+<p>Free for 7 days, then $20 a month or $200 a year. Cancel any time, in one click.</p>
+    </div>
+  </div>
+
+  <div class="prev">
+    <div class="rule"></div>
+    <h4>Keep reading with a 7-day free trial</h4>
+    <p class="lede">Subscribe to The Philosopher Investor to keep reading this post and get 7 days of free access to the full post archives.</p>
+    <p class="cta"><span>Start trial</span></p>
+    <p class="subh">A subscription gets you:</p>
+    <ul>
+      <li>Every issue in full, plus the whole archive</li>
+      <li>The app: twenty-six boards ranked every night</li>
+      <li>Any US ticker in full, with its levels</li>
+      <li>Your own book, read line by line</li>
+    </ul>
+  </div>
+  <p class="prevcap">Aperçu : en haut l'encart que Substack génère, en bas ta liste. La liste se règle une fois dans Settings, section Subscription benefits.</p>
+</section>
+
+<!-- ============ P2 ============ -->
+<section>
+  <h3>P2. La suite, c'est la liste</h3>
+  <p class="sub">Quand tu coupes juste avant les noms. Le lecteur sait exactement ce qu'il achète, et c'est la coupe qui convertit le mieux.</p>
+
+  <div class="field">
+    <div class="bar"><b>Texte</b><button class="copy" onclick="copyBlock(this)">Copier</button></div>
+    <div class="copytext">
+<p>That is the reasoning. Below the line are the names it points to, their levels, and the price that says each idea is wrong.</p>
+<p>Paid readers get them, along with the app that found them: twenty-six boards run every night on 12,000+ US names, and any ticker opens as a full file.</p>
+<p>Free for 7 days, then $20 a month. Cancel in one click.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ P3 ============ -->
+<section>
+  <h3>P3. Le mur qui rappelle l'outil</h3>
+  <p class="sub">Pour les numéros macro ou pédagogiques, où il n'y a pas de liste de noms derrière la coupe.</p>
+
+  <div class="field">
+    <div class="bar"><b>Texte</b><button class="copy" onclick="copyBlock(this)">Copier</button></div>
+    <div class="copytext">
+<p>The rest is for paid readers, and so is the screen underneath it.</p>
+<p>The gauges above are not built for this post. They refresh after every close, and members watch them move all week: breadth, rotation, the dealer map, the flow, the boards waiting before the open. This letter is the reading. The app is the instrument.</p>
+<p>Free for 7 days, then $20 a month or $200 a year.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ P4 ============ -->
+<section>
+  <h3>P4. Le mur court</h3>
+  <p class="sub">Deux lignes, quand le post est déjà long et que tu as mis un bloc app en tête.</p>
+
+  <div class="field">
+    <div class="bar"><b>Texte</b><button class="copy" onclick="copyBlock(this)">Copier</button></div>
+    <div class="copytext">
+<p><strong>The rest is for members.</strong> It comes with the app behind this letter, which reads 12,000+ US names every night and hands back the few worth a morning. The first week is free, and one click cancels it.</p>
+    </div>
+  </div>
+</section>
+
+<h2 class="grp">3. Les pièces courtes <span>bas de numéro gratuit</span></h2>
+
+<section>
+  <h3>PS de fin</h3>
+  <p class="sub">Pour un numéro que tu laisses entièrement gratuit. Deux lignes, aucune coupe.</p>
+  <div class="field">
+    <div class="bar"><b>Texte</b><button class="copy" onclick="copyBlock(this)">Copier</button></div>
+    <div class="copytext">
+<p><strong>PS.</strong> If you have never opened the app, the first week is free. It reads 12,000+ US names every night and hands back the few worth your morning, each with its levels and a score out of 100. <a href="https://philosopherinvestor.substack.com/subscribe?coupon=d30ae56d"><strong>Start your free week &rarr;</strong></a></p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h3>Ligne d'activation</h3>
+  <p class="sub">Une fois par mois. Elle ne crée pas de payant, elle en sauve : un abonné qui n'ouvre jamais l'app finit par résilier.</p>
+  <div class="field">
+    <div class="bar"><b>Texte</b><button class="copy" onclick="copyBlock(this)">Copier</button></div>
+    <div class="copytext">
+<p><strong>Already paying and never opened the app?</strong> Go to <a href="https://app.thephilosopherinvestor.com/">app.thephilosopherinvestor.com</a> and sign in with this exact email. No password: you get a one time link, you click it, you are in. If it does not reach you, reply to this email and I will fix it myself.</p>
+    </div>
+  </div>
+</section>
+
+<h2 class="grp">4. Où couper <span>la seule décision qui compte</span></h2>
+
+<section>
+  <h3>La règle de coupe</h3>
+  <ol class="rot">
+    <li><b>Coupe après le raisonnement, avant les noms.</b> Le gratuit reçoit ta lecture du marché entière. Le payant reçoit ce qu'il en fait : les tickers, les niveaux, l'invalidation.</li>
+    <li><b>40 à 60% du texte en gratuit.</b> Moins, le lecteur se sent piégé et se désabonne. Plus, il n'a plus de raison de payer.</li>
+    <li><b>Jamais au milieu d'un paragraphe.</b> La dernière phrase visible doit finir proprement, et si possible poser la question à laquelle la suite répond.</li>
+    <li><b>Un numéro sur trois entièrement gratuit.</b> C'est celui-là qui te ramène des lecteurs, avec le bloc de la section 1 en tête et le PS en bas.</li>
+    <li><b>Le bloc app en tête reste sur les numéros payants.</b> Le lecteur gratuit voit la promesse avant de rencontrer le mur, pas après.</li>
+  </ol>
+  <p class="note">Réglage à faire une fois dans Substack : Settings, puis la section des bénéfices d'abonnement. C'est cette liste que Substack affiche sous « A subscription gets you ». Mets-y les quatre lignes de l'aperçu P1.</p>
+</section>
+
+<section>
+  <h3>Rotation, pour ne pas lasser</h3>
+  <ol class="rot">
+    <li>Bloc <b>A</b> par défaut en tête de numéro.</li>
+    <li>Change à chaque numéro : A, puis C, puis D, puis B, puis E, et on recommence.</li>
+    <li><b>F</b> se cumule avec les autres : il vit au milieu du texte, juste avant la partie qui compte. Un bloc en tête et un bouton au milieu, c'est le maximum sur un numéro.</li>
+    <li><b>G</b> et <b>H</b> sont permanents. Tu les colles une fois dans ton gabarit Substack et tu n'y touches plus.</li>
+    <li>Le mur : <b>P1</b> quand la coupe précède une liste de noms, <b>P3</b> sur un numéro macro, <b>P4</b> quand le post est déjà lourd.</li>
+    <li>La ligne d'activation une fois par mois, sur un numéro gratuit.</li>
+  </ol>
+  <p class="note">Version large de ces blocs, qui montre toute l'app : <a href="newsletter_plugs_full.html">blocs app, version large</a>. Les six blocs longs de la première page restent valables pour les numéros spéciaux : <a href="newsletter_plugs.html">blocs app en tête de newsletter</a>.</p>
+</section>
+
+<p class="note">Studio d'écriture pour retravailler un de ces blocs à ta voix : <a href="http://localhost:8903/">localhost:8903</a>.</p>
+
+</div>
+<script>
+function copyBlock(btn){
+  var el = btn.closest('.field').querySelector('.copytext');
+  var ok = false;
+  var sel = window.getSelection();
+  var range = document.createRange();
+  range.selectNodeContents(el);
+  sel.removeAllRanges();
+  sel.addRange(range);
+  try { ok = document.execCommand('copy'); } catch(e){ ok = false; }
+  sel.removeAllRanges();
+  if (btn.blur) btn.blur();
+  var old = btn.getAttribute('data-label') || btn.textContent;
+  btn.setAttribute('data-label', old);
+  if (ok){
+    btn.textContent = 'Copié ✓'; btn.classList.add('done');
+  } else {
+    btn.textContent = 'Sélectionne + Cmd-C'; btn.classList.add('warn');
+  }
+  setTimeout(function(){ btn.textContent = old; btn.classList.remove('done'); btn.classList.remove('warn'); }, 1600);
+}
+</script>
+</body>
+</html>

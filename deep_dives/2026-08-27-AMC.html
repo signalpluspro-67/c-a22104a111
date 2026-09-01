@@ -1,0 +1,235 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Crowded Theater Trade — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Crowded Theater Trade</h1>
+<div class="subtitle">AMC&#x27;s option tape is screaming, but a $2.70 stock with a $0.15 daily range demands precision.</div>
+<div class="meta">EOD 2026-08-27 · AMC · written from the desk · model deepseek-v4-pro</div>
+<div class="chips"><span class="chip">AMC</span>
+<span class="chip">Communication Services</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-08-27: entry <b>$2.48</b> &rarr; <b>$2.59</b> (as of 2026-08-28) · <span class="pos">+4.4%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Communication Services is a neutral sector right now. It is also decelerating. That combination means capital rotates out of momentum sectors and into stories with a separate catalyst. AMC does not need the sector to work. It needs a crowd.</p>
+<p>Movie exhibition is a fixed-cost business. Revenue grows on attendance, ticket prices, and concessions. The structural backdrop favors blockbuster-driven quarters and punishes weak slates. AMC has survived the worst of the pandemic era balance sheet damage, but the stock still trades like a leveraged lottery ticket. Beta is <strong>2.22</strong>. That cuts both ways.</p>
+<p>This backdrop rewards a name where the option tape is the signal. A pullback read with heavy call volume and a tight range gives you a defined setup. You are trading the crowd, not the sector.</p>
+<h2>Introducing AMC</h2>
+<p>AMC Entertainment Holdings owns, operates, or has interests in movie theaters across the United States and internationally. The company was founded in 1920 and is headquartered in Leawood, Kansas. It runs one of the largest theatrical exhibition networks in the world.</p>
+<p>Revenue comes from ticket sales and concessions. The business carries massive fixed costs in rent, labor, and film licensing. That creates high operating margins when attendance is strong and deep losses when it is not. Operating margin on a trailing basis is <strong>14.9%</strong>. Gross margin is <strong>18.2%</strong>.</p>
+<p>The balance sheet is the story. Book value per share is negative <strong>1.63</strong>. You are buying a heavily indebted operator with negative equity. The trade is about price movement, not business quality.</p>
+<h2>The Thesis</h2>
+<p>The desk read is a proven pullback setup. The stock held <strong>70.9%</strong> of a three-month gain and gave back only <strong>1.8%</strong> over the past month. It sits <strong>14.3%</strong> below the 52-week high with RSI at <strong>58.9</strong>. That is a strong stock consolidating, not a broken stock falling.</p>
+<p>The option tape agrees hard. On 2026-08-26, day call volume was <strong>41343</strong> contracts against <strong>6471</strong> puts. Call premium was <strong>0.91 million</strong> versus <strong>0.12 million</strong> on puts. That kind of imbalance signals aggressive near-term bullish flow. The call wall sits at <strong>3</strong> and the put wall at <strong>2.5</strong>. The crowd is betting on a move toward the call wall.</p>
+<p>Conviction is MEDIUM. The risk/reward is <strong>1.3</strong> to <strong>1</strong>. The entry is <strong>2.48</strong>, stop at <strong>2.18</strong>, and target at <strong>2.85</strong>. You risk <strong>12.1%</strong> to make <strong>14.9%</strong>. That is acceptable but not exceptional. Size it accordingly. A secondary target at <strong>3.15</strong> offers <strong>27.0%</strong> upside if momentum extends.</p>
+<p>The catch is the stock itself. At <strong>2.70</strong> a share with an average true range of <strong>0.15</strong>, the stock needs a real move for calls to pay. This crowd disappears as fast as it arrives. Call volume tells you contracts changed hands and nothing about who bought them. The thesis is a short-term momentum read, not a fundamental turnaround.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-08-27-AMC.png" alt="AMC weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=AMC&interval=1W" target="_blank" rel="noopener">📈 Open the AMC weekly chart on TradingView ↗</a><figcaption>AMC weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $2.85 · mark support near $2.18.</figcaption></figure>
+<p>The trend is intact. AMC closed at <strong>2.70</strong>, above the 30-week moving average. The 30-week slope is <strong>8.1%</strong>, meaning the long-term line is rising. The stock is <strong>84.9%</strong> of its 52-week high and sits in the top <strong>78.7%</strong> of its yearly range. That is firmly in the upper portion of the range.</p>
+<p>Relative strength versus SPY over 63 days is <strong>68.7%</strong>. AMC is beating the broad market by a wide margin. The 21-day return is negative <strong>1.8%</strong>, a shallow pullback within a strong uptrend. The 63-day return is <strong>70.9%</strong>. This is a stock that ran hard and is now digesting gains.</p>
+<p>RSI on the 14-day measure is <strong>58.9</strong>. That is room to run before overbought. The swing high is <strong>2.85</strong>, the swing low is <strong>1.72</strong>. A move through <strong>2.85</strong> opens the path to <strong>3.15</strong>. Failure to hold <strong>2.48</strong> changes the read.</p>
+<p>Volume confirmation matters here. You want a breakout above <strong>2.85</strong> on above-average volume. Light volume breakouts in this stock tend to fade quickly. The real reference levels are entry at <strong>2.48</strong>, stop at <strong>2.18</strong>, and target at <strong>2.85</strong>.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$2.38B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$9.32B</td></tr><tr><td class="k">52-week range</td><td class="v">$0.93 - $3.18</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">2.22</td></tr><tr><td class="k">Forward P/E</td><td class="v">-21.4</td></tr><tr><td class="k">Price / book</td><td class="v">-1.6</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$5.23B  (+14.2% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$9.14</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$-554M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">-1.06 / -0.12</td></tr><tr><td class="k">Gross margin</td><td class="v">18.2%</td></tr><tr><td class="k">Operating margin</td><td class="v">14.9%</td></tr><tr><td class="k">Profit margin</td><td class="v">-10.6%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$0.25</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$0.16</td></tr><tr><td class="k">Total cash / share</td><td class="v">$0.87</td></tr><tr><td class="k">Current ratio</td><td class="v">0.55</td></tr><tr><td class="k">Analyst consensus</td><td class="v">none - mean target $2.72 (6 analysts)</td></tr></tbody></table>
+<p>Growth is real on the top line. Revenue per share is <strong>9.14</strong>. The company is selling more tickets and concessions. That is the good news.</p>
+<p>Profitability is still broken. EPS trailing is negative <strong>1.06</strong> and forward EPS is negative <strong>0.12</strong>. Profit margin is negative <strong>10.6%</strong>. The company loses money on every dollar of revenue. Gross margin at <strong>18.2%</strong> and operating margin at <strong>14.9%</strong> show the fixed-cost leverage, but it is not enough to overcome interest and obligations.</p>
+<p>Cash generation is positive but thin. That is <strong>0.25</strong> per share in operating cash and <strong>0.16</strong> per share in free cash. Total cash per share is <strong>0.87</strong>. Current ratio is <strong>0.55</strong> and quick ratio <strong>0.48</strong>. Liquidity is tight.</p>
+<p>The balance sheet is the weak spot. Negative book value per share of <strong>1.63</strong> means the company has more liabilities than assets. Analyst target mean is <strong>2.72</strong>, slightly above the last close of <strong>2.70</strong>. Six analysts cover the name. That target is modest and tells you institutional expectations are low. Forward PE is negative <strong>21.4</strong>, a meaningless number for a money-losing company.</p>
+<h2>Why Now</h2>
+<p>There is no specific catalyst on the books. No earnings date in the near term flags from the data. No defined event forces a re-rating. This is a pure technical and options-flow trade. The sector backdrop is neutral and decelerating, which means AMC is not getting a macro tailwind either.</p>
+<p>What you have is a timing read. The stock pulled back <strong>1.8%</strong> over 21 days within a <strong>70.9%</strong> three-month gain. RSI reset to <strong>58.9</strong>. The option tape on 2026-08-26 showed <strong>41343</strong> calls against <strong>6471</strong> puts. The call wall at <strong>3</strong> and put wall at <strong>2.5</strong> frame the battleground. The market is positioning for a move toward <strong>3</strong>.</p>
+<p>The desk ranked this second behind another pullback read because the stock price leaves options with less to work with. Same <strong>1.3</strong> to <strong>1</strong> payoff, but a <strong>2.70</strong> stock with a <strong>0.15</strong> daily range gives calls less potential. You need the breakout to be fast and decisive for the options to pay meaningfully.</p>
+<h2>Risk Factors</h2>
+<p>The first risk is stale flow. Call volume tells you contracts changed hands. It does not tell you who bought them. That <strong>41343</strong> call figure could include sellers closing positions or market makers hedging. The premium imbalance is suggestive but not proof. If the crowd exits as fast as it entered, the stock can slide back to the swing low of <strong>1.72</strong>.</p>
+<p>The second risk is the balance sheet. A weak box office slate or a debt negotiation stumble hits this stock harder than a healthy company. Beta of <strong>2.22</strong> means AMC moves more than double the market on either side.</p>
+<p>The third risk is the setup itself. A <strong>2.70</strong> stock with an average true range of <strong>0.15</strong> requires patience. The stop at <strong>2.18</strong> is <strong>12.1%</strong> below entry. The target at <strong>2.85</strong> is <strong>14.9%</strong> above. If the stock chops around the entry level, time decay eats the option value. The single invalidation is a close below <strong>2.18</strong>. That breaks the swing structure and signals the pullback is over. Cut it there.</p>
+<p>Timing risk is real. No catalyst means the stock can drift for weeks. The sector is decelerating. Revenue growth of <strong>14.2%</strong> has not translated to profits. A failed breakout above <strong>2.85</strong> on light volume would be a clear sign the crowd is losing conviction.</p>
+<h2>Bringing It All Together</h2>
+<p>- A proven pullback read: <strong>70.9%</strong> three-month gain retained with only <strong>1.8%</strong> giveback over 21 days.<br>- Options flow confirms: <strong>41343</strong> calls against <strong>6471</strong> puts, call wall at <strong>3</strong>, put wall at <strong>2.5</strong>.<br>- Technical posture is strong: above the 30-week line, RSI at <strong>58.9</strong>, <strong>84.9%</strong> of the 52-week high.</p>
+<p>- Defined levels: entry <strong>2.48</strong>, stop <strong>2.18</strong>, target <strong>2.85</strong>, secondary <strong>3.15</strong>.<br>- Risk/reward of <strong>1.3</strong> to <strong>1</strong> works only with fast, decisive movement.</p>
+<h2>Conclusion</h2>
+<p>AMC is a crowd trade with a defined setup. The pullback read, the option tape, and the technical posture all point the same direction. The stock is strong, consolidating, and the market is betting on a move to <strong>3</strong>. Conviction is MEDIUM because the stock price and range limit the option payoff.</p>
+<p>Enter above <strong>2.48</strong> and hold for <strong>2.85</strong>. Cut below <strong>2.18</strong>. The fundamental picture is ugly, but this trade does not depend on the fundamentals. It depends on the crowd staying interested. If call volume dries up, the trade is over.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;AMC Entertainment Holdings, Inc. (AMC) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $2.38B; 52-week range $1-$3; Revenue $5.23B +14% YoY; Net income $-554M; Free cash flow/share $0.16. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for AMC Entertainment Holdings, Inc. (AMC) inside the Communication Services space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): The proven pullback desk read fires at **95** and the option tape agrees hard: **41343** calls against **6471** puts on the day. The stock holds **70.9%** of a three-month gain, gave back only **1.8%** over the past month, and sits **14.3%*. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Crowded Theater Trade
+
+*AMC&#x27;s option tape is screaming, but a $2.70 stock with a $0.15 daily range demands precision.*
+
+## The Big Picture
+
+Communication Services is a neutral sector right now. It is also decelerating. That combination means capital rotates out of momentum sectors and into stories with a separate catalyst. AMC does not need the sector to work. It needs a crowd.
+
+Movie exhibition is a fixed-cost business. Revenue grows on attendance, ticket prices, and concessions. The structural backdrop favors blockbuster-driven quarters and punishes weak slates. AMC has survived the worst of the pandemic era balance sheet damage, but the stock still trades like a leveraged lottery ticket. Beta is **2.22**. That cuts both ways.
+
+This backdrop rewards a name where the option tape is the signal. A pullback read with heavy call volume and a tight range gives you a defined setup. You are trading the crowd, not the sector.
+
+## Introducing AMC
+
+AMC Entertainment Holdings owns, operates, or has interests in movie theaters across the United States and internationally. The company was founded in 1920 and is headquartered in Leawood, Kansas. It runs one of the largest theatrical exhibition networks in the world.
+
+Revenue comes from ticket sales and concessions. The business carries massive fixed costs in rent, labor, and film licensing. That creates high operating margins when attendance is strong and deep losses when it is not. Operating margin on a trailing basis is **14.9%**. Gross margin is **18.2%**.
+
+The balance sheet is the story. Book value per share is negative **1.63**. You are buying a heavily indebted operator with negative equity. The trade is about price movement, not business quality.
+
+## The Thesis
+
+The desk read is a proven pullback setup. The stock held **70.9%** of a three-month gain and gave back only **1.8%** over the past month. It sits **14.3%** below the 52-week high with RSI at **58.9**. That is a strong stock consolidating, not a broken stock falling.
+
+The option tape agrees hard. On 2026-08-26, day call volume was **41343** contracts against **6471** puts. Call premium was **0.91 million** versus **0.12 million** on puts. That kind of imbalance signals aggressive near-term bullish flow. The call wall sits at **3** and the put wall at **2.5**. The crowd is betting on a move toward the call wall.
+
+Conviction is MEDIUM. The risk/reward is **1.3** to **1**. The entry is **2.48**, stop at **2.18**, and target at **2.85**. You risk **12.1%** to make **14.9%**. That is acceptable but not exceptional. Size it accordingly. A secondary target at **3.15** offers **27.0%** upside if momentum extends.
+
+The catch is the stock itself. At **2.70** a share with an average true range of **0.15**, the stock needs a real move for calls to pay. This crowd disappears as fast as it arrives. Call volume tells you contracts changed hands and nothing about who bought them. The thesis is a short-term momentum read, not a fundamental turnaround.
+
+## Technical Analysis
+
+&gt; 📈 Insert the AMC weekly chart here (TradingView): AMC weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $2.85 · mark support near $2.18.
+
+The trend is intact. AMC closed at **2.70**, above the 30-week moving average. The 30-week slope is **8.1%**, meaning the long-term line is rising. The stock is **84.9%** of its 52-week high and sits in the top **78.7%** of its yearly range. That is firmly in the upper portion of the range.
+
+Relative strength versus SPY over 63 days is **68.7%**. AMC is beating the broad market by a wide margin. The 21-day return is negative **1.8%**, a shallow pullback within a strong uptrend. The 63-day return is **70.9%**. This is a stock that ran hard and is now digesting gains.
+
+RSI on the 14-day measure is **58.9**. That is room to run before overbought. The swing high is **2.85**, the swing low is **1.72**. A move through **2.85** opens the path to **3.15**. Failure to hold **2.48** changes the read.
+
+Volume confirmation matters here. You want a breakout above **2.85** on above-average volume. Light volume breakouts in this stock tend to fade quickly. The real reference levels are entry at **2.48**, stop at **2.18**, and target at **2.85**.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $2.38B |
+| Enterprise value | $9.32B |
+| 52-week range | $0.93 - $3.18 |
+| Dividend yield | None |
+| Beta | 2.22 |
+| Forward P/E | -21.4 |
+| Price / book | -1.6 |
+| Revenue (TTM) | $5.23B  (+14.2% YoY) |
+| Revenue / share | $9.14 |
+| Net income (TTM) | $-554M |
+| EPS (TTM / fwd) | -1.06 / -0.12 |
+| Gross margin | 18.2% |
+| Operating margin | 14.9% |
+| Profit margin | -10.6% |
+| Operating cash flow / share | $0.25 |
+| Free cash flow / share | $0.16 |
+| Total cash / share | $0.87 |
+| Current ratio | 0.55 |
+| Analyst consensus | none - mean target $2.72 (6 analysts) |
+
+Growth is real on the top line. Revenue per share is **9.14**. The company is selling more tickets and concessions. That is the good news.
+
+Profitability is still broken. EPS trailing is negative **1.06** and forward EPS is negative **0.12**. Profit margin is negative **10.6%**. The company loses money on every dollar of revenue. Gross margin at **18.2%** and operating margin at **14.9%** show the fixed-cost leverage, but it is not enough to overcome interest and obligations.
+
+Cash generation is positive but thin. That is **0.25** per share in operating cash and **0.16** per share in free cash. Total cash per share is **0.87**. Current ratio is **0.55** and quick ratio **0.48**. Liquidity is tight.
+
+The balance sheet is the weak spot. Negative book value per share of **1.63** means the company has more liabilities than assets. Analyst target mean is **2.72**, slightly above the last close of **2.70**. Six analysts cover the name. That target is modest and tells you institutional expectations are low. Forward PE is negative **21.4**, a meaningless number for a money-losing company.
+
+## Why Now
+
+There is no specific catalyst on the books. No earnings date in the near term flags from the data. No defined event forces a re-rating. This is a pure technical and options-flow trade. The sector backdrop is neutral and decelerating, which means AMC is not getting a macro tailwind either.
+
+What you have is a timing read. The stock pulled back **1.8%** over 21 days within a **70.9%** three-month gain. RSI reset to **58.9**. The option tape on 2026-08-26 showed **41343** calls against **6471** puts. The call wall at **3** and put wall at **2.5** frame the battleground. The market is positioning for a move toward **3**.
+
+The desk ranked this second behind another pullback read because the stock price leaves options with less to work with. Same **1.3** to **1** payoff, but a **2.70** stock with a **0.15** daily range gives calls less potential. You need the breakout to be fast and decisive for the options to pay meaningfully.
+
+## Risk Factors
+
+The first risk is stale flow. Call volume tells you contracts changed hands. It does not tell you who bought them. That **41343** call figure could include sellers closing positions or market makers hedging. The premium imbalance is suggestive but not proof. If the crowd exits as fast as it entered, the stock can slide back to the swing low of **1.72**.
+
+The second risk is the balance sheet. A weak box office slate or a debt negotiation stumble hits this stock harder than a healthy company. Beta of **2.22** means AMC moves more than double the market on either side.
+
+The third risk is the setup itself. A **2.70** stock with an average true range of **0.15** requires patience. The stop at **2.18** is **12.1%** below entry. The target at **2.85** is **14.9%** above. If the stock chops around the entry level, time decay eats the option value. The single invalidation is a close below **2.18**. That breaks the swing structure and signals the pullback is over. Cut it there.
+
+Timing risk is real. No catalyst means the stock can drift for weeks. The sector is decelerating. Revenue growth of **14.2%** has not translated to profits. A failed breakout above **2.85** on light volume would be a clear sign the crowd is losing conviction.
+
+## Bringing It All Together
+
+- A proven pullback read: **70.9%** three-month gain retained with only **1.8%** giveback over 21 days.
+- Options flow confirms: **41343** calls against **6471** puts, call wall at **3**, put wall at **2.5**.
+- Technical posture is strong: above the 30-week line, RSI at **58.9**, **84.9%** of the 52-week high.
+
+- Defined levels: entry **2.48**, stop **2.18**, target **2.85**, secondary **3.15**.
+- Risk/reward of **1.3** to **1** works only with fast, decisive movement.
+
+## Conclusion
+
+AMC is a crowd trade with a defined setup. The pullback read, the option tape, and the technical posture all point the same direction. The stock is strong, consolidating, and the market is betting on a move to **3**. Conviction is MEDIUM because the stock price and range limit the option payoff.
+
+Enter above **2.48** and hold for **2.85**. Cut below **2.18**. The fundamental picture is ugly, but this trade does not depend on the fundamentals. It depends on the crowd staying interested. If call volume dries up, the trade is over.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

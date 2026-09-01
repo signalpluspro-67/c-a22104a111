@@ -1,0 +1,238 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Pullback in a Live Uptrend — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Pullback in a Live Uptrend</h1>
+<div class="subtitle">BJ&#x27;s Restaurants flushed 12% in a month. The 30-week line is still climbing at 20%.</div>
+<div class="meta">EOD 2026-08-28 · BJRI · written from the desk · model deepseek-v4-pro</div>
+<div class="chips"><span class="chip">BJRI</span>
+<span class="chip">Consumer Cyclical</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-08-28: entry <b>$65.12</b> &rarr; <b>$65.12</b> (as of 2026-08-28) · <span class="pos">+0.0%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Consumer cyclical is in a neutral state and decelerating. That is the honest backdrop. You are not buying a sector tailwind here. You are buying a single company that already proved its uptrend before the sector cooled.</p>
+<p>Restaurants sit inside that deceleration. Traffic is choppy. Input costs are choppy. The broad market has moved on to other stories. That is fine. This desk does not need the whole sector to work. It needs one name that held its own trend while the sector lost momentum.</p>
+<p>BJ&#x27;s Restaurants fits that narrow window. It is up <strong>38.4%</strong> over three months against the broad market. The pullback gave you an entry. The 30-week average is still rising at <strong>20.1%</strong>. A name like this rewards patience, not sector conviction.</p>
+<h2>Introducing BJRI</h2>
+<p>BJ&#x27;s Restaurants operates full-service restaurants across the United States. The menu hangs on pizza, beer, appetizers, entrees, wings, pasta, salads, and the Pizookie dessert. It has done this since 1978, first as Chicago Pizza &amp; Brewery, then as BJ&#x27;s from August 2004. Headquarters sit in Huntington Beach, California.</p>
+<p>The model is casual dining with a brewery angle. That gives it a slightly differentiated draw versus generic family dining. You get a full menu plus a craft beer lineup. The combination supports higher average checks and repeat visits.</p>
+<p>It is not a rapid unit grower. It is a margin and traffic story inside a mature footprint. The edge is operational, not structural.</p>
+<h2>The Thesis</h2>
+<p>BJ&#x27;s Restaurants dropped <strong>12.3%</strong> in a month while still up <strong>38.4%</strong> over three. That is a clean pullback inside a live uptrend. The RSI cooled to <strong>48.5</strong> from overbought territory. The <strong>30</strong>-week moving average is climbing at <strong>20.1%</strong>, and price still sits above it.</p>
+<p>The tested pullback signal scored <strong>90</strong>. The read is that a deeper flush inside a rising 30-week line historically works better than a shallow dip. BJRI gave you depth. The monthly drop was sharp enough to reset sentiment without breaking the longer trend. RSI came back toward neutral.</p>
+<p>Conviction is MEDIUM. Size it accordingly. The reward ratio is <strong>1.7</strong> with <strong>12.3%</strong> of room back to the high. You risk <strong>8.1%</strong> to the stop. That asymmetry works if the trend is alive. The 30-week slope says it is.</p>
+<p>The pullback also flushed the options chain. No calls traded. <strong>129</strong> puts traded. That is not a hedge. It is a lack of demand. The setup is stock only. You accept that constraint going in.</p>
+<h2>Technical Analysis</h2>
+<p><figure class="chart"><img src="img/2026-08-28-BJRI.png" alt="BJRI weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=BJRI&interval=1W" target="_blank" rel="noopener">📈 Open the BJRI weekly chart on TradingView ↗</a><figcaption>BJRI weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $74.26 · mark support near $59.86.</figcaption></figure><br>Price closed at <strong>65.12</strong>. The 52-week high is <strong>74.6</strong>, so BJRI sits <strong>12.3%</strong> below that level. It is <strong>127.0%</strong> above the 52-week low of <strong>28.46</strong>. The stock is in the top <strong>79.5%</strong> of its 52-week range. That is a strong location with room to the high.</p>
+<p>The 30-week moving average is below price, and its slope is <strong>20.1%</strong>. That is a rising line, which is what you want under a pullback. The 8-week and 21-week EMAs are compressed after the monthly drop. The pullback signal rests on the 30-week trend, not on the shorter averages.</p>
+<p>RSI sits at <strong>48.5</strong>. That is neutral after a reset. It supports the idea that the monthly flush worked off excess. The 14-day ATR is <strong>2.63</strong>, so daily movement will be choppy. A normal day can swing more than <strong>4%</strong> from the close relative to a <strong>65.12</strong> price.</p>
+<p>The real levels are the entry, stop, and target. Entry at <strong>65.12</strong>. Stop at <strong>59.86</strong>. Target at <strong>74.26</strong>. The second target sits at <strong>76.95</strong>, which is <strong>18.2%</strong> above the close. Distance to the stop is <strong>8.1%</strong>. Distance to the first target is <strong>14.0%</strong>. The reward ratio is <strong>1.7</strong>.</p>
+<p>Volume confirmation matters here. A bounce back above <strong>68</strong> on above-average volume would confirm buyers returned. A move below <strong>60</strong> on any volume breaks the setup. The <strong>77.5</strong> call wall shows where upside resistance starts to build. The <strong>62.5</strong> put wall is close to the stop zone.</p>
+<h2>Fundamentals</h2>
+<p><table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$1.37B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$1.78B</td></tr><tr><td class="k">52-week range</td><td class="v">$28.46 - $74.60</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">1.32</td></tr><tr><td class="k">Trailing P/E</td><td class="v">34.2</td></tr><tr><td class="k">Forward P/E</td><td class="v">23.6</td></tr><tr><td class="k">Price / sales</td><td class="v">1.0</td></tr><tr><td class="k">Price / book</td><td class="v">3.4</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$1.43B  (+6.4% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$67.24</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$41M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">1.89 / 2.73</td></tr><tr><td class="k">Gross margin</td><td class="v">15.5%</td></tr><tr><td class="k">Operating margin</td><td class="v">5.0%</td></tr><tr><td class="k">Profit margin</td><td class="v">2.9%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$5.53</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$2.32</td></tr><tr><td class="k">Total cash / share</td><td class="v">$0.68</td></tr><tr><td class="k">Debt / equity</td><td class="v">1.09</td></tr><tr><td class="k">Current ratio</td><td class="v">0.29</td></tr><tr><td class="k">Return on equity</td><td class="v">10.4%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">none - mean target $75.38 (8 analysts)</td></tr></tbody></table><br>Revenue growth is <strong>6.4%</strong>. That is modest but positive. Earnings per share is <strong>1.89</strong> trailing. Forward EPS is <strong>2.73</strong>, which puts the forward P/E at <strong>23.6</strong>. The trailing P/E is <strong>34.2</strong>. You are paying for improvement.</p>
+<p>Profit margin is <strong>2.9%</strong>. Operating margin is <strong>5.0%</strong>. Gross margin is <strong>15.5%</strong>. These are thin, typical for casual dining. Return on equity is <strong>10.4%</strong>. Return on assets is <strong>2.8%</strong>. Nothing here screams quality. Current ratio is <strong>0.29</strong>. Quick ratio is <strong>0.17</strong>. Liquidity is tight. That is the weak spot.</p>
+<p>Cash flow is the better signal. That is <strong>$2.32</strong> per share in free cash flow against a <strong>65.12</strong> price. The company converts revenue to cash. Thin margins work if cash conversion holds.</p>
+<p>The analyst mean target is <strong>75.38</strong>, which sits just above the first technical target of <strong>74.26</strong>. Eight analysts cover the name. That is not a crowded setup. Moves can be sharp in both directions.</p>
+<h2>Why Now</h2>
+<p>The catalyst is not there. There is no earnings date specified in the facts. The desk has no scheduled event to lean on. You are buying the pullback itself. That is the timing.</p>
+<p>The macro picture is neutral. Consumer cyclical is decelerating. You are not getting a sector tailwind. The setup is price-based. The stock gave a <strong>12.3%</strong> monthly flush inside a <strong>38.4%</strong> three-month rally. RSI cooled to <strong>48.5</strong>. The 30-week average is still rising. That is the &quot;why now.&quot;</p>
+<p>The options flow tells you positioning is clean. No call volume on August 27. <strong>129</strong> puts traded, but premium was only <strong>$0.03 million</strong>. The options chain is empty. That means the pullback was not driven by large hedging flows. It was ordinary selling. When the chain is quiet, a bounce can run without a gamma overhang.</p>
+<p>The nearest resistance is the call wall at <strong>77.5</strong>. That lines up with the second target of <strong>76.95</strong>. The put wall at <strong>62.5</strong> sits above the stop at <strong>59.86</strong>. Buyers have room to work between <strong>62.5</strong> and <strong>77.5</strong> before options positioning becomes a factor.</p>
+<h2>Risk Factors</h2>
+<p>The biggest risk is that a <strong>12.3%</strong> monthly drawdown can be the start of a trend change rather than a dip. The 30-week line is rising now, but it will flatten if price sits below <strong>65</strong> for several more weeks. That slope is the whole setup.</p>
+<p>The options chain has no hedge. Zero calls traded. <strong>129</strong> puts. You cannot layer protection cheaply. If the stock breaks, the loss is stock only. You accept that.</p>
+<p>Fundamentals have a real weak spot. The current ratio is <strong>0.29</strong>. Quick ratio is <strong>0.17</strong>. Debt-to-equity is <strong>1.09</strong>. If sales slow, liquidity gets uncomfortable. The company has a thin <strong>2.9%</strong> profit margin. There is little room for error on costs.</p>
+<p>The invalidation is a close below <strong>59.86</strong>. That level sits just under the <strong>62.5</strong> put wall. A break there means the pullback is no longer a dip inside a trend. It is the start of something worse. The reward ratio of <strong>1.7</strong> assumes the stop holds. If it does not, the asymmetry flips.</p>
+<p>Timing risk also matters. With no hard catalyst, the stock can drift sideways. A trend that does not break can still bore you. That is the cost of buying a pullback without an event.</p>
+<h2>Bringing It All Together</h2>
+<p>- The pullback is clean: <strong>12.3%</strong> down in a month, still <strong>38.4%</strong> up over three.<br>- The 30-week average is rising at <strong>20.1%</strong>, and price holds above it.<br>- RSI reset to <strong>48.5</strong>, which is neutral and ready for a bounce.<br>- Fundamentals show cash flow of <strong>$2.32</strong> per share against tight liquidity.<br>- The options chain is empty, removing a gamma overhang.<br>- Entry at <strong>65.12</strong>, stop at <strong>59.86</strong>, target at <strong>74.26</strong>, reward ratio <strong>1.7</strong>.<br>- Invalidation is a close below <strong>59.86</strong>. That is the single line that flips the read.</p>
+<h2>Conclusion</h2>
+<p>BJ&#x27;s Restaurants gave you a textbook pullback inside a live uptrend. The 30-week average is climbing at <strong>20.1%</strong>. The RSI reset to <strong>48.5</strong>. The setup has a <strong>1.7</strong> reward ratio with <strong>14.0%</strong> upside to the first target and <strong>8.1%</strong> risk to the stop. The options chain is empty, which is both a risk and a clean slate.</p>
+<p>The valuation is not cheap on trailing earnings, but the forward multiple of <strong>23.6</strong> and free cash flow of <strong>$2.32</strong> per share keep the story intact. The balance sheet is the weak spot. A tight current ratio of <strong>0.29</strong> means the company needs steady cash flow to stay comfortable.</p>
+<p>Conviction is MEDIUM. You buy the pullback and respect the stop. A close below <strong>59.86</strong> ends the trade. Above that, the path toward <strong>74.26</strong> is open.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;BJ&#x27;s Restaurants, Inc. (BJRI) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $1.37B; 52-week range $28-$75; Revenue $1.43B +6% YoY; Net income $41M; Free cash flow/share $2.32; Debt-to-equity 1.09; Return on equity 10%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for BJ&#x27;s Restaurants, Inc. (BJRI) inside the Consumer Cyclical space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): BJ&#x27;s Restaurants dropped **12.3%** in a month while still up **38.4%** over three, so RSI cooled to **48.5** with the **30**-week average climbing at **20.1%**. The tested pullback signal scored **90**, and the deeper the flush inside a liv. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Pullback in a Live Uptrend
+
+*BJ&#x27;s Restaurants flushed 12% in a month. The 30-week line is still climbing at 20%.*
+
+## The Big Picture
+Consumer cyclical is in a neutral state and decelerating. That is the honest backdrop. You are not buying a sector tailwind here. You are buying a single company that already proved its uptrend before the sector cooled.
+
+Restaurants sit inside that deceleration. Traffic is choppy. Input costs are choppy. The broad market has moved on to other stories. That is fine. This desk does not need the whole sector to work. It needs one name that held its own trend while the sector lost momentum.
+
+BJ&#x27;s Restaurants fits that narrow window. It is up **38.4%** over three months against the broad market. The pullback gave you an entry. The 30-week average is still rising at **20.1%**. A name like this rewards patience, not sector conviction.
+
+## Introducing BJRI
+BJ&#x27;s Restaurants operates full-service restaurants across the United States. The menu hangs on pizza, beer, appetizers, entrees, wings, pasta, salads, and the Pizookie dessert. It has done this since 1978, first as Chicago Pizza &amp; Brewery, then as BJ&#x27;s from August 2004. Headquarters sit in Huntington Beach, California.
+
+The model is casual dining with a brewery angle. That gives it a slightly differentiated draw versus generic family dining. You get a full menu plus a craft beer lineup. The combination supports higher average checks and repeat visits.
+
+It is not a rapid unit grower. It is a margin and traffic story inside a mature footprint. The edge is operational, not structural.
+
+## The Thesis
+BJ&#x27;s Restaurants dropped **12.3%** in a month while still up **38.4%** over three. That is a clean pullback inside a live uptrend. The RSI cooled to **48.5** from overbought territory. The **30**-week moving average is climbing at **20.1%**, and price still sits above it.
+
+The tested pullback signal scored **90**. The read is that a deeper flush inside a rising 30-week line historically works better than a shallow dip. BJRI gave you depth. The monthly drop was sharp enough to reset sentiment without breaking the longer trend. RSI came back toward neutral.
+
+Conviction is MEDIUM. Size it accordingly. The reward ratio is **1.7** with **12.3%** of room back to the high. You risk **8.1%** to the stop. That asymmetry works if the trend is alive. The 30-week slope says it is.
+
+The pullback also flushed the options chain. No calls traded. **129** puts traded. That is not a hedge. It is a lack of demand. The setup is stock only. You accept that constraint going in.
+
+## Technical Analysis
+&gt; 📈 Insert the BJRI weekly chart here (TradingView): BJRI weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $74.26 · mark support near $59.86.
+Price closed at **65.12**. The 52-week high is **74.6**, so BJRI sits **12.3%** below that level. It is **127.0%** above the 52-week low of **28.46**. The stock is in the top **79.5%** of its 52-week range. That is a strong location with room to the high.
+
+The 30-week moving average is below price, and its slope is **20.1%**. That is a rising line, which is what you want under a pullback. The 8-week and 21-week EMAs are compressed after the monthly drop. The pullback signal rests on the 30-week trend, not on the shorter averages.
+
+RSI sits at **48.5**. That is neutral after a reset. It supports the idea that the monthly flush worked off excess. The 14-day ATR is **2.63**, so daily movement will be choppy. A normal day can swing more than **4%** from the close relative to a **65.12** price.
+
+The real levels are the entry, stop, and target. Entry at **65.12**. Stop at **59.86**. Target at **74.26**. The second target sits at **76.95**, which is **18.2%** above the close. Distance to the stop is **8.1%**. Distance to the first target is **14.0%**. The reward ratio is **1.7**.
+
+Volume confirmation matters here. A bounce back above **68** on above-average volume would confirm buyers returned. A move below **60** on any volume breaks the setup. The **77.5** call wall shows where upside resistance starts to build. The **62.5** put wall is close to the stop zone.
+
+## Fundamentals
+| Metric | Value |
+|---|---|
+| Market cap | $1.37B |
+| Enterprise value | $1.78B |
+| 52-week range | $28.46 - $74.60 |
+| Dividend yield | None |
+| Beta | 1.32 |
+| Trailing P/E | 34.2 |
+| Forward P/E | 23.6 |
+| Price / sales | 1.0 |
+| Price / book | 3.4 |
+| Revenue (TTM) | $1.43B  (+6.4% YoY) |
+| Revenue / share | $67.24 |
+| Net income (TTM) | $41M |
+| EPS (TTM / fwd) | 1.89 / 2.73 |
+| Gross margin | 15.5% |
+| Operating margin | 5.0% |
+| Profit margin | 2.9% |
+| Operating cash flow / share | $5.53 |
+| Free cash flow / share | $2.32 |
+| Total cash / share | $0.68 |
+| Debt / equity | 1.09 |
+| Current ratio | 0.29 |
+| Return on equity | 10.4% |
+| Analyst consensus | none - mean target $75.38 (8 analysts) |
+Revenue growth is **6.4%**. That is modest but positive. Earnings per share is **1.89** trailing. Forward EPS is **2.73**, which puts the forward P/E at **23.6**. The trailing P/E is **34.2**. You are paying for improvement.
+
+Profit margin is **2.9%**. Operating margin is **5.0%**. Gross margin is **15.5%**. These are thin, typical for casual dining. Return on equity is **10.4%**. Return on assets is **2.8%**. Nothing here screams quality. Current ratio is **0.29**. Quick ratio is **0.17**. Liquidity is tight. That is the weak spot.
+
+Cash flow is the better signal. That is **$2.32** per share in free cash flow against a **65.12** price. The company converts revenue to cash. Thin margins work if cash conversion holds.
+
+The analyst mean target is **75.38**, which sits just above the first technical target of **74.26**. Eight analysts cover the name. That is not a crowded setup. Moves can be sharp in both directions.
+
+## Why Now
+The catalyst is not there. There is no earnings date specified in the facts. The desk has no scheduled event to lean on. You are buying the pullback itself. That is the timing.
+
+The macro picture is neutral. Consumer cyclical is decelerating. You are not getting a sector tailwind. The setup is price-based. The stock gave a **12.3%** monthly flush inside a **38.4%** three-month rally. RSI cooled to **48.5**. The 30-week average is still rising. That is the &quot;why now.&quot;
+
+The options flow tells you positioning is clean. No call volume on August 27. **129** puts traded, but premium was only **$0.03 million**. The options chain is empty. That means the pullback was not driven by large hedging flows. It was ordinary selling. When the chain is quiet, a bounce can run without a gamma overhang.
+
+The nearest resistance is the call wall at **77.5**. That lines up with the second target of **76.95**. The put wall at **62.5** sits above the stop at **59.86**. Buyers have room to work between **62.5** and **77.5** before options positioning becomes a factor.
+
+## Risk Factors
+The biggest risk is that a **12.3%** monthly drawdown can be the start of a trend change rather than a dip. The 30-week line is rising now, but it will flatten if price sits below **65** for several more weeks. That slope is the whole setup.
+
+The options chain has no hedge. Zero calls traded. **129** puts. You cannot layer protection cheaply. If the stock breaks, the loss is stock only. You accept that.
+
+Fundamentals have a real weak spot. The current ratio is **0.29**. Quick ratio is **0.17**. Debt-to-equity is **1.09**. If sales slow, liquidity gets uncomfortable. The company has a thin **2.9%** profit margin. There is little room for error on costs.
+
+The invalidation is a close below **59.86**. That level sits just under the **62.5** put wall. A break there means the pullback is no longer a dip inside a trend. It is the start of something worse. The reward ratio of **1.7** assumes the stop holds. If it does not, the asymmetry flips.
+
+Timing risk also matters. With no hard catalyst, the stock can drift sideways. A trend that does not break can still bore you. That is the cost of buying a pullback without an event.
+
+## Bringing It All Together
+- The pullback is clean: **12.3%** down in a month, still **38.4%** up over three.
+- The 30-week average is rising at **20.1%**, and price holds above it.
+- RSI reset to **48.5**, which is neutral and ready for a bounce.
+- Fundamentals show cash flow of **$2.32** per share against tight liquidity.
+- The options chain is empty, removing a gamma overhang.
+- Entry at **65.12**, stop at **59.86**, target at **74.26**, reward ratio **1.7**.
+- Invalidation is a close below **59.86**. That is the single line that flips the read.
+
+## Conclusion
+BJ&#x27;s Restaurants gave you a textbook pullback inside a live uptrend. The 30-week average is climbing at **20.1%**. The RSI reset to **48.5**. The setup has a **1.7** reward ratio with **14.0%** upside to the first target and **8.1%** risk to the stop. The options chain is empty, which is both a risk and a clean slate.
+
+The valuation is not cheap on trailing earnings, but the forward multiple of **23.6** and free cash flow of **$2.32** per share keep the story intact. The balance sheet is the weak spot. A tight current ratio of **0.29** means the company needs steady cash flow to stay comfortable.
+
+Conviction is MEDIUM. You buy the pullback and respect the stop. A close below **59.86** ends the trade. Above that, the path toward **74.26** is open.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

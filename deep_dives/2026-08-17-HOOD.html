@@ -1,0 +1,202 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A Reset in the Retail Broker — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>A Reset in the Retail Broker</h1>
+<div class="subtitle">HOOD&#x27;s pullback to **96.25** puts you in a high-beta name with a clean chart and wide room to the high.</div>
+<div class="meta">EOD 2026-08-17 · HOOD · written from the desk · model deepseek-v4-pro</div>
+<div class="chips"><span class="chip">HOOD</span>
+<span class="chip">Financial Services</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-08-17: entry <b>$96.25</b> &rarr; <b>$104.26</b> (as of 2026-08-28) · <span class="pos">+8.3%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Financial services tech is in a holding pattern. The sector state is NEUTRAL and acceleration is NEUTRAL. That is not a blockade. It is a backdrop where single names with their own catalysts and reset technicals can move on their own rhythm. The macro themes here are FinTech and Crypto. Both are tied to retail risk appetite and both have been consolidating after a run.</p>
+<p>The broad market is churning. You want exposure that pays for a reset rather than chasing a top. A name that has already shed <strong>36.9%</strong> from its 52-week high and built a base offers that. The sector is not driving this. The setup within the name is.</p>
+<p>A broker with high beta and deep ties to retail flow fits right here. When the tape turns, these names lead. The trick is entering when the chart is clean and downside is defined. That is what HOOD offers today.</p>
+<h2>Introducing HOOD</h2>
+<p>Robinhood Markets runs a financial services platform built for retail investors. You can trade stocks, ETFs, crypto, options, and futures. The company layers on cash accounts, debit cards, retirement programs, and margin. It is a digital broker with a young, sticky user base. Its turf is the mobile phone, not the trading desk.</p>
+<p>The company earns money on transaction flow, interest on cash and margin, and subscriptions. The platform handles everything from fractional shares to around-the-clock trading. The brand is polarizing but the user count is real and the engagement numbers follow retail sentiment closely.</p>
+<p>HOOD is a high-beta play on risk-on. Beta sits at <strong>2.32</strong>. When retail gets active, revenue and earnings swing hard. That cuts both ways. The current setup is about buying after a deep cool-off.</p>
+<h2>The Thesis</h2>
+<p>You are buying a proven pullback signal at <strong>$96.25</strong> on a broker that sits <strong>36.9%</strong> below its 52-week high with an RSI of <strong>49.7</strong>. You are paying for a reset, not a top. The chart has no Weinstein violations. That means the long-term structure is intact despite the steep drop from the high. The desk conviction is MEDIUM. Size it accordingly.</p>
+<p>This is a single-screen read. The setup combines a clean technical snapshot with wide room to the high. The prior trend broke, yes. But the current base offers a defined entry with a stop at <strong>$87.31</strong> and a target at <strong>$117.55</strong>. That is a <strong>2.4</strong> reward-to-risk ratio. The upside to target is <strong>22.1%</strong>. The desk ranks this second behind INTC, which pairs a similar chart with an insider buy. HOOD stands alone on technical reset and range.</p>
+<h2>Technical Analysis</h2>
+<p><figure class="chart"><img src="img/2026-08-17-HOOD.png" alt="HOOD weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=HOOD&interval=1W" target="_blank" rel="noopener">📈 Open the HOOD weekly chart on TradingView ↗</a><figcaption>HOOD weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $117.55 · mark support near $87.31.</figcaption></figure><br>The last close was <strong>$96.25</strong>. The 52-week high is <strong>$153.86</strong>. The low is <strong>$63.52</strong>. HOOD is in the bottom part of its yearly range, sitting at just <strong>36.2%</strong> of the distance from low to high. That is a deep reset. The 30-week moving average slope is negative at <strong>-8.8%</strong> but price is above it. That is the definition of a base building: the long moving average is still sloping down from the prior decline, but price has stopped falling and is holding above the line.</p>
+<p>The RSI is <strong>49.7</strong>. Dead neutral. No overbought signal, no oversold panic. The 14-day ATR is <strong>$4.47</strong>. The recent action has been orderly, with a 21-day return of <strong>-3.7%</strong> and a 63-day return of <strong>+24.8%</strong>. Relative strength versus the SPY over 63 days is <strong>+20.2%</strong>. HOOD has been outperforming during this base.</p>
+<p>The swing high is <strong>$117.55</strong>. That is your target. The swing low is <strong>$73.64</strong>. The entry at <strong>$96.25</strong> sits above the midpoint of that range. The stop at <strong>$87.31</strong> is below the entry and well above the swing low. The exit level respects the recent structure. A break below the stop would signal the base is failing. A move through the swing high would confirm a new uptrend. Volume confirmation on any approach to <strong>$100</strong> or <strong>$117.55</strong> would add weight. Average daily volume is <strong>17.5 million</strong> shares. Watch for a volume spike on green days to confirm buyers are stepping in.</p>
+<h2>Fundamentals</h2>
+<p><table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$86.17B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$85.00B</td></tr><tr><td class="k">52-week range</td><td class="v">$63.52 - $153.86</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">2.32</td></tr><tr><td class="k">Trailing P/E</td><td class="v">42.4</td></tr><tr><td class="k">Forward P/E</td><td class="v">29.9</td></tr><tr><td class="k">Price / sales</td><td class="v">17.5</td></tr><tr><td class="k">Price / book</td><td class="v">9.1</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$4.93B  (+32.3% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$5.50</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$2.07B</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">2.26 / 3.2</td></tr><tr><td class="k">Gross margin</td><td class="v">91.9%</td></tr><tr><td class="k">Operating margin</td><td class="v">43.9%</td></tr><tr><td class="k">Profit margin</td><td class="v">42.0%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$0.31</td></tr><tr><td class="k">Total cash / share</td><td class="v">$26.59</td></tr><tr><td class="k">Debt / equity</td><td class="v">2.4</td></tr><tr><td class="k">Current ratio</td><td class="v">1.12</td></tr><tr><td class="k">Return on equity</td><td class="v">23.6%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">buy - mean target $120.01 (26 analysts)</td></tr></tbody></table><br>The numbers show a company growing revenue fast and converting a lot of it to profit. Earnings grew <strong>47.6%</strong>. The profit margin is <strong>42.0%</strong> and the operating margin is <strong>43.9%</strong>. Those are strong numbers. Gross margin is <strong>91.9%</strong>. The business prints cash at the gross level.</p>
+<p>The trailing P/E is <strong>42.4</strong>, which looks high. But the forward P/E drops to <strong>29.9</strong>. That is the market pricing in continued growth. EPS trailing is <strong>$2.26</strong> and forward is <strong>$3.20</strong>. Revenue per share is <strong>$5.50</strong>. The price-to-sales ratio is <strong>17.5</strong> and price-to-book is <strong>9.1</strong>. Book value per share is <strong>$10.54</strong>. Those are premium multiples. You are paying for the growth and the brand.</p>
+<p>Cash per share is <strong>$26.59</strong>. That is enormous relative to the book value and the stock price. Total debt stands at <strong>$22.9 billion</strong> with a debt-to-equity ratio of <strong>2.4</strong>. The current ratio is <strong>1.12</strong> and the quick ratio is <strong>1.07</strong>. Liquidity is adequate but not stellar. The debt load is the soft spot. A high-beta broker with this much leverage will get punished if revenue turns down. That is thin relative to earnings. The return on equity is <strong>23.6%</strong> and return on assets is <strong>4.5%</strong>. The analyst community is bullish: <strong>26</strong> analysts cover it with an average target of <strong>$120.01</strong> and a consensus &quot;buy&quot;. The next earnings date is in early September.</p>
+<h2>Why Now</h2>
+<p>The catalyst is simple: a clean pullback with no Weinstein violations. There is no formal event catalyst. The setup is purely technical. The desk flagged this on a single desk read for a reason: the reset is deep, the RSI is neutral, and the chart is not broken. The options flow adds context. Call premium was <strong>$42.69 million</strong> against put premium of <strong>$36.77 million</strong>. The call wall sits at <strong>$100</strong> and the put wall at <strong>$85</strong>. That means options market makers see significant resistance at <strong>$100</strong> and support at <strong>$85</strong>. Your entry is just below the call wall. A break above <strong>$100</strong> would force dealer hedging and could accelerate the move toward the swing high at <strong>$117.55</strong>.</p>
+<p>Macro tailwinds from crypto and FinTech themes help. Retail risk appetite has not collapsed. It has cooled. A turn in crypto markets or a retail trading surge would lift HOOD directly. You are positioning before that shift, with a defined risk below.</p>
+<h2>Risk Factors</h2>
+<p>The biggest risk is a soft tape in the broad market. HOOD lives on retail activity. Market downturns crush trading volumes and call premium. You are paying for a reset, but sitting <strong>36.9%</strong> below the high also means the prior trend already broke. Overhead supply is heavy. Every rally attempt will encounter sellers who bought higher and want out.</p>
+<p>The stop at <strong>$87.31</strong> is the invalidation. A close below that level means the base has failed and sellers are back in control. The options put wall at <strong>$85</strong> sits just under that stop. A break of the put wall would likely trigger a fast move toward the 52-week low of <strong>$63.52</strong>. The debt load of <strong>$22.9 billion</strong> with thin operating cash flow leaves the company exposed in a downturn. That leverage amplifies any revenue miss. Timing risk around the September earnings report is real. A negative surprise could gap the stock below the stop.</p>
+<p>The reward-to-risk is <strong>2.4</strong>. You risk <strong>9.3%</strong> to the stop for a potential <strong>22.1%</strong> gain to the target. That math works if you respect the stop and do not let a gap open against you.</p>
+<h2>Bringing It All Together</h2>
+<p>- HOOD is a high-beta retail broker sitting <strong>36.9%</strong> below its 52-week high with an RSI of <strong>49.7</strong>, offering a reset entry at <strong>$96.25</strong> rather than a top chase.<br>- The chart has no Weinstein violations and price holds above the 30-week moving average, with a defined stop at <strong>$87.31</strong> and target at <strong>$117.55</strong>.<br>- Fundamentals show <strong>32.3%</strong> revenue growth, <strong>42.0%</strong> profit margins, and a forward P/E of <strong>29.9</strong>, offset by high debt and thin operating cash flow.<br>- Options flow shows a call wall at <strong>$100</strong> with heavy call premium, setting up a potential dealer-driven breakout toward the swing high.<br>- The macro backdrop of neutral financial sector and active crypto themes supports a name tied to retail risk appetite.</p>
+<h2>Conclusion</h2>
+<p>This is a reset buy on a name that bleeds when risk appetite fades and runs when it returns. The chart is clean, the RSI is dead neutral, and the downside is defined. You are not chasing. You are paying for a base that has held. The debt load and the broken prior trend are the scars. Respect the stop at <strong>$87.31</strong>. If the market rolls, exit fast. The target at <strong>$117.55</strong> gives you <strong>22.1%</strong> upside for <strong>9.3%</strong> risk. Probability favors the long here, but conviction is MEDIUM. Do not overload.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Robinhood Markets, Inc. (HOOD) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $86.17B; 52-week range $64-$154; Revenue $4.93B +32% YoY; Net income $2.07B; Debt-to-equity 2.4; Return on equity 24%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Robinhood Markets, Inc. (HOOD) inside the Financial Services space, specifically the &quot;FinTech&quot; theme. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): A proven pullback signal at **85.0** on a high-beta broker that sits **36.9%** under its 52-week high with RSI **49.7**, so you&#x27;re paying for a reset rather than a top. The chart carries no flags and no Weinstein violation.. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># A Reset in the Retail Broker
+
+*HOOD&#x27;s pullback to **96.25** puts you in a high-beta name with a clean chart and wide room to the high.*
+
+## The Big Picture
+Financial services tech is in a holding pattern. The sector state is NEUTRAL and acceleration is NEUTRAL. That is not a blockade. It is a backdrop where single names with their own catalysts and reset technicals can move on their own rhythm. The macro themes here are FinTech and Crypto. Both are tied to retail risk appetite and both have been consolidating after a run.
+
+The broad market is churning. You want exposure that pays for a reset rather than chasing a top. A name that has already shed **36.9%** from its 52-week high and built a base offers that. The sector is not driving this. The setup within the name is.
+
+A broker with high beta and deep ties to retail flow fits right here. When the tape turns, these names lead. The trick is entering when the chart is clean and downside is defined. That is what HOOD offers today.
+
+## Introducing HOOD
+Robinhood Markets runs a financial services platform built for retail investors. You can trade stocks, ETFs, crypto, options, and futures. The company layers on cash accounts, debit cards, retirement programs, and margin. It is a digital broker with a young, sticky user base. Its turf is the mobile phone, not the trading desk.
+
+The company earns money on transaction flow, interest on cash and margin, and subscriptions. The platform handles everything from fractional shares to around-the-clock trading. The brand is polarizing but the user count is real and the engagement numbers follow retail sentiment closely.
+
+HOOD is a high-beta play on risk-on. Beta sits at **2.32**. When retail gets active, revenue and earnings swing hard. That cuts both ways. The current setup is about buying after a deep cool-off.
+
+## The Thesis
+You are buying a proven pullback signal at **$96.25** on a broker that sits **36.9%** below its 52-week high with an RSI of **49.7**. You are paying for a reset, not a top. The chart has no Weinstein violations. That means the long-term structure is intact despite the steep drop from the high. The desk conviction is MEDIUM. Size it accordingly.
+
+This is a single-screen read. The setup combines a clean technical snapshot with wide room to the high. The prior trend broke, yes. But the current base offers a defined entry with a stop at **$87.31** and a target at **$117.55**. That is a **2.4** reward-to-risk ratio. The upside to target is **22.1%**. The desk ranks this second behind INTC, which pairs a similar chart with an insider buy. HOOD stands alone on technical reset and range.
+
+## Technical Analysis
+&gt; 📈 Insert the HOOD weekly chart here (TradingView): HOOD weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $117.55 · mark support near $87.31.
+The last close was **$96.25**. The 52-week high is **$153.86**. The low is **$63.52**. HOOD is in the bottom part of its yearly range, sitting at just **36.2%** of the distance from low to high. That is a deep reset. The 30-week moving average slope is negative at **-8.8%** but price is above it. That is the definition of a base building: the long moving average is still sloping down from the prior decline, but price has stopped falling and is holding above the line.
+
+The RSI is **49.7**. Dead neutral. No overbought signal, no oversold panic. The 14-day ATR is **$4.47**. The recent action has been orderly, with a 21-day return of **-3.7%** and a 63-day return of **+24.8%**. Relative strength versus the SPY over 63 days is **+20.2%**. HOOD has been outperforming during this base.
+
+The swing high is **$117.55**. That is your target. The swing low is **$73.64**. The entry at **$96.25** sits above the midpoint of that range. The stop at **$87.31** is below the entry and well above the swing low. The exit level respects the recent structure. A break below the stop would signal the base is failing. A move through the swing high would confirm a new uptrend. Volume confirmation on any approach to **$100** or **$117.55** would add weight. Average daily volume is **17.5 million** shares. Watch for a volume spike on green days to confirm buyers are stepping in.
+
+## Fundamentals
+| Metric | Value |
+|---|---|
+| Market cap | $86.17B |
+| Enterprise value | $85.00B |
+| 52-week range | $63.52 - $153.86 |
+| Dividend yield | None |
+| Beta | 2.32 |
+| Trailing P/E | 42.4 |
+| Forward P/E | 29.9 |
+| Price / sales | 17.5 |
+| Price / book | 9.1 |
+| Revenue (TTM) | $4.93B  (+32.3% YoY) |
+| Revenue / share | $5.50 |
+| Net income (TTM) | $2.07B |
+| EPS (TTM / fwd) | 2.26 / 3.2 |
+| Gross margin | 91.9% |
+| Operating margin | 43.9% |
+| Profit margin | 42.0% |
+| Operating cash flow / share | $0.31 |
+| Total cash / share | $26.59 |
+| Debt / equity | 2.4 |
+| Current ratio | 1.12 |
+| Return on equity | 23.6% |
+| Analyst consensus | buy - mean target $120.01 (26 analysts) |
+The numbers show a company growing revenue fast and converting a lot of it to profit. Earnings grew **47.6%**. The profit margin is **42.0%** and the operating margin is **43.9%**. Those are strong numbers. Gross margin is **91.9%**. The business prints cash at the gross level.
+
+The trailing P/E is **42.4**, which looks high. But the forward P/E drops to **29.9**. That is the market pricing in continued growth. EPS trailing is **$2.26** and forward is **$3.20**. Revenue per share is **$5.50**. The price-to-sales ratio is **17.5** and price-to-book is **9.1**. Book value per share is **$10.54**. Those are premium multiples. You are paying for the growth and the brand.
+
+Cash per share is **$26.59**. That is enormous relative to the book value and the stock price. Total debt stands at **$22.9 billion** with a debt-to-equity ratio of **2.4**. The current ratio is **1.12** and the quick ratio is **1.07**. Liquidity is adequate but not stellar. The debt load is the soft spot. A high-beta broker with this much leverage will get punished if revenue turns down. That is thin relative to earnings. The return on equity is **23.6%** and return on assets is **4.5%**. The analyst community is bullish: **26** analysts cover it with an average target of **$120.01** and a consensus &quot;buy&quot;. The next earnings date is in early September.
+
+## Why Now
+The catalyst is simple: a clean pullback with no Weinstein violations. There is no formal event catalyst. The setup is purely technical. The desk flagged this on a single desk read for a reason: the reset is deep, the RSI is neutral, and the chart is not broken. The options flow adds context. Call premium was **$42.69 million** against put premium of **$36.77 million**. The call wall sits at **$100** and the put wall at **$85**. That means options market makers see significant resistance at **$100** and support at **$85**. Your entry is just below the call wall. A break above **$100** would force dealer hedging and could accelerate the move toward the swing high at **$117.55**.
+
+Macro tailwinds from crypto and FinTech themes help. Retail risk appetite has not collapsed. It has cooled. A turn in crypto markets or a retail trading surge would lift HOOD directly. You are positioning before that shift, with a defined risk below.
+
+## Risk Factors
+The biggest risk is a soft tape in the broad market. HOOD lives on retail activity. Market downturns crush trading volumes and call premium. You are paying for a reset, but sitting **36.9%** below the high also means the prior trend already broke. Overhead supply is heavy. Every rally attempt will encounter sellers who bought higher and want out.
+
+The stop at **$87.31** is the invalidation. A close below that level means the base has failed and sellers are back in control. The options put wall at **$85** sits just under that stop. A break of the put wall would likely trigger a fast move toward the 52-week low of **$63.52**. The debt load of **$22.9 billion** with thin operating cash flow leaves the company exposed in a downturn. That leverage amplifies any revenue miss. Timing risk around the September earnings report is real. A negative surprise could gap the stock below the stop.
+
+The reward-to-risk is **2.4**. You risk **9.3%** to the stop for a potential **22.1%** gain to the target. That math works if you respect the stop and do not let a gap open against you.
+
+## Bringing It All Together
+- HOOD is a high-beta retail broker sitting **36.9%** below its 52-week high with an RSI of **49.7**, offering a reset entry at **$96.25** rather than a top chase.
+- The chart has no Weinstein violations and price holds above the 30-week moving average, with a defined stop at **$87.31** and target at **$117.55**.
+- Fundamentals show **32.3%** revenue growth, **42.0%** profit margins, and a forward P/E of **29.9**, offset by high debt and thin operating cash flow.
+- Options flow shows a call wall at **$100** with heavy call premium, setting up a potential dealer-driven breakout toward the swing high.
+- The macro backdrop of neutral financial sector and active crypto themes supports a name tied to retail risk appetite.
+
+## Conclusion
+This is a reset buy on a name that bleeds when risk appetite fades and runs when it returns. The chart is clean, the RSI is dead neutral, and the downside is defined. You are not chasing. You are paying for a base that has held. The debt load and the broken prior trend are the scars. Respect the stop at **$87.31**. If the market rolls, exit fast. The target at **$117.55** gives you **22.1%** upside for **9.3%** risk. Probability favors the long here, but conviction is MEDIUM. Do not overload.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

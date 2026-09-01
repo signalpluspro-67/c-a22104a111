@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Blocs app, version large · The Philosopher Investor</title>
+<style>
+  :root{
+    --bg:#f4efe6; --card:#fbf8f1; --ink:#2b2620; --mute:#857c6e;
+    --line:#e3dac8; --accent:#9a6a3a; --good:#3f7d4e; --bad:#9b3b34; --chip:#efe7d6;
+    --sub:#3d7e91;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+  .wrap{max-width:900px;margin:0 auto;padding:28px 18px 100px}
+  .back{display:inline-block;margin-bottom:12px;font-size:.85rem;color:var(--accent);text-decoration:none}
+  header h1{font-size:1.65rem;margin:0 0 4px}
+  header p{color:var(--mute);margin:0 0 6px}
+  .lock{background:#f0e8d8;border:1px solid var(--line);border-left:4px solid var(--accent);
+    border-radius:12px;padding:14px 18px;margin:14px 0 6px;font-size:.92rem}
+  .lock b{color:var(--accent)}
+  .lock code{background:#fff;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:.85em}
+  .howto{background:#eef3ec;border:1px solid #cfe0cd;border-left:4px solid var(--good);
+    border-radius:12px;padding:12px 16px;margin:12px 0 6px;font-size:.9rem;color:#3f4a3d}
+  .howto b{color:var(--good)}
+  .warnbox{background:#faf1ef;border:1px solid #e0c3bd;border-left:4px solid var(--bad);
+    border-radius:12px;padding:12px 16px;margin:12px 0;font-size:.9rem;color:#6b4a45}
+  .warnbox b{color:var(--bad)}
+  h2.grp{font-size:1.05rem;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);
+    margin:40px 0 2px;padding-bottom:6px;border-bottom:2px solid var(--line)}
+  h2.grp span{color:var(--mute);text-transform:none;letter-spacing:0;font-weight:400;font-size:.85rem}
+  section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:20px 0}
+  section>h3{font-size:1.12rem;margin:0 0 4px}
+  section>.sub{color:var(--mute);font-size:.9rem;margin:0 0 10px}
+  .field{border:1px solid var(--line);border-radius:10px;background:#fff;margin:6px 0}
+  .field .bar{display:flex;justify-content:space-between;align-items:center;gap:10px;
+    padding:7px 11px;border-bottom:1px solid var(--line);background:#fcfaf4;border-radius:10px 10px 0 0}
+  .field .bar b{font-size:.83rem}
+  /* le bloc collable : aéré, listes espacées, labels en gras */
+  .copytext{margin:0;padding:16px 19px;font:15px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:#33302a}
+  .copytext p{margin:0 0 15px}
+  .copytext p:last-child{margin-bottom:0}
+  .copytext ul{margin:0 0 15px;padding-left:24px}
+  .copytext li{margin:0 0 12px}
+  .copytext li:last-child{margin-bottom:0}
+  .copytext strong{font-weight:700;color:#1f1c17}
+  .copytext a{color:var(--accent);text-decoration:underline}
+  .copytext .lead{font-size:1.02em}
+  button.copy{border:1px solid var(--accent);background:var(--accent);color:#fff;
+    border-radius:7px;padding:4px 11px;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap}
+  button.copy.done{background:var(--good);border-color:var(--good)}
+  button.copy.warn{background:var(--bad);border-color:var(--bad)}
+  .btnline{font-size:.86rem;color:var(--mute);margin:10px 0 0}
+  .btnline b{color:var(--ink)}
+  .btnline code{background:var(--chip);border-radius:5px;padding:1px 6px;font-size:.9em}
+  .note{color:var(--mute);font-size:.85rem;margin-top:10px}
+  .facts{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}
+  .facts span{background:#fff;border:1px solid var(--line);border-radius:8px;padding:4px 10px;font-size:.84rem}
+  .facts b{color:var(--accent)}
+  code{background:var(--chip);border-radius:5px;padding:1px 6px;font-size:.9em}
+  a{color:var(--accent)}
+  ol.rot{margin:6px 0 0;padding-left:22px;font-size:.92rem}
+  ol.rot li{margin:7px 0}
+  .vlabel{font-size:.74rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--accent);margin:16px 0 4px}
+  .vlabel .reco{background:var(--good);color:#fff;border-radius:5px;padding:1px 7px;margin-left:6px}
+  .len{background:var(--chip);color:#6d5c46;border-radius:5px;padding:1px 7px;margin-left:6px;font-weight:700}
+  /* inventaire */
+  .inv{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:12px;margin:10px 0 0}
+  .inv .box{background:#fff;border:1px solid var(--line);border-radius:11px;padding:13px 15px}
+  .inv .box h4{margin:0 0 8px;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent)}
+  .inv .box ul{margin:0;padding-left:16px;font-size:.87rem;line-height:1.55}
+  .inv .box li{margin:5px 0}
+  .inv .box li b{font-weight:700}
+  .inv .box li span{color:var(--mute)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<a class="back" href="newsletter_paywall.html">&larr; Blocs courts et paywall</a>
+
+<header>
+  <h1>Blocs app, version large</h1>
+  <p>Sept variations qui montrent toute l'app, en listes à puces, labels en gras, du blanc entre les lignes. Le lecteur lit en diagonale et voit l'étendue en trois secondes. Toutes gardent ta règle : aucune perf annoncée, aucun tiret cadratin.</p>
+  <div class="facts">
+    <span><b>26</b> boards</span>
+    <span><b>30+</b> surfaces dans l'app</span>
+    <span><b>12,000+</b> noms scannés chaque nuit</span>
+    <span><b>100+</b> fonds suivis</span>
+    <span><b>35</b> leçons</span>
+    <span>essai <b>7 jours</b> &middot; <b>$20</b>/mois</span>
+  </div>
+</header>
+
+<div class="howto">
+  <b>Le geste :</b> clique <b>Copier</b>, colle dans Substack. Les puces, le gras et les liens tiennent au collage. Remplace la dernière ligne par un vrai bouton si tu veux le rendu du best-seller. Chaque bloc porte sa longueur, pour que tu choisisses selon le numéro.
+</div>
+
+<div class="lock">
+  <b>Verrouillé partout :</b> essai <b>7 jours</b> &middot; puis <b>$20/mois</b> ou <b>$200/an</b> &middot; lien d'essai <code>https://philosopherinvestor.substack.com/subscribe?coupon=d30ae56d</code> &middot; app <code>app.thephilosopherinvestor.com</code>.
+</div>
+
+<h2 class="grp">1. Les blocs de tête <span>en haut de l'article</span></h2>
+
+<!-- ============ V1 ============ -->
+<section>
+  <h3>V1. Le desk complet</h3>
+  <p class="sub">Ton bloc préféré, élargi et mis en listes. Même ouverture, même bouton, mais il couvre toute l'app en six puces.</p>
+
+  <div class="vlabel">Bloc à coller <span class="reco">reco</span> <span class="len">~140 mots</span></div>
+  <div class="field">
+    <div class="bar"><b>Texte</b><button class="copy" onclick="copyBlock(this)">Copier</button></div>
+    <div class="copytext">
+<p class="lead">🖥 <strong>Get the whole desk.</strong> Every subscriber gets this letter. Paid readers also get the app behind it.</p>
+<p><strong>What is inside:</strong></p>
+<ul>
+<li><strong>The boards.</strong> Twenty-six of them run every night on 12,000+ US names and hand back the few that matter, each with its levels and one plain read of why it is there.</li>
+<li><strong>The tape.</strong> The session on one screen: what flipped today, the market map, the dealer walls, the dark pool prints, and where the options money sits.</li>
+<li><strong>The backdrop.</strong> Breadth and regime, rates and inflation, the dollar, sectors, themes, commodities, crypto, and what the crowd is pricing.</li>
+<li><strong>The smart money.</strong> The books of 100+ funds, House disclosures, activist stakes, insider clusters, buybacks, federal contracts.</li>
+<li><strong>Your book.</strong> Every line read, sized to your account, with alerts when your names reach their zone.</li>
+<li><strong>The academy.</strong> 35 lessons, a glossary, and a page that shows exactly how a pick is made.</li>
+</ul>
+<p>Free for 7 days, then $20 a month.</p>
+<p><a href="https://philosopherinvestor.substack.com/subscribe?coupon=d30ae56d"><strong>Open the app &rarr;</strong></a></p>
+    </div>
+  </div>
+  <p class="btnline">Bouton Substack : <b>Open The App</b> &middot; lien <code>subscribe?coupon=d30ae56d</code></p>
+</section>
+
+<!-- ============ V2 ============ -->
+<section>
+  <h3>V2. Les cinq questions</h3>
+  <p class="sub">Le format qui vend le mieux une app large : la question que le lecteur se pose en gras, la réponse derrière. Il se lit en diagonale et chaque ligne le concerne.</p>
+
+  <div class="vlabel">Bloc à coller <span class="reco">reco</span> <span class="len">~130 mots</span></div>
+  <div class="field">
+    <div class="bar"><b>Texte</b><button class="copy" onclick="copyBlock(this)">Copier</button></div>
+    <div class="copytext">
+<p class="lead">Five questions I ask before every session. The app answers all five, and paid readers open it with me.</p>
+<ul>
+<li><strong>What is worth a look?</strong> Twenty-six boards, ranked, run overnight on 12,000+ US names.</li>
+<li><strong>Who is buying?</strong> The books of 100+ funds, House disclosures, activist stakes, insider clusters, buybacks, federal contracts.</li>
+<li><strong>Where does the money sit?</strong> The dealer walls, the options map, the dark pool prints, and what flipped since yesterday.</li>
+<li><strong>What is the weather?</strong> Breadth and regime, rates and inflation, the dollar, sectors, themes, commodities, crypto.</li>
+<li><strong>And my own book?</strong> Every line read, sized to your account, with alerts when your names reach their zone.</li>
+</ul>
+<p>Free for 7 days, then $20 a month.</p>
+<p><a href="https://philosopherinvestor.substack.com/subscribe?coupon=d30ae56d"><strong>Open the app &rarr;</strong></a></p>
+    </div>
+  </div>
+  <p class="btnline">Bouton Substack : <b>Open The App</b> &middot; lien <code>subscribe?coupon=d30ae56d</code></p>
+</section>
+
+<!-- ============ V3 ============ -->
+<section>
+  <h3>V3. Les quatre rayons</h3>
+  <p class="sub">La structure de l'app elle-même, menu par menu. Le lecteur retrouve exactement ça en entrant, donc zéro surprise après le paiement.</p>
+
+  <div class="vlabel">Bloc à coller <span class="len">~150 mots</span></div>
+  <div class="field">
+    <div class="bar"><b>Texte</b><button class="copy" onclick="copyBlock(this)">Copier</button></div>
+    <div class="copytext">
+<p class="lead">A word on the app behind this letter, because most readers only know a corner of it.</p>
+<ul>
+<li><strong>Ideas.</strong> Twenty-six boards run every night: dips, breakouts, bottoms, squeezes, unusual options flow. Plus the earnings desk, the calendar, and the whole smart money trail.</li>
+<li><strong>The tape.</strong> The session on one screen, only what changed today, the market map, the dealer walls, the dark pool, and where the options money sits.</li>
+<li><strong>The backdrop.</strong> Regime and breadth, fear and greed, rates and inflation and jobs, the dollar and the curve, sectors, themes, commodities, crypto.</li>
+<li><strong>Your desk.</strong> Your watchlist, your positions read line by line, a journal that tracks where your edge actually sits, and alerts on price and on screens.</li>
+<li><strong>The academy.</strong> 35 lessons, a glossary, and a page that shows how a pick is made.</li>
+</ul>
+<p>Free for 7 days, then $20 a month or $200 a year. Cancel any time, in one click.</p>
+<p><a href="https://philosopherinvestor.substack.com/subscribe?coupon=d30ae56d"><strong>Open the app &rarr;</strong></a></p>
+    </div>
+  </div>
+  <p class="btnline">Bouton Substack : <b>Open The App</b> &middot; lien <code>subscribe?coupon=d30ae56d</code></p>
+</section>
+
+<h2 class="grp">2. Les blocs bouton <span>au milieu de l'article</span></h2>
+
+<!-- ============ V4 ============ -->
+<section>
+  <h3>V4. Le bouton et sa liste</h3>
+  <p class="sub">Le format TradersPro, en aéré. Un bouton centré, la liste dessous. C'est le plus court des blocs larges, il se pose juste avant la partie qui compte.</p>
+
+  <div class="vlabel">Bloc à coller <span class="reco">reco</span> <span class="len">~70 mots</span></div>
+  <div class="field">
+    <div class="bar"><b>Texte</b><button class="copy" onclick="copyBlock(this)">Copier</button></div>
+    <div class="copytext">
+<p><a href="https://philosopherinvestor.substack.com/subscribe?coupon=d30ae56d"><strong>Open the app &rarr;</strong></a></p>
+<p><strong>Unlock:</strong></p>
+<ul>
+<li>Twenty-six nightly boards on 12,000+ US names</li>
+<li>Any US ticker in full, levels included</li>
+<li>Dealer walls, options map, dark pool</li>
+<li>13F books, Congress, insiders, buybacks</li>
+<li>Breadth, rates, sectors, themes, crypto</li>
+<li>Your own book, your alerts, and the academy</li>
+</ul>
+<p>Free for 7 days, then $20 a month.</p>
+    </div>
+  </div>
+  <p class="btnline">Bouton Substack : <b>Open The App</b> &middot; centré, la liste juste dessous.</p>
+</section>
+
+<!-- ============ V5 ============ -->
+<section>
+  <h3>V5. Ce que ça remplace</h3>
+  <p class="sub">L'angle empilement. Le lecteur qui paie déjà trois outils comprend en une ligne. Aucun concurrent nommé, aucun prix comparé.</p>
+
+  <div class="vlabel">Bloc à coller <span class="len">~110 mots</span></div>
+  <div class="field">
+    <div class="bar"><b>Texte</b><button class="copy" onclick="copyBlock(this)">Copier</button></div>
+    <div class="copytext">
+<p class="lead">Count what sits on one screen inside the app:</p>
+<ul>
+<li><strong>A screener</strong> that runs twenty-six setups a night on 12,000+ US names</li>
+<li><strong>A 13F tracker</strong> on the books of 100+ funds, with activist stakes</li>
+<li><strong>A Congress and insider feed</strong>, with buybacks and federal contracts</li>
+<li><strong>An options desk</strong>: dealer walls, the options map, the dark pool</li>
+<li><strong>A macro board</strong>: rates, inflation, jobs, the dollar, sectors, themes, commodities, crypto</li>
+<li><strong>A portfolio tool</strong> that reads your own book and alerts on your names</li>
+</ul>
+<p>Elsewhere, that is five or six subscriptions. Here it is one, and the first week is free.</p>
+<p><a href="https://philosopherinvestor.substack.com/subscribe?coupon=d30ae56d"><strong>See it for yourself &rarr;</strong></a></p>
+    </div>
+  </div>
+  <p class="btnline">Bouton Substack : <b>See It For Yourself</b> &middot; lien <code>subscribe?coupon=d30ae56d</code></p>
+</section>
+
+<h2 class="grp">3. Les blocs longs <span>numéro qui a de la place, ou mur du paywall</span></h2>
+
+<!-- ============ V6 ============ -->
+<section>
+  <h3>V6. La journée</h3>
+  <p class="sub">Le lecteur se projette dans une routine et découvre les surfaces au passage, sans lire un catalogue.</p>
+
+  <div class="vlabel">Bloc à coller <span class="len">~160 mots</span></div>
+  <div class="field">
+    <div class="bar"><b>Texte</b><button class="copy" onclick="copyBlock(this)">Copier</button></div>
+    <div class="copytext">
+<p class="lead">How the app gets used, hour by hour, in case it helps.</p>
+<ul>
+<li><strong>Before the open.</strong> The weather: what moved overnight, your names, who reports this week. Then the boards that ran while you slept, ranked, and the line that says what changed since yesterday.</li>
+<li><strong>During the session.</strong> The tape on one screen. The market map for the shape of the day. The dealer walls when a name gets pinned. The options map and the dark pool when the volume looks wrong.</li>
+<li><strong>After the close.</strong> Any name in full: its scores, its levels, the price that says you are wrong, the funds and insiders in it, what the chain prices into the next report.</li>
+<li><strong>On the weekend.</strong> The backdrop: breadth, rates, the dollar, sectors, themes. And the journal, which tells you where your edge actually sits.</li>
+</ul>
+<p>That is the app, and it is open to paid readers. Free for 7 days, then $20 a month.</p>
+<p><a href="https://philosopherinvestor.substack.com/subscribe?coupon=d30ae56d"><strong>Try it for a week &rarr;</strong></a></p>
+    </div>
+  </div>
+  <p class="btnline">Bouton Substack : <b>Try It For A Week</b> &middot; lien <code>subscribe?coupon=d30ae56d</code></p>
+</section>
+
+<!-- ============ V7 ============ -->
+<section>
+  <h3>V7. Le mur, version large</h3>
+  <p class="sub">À coller juste avant la coupe du paywall. Le lecteur voit l'étendue au moment exact où il décide.</p>
+
+  <div class="vlabel">Bloc à coller <span class="reco">reco</span> <span class="len">~110 mots</span></div>
+  <div class="field">
+    <div class="bar"><b>Texte</b><button class="copy" onclick="copyBlock(this)">Copier</button></div>
+    <div class="copytext">
+<p class="lead"><strong>The rest of this post is for members.</strong> It comes with the app, and here is what that means:</p>
+<ul>
+<li><strong>Twenty-six boards</strong> ranked every night on 12,000+ US names</li>
+<li><strong>Any US ticker in full</strong>: the scores, the levels, the dealer walls, the funds and insiders in it</li>
+<li><strong>The tape</strong> on one screen, the options map, the dark pool, what flipped today</li>
+<li><strong>The backdrop</strong>: breadth, rates, the dollar, sectors, themes, commodities, crypto</li>
+<li><strong>The smart money trail</strong>: 13F books, House disclosures, activist stakes, buybacks</li>
+<li><strong>Your own book</strong>, read line by line, with alerts on your names</li>
+<li><strong>The academy</strong>: 35 lessons, a glossary, and how a pick is made</li>
+</ul>
+<p>Free for 7 days, then $20 a month or $200 a year. Cancel any time, in one click.</p>
+    </div>
+  </div>
+  <p class="note">Substack ajoute son propre encart « Keep reading with a 7-day free trial » juste en dessous. Ce bloc est ce que tu contrôles, l'encart ne se réécrit pas.</p>
+</section>
+
+<h2 class="grp">Comment je m'en servirais</h2>
+
+<section>
+  <h3>La rotation</h3>
+  <ol class="rot">
+    <li><b>V1</b> par défaut en tête de numéro. C'est ton format, enfin à la bonne largeur.</li>
+    <li><b>V2</b> tous les trois ou quatre numéros. C'est celui qui convertit un lecteur qui hésite, parce qu'il parle de ses questions à lui.</li>
+    <li><b>V3</b> une fois par mois, sur un numéro long.</li>
+    <li><b>V4</b> au milieu d'un article, jamais en tête, jamais le même jour qu'un bloc de tête.</li>
+    <li><b>V5</b> quand tu écris pour un lectorat qui paie déjà des outils, typiquement un numéro options ou macro.</li>
+    <li><b>V6</b> une fois par mois, sur un numéro qui a de la place.</li>
+    <li><b>V7</b> à la coupe, dès que tu passes au paywall.</li>
+  </ol>
+  <p class="note">Une règle qui tient tout : un bloc de tête, ou un bouton au milieu, jamais les deux dans le même numéro. Le lecteur pardonne une vente, pas deux.</p>
+</section>
+
+<h2 class="grp">L'inventaire <span>ce que tes blocs ont le droit de citer</span></h2>
+
+<section>
+  <h3>Les trente surfaces, relevées dans la nav</h3>
+  <p class="sub">Source unique pour écrire tes textes de vente. Relevé le 20 août sur la prod, menu par menu.</p>
+  <div class="inv">
+    <div class="box">
+      <h4>Ideas</h4>
+      <ul>
+        <li><b>Screeners</b> <span>every setup, ranked</span></li>
+        <li><b>Earnings desk</b> <span>post-report drift</span></li>
+        <li><b>Earnings calendar</b> <span>who reports, day by day</span></li>
+        <li><b>Stock splits</b> <span>forward and reverse</span></li>
+        <li><b>Whale books</b> <span>13F holdings</span></li>
+        <li><b>Congress</b> <span>House trade disclosures</span></li>
+        <li><b>Gov contracts</b> <span>who wins federal contracts</span></li>
+        <li><b>Activist 13D</b> <span>who took a 5%+ stake</span></li>
+        <li><b>Insiders</b> <span>cluster buys and big sales</span></li>
+        <li><b>Buybacks</b> <span>who retires its own shares</span></li>
+      </ul>
+    </div>
+    <div class="box">
+      <h4>Market, the tape</h4>
+      <ul>
+        <li><b>Monitor</b> <span>the tape on one screen</span></li>
+        <li><b>What flipped</b> <span>only what changed today</span></li>
+        <li><b>Market map</b> <span>the session at a glance</span></li>
+        <li><b>Dealer map</b> <span>gamma walls and hedging flows</span></li>
+        <li><b>Dark pool</b> <span>off-exchange short volume</span></li>
+        <li><b>Options map</b> <span>where the options money sits</span></li>
+      </ul>
+    </div>
+    <div class="box">
+      <h4>Market, the backdrop</h4>
+      <ul>
+        <li><b>Big picture</b> <span>regime and breadth</span></li>
+        <li><b>Market gauges</b> <span>fear, greed, breadth, cycle</span></li>
+        <li><b>Economy</b> <span>rates, inflation, jobs</span></li>
+        <li><b>FX &amp; Rates</b> <span>the dollar, majors, the curve</span></li>
+        <li><b>Sectors</b> <span>what is rotating</span></li>
+        <li><b>Themes</b> <span>heat by basket</span></li>
+        <li><b>Commodities</b> <span>macro ETFs</span></li>
+        <li><b>Crypto</b> <span>bitcoin and the majors</span></li>
+        <li><b>Odds desk</b> <span>what the crowd is pricing</span></li>
+        <li><b>Sentiment</b> <span>chatter, attention, surveys</span></li>
+      </ul>
+    </div>
+    <div class="box">
+      <h4>My desk &amp; Learn</h4>
+      <ul>
+        <li><b>Watchlist</b> <span>your names</span></li>
+        <li><b>Positions</b> <span>manage the book</span></li>
+        <li><b>Journal</b> <span>track your edge</span></li>
+        <li><b>Alerts</b> <span>price and screen</span></li>
+        <li><b>Academy</b> <span>35 lessons</span></li>
+        <li><b>Glossary</b> <span>every term, explained</span></li>
+        <li><b>Method</b> <span>how a pick is made</span></li>
+      </ul>
+    </div>
+    <div class="box">
+      <h4>Today &amp; Discover</h4>
+      <ul>
+        <li><b>Today</b> <span>the morning glance</span></li>
+        <li><b>What if</b> <span>the regret counter</span></li>
+        <li><b>Stock battle</b> <span>two names head to head</span></li>
+        <li><b>Compare</b> <span>names side by side</span></li>
+        <li><b>Profiles</b> <span>three trading temperaments</span></li>
+        <li><b>Most watched by members</b> <span>what the room holds</span></li>
+        <li><b>In play for the room</b> <span>member names on a board</span></li>
+        <li><b>Loud and real</b> <span>Reddit buzz that hit a board</span></li>
+        <li><b>Where conviction stacks up</b> <span>signals that line up</span></li>
+      </ul>
+    </div>
+  </div>
+  <p class="note">Quatre surfaces manquent au fichier de nav de ton Mac (Gov contracts, Activist 13D, Stock splits, Dark pool) alors qu'elles sont en prod. Le local est en retard, à vérifier avant ton prochain déploiement.</p>
+</section>
+
+<div class="warnbox">
+  <b>Ce qui reste interdit, même en version large :</b> aucune perf annoncée, aucune promesse de suivi des idées, aucun nom de screener interne, aucun tiret cadratin, aucun concurrent nommé, aucune remise qui n'existe plus. Les chiffres cités sont vérifiés : 26 boards, 12,000+ noms, 100+ fonds, 35 leçons.
+</div>
+
+<p class="note">Version courte de ces blocs, avec le paywall : <a href="newsletter_paywall.html">blocs courts et paywall</a>. Studio d'écriture pour retravailler un bloc à ta voix : <a href="http://localhost:8903/">localhost:8903</a>.</p>
+
+</div>
+<script>
+function copyBlock(btn){
+  var el = btn.closest('.field').querySelector('.copytext');
+  var ok = false;
+  var sel = window.getSelection();
+  var range = document.createRange();
+  range.selectNodeContents(el);
+  sel.removeAllRanges();
+  sel.addRange(range);
+  try { ok = document.execCommand('copy'); } catch(e){ ok = false; }
+  sel.removeAllRanges();
+  if (btn.blur) btn.blur();
+  var old = btn.getAttribute('data-label') || btn.textContent;
+  btn.setAttribute('data-label', old);
+  if (ok){
+    btn.textContent = 'Copié ✓'; btn.classList.add('done');
+  } else {
+    btn.textContent = 'Sélectionne + Cmd-C'; btn.classList.add('warn');
+  }
+  setTimeout(function(){ btn.textContent = old; btn.classList.remove('done'); btn.classList.remove('warn'); }, 1600);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Cleanest Chart in the Pool — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Cleanest Chart in the Pool</h1>
+<div class="subtitle">ADP comes into support with proven dip-buying odds and a 1.5 risk/reward, right as broad tech wobbles.</div>
+<div class="meta">EOD 2026-08-24 · ADP · written from the desk · model deepseek-v4-pro</div>
+<div class="chips"><span class="chip">ADP</span>
+<span class="chip">Technology</span>
+<span class="chip hi">HIGH conviction</span></div>
+<div class="track">Tracking since 2026-08-24: entry <b>$283.01</b> &rarr; <b>$287.48</b> (as of 2026-08-28) · <span class="pos">+1.6%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Technology sits neutral right now. The desk rates the sector that way, and the acceleration signal is new down. You are not getting a sector tailwind. You are getting a stock that can move on its own.</p>
+<p>That matters because ADP is a technology company that behaves like a staple. It sells payroll and HR software. Companies do not turn that off when growth scares hit. They pay people every two weeks. They need compliance. They need tax filings. That makes the revenue stream steadier than most software names.</p>
+<p>When the broad sector stalls, you want a name with its own demand story. ADP gives you that. It earns a <strong>20.1%</strong> net margin on that revenue. Those are not growth bubble numbers. They are compounder numbers. The macro backdrop rewards a setup built on cash generation and a clean chart, not an AI narrative.</p>
+<h2>Introducing ADP</h2>
+<p>Automatic Data Processing runs the plumbing of American employment. It operates two segments. Employer Services sells cloud based HCM platforms like RUN for small business payroll, Workforce Now for mid sized and large firms, and Lyric HCM for analytics and talent. The PEO segment, under ADP TotalSource, bundles HR outsourcing with a co employment model, benefits, and risk management.</p>
+<p>The edge is scale and stickiness. Once a company plugs payroll into ADP, the switching cost is high. Miss a pay cycle or a tax filing and the business gets sued. That locks in recurring revenue. The company was founded in <strong>1949</strong>. It has been paying people longer than most of its clients have existed.</p>
+<p>The forward P/E is <strong>20.9</strong>. You are not paying a software multiple for a software business. You are paying a steady cash compounder multiple. Debt to equity is <strong>0.91</strong>. The current ratio is thin at <strong>1.05</strong>, and the quick ratio is <strong>0.15</strong>. That is the one place you pause. More on that later.</p>
+<h2>The Thesis</h2>
+<p>This is the cleanest chart in the pool. Momentum scores it at <strong>143.3</strong> while the pullback desk read fires at <strong>70</strong> with a tested validity. You get a proven dip buy inside an uptrend, not a chase. That is the whole setup.</p>
+<p>The desk ran this across multiple desk reads and the chart flashed zero violations. The risk adjusted return clocks <strong>1.10</strong> across <strong>383</strong> trades, so this pattern has real out of sample evidence behind it. The risk/reward on the levels is <strong>1.5</strong>. That is the best risk per unit of chart mess in the entire pool.</p>
+<p>Conviction is high. The position size should reflect that. You are buying a <strong>$283.01</strong> stock with a stop at <strong>$270.57</strong>, risking <strong>4.4%</strong>. The first target is <strong>$301.67</strong>, giving <strong>6.6%</strong> upside. The second target sits at <strong>$311.00</strong>, giving <strong>9.9%</strong> upside. The math works plain and simple.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-08-24-ADP.png" alt="ADP weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=ADP&interval=1W" target="_blank" rel="noopener">📈 Open the ADP weekly chart on TradingView ↗</a><figcaption>ADP weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $301.67 · mark support near $270.57.</figcaption></figure>
+<p>Price closed at <strong>$283.01</strong>. It sits <strong>8.4%</strong> under the <strong>52-week high</strong> of <strong>$310.08</strong> and <strong>49.9%</strong> above the <strong>52-week low</strong> of <strong>$188.16</strong>. That puts it in the top quarter of its yearly range. There is room overhead.</p>
+<p>The RSI is <strong>63.2</strong> on one reading and <strong>66.9</strong> on another. Both sit in the warm zone, below the <strong>70</strong> overbought threshold. A <strong>63-day</strong> gain of <strong>25.6%</strong> with RSI still under <strong>70</strong> tells you momentum has not burned itself out.</p>
+<p>Relative strength versus the SPY over the same <strong>63-day</strong> window is <strong>23.2%</strong>. This stock is not riding a beta wave. It is leading. The <strong>21-day</strong> return is <strong>13.2%</strong>, accelerating recently.</p>
+<p>The stock holds above its <strong>30-week</strong> moving average despite that average flattening at a <strong>-1.0%</strong> slope. The flat slope says the trend lost its steep angle, but price staying above it says buyers are still in control. No Weinstein violations flagged. The chart is clean.</p>
+<p>Confirmation on the next leg up looks like a day above that average, ideally with a close near the high of the day. The support zone is the <strong>$270</strong> put wall from the options flow. The call wall at <strong>$280</strong> acts as near term overhead that needs to get taken out.</p>
+<p>The entry is <strong>$283.01</strong>. The stop is <strong>$270.57</strong>. The first target is <strong>$301.67</strong>. The second target is <strong>$311.00</strong>. The swing high is <strong>$283.01</strong>. The swing low is <strong>$214.60</strong>. The ATR is <strong>$6.22</strong>, so the stop sits about two ATRs below entry, a standard and defensible distance.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$111.10B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$112.20B</td></tr><tr><td class="k">52-week range</td><td class="v">$188.16 - $310.08</td></tr><tr><td class="k">Dividend yield</td><td class="v">2.43%</td></tr><tr><td class="k">Beta</td><td class="v">0.82</td></tr><tr><td class="k">Trailing P/E</td><td class="v">25.5</td></tr><tr><td class="k">Forward P/E</td><td class="v">20.9</td></tr><tr><td class="k">Price / sales</td><td class="v">5.1</td></tr><tr><td class="k">Price / book</td><td class="v">18.4</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$21.95B  (+6.8% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$54.55</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$4.41B</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">10.95 / 13.4</td></tr><tr><td class="k">Gross margin</td><td class="v">48.7%</td></tr><tr><td class="k">Operating margin</td><td class="v">23.5%</td></tr><tr><td class="k">Profit margin</td><td class="v">20.1%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$13.70</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$13.20</td></tr><tr><td class="k">Total cash / share</td><td class="v">$10.65</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.91</td></tr><tr><td class="k">Current ratio</td><td class="v">1.05</td></tr><tr><td class="k">Return on equity</td><td class="v">72.2%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">hold - mean target $286.93 (15 analysts)</td></tr></tbody></table>
+<p>The numbers describe a cash machine with thin cushions. Net income was <strong>$4.4 billion</strong>, a <strong>20.1%</strong> margin. Gross margin is <strong>48.7%</strong>, operating margin <strong>23.5%</strong>. These are thick, consistent spreads.</p>
+<p>That covers the <strong>$6.8</strong> per share annual dividend yielding <strong>2.43%</strong> with a <strong>0.61</strong> payout ratio. The dividend is safe. The company also has <strong>$10.65</strong> per share in cash. Operating cash flow per share is <strong>$13.70</strong>, free cash flow per share <strong>$13.20</strong>. You are paying <strong>$283</strong> for a stock that spits out <strong>$13.20</strong> in annual free cash per share.</p>
+<p>Return on equity is <strong>72.2%</strong>. That is extreme, a function of the low book value per share of <strong>15.16</strong> and the high net income. Return on assets is a modest <strong>6.2%</strong>. The price to book is <strong>18.4</strong>, so you are paying for the earning power, not the asset base.</p>
+<p>The weak spot is liquidity. The current ratio is <strong>1.05</strong>. The quick ratio is <strong>0.15</strong>. Excluding inventory barely matters for a software company, but that quick ratio means the company relies on its cash flow rhythm to meet short term obligations. It does not make the ratio irrelevant, but it puts it in context.</p>
+<p>Analyst consensus is a hold with a mean target of <strong>$286.93</strong>, right around the current price. The forward P/E of <strong>20.9</strong> on <strong>$13.40</strong> in expected EPS is reasonable. Earnings growth of <strong>9.8%</strong> supports a mid teens multiple. You are not relying on multiple expansion. You are relying on the chart setup.</p>
+<h2>Why Now</h2>
+<p>The timing is a pullback inside a strong trend, not an event catalyst. The desk found zero Weinstein violations and a high momentum score with a valid dip buy signal. The risk/reward is <strong>1.5</strong>. The risk to stop is <strong>4.4%</strong>. The upside to the first target is <strong>6.6%</strong>.</p>
+<p>Call premium was <strong>$2.89 million</strong>, put premium only <strong>$0.38 million</strong>. The call wall at <strong>$280</strong> and put wall at <strong>$270</strong> frame the immediate range. Traders are positioned long calls and the put wall sits right below the technical stop. That gives you a natural support zone.</p>
+<p>The macro sector acceleration flagged new down. That is the counterpoint. You are buying a technology stock into sector deceleration. The mitigating fact is ADP&#x27;s revenue model. Payroll processing is not discretionary IT spend. It is a utility. The desk rates technology neutral because the water is choppy, but ADP is the cleanest vessel in that water.</p>
+<h2>Risk Factors</h2>
+<p>Technology is rated neutral with new down acceleration. The long term average slope flattened at <strong>-1.0%</strong>. A broad tech wobble takes this out before the dip resolves. That is the primary risk, stated plainly.</p>
+<p>The stop at <strong>$270.57</strong> is the invalidation. A close below that level breaks the swing structure and places price under the 30 week moving average and the put wall. The trade thesis fails there.</p>
+<p>The thin quick ratio of <strong>0.15</strong> means the company needs its cash conversion cycle to run smoothly. A sudden disruption in client payments, a recession that hits small business payrolls hard, or a regulatory shift in the PEO model would stress the balance sheet quickly. These are tail risks, not base case, but they exist.</p>
+<p>Timing risk is modest because there is no binary event. No earnings date in the immediate window. The desk rates the pattern without leaning on a catalyst date. That means the setup can work over days or weeks, but it also means you lack an event driven push. You are relying on the technical structure and the underlying bid.</p>
+<h2>Bringing It All Together</h2>
+<p>- Dual focus: payroll processing revenue is recurring and non discretionary, insulating ADP from the technology sector deceleration flagged by the desk.</p>
+<p>- Fundamentals: <strong>20.1%</strong> net margin, <strong>48.7%</strong> gross margin, <strong>72.2%</strong> ROE, and <strong>$13.20</strong> in free cash per share. The forward P/E of <strong>20.9</strong> is not stretched. The current ratio of <strong>1.05</strong> and quick ratio of <strong>0.15</strong> are the honest weak spots.<br>- Catalyst: no single event. The setup is a tested pullback buy inside an uptrend with <strong>1.10</strong> risk adjusted return across <strong>383</strong> trades and zero chart violations.<br>- Levels: entry <strong>$283.01</strong>, stop <strong>$270.57</strong>, first target <strong>$301.67</strong>, second target <strong>$311.00</strong>. Risk to stop <strong>4.4%</strong>, upside to first target <strong>6.6%</strong>, risk/reward <strong>1.5</strong>.</p>
+<h2>Conclusion</h2>
+<p>This is a high conviction swing long built on the cleanest chart in the pool. The desk pattern works. The levels are clear. The company generates cash in its sleep. The macro headwind is real and sector tech is wobbling, but ADP&#x27;s revenue stream does not depend on a tech upcycle. You are buying a pullback inside a leading relative strength trend with proven odds. Manage the stop at <strong>$270.57</strong>. The rest takes care of itself.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Automatic Data Processing, Inc. (ADP) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $111.10B; 52-week range $188-$310; Revenue $21.95B +7% YoY; Net income $4.41B; Free cash flow/share $13.20; Debt-to-equity 0.91; Return on equity 72%; Dividend yield 2.4%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Automatic Data Processing, Inc. (ADP) inside the Technology space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): This is the cleanest chart in the pool. Momentum ranks it at **143.3** while the pullback desk read fires at **70** with a validity of tested and a risk-adjusted return of **1.10** across **383** trades, so you get a proven dip-buy inside a. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Cleanest Chart in the Pool
+
+*ADP comes into support with proven dip-buying odds and a 1.5 risk/reward, right as broad tech wobbles.*
+
+## The Big Picture
+Technology sits neutral right now. The desk rates the sector that way, and the acceleration signal is new down. You are not getting a sector tailwind. You are getting a stock that can move on its own.
+
+That matters because ADP is a technology company that behaves like a staple. It sells payroll and HR software. Companies do not turn that off when growth scares hit. They pay people every two weeks. They need compliance. They need tax filings. That makes the revenue stream steadier than most software names.
+
+When the broad sector stalls, you want a name with its own demand story. ADP gives you that. It earns a **20.1%** net margin on that revenue. Those are not growth bubble numbers. They are compounder numbers. The macro backdrop rewards a setup built on cash generation and a clean chart, not an AI narrative.
+
+## Introducing ADP
+Automatic Data Processing runs the plumbing of American employment. It operates two segments. Employer Services sells cloud based HCM platforms like RUN for small business payroll, Workforce Now for mid sized and large firms, and Lyric HCM for analytics and talent. The PEO segment, under ADP TotalSource, bundles HR outsourcing with a co employment model, benefits, and risk management.
+
+The edge is scale and stickiness. Once a company plugs payroll into ADP, the switching cost is high. Miss a pay cycle or a tax filing and the business gets sued. That locks in recurring revenue. The company was founded in **1949**. It has been paying people longer than most of its clients have existed.
+
+The forward P/E is **20.9**. You are not paying a software multiple for a software business. You are paying a steady cash compounder multiple. Debt to equity is **0.91**. The current ratio is thin at **1.05**, and the quick ratio is **0.15**. That is the one place you pause. More on that later.
+
+## The Thesis
+This is the cleanest chart in the pool. Momentum scores it at **143.3** while the pullback desk read fires at **70** with a tested validity. You get a proven dip buy inside an uptrend, not a chase. That is the whole setup.
+
+The desk ran this across multiple desk reads and the chart flashed zero violations. The risk adjusted return clocks **1.10** across **383** trades, so this pattern has real out of sample evidence behind it. The risk/reward on the levels is **1.5**. That is the best risk per unit of chart mess in the entire pool.
+
+Conviction is high. The position size should reflect that. You are buying a **$283.01** stock with a stop at **$270.57**, risking **4.4%**. The first target is **$301.67**, giving **6.6%** upside. The second target sits at **$311.00**, giving **9.9%** upside. The math works plain and simple.
+
+## Technical Analysis
+&gt; 📈 Insert the ADP weekly chart here (TradingView): ADP weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $301.67 · mark support near $270.57.
+
+Price closed at **$283.01**. It sits **8.4%** under the **52-week high** of **$310.08** and **49.9%** above the **52-week low** of **$188.16**. That puts it in the top quarter of its yearly range. There is room overhead.
+
+The RSI is **63.2** on one reading and **66.9** on another. Both sit in the warm zone, below the **70** overbought threshold. A **63-day** gain of **25.6%** with RSI still under **70** tells you momentum has not burned itself out.
+
+Relative strength versus the SPY over the same **63-day** window is **23.2%**. This stock is not riding a beta wave. It is leading. The **21-day** return is **13.2%**, accelerating recently.
+
+The stock holds above its **30-week** moving average despite that average flattening at a **-1.0%** slope. The flat slope says the trend lost its steep angle, but price staying above it says buyers are still in control. No Weinstein violations flagged. The chart is clean.
+
+Confirmation on the next leg up looks like a day above that average, ideally with a close near the high of the day. The support zone is the **$270** put wall from the options flow. The call wall at **$280** acts as near term overhead that needs to get taken out.
+
+The entry is **$283.01**. The stop is **$270.57**. The first target is **$301.67**. The second target is **$311.00**. The swing high is **$283.01**. The swing low is **$214.60**. The ATR is **$6.22**, so the stop sits about two ATRs below entry, a standard and defensible distance.
+
+## Fundamentals
+| Metric | Value |
+|---|---|
+| Market cap | $111.10B |
+| Enterprise value | $112.20B |
+| 52-week range | $188.16 - $310.08 |
+| Dividend yield | 2.43% |
+| Beta | 0.82 |
+| Trailing P/E | 25.5 |
+| Forward P/E | 20.9 |
+| Price / sales | 5.1 |
+| Price / book | 18.4 |
+| Revenue (TTM) | $21.95B  (+6.8% YoY) |
+| Revenue / share | $54.55 |
+| Net income (TTM) | $4.41B |
+| EPS (TTM / fwd) | 10.95 / 13.4 |
+| Gross margin | 48.7% |
+| Operating margin | 23.5% |
+| Profit margin | 20.1% |
+| Operating cash flow / share | $13.70 |
+| Free cash flow / share | $13.20 |
+| Total cash / share | $10.65 |
+| Debt / equity | 0.91 |
+| Current ratio | 1.05 |
+| Return on equity | 72.2% |
+| Analyst consensus | hold - mean target $286.93 (15 analysts) |
+
+The numbers describe a cash machine with thin cushions. Net income was **$4.4 billion**, a **20.1%** margin. Gross margin is **48.7%**, operating margin **23.5%**. These are thick, consistent spreads.
+
+That covers the **$6.8** per share annual dividend yielding **2.43%** with a **0.61** payout ratio. The dividend is safe. The company also has **$10.65** per share in cash. Operating cash flow per share is **$13.70**, free cash flow per share **$13.20**. You are paying **$283** for a stock that spits out **$13.20** in annual free cash per share.
+
+Return on equity is **72.2%**. That is extreme, a function of the low book value per share of **15.16** and the high net income. Return on assets is a modest **6.2%**. The price to book is **18.4**, so you are paying for the earning power, not the asset base.
+
+The weak spot is liquidity. The current ratio is **1.05**. The quick ratio is **0.15**. Excluding inventory barely matters for a software company, but that quick ratio means the company relies on its cash flow rhythm to meet short term obligations. It does not make the ratio irrelevant, but it puts it in context.
+
+Analyst consensus is a hold with a mean target of **$286.93**, right around the current price. The forward P/E of **20.9** on **$13.40** in expected EPS is reasonable. Earnings growth of **9.8%** supports a mid teens multiple. You are not relying on multiple expansion. You are relying on the chart setup.
+
+## Why Now
+The timing is a pullback inside a strong trend, not an event catalyst. The desk found zero Weinstein violations and a high momentum score with a valid dip buy signal. The risk/reward is **1.5**. The risk to stop is **4.4%**. The upside to the first target is **6.6%**.
+
+Call premium was **$2.89 million**, put premium only **$0.38 million**. The call wall at **$280** and put wall at **$270** frame the immediate range. Traders are positioned long calls and the put wall sits right below the technical stop. That gives you a natural support zone.
+
+The macro sector acceleration flagged new down. That is the counterpoint. You are buying a technology stock into sector deceleration. The mitigating fact is ADP&#x27;s revenue model. Payroll processing is not discretionary IT spend. It is a utility. The desk rates technology neutral because the water is choppy, but ADP is the cleanest vessel in that water.
+
+## Risk Factors
+Technology is rated neutral with new down acceleration. The long term average slope flattened at **-1.0%**. A broad tech wobble takes this out before the dip resolves. That is the primary risk, stated plainly.
+
+The stop at **$270.57** is the invalidation. A close below that level breaks the swing structure and places price under the 30 week moving average and the put wall. The trade thesis fails there.
+
+The thin quick ratio of **0.15** means the company needs its cash conversion cycle to run smoothly. A sudden disruption in client payments, a recession that hits small business payrolls hard, or a regulatory shift in the PEO model would stress the balance sheet quickly. These are tail risks, not base case, but they exist.
+
+Timing risk is modest because there is no binary event. No earnings date in the immediate window. The desk rates the pattern without leaning on a catalyst date. That means the setup can work over days or weeks, but it also means you lack an event driven push. You are relying on the technical structure and the underlying bid.
+
+## Bringing It All Together
+- Dual focus: payroll processing revenue is recurring and non discretionary, insulating ADP from the technology sector deceleration flagged by the desk.
+
+- Fundamentals: **20.1%** net margin, **48.7%** gross margin, **72.2%** ROE, and **$13.20** in free cash per share. The forward P/E of **20.9** is not stretched. The current ratio of **1.05** and quick ratio of **0.15** are the honest weak spots.
+- Catalyst: no single event. The setup is a tested pullback buy inside an uptrend with **1.10** risk adjusted return across **383** trades and zero chart violations.
+- Levels: entry **$283.01**, stop **$270.57**, first target **$301.67**, second target **$311.00**. Risk to stop **4.4%**, upside to first target **6.6%**, risk/reward **1.5**.
+
+## Conclusion
+This is a high conviction swing long built on the cleanest chart in the pool. The desk pattern works. The levels are clear. The company generates cash in its sleep. The macro headwind is real and sector tech is wobbling, but ADP&#x27;s revenue stream does not depend on a tech upcycle. You are buying a pullback inside a leading relative strength trend with proven odds. Manage the stop at **$270.57**. The rest takes care of itself.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

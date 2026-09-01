@@ -1,0 +1,223 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Engine Maker Running Ahead of the Cycle — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Engine Maker Running Ahead of the Cycle</h1>
+<div class="subtitle">GE Aerospace is pulling back from highs with leadership intact. The trade is real, but the ceiling is close.</div>
+<div class="meta">EOD 2026-08-13 · GE · written from the desk · model glm-5.2</div>
+<div class="chips"><span class="chip">GE</span>
+<span class="chip">Industrials</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-08-13: entry <b>$346.34</b> &rarr; <b>$342.58</b> (as of 2026-08-28) · <span class="neg">-1.1%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>The Industrials sector sits in neutral. Both the sector state and the acceleration reading are NEUTRAL, meaning the broad industrial complex is neither surging nor rolling over. You are operating in a backdrop where capital is selective and rotates toward proven leaders rather than lifting all boats.</p>
+<p>Aerospace and defense is the pocket doing the heavy lifting inside that neutral tape. Commercial aviation demand remains structurally tight. Airlines need engines, spare parts, and maintenance work. The defense side continues to draw steady government spending. That combination gives the best-positioned engine makers a revenue floor that most industrial conglomerates lack.</p>
+<p>This backdrop rewards a pure-play leader with exposed revenue to both commercial aviation cycles and defense budgets. A company that has already cleaned up its portfolio, shed the distraction, and is selling into durable demand gets paid in a neutral sector. The money flows to the cleanest story.</p>
+<h2>Introducing GE</h2>
+<p>GE Aerospace is what remains after years of corporate dismantling. The old General Electric conglomerate split itself into three separate companies. GE Aerospace is the aviation business, focused on designing and manufacturing jet engines for commercial and defense customers.</p>
+<p>The company operates through two segments. Commercial Engines and Services handles jet engine manufacturing, spare parts sales, and maintenance and overhaul work for airlines and business aviation. Defense and Propulsion Technologies builds engines and systems for governments, militaries, and commercial airframers. That segment also covers avionics, power systems, small turboprop engines, and additive manufacturing through brands like Avio Aero, Dowty Propellers, and Colibrium Additive.</p>
+<p>The edge is installed base. GE and its joint venture CFM International have a massive fleet of engines already flying. Every one of those engines generates recurring service revenue over a multi-decade lifecycle. The deeper the installed base grows, the more predictable the services revenue becomes. That is the moat.</p>
+<h2>The Thesis</h2>
+<p>GE is a <strong>$1277.9M</strong>-a-day industrial pulling back with RSI at <strong>50.0</strong>, neither stretched nor broken. The stock is beating the broad market by <strong>17.6%</strong> over three months, and the momentum signal reads <strong>93</strong> with a tested pullback signal at <strong>70</strong>. No chart flag. No Weinstein violation on the sheet.</p>
+<p>The conviction is MEDIUM. The setup is clean and the leadership is undeniable. Two independent signals agree that this stock is in a strong uptrend taking a breather. The pullback is shallow, the trend is intact, and the relative strength gap over the market is wide.</p>
+<p>The constraint is headroom. Price sits only <strong>5.4%</strong> under its <strong>52</strong>-week high, so the ceiling arrives fast. The desk ranks this setup behind something like AMAT precisely because that <strong>5.4%</strong> of headroom caps what the trade can pay you. You are buying a leader at a reasonable entry, but you are buying it close to the ceiling.</p>
+<h2>Technical Analysis</h2>
+<p><figure class="chart"><img src="img/2026-08-13-GE.png" alt="GE weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=GE&interval=1W" target="_blank" rel="noopener">📈 Open the GE weekly chart on TradingView ↗</a><figcaption>GE weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $381.22 · mark support near $327.28.</figcaption></figure><br>GE closed at <strong>360.64</strong> on the session. The stock trades above its <strong>30</strong>-week moving average, and that average is sloping upward at <strong>5.7%</strong>. The primary trend is up and the foundation under price is rising.</p>
+<p>The stock is <strong>5.4%</strong> below its <strong>52</strong>-week high of <strong>388.84</strong> and <strong>35.6%</strong> above its <strong>52</strong>-week low of <strong>261.71</strong>. It sits at <strong>92.7%</strong> of that high, meaning you are entering near the top of the range. The swing high at <strong>381.22</strong> is the intermediate ceiling. The swing low at <strong>285.28</strong> is the floor you do not want to see tested.</p>
+<p>RSI reads <strong>54.5</strong> on a <strong>14</strong>-day basis and <strong>50.0</strong> on the alternative reading. Both say the same thing. The stock is neither overbought nor oversold. It has cooled off from the momentum push that drove the <strong>22.4%</strong> three-month return. The <strong>21</strong>-day return is flat at <strong>0.1%</strong>, confirming the pause.</p>
+<p>The entry zone is <strong>346.34</strong>. The stop sits at <strong>327.28</strong>, which is <strong>5.5%</strong> below entry. The first target is <strong>381.22</strong>, good for <strong>10.1%</strong> upside from entry. The second target is <strong>389.22</strong>, good for <strong>12.4%</strong>. The reward-to-risk ratio is <strong>1.8</strong> at the first target. You need to see volume expand on the push toward <strong>381.22</strong> to confirm the breakout. Average volume over <strong>20</strong> days is <strong>3452291</strong> shares, and anything below that on an up-move signals hesitation.</p>
+<p>The put wall at <strong>330</strong> in the options market sits close to the stop. That is a magnet if the stock breaks down. The call wall at <strong>410</strong> is well above the second target, so options flow is not capping the immediate upside. Put volume at <strong>2010</strong> on the session outweighs call volume at <strong>1119</strong>, but the call premium of <strong>$1.62M</strong> dominates put premium of <strong>$0.53M</strong>. The smart money is paying up for calls despite heavier put counting. That is a bullish divergence.</p>
+<h2>Fundamentals</h2>
+<p><table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$385.12B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$399.13B</td></tr><tr><td class="k">52-week range</td><td class="v">$261.71 - $388.84</td></tr><tr><td class="k">Dividend yield</td><td class="v">0.51%</td></tr><tr><td class="k">Beta</td><td class="v">1.37</td></tr><tr><td class="k">Trailing P/E</td><td class="v">43.9</td></tr><tr><td class="k">Forward P/E</td><td class="v">40.9</td></tr><tr><td class="k">Price / sales</td><td class="v">7.6</td></tr><tr><td class="k">Price / book</td><td class="v">21.8</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$50.64B  (+21.1% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$48.27</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$8.96B</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">8.46 / 9.08</td></tr><tr><td class="k">Gross margin</td><td class="v">31.1%</td></tr><tr><td class="k">Operating margin</td><td class="v">20.6%</td></tr><tr><td class="k">Profit margin</td><td class="v">17.7%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$9.45</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$6.36</td></tr><tr><td class="k">Total cash / share</td><td class="v">$9.59</td></tr><tr><td class="k">Debt / equity</td><td class="v">1.13</td></tr><tr><td class="k">Current ratio</td><td class="v">0.98</td></tr><tr><td class="k">Return on equity</td><td class="v">48.2%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">strong buy - mean target $404.90 (21 analysts)</td></tr></tbody></table><br>Earnings grew <strong>19.4%</strong>, with trailing EPS at <strong>$8.46</strong> and forward EPS at <strong>$9.08</strong>. The growth is real and it is broad-based across the commercial services engine and defense segments.</p>
+<p>Profitability is strong. Gross margin sits at <strong>31.1%</strong>. Operating margin is <strong>20.6%</strong>. Net margin is <strong>17.7%</strong>. Return on equity is <strong>48.2%</strong>, driven partly by a lean equity base after the corporate breakup. Free cash flow per share is <strong>$6.36</strong>, giving you real cash earnings backing the stock price.</p>
+<p>The balance sheet has a weak spot. Debt-to-equity is <strong>1.13</strong>. The current ratio is <strong>0.98</strong>, below the comfort line. The quick ratio is <strong>0.63</strong>, which is thin. Total debt stands at <strong>$20.2B</strong>. The company carries <strong>$9.59</strong> in cash per share, so liquidity is adequate, but short-term obligations are tight. This is the trade-off you accept for a high-return-on-equity aerospace pure play.</p>
+<p>Valuation is extended. The trailing price-to-earnings ratio is <strong>43.9</strong>. The forward PE is <strong>40.9</strong>. Price-to-sales is <strong>7.6</strong>. Price-to-book is <strong>21.8</strong>. You are paying a premium for quality, growth, and a clean story. The analyst mean target is <strong>404.9</strong> across <strong>21</strong> analysts, with a consensus strong buy. The dividend yields <strong>0.51%</strong> at a <strong>$1.88</strong> annual rate, with a <strong>0.2</strong> payout ratio. The dividend is an afterthought. This is a growth trade.</p>
+<h2>Why Now</h2>
+<p>The timing is driven by the pullback itself. GE ran <strong>22.4%</strong> in three months and has spent the last <strong>21</strong> days going nowhere, returning just <strong>0.1%</strong>. RSI has cooled to <strong>50.0</strong>. The stock is resting near the rising <strong>30</strong>-week average, which is the setup you want for a continuation buy.</p>
+<p>The options flow from <strong>2026-08-12</strong> supports a bounce. Call premium of <strong>$1.62M</strong> dwarfs put premium of <strong>$0.53M</strong> despite heavier raw put volume. The call wall sits at <strong>410</strong>, well above both targets. Nobody is capping this stock below <strong>389</strong> in the options market. The put wall at <strong>330</strong> aligns with the structural support zone and gives you a clean invalidation reference.</p>
+<p>No specific catalyst is on the calendar from the desk data. The sector state is NEUTRAL and sector acceleration is NEUTRAL, so you are not riding a sector-wide tailwind. You are buying individual leadership in a flat sector. That is a stock-specific bet, and the stock-specific signals are strong.</p>
+<h2>Risk Factors</h2>
+<p>The ceiling is close. Price is <strong>5.4%</strong> under the <strong>52</strong>-week high of <strong>388.84</strong>. The second target at <strong>389.22</strong> essentially calls for a new high. If the stock cannot clear <strong>381.22</strong> on volume, the trade stalls and you are sitting in a rangebound name paying <strong>43.9</strong> times earnings.</p>
+<p>Market-wide de-risking hits crowded industrial leaders first. The put wall at <strong>330</strong> and the stop at <strong>327.28</strong> are close together. If the stock slides toward that put wall, option dealers hedging short puts accelerate the move down.</p>
+<p>The balance sheet is the fundamental risk. Current ratio at <strong>0.98</strong> and quick ratio at <strong>0.63</strong> mean short-term liquidity is tight. If free cash flow weakens, the debt load of <strong>$20.2B</strong> becomes a constraint on capital returns and reinvestment. The valuation leaves no room for an earnings miss. Forward PE at <strong>40.9</strong> assumes the <strong>19.4%</strong> earnings growth continues.</p>
+<p>The invalidation level is <strong>327.28</strong>. If price closes below that, the rising <strong>30</strong>-week average is broken and the trend has reversed. You exit. No averaging down into a trend break.</p>
+<h2>Bringing It All Together</h2>
+<p>- The Industrials sector is NEUTRAL, but aerospace demand is structurally durable and GE is the pure-play leader with a massive installed base generating recurring service revenue.<br>- Two independent signals agree: momentum at <strong>93</strong> and the tested pullback signal at <strong>70</strong>, with relative strength of <strong>+17.6%</strong> over the broad market in three months.</p>
+<p>- The stock is pulling back with RSI at <strong>50.0</strong>, sitting above a rising <strong>30</strong>-week average, offering a clean entry at <strong>346.34</strong> with a stop at <strong>327.28</strong>.<br>- Upside to the first target at <strong>381.22</strong> is <strong>10.1%</strong> with a reward-to-risk of <strong>1.8</strong>, and the call wall at <strong>410</strong> leaves room for the trade to work.<br>- The constraint is headroom: only <strong>5.4%</strong> below the <strong>52</strong>-week high, so conviction is MEDIUM and the position size should reflect that the ceiling arrives fast.</p>
+<h2>Conclusion</h2>
+<p>GE Aerospace is a leadership pullback in a structurally growing sub-sector. The trend is up, the signals agree, and the fundamentals back the price action. You buy the pullback at <strong>346.34</strong> with a stop at <strong>327.28</strong> and you target <strong>381.22</strong> first, <strong>389.22</strong> second. The trade is clean. The ceiling is close, so you size it as MEDIUM conviction and you respect the stop. If <strong>327.28</strong> breaks, the trend is done and you are gone.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;GE Aerospace (GE) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $385.12B; 52-week range $262-$389; Revenue $50.64B +21% YoY; Net income $8.96B; Free cash flow/share $6.36; Debt-to-equity 1.13; Return on equity 48%; Dividend yield 0.5%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for GE Aerospace (GE) inside the Industrials space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): GE is a **$1277.9M**-a-day industrial pulling back with RSI at **50.0**, neither stretched nor broken. Two desk reads agree: momentum at **93** and the tested pullback signal at **70**, and the stock is beating the broad market by **17.6%**. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Engine Maker Running Ahead of the Cycle
+
+*GE Aerospace is pulling back from highs with leadership intact. The trade is real, but the ceiling is close.*
+
+## The Big Picture
+The Industrials sector sits in neutral. Both the sector state and the acceleration reading are NEUTRAL, meaning the broad industrial complex is neither surging nor rolling over. You are operating in a backdrop where capital is selective and rotates toward proven leaders rather than lifting all boats.
+
+Aerospace and defense is the pocket doing the heavy lifting inside that neutral tape. Commercial aviation demand remains structurally tight. Airlines need engines, spare parts, and maintenance work. The defense side continues to draw steady government spending. That combination gives the best-positioned engine makers a revenue floor that most industrial conglomerates lack.
+
+This backdrop rewards a pure-play leader with exposed revenue to both commercial aviation cycles and defense budgets. A company that has already cleaned up its portfolio, shed the distraction, and is selling into durable demand gets paid in a neutral sector. The money flows to the cleanest story.
+
+## Introducing GE
+GE Aerospace is what remains after years of corporate dismantling. The old General Electric conglomerate split itself into three separate companies. GE Aerospace is the aviation business, focused on designing and manufacturing jet engines for commercial and defense customers.
+
+The company operates through two segments. Commercial Engines and Services handles jet engine manufacturing, spare parts sales, and maintenance and overhaul work for airlines and business aviation. Defense and Propulsion Technologies builds engines and systems for governments, militaries, and commercial airframers. That segment also covers avionics, power systems, small turboprop engines, and additive manufacturing through brands like Avio Aero, Dowty Propellers, and Colibrium Additive.
+
+The edge is installed base. GE and its joint venture CFM International have a massive fleet of engines already flying. Every one of those engines generates recurring service revenue over a multi-decade lifecycle. The deeper the installed base grows, the more predictable the services revenue becomes. That is the moat.
+
+## The Thesis
+GE is a **$1277.9M**-a-day industrial pulling back with RSI at **50.0**, neither stretched nor broken. The stock is beating the broad market by **17.6%** over three months, and the momentum signal reads **93** with a tested pullback signal at **70**. No chart flag. No Weinstein violation on the sheet.
+
+The conviction is MEDIUM. The setup is clean and the leadership is undeniable. Two independent signals agree that this stock is in a strong uptrend taking a breather. The pullback is shallow, the trend is intact, and the relative strength gap over the market is wide.
+
+The constraint is headroom. Price sits only **5.4%** under its **52**-week high, so the ceiling arrives fast. The desk ranks this setup behind something like AMAT precisely because that **5.4%** of headroom caps what the trade can pay you. You are buying a leader at a reasonable entry, but you are buying it close to the ceiling.
+
+## Technical Analysis
+&gt; 📈 Insert the GE weekly chart here (TradingView): GE weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $381.22 · mark support near $327.28.
+GE closed at **360.64** on the session. The stock trades above its **30**-week moving average, and that average is sloping upward at **5.7%**. The primary trend is up and the foundation under price is rising.
+
+The stock is **5.4%** below its **52**-week high of **388.84** and **35.6%** above its **52**-week low of **261.71**. It sits at **92.7%** of that high, meaning you are entering near the top of the range. The swing high at **381.22** is the intermediate ceiling. The swing low at **285.28** is the floor you do not want to see tested.
+
+RSI reads **54.5** on a **14**-day basis and **50.0** on the alternative reading. Both say the same thing. The stock is neither overbought nor oversold. It has cooled off from the momentum push that drove the **22.4%** three-month return. The **21**-day return is flat at **0.1%**, confirming the pause.
+
+The entry zone is **346.34**. The stop sits at **327.28**, which is **5.5%** below entry. The first target is **381.22**, good for **10.1%** upside from entry. The second target is **389.22**, good for **12.4%**. The reward-to-risk ratio is **1.8** at the first target. You need to see volume expand on the push toward **381.22** to confirm the breakout. Average volume over **20** days is **3452291** shares, and anything below that on an up-move signals hesitation.
+
+The put wall at **330** in the options market sits close to the stop. That is a magnet if the stock breaks down. The call wall at **410** is well above the second target, so options flow is not capping the immediate upside. Put volume at **2010** on the session outweighs call volume at **1119**, but the call premium of **$1.62M** dominates put premium of **$0.53M**. The smart money is paying up for calls despite heavier put counting. That is a bullish divergence.
+
+## Fundamentals
+| Metric | Value |
+|---|---|
+| Market cap | $385.12B |
+| Enterprise value | $399.13B |
+| 52-week range | $261.71 - $388.84 |
+| Dividend yield | 0.51% |
+| Beta | 1.37 |
+| Trailing P/E | 43.9 |
+| Forward P/E | 40.9 |
+| Price / sales | 7.6 |
+| Price / book | 21.8 |
+| Revenue (TTM) | $50.64B  (+21.1% YoY) |
+| Revenue / share | $48.27 |
+| Net income (TTM) | $8.96B |
+| EPS (TTM / fwd) | 8.46 / 9.08 |
+| Gross margin | 31.1% |
+| Operating margin | 20.6% |
+| Profit margin | 17.7% |
+| Operating cash flow / share | $9.45 |
+| Free cash flow / share | $6.36 |
+| Total cash / share | $9.59 |
+| Debt / equity | 1.13 |
+| Current ratio | 0.98 |
+| Return on equity | 48.2% |
+| Analyst consensus | strong buy - mean target $404.90 (21 analysts) |
+Earnings grew **19.4%**, with trailing EPS at **$8.46** and forward EPS at **$9.08**. The growth is real and it is broad-based across the commercial services engine and defense segments.
+
+Profitability is strong. Gross margin sits at **31.1%**. Operating margin is **20.6%**. Net margin is **17.7%**. Return on equity is **48.2%**, driven partly by a lean equity base after the corporate breakup. Free cash flow per share is **$6.36**, giving you real cash earnings backing the stock price.
+
+The balance sheet has a weak spot. Debt-to-equity is **1.13**. The current ratio is **0.98**, below the comfort line. The quick ratio is **0.63**, which is thin. Total debt stands at **$20.2B**. The company carries **$9.59** in cash per share, so liquidity is adequate, but short-term obligations are tight. This is the trade-off you accept for a high-return-on-equity aerospace pure play.
+
+Valuation is extended. The trailing price-to-earnings ratio is **43.9**. The forward PE is **40.9**. Price-to-sales is **7.6**. Price-to-book is **21.8**. You are paying a premium for quality, growth, and a clean story. The analyst mean target is **404.9** across **21** analysts, with a consensus strong buy. The dividend yields **0.51%** at a **$1.88** annual rate, with a **0.2** payout ratio. The dividend is an afterthought. This is a growth trade.
+
+## Why Now
+The timing is driven by the pullback itself. GE ran **22.4%** in three months and has spent the last **21** days going nowhere, returning just **0.1%**. RSI has cooled to **50.0**. The stock is resting near the rising **30**-week average, which is the setup you want for a continuation buy.
+
+The options flow from **2026-08-12** supports a bounce. Call premium of **$1.62M** dwarfs put premium of **$0.53M** despite heavier raw put volume. The call wall sits at **410**, well above both targets. Nobody is capping this stock below **389** in the options market. The put wall at **330** aligns with the structural support zone and gives you a clean invalidation reference.
+
+No specific catalyst is on the calendar from the desk data. The sector state is NEUTRAL and sector acceleration is NEUTRAL, so you are not riding a sector-wide tailwind. You are buying individual leadership in a flat sector. That is a stock-specific bet, and the stock-specific signals are strong.
+
+## Risk Factors
+The ceiling is close. Price is **5.4%** under the **52**-week high of **388.84**. The second target at **389.22** essentially calls for a new high. If the stock cannot clear **381.22** on volume, the trade stalls and you are sitting in a rangebound name paying **43.9** times earnings.
+
+Market-wide de-risking hits crowded industrial leaders first. The put wall at **330** and the stop at **327.28** are close together. If the stock slides toward that put wall, option dealers hedging short puts accelerate the move down.
+
+The balance sheet is the fundamental risk. Current ratio at **0.98** and quick ratio at **0.63** mean short-term liquidity is tight. If free cash flow weakens, the debt load of **$20.2B** becomes a constraint on capital returns and reinvestment. The valuation leaves no room for an earnings miss. Forward PE at **40.9** assumes the **19.4%** earnings growth continues.
+
+The invalidation level is **327.28**. If price closes below that, the rising **30**-week average is broken and the trend has reversed. You exit. No averaging down into a trend break.
+
+## Bringing It All Together
+- The Industrials sector is NEUTRAL, but aerospace demand is structurally durable and GE is the pure-play leader with a massive installed base generating recurring service revenue.
+- Two independent signals agree: momentum at **93** and the tested pullback signal at **70**, with relative strength of **+17.6%** over the broad market in three months.
+
+- The stock is pulling back with RSI at **50.0**, sitting above a rising **30**-week average, offering a clean entry at **346.34** with a stop at **327.28**.
+- Upside to the first target at **381.22** is **10.1%** with a reward-to-risk of **1.8**, and the call wall at **410** leaves room for the trade to work.
+- The constraint is headroom: only **5.4%** below the **52**-week high, so conviction is MEDIUM and the position size should reflect that the ceiling arrives fast.
+
+## Conclusion
+GE Aerospace is a leadership pullback in a structurally growing sub-sector. The trend is up, the signals agree, and the fundamentals back the price action. You buy the pullback at **346.34** with a stop at **327.28** and you target **381.22** first, **389.22** second. The trade is clean. The ceiling is close, so you size it as MEDIUM conviction and you respect the stop. If **327.28** breaks, the trend is done and you are gone.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

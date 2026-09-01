@@ -1,0 +1,239 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Pullback Setup Hiding in Plain Sight — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Pullback Setup Hiding in Plain Sight</h1>
+<div class="subtitle">Fortrea sits 9% under its high with a risk-adjusted reward of 1.9 and a tested small-cap setup.</div>
+<div class="meta">EOD 2026-08-28 · FTRE · written from the desk · model deepseek-v4-pro</div>
+<div class="chips"><span class="chip">FTRE</span>
+<span class="chip">Healthcare</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-08-28: entry <b>$17.56</b> &rarr; <b>$18.81</b> (as of 2026-08-28) · <span class="pos">+7.1%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Healthcare contract research remains under-owned. Biopharma spending still needs external trial support, even when budgets tighten. Fortrea serves that need directly.</p>
+<p>The sector reads <strong>NEUTRAL</strong> and acceleration is <strong>NEUTRAL</strong>. That is quiet, not broken. You&#x27;re buying a service business in a slow tape, where mean reversion works best.</p>
+<p>Small-cap healthcare trades in bursts. Fortrea&#x27;s market cap is <strong>$1.75B</strong>. That means it&#x27;s too small for most funds to own, but too real to ignore. The setup here rewards a pullback in a tested name.</p>
+<h2>Introducing FTRE</h2>
+<p>Fortrea Holdings Inc. is a contract research organization, or CRO. It runs clinical trials for drug and medical device makers. That means study design, patient recruitment, site monitoring, data management, and regulatory support.</p>
+<p>The company split out from a larger parent in <strong>2023</strong> and is based in Durham, North Carolina. It employs about <strong>14,000</strong> people. The business spans early-stage clinical pharmacology through late-stage phase I to IV studies and real-world evidence.</p>
+<p>Fortrea also offers consulting. Market access, health economics, outcomes research. The revenue mix is diversified across trial types and customers. This is a service provider, not a drug developer. It earns fees for running trials, regardless of which molecule wins.</p>
+<h2>The Thesis</h2>
+<p>Fortrea sits <strong>9.1%</strong> under its <strong>52</strong>-week high and <strong>143.3%</strong> above its low. The RSI is <strong>54.4</strong>, documented in the technicals as a rising <strong>30</strong>-week average beneath price. The pullback desk read printed <strong>95</strong>.</p>
+<p>That is the strongest pullback score among clean small caps the desk screened. The risk-adjusted return graded <strong>1.10</strong>, tested. This is a mean-reversion setup in a small name with real float and a real business.</p>
+<p>You&#x27;re buying a bounce with entry at <strong>17.56</strong>, target <strong>20.70</strong>, and stop <strong>15.90</strong>. The reward ratio is <strong>1.9</strong>. Upside to target is <strong>17.9%</strong> from entry. Risk to stop is <strong>9.5%</strong>.</p>
+<p>Conviction is <strong>MEDIUM</strong>. You size accordingly. The setup is clean, but the exit friction is real, which the risk section covers.</p>
+<h2>Technical Analysis</h2>
+<p><figure class="chart"><img src="img/2026-08-28-FTRE.png" alt="FTRE weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=FTRE&interval=1W" target="_blank" rel="noopener">📈 Open the FTRE weekly chart on TradingView ↗</a><figcaption>FTRE weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $20.70 · mark support near $15.90.</figcaption></figure><br>Price closed at <strong>18.81</strong>. That is <strong>87.9%</strong> of the <strong>52</strong>-week high of <strong>21.39</strong> and well above the low of <strong>7.40</strong>. The stock has retraced <strong>-1.4%</strong> over the last <strong>21</strong> days, but it is up <strong>22.2%</strong> over <strong>63</strong> days.</p>
+<p>Fortrea is outperforming the broad market. The <strong>30</strong>-week average slopes up at <strong>7.9%</strong>, and price holds above it. You want to see that line keep rising under any further pullback.</p>
+<p>The 8 and 21-week EMAs are not shown individually here, but the combination of a rising <strong>30</strong>-week average, price above it, and RSI at <strong>54.4</strong> describes a healthy trend with room to run. Not overbought. Not washed out.</p>
+<p>The real reference levels are structural. Entry at <strong>17.56</strong>, stop at <strong>15.90</strong>, target at <strong>20.70</strong>. The swing high is <strong>20.70</strong> and swing low is <strong>15.31</strong>. The stock sits <strong>81.6%</strong> up its <strong>52</strong>-week range.</p>
+<p>ATR is <strong>0.83</strong>. Expect big daily ranges. Use the stop, not intraday noise, as the invalidation.</p>
+<h2>Fundamentals</h2>
+<p><table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$1.75B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$2.70B</td></tr><tr><td class="k">52-week range</td><td class="v">$7.40 - $21.39</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">1.97</td></tr><tr><td class="k">Forward P/E</td><td class="v">16.2</td></tr><tr><td class="k">Price / sales</td><td class="v">0.7</td></tr><tr><td class="k">Price / book</td><td class="v">3.3</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$2.68B  (-4.5% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$28.75</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$-85M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">-0.83 / 1.14</td></tr><tr><td class="k">Gross margin</td><td class="v">19.3%</td></tr><tr><td class="k">Operating margin</td><td class="v">2.6%</td></tr><tr><td class="k">Profit margin</td><td class="v">-3.2%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$2.40</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$2.93</td></tr><tr><td class="k">Total cash / share</td><td class="v">$1.77</td></tr><tr><td class="k">Debt / equity</td><td class="v">2.13</td></tr><tr><td class="k">Current ratio</td><td class="v">0.96</td></tr><tr><td class="k">Return on equity</td><td class="v">-15.3%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">buy - mean target $20.55 (11 analysts)</td></tr></tbody></table><br>Gross margin is <strong>19.3%</strong>, operating margin <strong>2.6%</strong>, and profit margin <strong>-3.2%</strong>.</p>
+<p>The current business loses money on a GAAP basis. There is no payout ratio. Return on equity is <strong>-15.3%</strong> and return on assets is <strong>0.6%</strong>. This is a turnaround story, not a quality compounder.</p>
+<p>Yet the cash generation tells a different story. That is <strong>$2.93</strong> per share in free cash flow against a <strong>$18.81</strong> stock. The market cap is <strong>$1.75B</strong>.</p>
+<p>Forward earnings per share is <strong>$1.14</strong>, giving a forward P/E of <strong>16.2</strong>. Price to sales is <strong>0.7</strong>. Price to book is <strong>3.3</strong>, against book value per share of <strong>5.51</strong>. The balance sheet is leveraged, with debt to equity of <strong>2.13</strong>, a current ratio of <strong>0.96</strong>, and quick ratio of <strong>0.85</strong>.</p>
+<p>Cash per share is <strong>1.77</strong>. The company is not drowning, but the debt load is real. <strong>11</strong> analysts cover it with a mean target of <strong>20.55</strong> and a buy recommendation. That target sits just under the desk target of <strong>20.70</strong>.</p>
+<p>The weak spot is the revenue decline and negative GAAP income. You are paying a cheap multiple for a cash-generative but leveraged business. The setup works because free cash flow supports the recovery, not because the income statement is clean.</p>
+<h2>Why Now</h2>
+<p>The timing is the pullback itself. Price dropped <strong>-1.4%</strong> in the last <strong>21</strong> days after a <strong>22.2%</strong> run over <strong>63</strong> days. The desk read caught the dip with a score of <strong>95</strong>. That is the highest among clean small caps.</p>
+<p>There is no single catalyst. No earnings date in the near-term data and no explicit event. The macro tailwind is the quiet stability in healthcare, <strong>NEUTRAL</strong> sector state and acceleration. That is a base for mean reversion.</p>
+<p>Options flow is absent. There is no chain to read for positioning. The move comes from cash equity buyers stepping back in after the dip. You&#x27;re relying on the technical setup and valuation floor, not a headline date.</p>
+<p>The next earnings epoch is in the data, but no specific date is disclosed. The real &quot;why now&quot; is that the stock reset into a rising <strong>30</strong>-week average, with relative strength intact, at a forward P/E of <strong>16.2</strong>.</p>
+<h2>Risk Factors</h2>
+<p>The first risk is liquidity. Daily turnover is <strong>$21.2M</strong>. That is thin for a <strong>$1.75B</strong> market cap. If the tape turns against small caps, your exit fills widen and slippage eats the edge.</p>
+<p>There is no option chain to hedge with. You cannot buy a put against the position. The stop at <strong>15.90</strong> is your only defense. A single bad clinical trial headline or sector shock moves this stock further than the stop allows.</p>
+<p>The balance sheet is leveraged. Debt to equity is <strong>2.13</strong>. If free cash flow turns negative, the recovery thesis breaks.</p>
+<p>Revenue is shrinking at <strong>-4.5%</strong>. GAAP net income is negative. The forward P/E is cheap only if forward earnings actually land. If trials get canceled or biopharma clients defer spending, the <strong>$1.14</strong> forward EPS estimate is too high.</p>
+<p>Timing risk is real without a catalyst. You can sit in a drawdown waiting for the bounce. The invalidation is a close below <strong>15.90</strong>. That is <strong>9.5%</strong> below entry and below the <strong>30</strong>-week average if that line keeps rising.</p>
+<h2>Bringing It All Together</h2>
+<p>- Dual focus: clinical development and consulting give Fortrea diversified revenue across trial phases and post-approval services.</p>
+<p>- Catalyst: the setup itself is the catalyst, a <strong>95</strong> pullback score into a rising <strong>30</strong>-week average with RSI at <strong>54.4</strong>.<br>- Levels: entry <strong>17.56</strong>, stop <strong>15.90</strong>, target <strong>20.70</strong>, reward ratio <strong>1.9</strong>.</p>
+<h2>Conclusion</h2>
+<p>Fortrea is a tested mean-reversion setup in a cash-generative small-cap healthcare service business. The pullback is shallow, the trend is intact, and the valuation is cheap on forward earnings. The debt and thin liquidity are real constraints.</p>
+<p>You take this as a <strong>MEDIUM</strong> conviction long. The levels are clear. The risk is defined at <strong>15.90</strong>. The upside to <strong>20.70</strong> pays <strong>1.9</strong> to <strong>1</strong>. You either get the bounce in the next several weeks or the invalidation tells you to leave.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Fortrea Holdings Inc. (FTRE) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $1.75B; 52-week range $7-$21; Revenue $2.68B -4% YoY; Net income $-85M; Free cash flow/share $2.93; Debt-to-equity 2.13; Return on equity -15%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Fortrea Holdings Inc. (FTRE) inside the Healthcare space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Fortrea sits **9.1%** under its **52**-week high and **143.3%** above its low, with RSI **54.4** and a rising **30**-week average beneath it. The pullback desk read printed **95** and it is graded tested, risk-adjusted return **1.10**, test. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Pullback Setup Hiding in Plain Sight
+
+*Fortrea sits 9% under its high with a risk-adjusted reward of 1.9 and a tested small-cap setup.*
+
+## The Big Picture
+Healthcare contract research remains under-owned. Biopharma spending still needs external trial support, even when budgets tighten. Fortrea serves that need directly.
+
+The sector reads **NEUTRAL** and acceleration is **NEUTRAL**. That is quiet, not broken. You&#x27;re buying a service business in a slow tape, where mean reversion works best.
+
+Small-cap healthcare trades in bursts. Fortrea&#x27;s market cap is **$1.75B**. That means it&#x27;s too small for most funds to own, but too real to ignore. The setup here rewards a pullback in a tested name.
+
+## Introducing FTRE
+Fortrea Holdings Inc. is a contract research organization, or CRO. It runs clinical trials for drug and medical device makers. That means study design, patient recruitment, site monitoring, data management, and regulatory support.
+
+The company split out from a larger parent in **2023** and is based in Durham, North Carolina. It employs about **14,000** people. The business spans early-stage clinical pharmacology through late-stage phase I to IV studies and real-world evidence.
+
+Fortrea also offers consulting. Market access, health economics, outcomes research. The revenue mix is diversified across trial types and customers. This is a service provider, not a drug developer. It earns fees for running trials, regardless of which molecule wins.
+
+## The Thesis
+Fortrea sits **9.1%** under its **52**-week high and **143.3%** above its low. The RSI is **54.4**, documented in the technicals as a rising **30**-week average beneath price. The pullback desk read printed **95**.
+
+That is the strongest pullback score among clean small caps the desk screened. The risk-adjusted return graded **1.10**, tested. This is a mean-reversion setup in a small name with real float and a real business.
+
+You&#x27;re buying a bounce with entry at **17.56**, target **20.70**, and stop **15.90**. The reward ratio is **1.9**. Upside to target is **17.9%** from entry. Risk to stop is **9.5%**.
+
+Conviction is **MEDIUM**. You size accordingly. The setup is clean, but the exit friction is real, which the risk section covers.
+
+## Technical Analysis
+&gt; 📈 Insert the FTRE weekly chart here (TradingView): FTRE weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $20.70 · mark support near $15.90.
+Price closed at **18.81**. That is **87.9%** of the **52**-week high of **21.39** and well above the low of **7.40**. The stock has retraced **-1.4%** over the last **21** days, but it is up **22.2%** over **63** days.
+
+Fortrea is outperforming the broad market. The **30**-week average slopes up at **7.9%**, and price holds above it. You want to see that line keep rising under any further pullback.
+
+The 8 and 21-week EMAs are not shown individually here, but the combination of a rising **30**-week average, price above it, and RSI at **54.4** describes a healthy trend with room to run. Not overbought. Not washed out.
+
+The real reference levels are structural. Entry at **17.56**, stop at **15.90**, target at **20.70**. The swing high is **20.70** and swing low is **15.31**. The stock sits **81.6%** up its **52**-week range.
+
+ATR is **0.83**. Expect big daily ranges. Use the stop, not intraday noise, as the invalidation.
+
+## Fundamentals
+| Metric | Value |
+|---|---|
+| Market cap | $1.75B |
+| Enterprise value | $2.70B |
+| 52-week range | $7.40 - $21.39 |
+| Dividend yield | None |
+| Beta | 1.97 |
+| Forward P/E | 16.2 |
+| Price / sales | 0.7 |
+| Price / book | 3.3 |
+| Revenue (TTM) | $2.68B  (-4.5% YoY) |
+| Revenue / share | $28.75 |
+| Net income (TTM) | $-85M |
+| EPS (TTM / fwd) | -0.83 / 1.14 |
+| Gross margin | 19.3% |
+| Operating margin | 2.6% |
+| Profit margin | -3.2% |
+| Operating cash flow / share | $2.40 |
+| Free cash flow / share | $2.93 |
+| Total cash / share | $1.77 |
+| Debt / equity | 2.13 |
+| Current ratio | 0.96 |
+| Return on equity | -15.3% |
+| Analyst consensus | buy - mean target $20.55 (11 analysts) |
+Gross margin is **19.3%**, operating margin **2.6%**, and profit margin **-3.2%**.
+
+The current business loses money on a GAAP basis. There is no payout ratio. Return on equity is **-15.3%** and return on assets is **0.6%**. This is a turnaround story, not a quality compounder.
+
+Yet the cash generation tells a different story. That is **$2.93** per share in free cash flow against a **$18.81** stock. The market cap is **$1.75B**.
+
+Forward earnings per share is **$1.14**, giving a forward P/E of **16.2**. Price to sales is **0.7**. Price to book is **3.3**, against book value per share of **5.51**. The balance sheet is leveraged, with debt to equity of **2.13**, a current ratio of **0.96**, and quick ratio of **0.85**.
+
+Cash per share is **1.77**. The company is not drowning, but the debt load is real. **11** analysts cover it with a mean target of **20.55** and a buy recommendation. That target sits just under the desk target of **20.70**.
+
+The weak spot is the revenue decline and negative GAAP income. You are paying a cheap multiple for a cash-generative but leveraged business. The setup works because free cash flow supports the recovery, not because the income statement is clean.
+
+## Why Now
+The timing is the pullback itself. Price dropped **-1.4%** in the last **21** days after a **22.2%** run over **63** days. The desk read caught the dip with a score of **95**. That is the highest among clean small caps.
+
+There is no single catalyst. No earnings date in the near-term data and no explicit event. The macro tailwind is the quiet stability in healthcare, **NEUTRAL** sector state and acceleration. That is a base for mean reversion.
+
+Options flow is absent. There is no chain to read for positioning. The move comes from cash equity buyers stepping back in after the dip. You&#x27;re relying on the technical setup and valuation floor, not a headline date.
+
+The next earnings epoch is in the data, but no specific date is disclosed. The real &quot;why now&quot; is that the stock reset into a rising **30**-week average, with relative strength intact, at a forward P/E of **16.2**.
+
+## Risk Factors
+The first risk is liquidity. Daily turnover is **$21.2M**. That is thin for a **$1.75B** market cap. If the tape turns against small caps, your exit fills widen and slippage eats the edge.
+
+There is no option chain to hedge with. You cannot buy a put against the position. The stop at **15.90** is your only defense. A single bad clinical trial headline or sector shock moves this stock further than the stop allows.
+
+The balance sheet is leveraged. Debt to equity is **2.13**. If free cash flow turns negative, the recovery thesis breaks.
+
+Revenue is shrinking at **-4.5%**. GAAP net income is negative. The forward P/E is cheap only if forward earnings actually land. If trials get canceled or biopharma clients defer spending, the **$1.14** forward EPS estimate is too high.
+
+Timing risk is real without a catalyst. You can sit in a drawdown waiting for the bounce. The invalidation is a close below **15.90**. That is **9.5%** below entry and below the **30**-week average if that line keeps rising.
+
+## Bringing It All Together
+- Dual focus: clinical development and consulting give Fortrea diversified revenue across trial phases and post-approval services.
+
+
+- Catalyst: the setup itself is the catalyst, a **95** pullback score into a rising **30**-week average with RSI at **54.4**.
+- Levels: entry **17.56**, stop **15.90**, target **20.70**, reward ratio **1.9**.
+
+## Conclusion
+Fortrea is a tested mean-reversion setup in a cash-generative small-cap healthcare service business. The pullback is shallow, the trend is intact, and the valuation is cheap on forward earnings. The debt and thin liquidity are real constraints.
+
+You take this as a **MEDIUM** conviction long. The levels are clear. The risk is defined at **15.90**. The upside to **20.70** pays **1.9** to **1**. You either get the bounce in the next several weeks or the invalidation tells you to leave.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

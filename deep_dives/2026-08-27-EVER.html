@@ -1,0 +1,248 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A Clean Pullback in a Profitable Insurance Lead Machine — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>A Clean Pullback in a Profitable Insurance Lead Machine</h1>
+<div class="subtitle">Risk/reward of 1.9 to 1 on a small-cap that already proved it can generate real cash.</div>
+<div class="meta">EOD 2026-08-27 · EVER · written from the desk · model deepseek-v4-pro</div>
+<div class="chips"><span class="chip">EVER</span>
+<span class="chip">Communication Services</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-08-27: entry <b>$22.99</b> &rarr; <b>$25.66</b> (as of 2026-08-28) · <span class="pos">+11.6%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>The communication services sector is neutral right now, and it is decelerating. That is the honest read. You are not standing in front of a sector-wide freight train. You are looking for a small subset of businesses that print cash while the broad sector takes a breather.</p>
+<p>Insurance shopping is a strange corner of communication services. It is less about content and more about transaction flow. EverQuote sits in that corner. The macro backdrop does not give you a tailwind, but it does not give you a wall either.</p>
+<p>A neutral sector with decelerating momentum rewards selectivity. You want a company with its own earnings power, a clean balance sheet, and a chart that has already pulled back enough to reset the risk. That is the setup here.</p>
+<h2>Introducing EVER</h2>
+<p>EverQuote operates an online marketplace for insurance shopping in the United States. The company connects consumers searching for insurance with carriers and agents who want to buy that traffic. It covers automotive, home, and renters insurance.</p>
+<p>The business model is simple. A consumer wants insurance quotes. EverQuote captures that demand. It sells the lead to an insurance carrier or agent. The company also provides campaign management tools to its carrier and agent customers.</p>
+<p>The edge is data and scale. EverQuote sees massive volumes of consumer intent across insurance categories. That lets it optimize pricing and routing better than a small lead broker. The company is based in Cambridge, Massachusetts, and was founded in 2008.</p>
+<h2>The Thesis</h2>
+<p>The read here is a proven pullback signal firing cleanly on a name that is already fundamentally cheap. The stock pulled back <strong>7.5%</strong> over the past month while holding <strong>31.4%</strong> of its three-month gain. That is the exact shape this setup is built for. A sharp advance, a controlled giveback, and an RSI that has reset to <strong>48.8</strong>.</p>
+<p>The RSI at <strong>48.8</strong> matters. It tells you the selling is exhausted without the stock getting oversold enough to signal a breakdown. This is a reset, not a collapse. The stock is still <strong>86.4%</strong> of its 52-week high at <strong>28.73</strong>. The trend is intact.</p>
+<p>Risk/reward is <strong>1.9 to 1</strong>. Entry at <strong>22.99</strong>, stop at <strong>20.55</strong>, target at <strong>27.54</strong>. That gives you <strong>19.8%</strong> of upside to the target with <strong>10.6%</strong> of risk to the stop. The risk-adjusted setup is clean. Among small caps, this was the best combination of payoff and a neutral RSI.</p>
+<p>Conviction is medium. You size it for a medium conviction idea. That means a standard position, not a bet-the-book position. The liquidity alone tells you to respect the size.</p>
+<h2>Technical Analysis</h2>
+<p><figure class="chart"><img src="img/2026-08-27-EVER.png" alt="EVER weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=EVER&interval=1W" target="_blank" rel="noopener">📈 Open the EVER weekly chart on TradingView ↗</a><figcaption>EVER weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $27.54 · mark support near $20.55.</figcaption></figure><br>The stock closed at <strong>24.82</strong>. It sits above its 30-week moving average, which is the right side of the trend. But that 30-week average is drifting lower by <strong>2.4%</strong>. The support underneath is soft. You are not buying a strongly rising 30-week line. You are buying a stock that has spent time consolidating above a flattening average.</p>
+<p>The 52-week range runs from <strong>13.88</strong> to <strong>28.73</strong>. It is <strong>10.9%</strong> below the high. The swing high is <strong>27.54</strong>, and the swing low is <strong>17.96</strong>. The stock has room to run back to the high, but it needs to clear <strong>27.54</strong> first.</p>
+<p>RSI at <strong>48.8</strong> is the best part of this chart. It is neutral. Not overbought. Not deeply oversold. The stock gave back <strong>7.5%</strong> in the last 21 days while still holding <strong>31.4%</strong> of its 63-day gain. That is a healthy reset in the middle of an uptrend.</p>
+<p>This stock has beaten the market by nearly <strong>29 percentage points</strong> over the last three months. That is real outperformance, and it has survived the recent pullback.</p>
+<p>Volume confirmation is the missing piece. You want to see a move back through the <strong>27.54</strong> swing high on above-average volume. That would confirm buyers are stepping back in. Until then, the trade is an anticipation of that move, with the stop at <strong>20.55</strong> protecting you if the reset fails.</p>
+<p>ATR is <strong>1.22</strong>. Daily moves will be sharp. You need to accept that a normal day can move this stock by a full point. That is the cost of trading a small cap.</p>
+<h2>Fundamentals</h2>
+<p><table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$910M</td></tr><tr><td class="k">Enterprise value</td><td class="v">$729M</td></tr><tr><td class="k">52-week range</td><td class="v">$13.88 - $28.73</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">0.67</td></tr><tr><td class="k">Trailing P/E</td><td class="v">8.4</td></tr><tr><td class="k">Forward P/E</td><td class="v">8.4</td></tr><tr><td class="k">Price / sales</td><td class="v">1.2</td></tr><tr><td class="k">Price / book</td><td class="v">3.5</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$755M  (+24.6% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$21.05</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$114M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">3.07 / 3.08</td></tr><tr><td class="k">Gross margin</td><td class="v">97.6%</td></tr><tr><td class="k">Operating margin</td><td class="v">12.0%</td></tr><tr><td class="k">Profit margin</td><td class="v">15.2%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$3.18</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$1.98</td></tr><tr><td class="k">Total cash / share</td><td class="v">$5.46</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.01</td></tr><tr><td class="k">Current ratio</td><td class="v">3.33</td></tr><tr><td class="k">Return on equity</td><td class="v">53.6%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">buy - mean target $29.50 (6 analysts)</td></tr></tbody></table><br>EverQuote is not a story stock. It is a profit machine. Earnings per share over the last twelve months came in at <strong>3.07</strong>.</p>
+<p>The valuation is striking. The stock trades at a trailing P/E of <strong>8.4</strong> and a forward P/E of <strong>8.4</strong>. Price to sales is <strong>1.2</strong>. For a company growing revenue at <strong>24.6%</strong> and earnings at <strong>35.9%</strong>, that is a low multiple. The market is pricing this like a slow-growth business while the numbers say otherwise.</p>
+<p>Cash generation backs up the earnings. That is <strong>$1.98</strong> per share in free cash flow. For a business growing this fast, that is reasonable.</p>
+<p>The balance sheet is excellent. Total debt is only <strong>$1.9M</strong>. Debt to equity is <strong>0.01</strong>. The company has <strong>$5.46</strong> per share in cash. Current ratio is <strong>3.33</strong>, and quick ratio is <strong>3.22</strong>. This company can fund its own growth without leaning on creditors.</p>
+<p>Return on equity is <strong>53.6%</strong>. Return on assets is <strong>17.8%</strong>. Those are strong numbers. The gross margin of <strong>97.6%</strong> reflects the asset-light nature of the business. It costs very little to serve an additional lead. The operating margin of <strong>12.0%</strong> is the weaker spot. It shows that selling and marketing expenses eat up most of that gross profit. That is the nature of a lead generation business.</p>
+<p>Analysts agree with the read. The mean target is <strong>29.5</strong>, which sits above our <strong>27.54</strong> target. The recommendation is a buy across <strong>6</strong> analysts. The next earnings date is set. You will want to know that date and decide whether to hold through it.</p>
+<p>The weak spot is the employee count. Only <strong>356</strong> employees. This is a lean operation. That can be a strength, but it also means key-person risk and limited bandwidth for new initiatives. The company has been around since 2008 and has navigated insurance cycles before.</p>
+<h2>Why Now</h2>
+<p>There is no specific catalyst on the calendar in our data. The catalyst field is empty. You are not buying this for an earnings beat or a product launch. You are buying it because the math works and the reset is complete.</p>
+<p>The setup is the timing. The stock pulled back <strong>7.5%</strong> in the last month. RSI has reset to <strong>48.8</strong>. The stock is still <strong>86.4%</strong> of its 52-week high. The risk/reward is <strong>1.9 to 1</strong>. That combination is the catalyst. A neutral RSI on a proven uptrend with a clean entry is rare enough to act on.</p>
+<p>There is no options flow data to lean on. That means you are not seeing unusual derivative positioning. The trade is driven by the chart and the fundamentals, not by a wall of call buying. That is fine. It also means you will not get a gamma squeeze to accelerate the move. You are reliant on buyers returning to the stock itself.</p>
+<p>The macro backdrop is neutral. Communication services is decelerating. This is not a sector-wide opportunity. It is a single-name opportunity within a neutral sector. That keeps the position size honest.</p>
+<h2>Risk Factors</h2>
+<p>The biggest risk is liquidity. Daily dollar turnover is about <strong>$14.8M</strong> on a <strong>$681M</strong> market cap. That is thin. A bad earnings print or a sharp market selloff will gap this stock through your stop at <strong>20.55</strong>. You could easily take a loss larger than the <strong>10.6%</strong> you planned.</p>
+<p>The 30-week moving average slope is negative at <strong>-2.4%</strong>. The trend support underneath is not rising. If the stock breaks below that average, the setup changes. You need to respect that. The signal is valid, but the longer-term trend is not accelerating.</p>
+<p>The company depends on insurance marketing budgets. In a recession, carriers cut marketing spend. EverQuote&#x27;s revenue growth of <strong>24.6%</strong> could decelerate quickly if carriers pull back. That is the cyclical risk. The high gross margin of <strong>97.6%</strong> protects profitability, but it cannot protect the revenue line.</p>
+<p>Competition in lead generation is real. Big platforms and other lead aggregators are constantly bidding for the same consumer intent. The operating margin of <strong>12.0%</strong> shows how competitive this business is. Any pricing pressure from a large competitor would hurt.</p>
+<p>The single invalidation is a close below the stop level of <strong>20.55</strong>. That is <strong>10.6%</strong> below the entry. If the stock closes below that, the pullback read is wrong, and you exit. Do not negotiate with it. The stop is the thesis.</p>
+<h2>Bringing It All Together</h2>
+<p>- A proven pullback setup on a stock that gave back <strong>7.5%</strong> while holding <strong>31.4%</strong> of its three-month gain, with RSI reset to a neutral <strong>48.8</strong>.<br>- A profitable marketplace business growing revenue at <strong>24.6%</strong> and earnings at <strong>35.9%</strong>, trading at just <strong>8.4</strong> times trailing earnings.<br>- A fortress balance sheet with <strong>$5.46</strong> per share in cash, total debt of only <strong>$1.9M</strong>, and a current ratio of <strong>3.33</strong>.<br>- A clean risk/reward setup: entry at <strong>22.99</strong>, stop at <strong>20.55</strong>, target at <strong>27.54</strong>, giving <strong>1.9 to 1</strong>.<br>- The trade works without a catalyst, which is both its strength and its limit; you are betting on the reset, not an event.</p>
+<h2>Conclusion</h2>
+<p>EverQuote is a rare small cap. Real profits. Real cash flow. A cheap valuation. And now a pullback that has reset the risk without breaking the trend.</p>
+<p>You are not chasing this. The entry at <strong>22.99</strong> is below the last close of <strong>24.82</strong>. You either wait for the limit to fill or you accept a slightly worse entry. The stop at <strong>20.55</strong> defines the risk. The target at <strong>27.54</strong> defines the reward.</p>
+<p>This is a medium conviction trade. The numbers justify it. The liquidity warns you to size it carefully. The clean reset with RSI at <strong>48.8</strong> and risk/reward of <strong>1.9 to 1</strong> makes it worth the work.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;EverQuote, Inc. (EVER) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $910M; 52-week range $14-$29; Revenue $755M +25% YoY; Net income $114M; Free cash flow/share $1.98; Debt-to-equity 0.01; Return on equity 54%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for EverQuote, Inc. (EVER) inside the Communication Services space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): A single proven desk read fires cleanly here, pullback at **95** with validity **tested risk-adjusted return 1.10 p_bonf 0.0189 tested. The stock gave back **7.5%** over the past month while still holding **31.4%** of its three-month gain, . Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># A Clean Pullback in a Profitable Insurance Lead Machine
+
+*Risk/reward of 1.9 to 1 on a small-cap that already proved it can generate real cash.*
+
+## The Big Picture
+The communication services sector is neutral right now, and it is decelerating. That is the honest read. You are not standing in front of a sector-wide freight train. You are looking for a small subset of businesses that print cash while the broad sector takes a breather.
+
+Insurance shopping is a strange corner of communication services. It is less about content and more about transaction flow. EverQuote sits in that corner. The macro backdrop does not give you a tailwind, but it does not give you a wall either.
+
+A neutral sector with decelerating momentum rewards selectivity. You want a company with its own earnings power, a clean balance sheet, and a chart that has already pulled back enough to reset the risk. That is the setup here.
+
+## Introducing EVER
+EverQuote operates an online marketplace for insurance shopping in the United States. The company connects consumers searching for insurance with carriers and agents who want to buy that traffic. It covers automotive, home, and renters insurance.
+
+The business model is simple. A consumer wants insurance quotes. EverQuote captures that demand. It sells the lead to an insurance carrier or agent. The company also provides campaign management tools to its carrier and agent customers.
+
+The edge is data and scale. EverQuote sees massive volumes of consumer intent across insurance categories. That lets it optimize pricing and routing better than a small lead broker. The company is based in Cambridge, Massachusetts, and was founded in 2008.
+
+## The Thesis
+The read here is a proven pullback signal firing cleanly on a name that is already fundamentally cheap. The stock pulled back **7.5%** over the past month while holding **31.4%** of its three-month gain. That is the exact shape this setup is built for. A sharp advance, a controlled giveback, and an RSI that has reset to **48.8**.
+
+The RSI at **48.8** matters. It tells you the selling is exhausted without the stock getting oversold enough to signal a breakdown. This is a reset, not a collapse. The stock is still **86.4%** of its 52-week high at **28.73**. The trend is intact.
+
+Risk/reward is **1.9 to 1**. Entry at **22.99**, stop at **20.55**, target at **27.54**. That gives you **19.8%** of upside to the target with **10.6%** of risk to the stop. The risk-adjusted setup is clean. Among small caps, this was the best combination of payoff and a neutral RSI.
+
+Conviction is medium. You size it for a medium conviction idea. That means a standard position, not a bet-the-book position. The liquidity alone tells you to respect the size.
+
+## Technical Analysis
+&gt; 📈 Insert the EVER weekly chart here (TradingView): EVER weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $27.54 · mark support near $20.55.
+The stock closed at **24.82**. It sits above its 30-week moving average, which is the right side of the trend. But that 30-week average is drifting lower by **2.4%**. The support underneath is soft. You are not buying a strongly rising 30-week line. You are buying a stock that has spent time consolidating above a flattening average.
+
+The 52-week range runs from **13.88** to **28.73**. It is **10.9%** below the high. The swing high is **27.54**, and the swing low is **17.96**. The stock has room to run back to the high, but it needs to clear **27.54** first.
+
+RSI at **48.8** is the best part of this chart. It is neutral. Not overbought. Not deeply oversold. The stock gave back **7.5%** in the last 21 days while still holding **31.4%** of its 63-day gain. That is a healthy reset in the middle of an uptrend.
+
+This stock has beaten the market by nearly **29 percentage points** over the last three months. That is real outperformance, and it has survived the recent pullback.
+
+Volume confirmation is the missing piece. You want to see a move back through the **27.54** swing high on above-average volume. That would confirm buyers are stepping back in. Until then, the trade is an anticipation of that move, with the stop at **20.55** protecting you if the reset fails.
+
+ATR is **1.22**. Daily moves will be sharp. You need to accept that a normal day can move this stock by a full point. That is the cost of trading a small cap.
+
+## Fundamentals
+| Metric | Value |
+|---|---|
+| Market cap | $910M |
+| Enterprise value | $729M |
+| 52-week range | $13.88 - $28.73 |
+| Dividend yield | None |
+| Beta | 0.67 |
+| Trailing P/E | 8.4 |
+| Forward P/E | 8.4 |
+| Price / sales | 1.2 |
+| Price / book | 3.5 |
+| Revenue (TTM) | $755M  (+24.6% YoY) |
+| Revenue / share | $21.05 |
+| Net income (TTM) | $114M |
+| EPS (TTM / fwd) | 3.07 / 3.08 |
+| Gross margin | 97.6% |
+| Operating margin | 12.0% |
+| Profit margin | 15.2% |
+| Operating cash flow / share | $3.18 |
+| Free cash flow / share | $1.98 |
+| Total cash / share | $5.46 |
+| Debt / equity | 0.01 |
+| Current ratio | 3.33 |
+| Return on equity | 53.6% |
+| Analyst consensus | buy - mean target $29.50 (6 analysts) |
+EverQuote is not a story stock. It is a profit machine. Earnings per share over the last twelve months came in at **3.07**.
+
+The valuation is striking. The stock trades at a trailing P/E of **8.4** and a forward P/E of **8.4**. Price to sales is **1.2**. For a company growing revenue at **24.6%** and earnings at **35.9%**, that is a low multiple. The market is pricing this like a slow-growth business while the numbers say otherwise.
+
+Cash generation backs up the earnings. That is **$1.98** per share in free cash flow. For a business growing this fast, that is reasonable.
+
+The balance sheet is excellent. Total debt is only **$1.9M**. Debt to equity is **0.01**. The company has **$5.46** per share in cash. Current ratio is **3.33**, and quick ratio is **3.22**. This company can fund its own growth without leaning on creditors.
+
+Return on equity is **53.6%**. Return on assets is **17.8%**. Those are strong numbers. The gross margin of **97.6%** reflects the asset-light nature of the business. It costs very little to serve an additional lead. The operating margin of **12.0%** is the weaker spot. It shows that selling and marketing expenses eat up most of that gross profit. That is the nature of a lead generation business.
+
+Analysts agree with the read. The mean target is **29.5**, which sits above our **27.54** target. The recommendation is a buy across **6** analysts. The next earnings date is set. You will want to know that date and decide whether to hold through it.
+
+The weak spot is the employee count. Only **356** employees. This is a lean operation. That can be a strength, but it also means key-person risk and limited bandwidth for new initiatives. The company has been around since 2008 and has navigated insurance cycles before.
+
+## Why Now
+There is no specific catalyst on the calendar in our data. The catalyst field is empty. You are not buying this for an earnings beat or a product launch. You are buying it because the math works and the reset is complete.
+
+The setup is the timing. The stock pulled back **7.5%** in the last month. RSI has reset to **48.8**. The stock is still **86.4%** of its 52-week high. The risk/reward is **1.9 to 1**. That combination is the catalyst. A neutral RSI on a proven uptrend with a clean entry is rare enough to act on.
+
+There is no options flow data to lean on. That means you are not seeing unusual derivative positioning. The trade is driven by the chart and the fundamentals, not by a wall of call buying. That is fine. It also means you will not get a gamma squeeze to accelerate the move. You are reliant on buyers returning to the stock itself.
+
+The macro backdrop is neutral. Communication services is decelerating. This is not a sector-wide opportunity. It is a single-name opportunity within a neutral sector. That keeps the position size honest.
+
+## Risk Factors
+The biggest risk is liquidity. Daily dollar turnover is about **$14.8M** on a **$681M** market cap. That is thin. A bad earnings print or a sharp market selloff will gap this stock through your stop at **20.55**. You could easily take a loss larger than the **10.6%** you planned.
+
+The 30-week moving average slope is negative at **-2.4%**. The trend support underneath is not rising. If the stock breaks below that average, the setup changes. You need to respect that. The signal is valid, but the longer-term trend is not accelerating.
+
+The company depends on insurance marketing budgets. In a recession, carriers cut marketing spend. EverQuote&#x27;s revenue growth of **24.6%** could decelerate quickly if carriers pull back. That is the cyclical risk. The high gross margin of **97.6%** protects profitability, but it cannot protect the revenue line.
+
+Competition in lead generation is real. Big platforms and other lead aggregators are constantly bidding for the same consumer intent. The operating margin of **12.0%** shows how competitive this business is. Any pricing pressure from a large competitor would hurt.
+
+The single invalidation is a close below the stop level of **20.55**. That is **10.6%** below the entry. If the stock closes below that, the pullback read is wrong, and you exit. Do not negotiate with it. The stop is the thesis.
+
+## Bringing It All Together
+- A proven pullback setup on a stock that gave back **7.5%** while holding **31.4%** of its three-month gain, with RSI reset to a neutral **48.8**.
+- A profitable marketplace business growing revenue at **24.6%** and earnings at **35.9%**, trading at just **8.4** times trailing earnings.
+- A fortress balance sheet with **$5.46** per share in cash, total debt of only **$1.9M**, and a current ratio of **3.33**.
+- A clean risk/reward setup: entry at **22.99**, stop at **20.55**, target at **27.54**, giving **1.9 to 1**.
+- The trade works without a catalyst, which is both its strength and its limit; you are betting on the reset, not an event.
+
+## Conclusion
+EverQuote is a rare small cap. Real profits. Real cash flow. A cheap valuation. And now a pullback that has reset the risk without breaking the trend.
+
+You are not chasing this. The entry at **22.99** is below the last close of **24.82**. You either wait for the limit to fill or you accept a slightly worse entry. The stop at **20.55** defines the risk. The target at **27.54** defines the reward.
+
+This is a medium conviction trade. The numbers justify it. The liquidity warns you to size it carefully. The clean reset with RSI at **48.8** and risk/reward of **1.9 to 1** makes it worth the work.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

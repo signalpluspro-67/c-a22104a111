@@ -1,0 +1,227 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A Quiet Pullback in a Quiet Sector — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>A Quiet Pullback in a Quiet Sector</h1>
+<div class="subtitle">TCBK offers a slow mean-reversion setup with defined risk and a rising trend.</div>
+<div class="meta">EOD 2026-08-17 · TCBK · written from the desk · model deepseek-v4-pro</div>
+<div class="chips"><span class="chip">TCBK</span>
+<span class="chip">Financial Services</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-08-17: entry <b>$57.46</b> &rarr; <b>$55.56</b> (as of 2026-08-21) · <span class="neg">-3.3%</span> · 🔴 STOPPED OUT</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Financials are in a neutral state. The sector is not accelerating and it is not breaking down. Credit conditions have only drifted. This is a backdrop that does not punish a slow mean-reversion trade.</p>
+<p>The broad market keeps rotating and you see small banks catching bids when bond yields stabilize. A regional bank with a rising <strong>30-week</strong> average and a recent pullback into support fits that rotation. You are not betting on a sector breakout here. You are betting that the quiet trend persists long enough for price to return to a prior level.</p>
+<p>Banks are quiet. That is the edge. When a sector is not making headlines, you can trade individual setups without macro noise overwhelming the technicals. TCBK sits in that pocket right now.</p>
+<h2>Introducing TCBK</h2>
+<p>TriCo Bancshares is a California-based regional bank. It operates through Tri Counties Bank and provides standard commercial and retail banking to individuals and businesses. The product set is unremarkable: deposits, real estate loans, consumer loans, commercial and agricultural loans, treasury management, and wealth services.</p>
+<p>The company has been around since <strong>1975</strong>. No fintech overlay, no crypto exposure, no exotic lending. This is a deposit-gathering, loan-making operation in Northern California.</p>
+<p>That simplicity matters. In a sector where credit risk is the primary fear, a plain-vanilla regional bank with a <strong>1.4</strong> price-to-book ratio and a <strong>13.7</strong> trailing P/E does not demand heroic assumptions. You are not pricing in a transformation. You are pricing in a return to recent trading levels.</p>
+<h2>The Thesis</h2>
+<p>The desk thesis is straightforward. TCBK pulled back <strong>5.1%</strong> over <strong>21</strong> days into support. The <strong>30-week</strong> moving average is still rising at a <strong>5.7%</strong> annualized rate. RSI sits at <strong>51.7</strong>, dead neutral. The pullback signal tested at <strong>95.0</strong> produced a risk-adjusted return of <strong>1.10</strong>. This is a mean-reversion play with defined levels and no signs of a trend break.</p>
+<p>Conviction is MEDIUM. That is appropriate. You are not getting a catalyst or a breakout signal. You are getting a high-probability setup where the reward relative to risk is <strong>2.2-to-1</strong>, the best in its category. The trend is intact and the entry is at a level where prior buyers stepped in.</p>
+<p>The trade works if the rising <strong>30-week</strong> average acts as a floor and price drifts back toward the swing high near <strong>61.62</strong>. You size it knowing the upside is capped unless it breaks out above the <strong>52-week</strong> high at <strong>61.71</strong>. That cap is real. Only <strong>6.8%</strong> of room separates the current price from that high.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-08-17-TCBK.png" alt="TCBK weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=TCBK&interval=1W" target="_blank" rel="noopener">📈 Open the TCBK weekly chart on TradingView ↗</a><figcaption>TCBK weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $61.62 · mark support near $55.56.</figcaption></figure>
+<p>The chart shows a stock that ran from a swing low near <strong>49.25</strong> to a high near <strong>61.62</strong> and then gave back roughly <strong>5%</strong> over three weeks. The current price of <strong>57.46</strong> sits just above the rising <strong>30-week</strong> moving average. Price is <strong>93.1%</strong> of its <strong>52-week</strong> high of <strong>61.71</strong> and sits in the top <strong>80.1%</strong> of its yearly range. The long-term trend is up but the short-term trend is correcting.</p>
+<p>The <strong>8/21-week</strong> EMA structure is not mentioned in the technical facts. You rely on the <strong>30-week</strong> average as your primary trend filter. It is rising and price is above it. That keeps you in the trade. The pullback did not violate the average.</p>
+<p>RSI is <strong>51.7</strong>, which means momentum is not overbought and not oversold. There is no exhaustion signal in either direction. The <strong>ATR14</strong> of <strong>0.95</strong> gives you a volatility context. Your stop at <strong>55.56</strong> is roughly <strong>2.0 ATR</strong> below entry, a reasonable distance for a stock that moves less than a dollar a day on average. The target at <strong>61.62</strong> aligns with the prior swing high and sits just below the <strong>52-week</strong> high.</p>
+<p>Relative strength versus the SPY over the last <strong>63</strong> days is <strong>13.2%</strong>. This stock has been outperforming the broad market. Volume is a question mark. You want to see volume dry up on the remaining pullback and expand on any bounce off support. No volume confirmation means you manage the position strictly by the levels.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$1.83B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$1.82B</td></tr><tr><td class="k">52-week range</td><td class="v">$40.38 - $61.71</td></tr><tr><td class="k">Dividend yield</td><td class="v">2.52%</td></tr><tr><td class="k">Beta</td><td class="v">0.62</td></tr><tr><td class="k">Trailing P/E</td><td class="v">13.7</td></tr><tr><td class="k">Forward P/E</td><td class="v">13.0</td></tr><tr><td class="k">Price / sales</td><td class="v">4.3</td></tr><tr><td class="k">Price / book</td><td class="v">1.4</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$426M  (+10.4% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$13.21</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$136M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">4.17 / 4.38</td></tr><tr><td class="k">Gross margin</td><td class="v">0.0%</td></tr><tr><td class="k">Operating margin</td><td class="v">43.2%</td></tr><tr><td class="k">Profit margin</td><td class="v">31.8%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$4.33</td></tr><tr><td class="k">Total cash / share</td><td class="v">$2.41</td></tr><tr><td class="k">Return on equity</td><td class="v">10.4%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">hold - mean target $62.81 (5 analysts)</td></tr></tbody></table>
+<p>Earnings growth of <strong>26.2%</strong> stands out for a regional bank. The forward P/E of <strong>13.0</strong> on forward EPS of <strong>$4.38</strong> is modest. You are paying roughly <strong>13</strong> times next year&#x27;s earnings for a business growing earnings at <strong>26%</strong>.</p>
+<p>The profit margin is <strong>31.8%</strong> and the operating margin is <strong>43.2%</strong>. These are healthy. Cash per share is <strong>2.41</strong>. The bank is not levered up.</p>
+<p>Return on equity is <strong>10.4%</strong> and return on assets is <strong>1.4%</strong>. Neither number is spectacular. A <strong>10.4%</strong> ROE against a price-to-book of <strong>1.4</strong> means you are paying a small premium over book value of <strong>42.03</strong> per share for a business that earns a mid-teens return on that equity. That is fair, not cheap.</p>
+<p>Analysts are lukewarm. The consensus recommendation is a hold with a mean target of <strong>62.81</strong>. Five analysts cover the stock. The target is above your trade target of <strong>61.62</strong>, which is encouraging. The market is not expecting fireworks. Neither are you.</p>
+<h2>Why Now</h2>
+<p>The timing is dictated by the pullback itself. There is no explicit near-term catalyst. The desk thesis relies on the signal at <strong>95.0</strong> and the rising trend. Sometimes the catalyst is simply that price reached a level where previous signals worked. You are buying a pause in an uptrend.</p>
+<p>Macro provides a tailwind in its absence of headwinds. The sector state is neutral. Financials are not under attack from credit fears or yield curve moves right now. That allows the stock&#x27;s own trend to reassert. Options flow is not present. There is no unusual positioning to lean on.</p>
+<p>The next earnings date falls in late October <strong>2026</strong>. That timeline gives the trade several weeks to work before the event risk of a report. You are not holding through earnings on a MEDIUM-conviction mean-reversion trade. The target date is before the report. If the stock has not reached the target by then, you reassess.</p>
+<h2>Risk Factors</h2>
+<p>The primary risk is capped upside. Price is already <strong>93.1%</strong> of its <strong>52-week</strong> high. Your target at <strong>61.62</strong> is barely above that high. You are collecting <strong>7.2%</strong> of upside while risking <strong>3.3%</strong> to your stop. The <strong>2.2-to-1</strong> ratio works mathematically, but the absolute reward is small. If the stock chops sideways, you waste time and eventually hit your stop.</p>
+<p>Credit risk is the sector-level threat. Regional bank credit is the first thing to crack if spreads widen. A sudden spike in credit spreads or a deterioration in commercial real estate would hit TCBK directly. The bank&#x27;s loan book is concentrated in Northern California, a region sensitive to commercial real estate cycles.</p>
+<p>Your invalidation is a break below the <strong>55.56</strong> stop. That level sits below the swing low support zone. If price closes below that stop, the pullback is no longer a pullback. You exit and wait for the next setup. A loss on this trade is <strong>3.3%</strong>. You accept that before you enter.</p>
+<h2>Bringing It All Together</h2>
+<p>* TCBK is a plain-vanilla regional bank growing earnings at <strong>26.2%</strong> with a clean balance sheet and a <strong>2.52%</strong> dividend yield.<br>* The stock pulled back <strong>5.1%</strong> into a rising <strong>30-week</strong> average, producing a pullback signal at <strong>95.0</strong> with a strong tested risk-adjusted return.<br>* The risk/reward of <strong>2.2-to-1</strong> with entry at <strong>57.46</strong>, stop at <strong>55.56</strong>, and target at <strong>61.62</strong> is the best in the category.<br>* No catalyst means no urgency. The trade works on mean reversion alone, provided the sector stays neutral and the trend holds.</p>
+<h2>Conclusion</h2>
+<p>This is a quiet trade in a quiet sector. You are not betting on a breakout. You are betting that a stock in an uptrend that pulled back to support will drift back to its prior high. The numbers support the bet. Earnings are growing, the balance sheet is clean, and the technical setup is textbook mean reversion.</p>
+<p>The risk is that the upside is small and credit conditions can shift suddenly. Size accordingly. Conviction is MEDIUM, so this is a one-unit trade, not a conviction bet. If the <strong>30-week</strong> average breaks, you are out. If price reaches <strong>61.62</strong>, you take the profit and move on.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;TriCo Bancshares (TCBK) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $1.83B; 52-week range $40-$62; Revenue $426M +10% YoY; Net income $136M; Return on equity 10%; Dividend yield 2.5%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for TriCo Bancshares (TCBK) inside the Financial Services space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): A proven pullback signal at **95.0** (tested, risk-adjusted return **1.10**, tested) on a small bank that pulled back **-5.1%** over **21** days into support while the 30-week average keeps rising at **5.7%**. RSI **51.7** is neutral, so no. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># A Quiet Pullback in a Quiet Sector
+
+*TCBK offers a slow mean-reversion setup with defined risk and a rising trend.*
+
+## The Big Picture
+
+Financials are in a neutral state. The sector is not accelerating and it is not breaking down. Credit conditions have only drifted. This is a backdrop that does not punish a slow mean-reversion trade.
+
+The broad market keeps rotating and you see small banks catching bids when bond yields stabilize. A regional bank with a rising **30-week** average and a recent pullback into support fits that rotation. You are not betting on a sector breakout here. You are betting that the quiet trend persists long enough for price to return to a prior level.
+
+Banks are quiet. That is the edge. When a sector is not making headlines, you can trade individual setups without macro noise overwhelming the technicals. TCBK sits in that pocket right now.
+
+## Introducing TCBK
+
+TriCo Bancshares is a California-based regional bank. It operates through Tri Counties Bank and provides standard commercial and retail banking to individuals and businesses. The product set is unremarkable: deposits, real estate loans, consumer loans, commercial and agricultural loans, treasury management, and wealth services.
+
+The company has been around since **1975**. No fintech overlay, no crypto exposure, no exotic lending. This is a deposit-gathering, loan-making operation in Northern California.
+
+That simplicity matters. In a sector where credit risk is the primary fear, a plain-vanilla regional bank with a **1.4** price-to-book ratio and a **13.7** trailing P/E does not demand heroic assumptions. You are not pricing in a transformation. You are pricing in a return to recent trading levels.
+
+## The Thesis
+
+The desk thesis is straightforward. TCBK pulled back **5.1%** over **21** days into support. The **30-week** moving average is still rising at a **5.7%** annualized rate. RSI sits at **51.7**, dead neutral. The pullback signal tested at **95.0** produced a risk-adjusted return of **1.10**. This is a mean-reversion play with defined levels and no signs of a trend break.
+
+Conviction is MEDIUM. That is appropriate. You are not getting a catalyst or a breakout signal. You are getting a high-probability setup where the reward relative to risk is **2.2-to-1**, the best in its category. The trend is intact and the entry is at a level where prior buyers stepped in.
+
+The trade works if the rising **30-week** average acts as a floor and price drifts back toward the swing high near **61.62**. You size it knowing the upside is capped unless it breaks out above the **52-week** high at **61.71**. That cap is real. Only **6.8%** of room separates the current price from that high.
+
+## Technical Analysis
+
+&gt; 📈 Insert the TCBK weekly chart here (TradingView): TCBK weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $61.62 · mark support near $55.56.
+
+The chart shows a stock that ran from a swing low near **49.25** to a high near **61.62** and then gave back roughly **5%** over three weeks. The current price of **57.46** sits just above the rising **30-week** moving average. Price is **93.1%** of its **52-week** high of **61.71** and sits in the top **80.1%** of its yearly range. The long-term trend is up but the short-term trend is correcting.
+
+The **8/21-week** EMA structure is not mentioned in the technical facts. You rely on the **30-week** average as your primary trend filter. It is rising and price is above it. That keeps you in the trade. The pullback did not violate the average.
+
+RSI is **51.7**, which means momentum is not overbought and not oversold. There is no exhaustion signal in either direction. The **ATR14** of **0.95** gives you a volatility context. Your stop at **55.56** is roughly **2.0 ATR** below entry, a reasonable distance for a stock that moves less than a dollar a day on average. The target at **61.62** aligns with the prior swing high and sits just below the **52-week** high.
+
+Relative strength versus the SPY over the last **63** days is **13.2%**. This stock has been outperforming the broad market. Volume is a question mark. You want to see volume dry up on the remaining pullback and expand on any bounce off support. No volume confirmation means you manage the position strictly by the levels.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $1.83B |
+| Enterprise value | $1.82B |
+| 52-week range | $40.38 - $61.71 |
+| Dividend yield | 2.52% |
+| Beta | 0.62 |
+| Trailing P/E | 13.7 |
+| Forward P/E | 13.0 |
+| Price / sales | 4.3 |
+| Price / book | 1.4 |
+| Revenue (TTM) | $426M  (+10.4% YoY) |
+| Revenue / share | $13.21 |
+| Net income (TTM) | $136M |
+| EPS (TTM / fwd) | 4.17 / 4.38 |
+| Gross margin | 0.0% |
+| Operating margin | 43.2% |
+| Profit margin | 31.8% |
+| Operating cash flow / share | $4.33 |
+| Total cash / share | $2.41 |
+| Return on equity | 10.4% |
+| Analyst consensus | hold - mean target $62.81 (5 analysts) |
+
+Earnings growth of **26.2%** stands out for a regional bank. The forward P/E of **13.0** on forward EPS of **$4.38** is modest. You are paying roughly **13** times next year&#x27;s earnings for a business growing earnings at **26%**.
+
+The profit margin is **31.8%** and the operating margin is **43.2%**. These are healthy. Cash per share is **2.41**. The bank is not levered up.
+
+Return on equity is **10.4%** and return on assets is **1.4%**. Neither number is spectacular. A **10.4%** ROE against a price-to-book of **1.4** means you are paying a small premium over book value of **42.03** per share for a business that earns a mid-teens return on that equity. That is fair, not cheap.
+
+Analysts are lukewarm. The consensus recommendation is a hold with a mean target of **62.81**. Five analysts cover the stock. The target is above your trade target of **61.62**, which is encouraging. The market is not expecting fireworks. Neither are you.
+
+## Why Now
+
+The timing is dictated by the pullback itself. There is no explicit near-term catalyst. The desk thesis relies on the signal at **95.0** and the rising trend. Sometimes the catalyst is simply that price reached a level where previous signals worked. You are buying a pause in an uptrend.
+
+Macro provides a tailwind in its absence of headwinds. The sector state is neutral. Financials are not under attack from credit fears or yield curve moves right now. That allows the stock&#x27;s own trend to reassert. Options flow is not present. There is no unusual positioning to lean on.
+
+The next earnings date falls in late October **2026**. That timeline gives the trade several weeks to work before the event risk of a report. You are not holding through earnings on a MEDIUM-conviction mean-reversion trade. The target date is before the report. If the stock has not reached the target by then, you reassess.
+
+## Risk Factors
+
+The primary risk is capped upside. Price is already **93.1%** of its **52-week** high. Your target at **61.62** is barely above that high. You are collecting **7.2%** of upside while risking **3.3%** to your stop. The **2.2-to-1** ratio works mathematically, but the absolute reward is small. If the stock chops sideways, you waste time and eventually hit your stop.
+
+Credit risk is the sector-level threat. Regional bank credit is the first thing to crack if spreads widen. A sudden spike in credit spreads or a deterioration in commercial real estate would hit TCBK directly. The bank&#x27;s loan book is concentrated in Northern California, a region sensitive to commercial real estate cycles.
+
+Your invalidation is a break below the **55.56** stop. That level sits below the swing low support zone. If price closes below that stop, the pullback is no longer a pullback. You exit and wait for the next setup. A loss on this trade is **3.3%**. You accept that before you enter.
+
+## Bringing It All Together
+
+* TCBK is a plain-vanilla regional bank growing earnings at **26.2%** with a clean balance sheet and a **2.52%** dividend yield.
+* The stock pulled back **5.1%** into a rising **30-week** average, producing a pullback signal at **95.0** with a strong tested risk-adjusted return.
+* The risk/reward of **2.2-to-1** with entry at **57.46**, stop at **55.56**, and target at **61.62** is the best in the category.
+* No catalyst means no urgency. The trade works on mean reversion alone, provided the sector stays neutral and the trend holds.
+
+## Conclusion
+
+This is a quiet trade in a quiet sector. You are not betting on a breakout. You are betting that a stock in an uptrend that pulled back to support will drift back to its prior high. The numbers support the bet. Earnings are growing, the balance sheet is clean, and the technical setup is textbook mean reversion.
+
+The risk is that the upside is small and credit conditions can shift suddenly. Size accordingly. Conviction is MEDIUM, so this is a one-unit trade, not a conviction bet. If the **30-week** average breaks, you are out. If price reaches **61.62**, you take the profit and move on.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

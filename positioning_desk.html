@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Positioning &amp; Hedge Desk</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: auto; }
+body { background: #f9f5ee; color: #1a1a1a; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+
+.layout { display: flex; min-height: 100vh; }
+nav.toc {
+  position: sticky; top: 0; width: 280px; height: 100vh;
+  background: #ffffff; border-right: 1px solid #d8cfbb;
+  padding: 28px 22px; overflow-y: auto; flex-shrink: 0;
+}
+nav.toc h1 { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-size: 18px; font-weight: 700; color: #1a1a1a; letter-spacing: -0.3px; }
+nav.toc .sub { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic; font-size: 11px; color: #888888; margin-bottom: 14px; }
+nav.toc .meta { font-size: 9.5px; color: #888888; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid #d8cfbb; }
+nav.toc h3 { font-size: 9.5px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #1a1a1a; margin: 14px 0 5px; }
+nav.toc a { display: block; font-size: 11px; color: #555555; text-decoration: none; padding: 3px 0 3px 8px; margin-left: -10px; border-left: 2px solid transparent; transition: all 0.15s ease; }
+nav.toc a:hover { color: #1a1a1a; border-left-color: #8b5cf6; background: #efe7d6; }
+nav.toc a .badge { font-size: 9px; padding: 1px 4px; border-radius: 2px; margin-left: 6px; color: #fff; }
+
+main { flex: 1; padding: 32px 44px 80px; max-width: 1280px; }
+
+header.intro {
+  background: #ffffff; color: #1a1a1a; padding: 36px 48px 44px;
+  border-radius: 6px; margin-bottom: 28px; box-shadow: 0 6px 26px rgba(0,0,0,0.4);
+}
+header.intro .eyebrow {
+  font-size: 11px; font-weight: 600; letter-spacing: 2.4px; text-transform: uppercase;
+  color: #8b5cf6; margin-bottom: 10px;
+}
+header.intro h1 {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 900; font-size: 28px;
+  letter-spacing: -0.3px; line-height: 1.15; color: #1a1a1a; max-width: 920px;
+}
+header.intro .deck {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic; font-size: 16px;
+  color: #555555; margin-top: 10px; max-width: 820px; line-height: 1.45;
+}
+header.intro .meta-line {
+  margin-top: 16px; font-size: 11px; color: #888888;
+  font-family: 'JetBrains Mono', monospace; letter-spacing: 0.4px;
+}
+
+/* === Data Freshness Banner === */
+.freshness-banner {
+  margin: 18px 0 24px; padding: 18px 22px; border-radius: 6px;
+  background: #fff; border: 3px solid #2a8a2a;
+  box-shadow: 0 2px 8px rgba(42,138,42,0.15);
+}
+.freshness-headline {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 900; font-size: 20px;
+  letter-spacing: 0.3px; margin-bottom: 14px;
+}
+.freshness-details {
+  display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;
+}
+.freshness-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 14px; border-radius: 4px;
+  background: #efe7d6; border: 1.5px solid #2a8a2a;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  color: #1a1a1a;
+}
+.freshness-chip .freshness-icon { font-size: 14px; }
+.freshness-chip .freshness-label {
+  text-transform: uppercase; font-size: 10px; letter-spacing: 0.6px;
+  color: #555555; font-weight: 700;
+}
+.freshness-chip .freshness-value { font-weight: 800; color: #1a1a1a; }
+.freshness-chip .freshness-suffix { color: #888888; font-size: 10px; font-style: italic; margin-left: 2px; }
+.freshness-intraday {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #1a1a1a;
+  padding: 8px 0 2px; margin-bottom: 8px;
+}
+.freshness-explain {
+  font-size: 12px; color: #555555; line-height: 1.5;
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic;
+  border-top: 1px solid rgba(184,154,58,0.3); padding-top: 10px;
+}
+
+/* Sidebar mini status — single line, matches menu typography */
+.toc .meta-fresh-mini {
+  margin: 8px 0 14px; padding: 0;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+  font-family: 'Inter', sans-serif;
+}
+.toc .meta-fresh-mini.fresh { color: #4ade80; }
+.toc .meta-fresh-mini.stale { color: #ef4444; }
+
+section.section {
+  background: #ffffff; color: #1a1a1a; padding: 28px 32px 32px;
+  border-radius: 6px; margin-bottom: 22px; box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+  scroll-margin-top: 16px;
+}
+nav.toc a.active { color: #1a1a1a; font-weight: 700; border-left-color: #8b5cf6; background: #efe7d6; }
+section.section .card-meta {
+  display: flex; gap: 14px; align-items: flex-start; margin-bottom: 16px;
+  padding-bottom: 12px; border-bottom: 1px solid #d8cfbb;
+}
+section.section .card-num {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 700; font-size: 26px;
+  color: #8b5cf6; letter-spacing: -0.3px; line-height: 1; flex-shrink: 0;
+}
+section.section .card-eyebrow {
+  font-size: 10px; font-weight: 600; letter-spacing: 1.6px; text-transform: uppercase;
+  color: #888888; margin-bottom: 3px;
+}
+section.section .card-title {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 700; font-size: 18px;
+  color: #1a1a1a; line-height: 1.25;
+}
+.status-badge {
+  display: inline-block; font-family: 'Inter', sans-serif; font-size: 9px;
+  font-weight: 600; letter-spacing: 1px; padding: 2px 7px; border-radius: 3px;
+  color: #fff; margin-left: 8px; vertical-align: middle; text-transform: uppercase;
+}
+
+table.data-table {
+  width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px; background: #ffffff; margin-bottom: 14px;
+}
+table.data-table thead th {
+  background: #1a1a1a; color: #ffffff; padding: 9px 7px; text-align: right;
+  font-weight: 600; letter-spacing: 0.4px; font-size: 10px; font-family: 'Inter', sans-serif;
+  text-transform: uppercase; border-right: 1px solid #3a3322;
+}
+table.data-table thead th:first-child { text-align: left; }
+table.data-table tbody td {
+  padding: 6px 7px; text-align: right; border-bottom: 1px solid #e5e0d0;
+  border-right: 1px solid #f1e6b8; color: #1a1a1a;
+}
+table.data-table tbody td:first-child {
+  text-align: left; font-weight: 700; background: #1a1a1a; color: #ffffff; font-size: 12px;
+}
+.table-caption {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic; font-size: 13px;
+  color: #6B5C2A; margin-bottom: 8px;
+}
+
+td.hot-1 { background: #fbe5be; color: #4d3c00; }
+td.hot-2 { background: #f7d39a; color: #4d3c00; }
+td.hot-3 { background: #f1bb70; color: #2e2200; }
+td.hot-4 { background: #d97a3d; color: #fff; }
+td.hot-5 { background: #a73a1f; color: #fff; font-weight: 600; }
+td.cool-1 { background: #d6e4d2; color: #1f3024; }
+td.cool-2 { background: #b6d2b1; color: #1f3024; }
+td.cool-3 { background: #8cba85; color: #fff; }
+td.cool-4 { background: #5d9e63; color: #fff; }
+td.cool-5 { background: #2f6c46; color: #fff; font-weight: 600; }
+td.neutral { background: #ffffff; }
+
+.gauge { background: #ffffff; padding: 18px 22px; border-radius: 4px; border: 1px solid #e5e0d0; margin-bottom: 14px; }
+.gauge-track { position: relative; height: 8px; background: #e5e0d0; border-radius: 4px; overflow: hidden; }
+.gauge-fill { height: 100%; transition: width 0.3s ease; }
+.gauge-marker { position: absolute; top: -3px; width: 2px; height: 14px; background: #1a1a1a; }
+.gauge-meta { display: flex; justify-content: space-between; align-items: baseline; margin-top: 8px; }
+.gauge-value { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700; color: #1a1a1a; }
+.gauge-tier { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-size: 18px; font-weight: 700; }
+.gauge-desc { margin-top: 6px; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic; font-size: 13px; color: #6B5C2A; }
+.gauge-na { padding: 18px 22px; }
+
+.brick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 14px; }
+.brick { background: #ffffff; padding: 14px 16px; border-radius: 4px; border: 1px solid #e5e0d0; text-align: center; }
+.brick-on { background: #d6e4d2; border-color: #5d9e63; }
+.brick-off { background: #ffffff; }
+.brick-light { font-size: 18px; margin-bottom: 4px; }
+.brick-name { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 700; font-size: 13px; color: #1a1a1a; margin-bottom: 4px; }
+.brick-detail { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #6B5C2A; }
+
+.interp {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-size: 14.5px; line-height: 1.55;
+  color: #1a1a1a; padding: 14px 18px; background: #ffffff; border-left: 3px solid #8b5cf6;
+  border-radius: 0 4px 4px 0; margin-bottom: 12px;
+}
+.interp ul { margin: 8px 0 8px 0; padding-left: 22px; }
+.interp li { margin: 5px 0; line-height: 1.5; }
+.interp li strong { color: #555555; }
+.interp p { margin: 6px 0; }
+.interp p + p { margin-top: 10px; }
+.ai-take { background: #f6f1e7; border-left: 3px solid #2f6c46; border-radius: 0 4px 4px 0; padding: 12px 18px; margin-top: 10px; }
+.ai-take-label { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: #2f6c46; margin-bottom: 5px; }
+.ai-take-text { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-size: 13.5px; line-height: 1.55; color: #1a1a1a; }
+.ai-take-text p { margin: 0 0 8px; }
+.ai-take-text p:last-child { margin-bottom: 0; }
+.top-nav { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.4px; margin-bottom: 14px; }
+.top-nav a { color: #555555; text-decoration: none; padding: 2px 0; }
+.top-nav a:hover { color: #8b5cf6; }
+.top-nav .nav-sep { color: #d8cfbb; margin: 0 7px; }
+.top-nav .nav-here { color: #8b5cf6; font-weight: 700; }
+.how-to-read { background: #1a1a1a; color: #ffffff; padding: 10px 18px; border-radius: 4px; }
+.how-to-read-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
+  color: #8b5cf6; margin-bottom: 5px;
+}
+summary.how-to-read-label { cursor: pointer; margin-bottom: 0; list-style: none; }
+summary.how-to-read-label::-webkit-details-marker { display: none; }
+summary.how-to-read-label::before { content: "\25B8  "; }
+details.how-to-read[open] summary.how-to-read-label::before { content: "\25BE  "; }
+details.how-to-read[open] { padding-bottom: 14px; }
+details.how-to-read[open] .how-to-read-text { margin-top: 7px; }
+.how-to-read-text { font-size: 12.5px; line-height: 1.55; }
+
+.narrative-head {
+  background: #ffffff; padding: 18px 24px; border-radius: 4px;
+  margin-bottom: 18px;
+}
+.narrative-headline {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-size: 28px; font-weight: 900;
+  letter-spacing: -0.3px; line-height: 1.15;
+}
+.narrative-para {
+  background: #ffffff; padding: 18px 22px; border-radius: 4px; margin-bottom: 14px;
+  border-left: 3px solid #d8cfbb;
+}
+.narrative-para-title {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 700; font-size: 24px;
+  color: #1a1a1a; margin-bottom: 14px; letter-spacing: -0.3px;
+  line-height: 1.25; text-transform: none;
+}
+.trade-title {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 12px;
+  padding: 8px 0; margin-bottom: 8px;
+  border-bottom: 2px solid #8b5cf6;
+}
+.trade-num { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 700; font-size: 22px; color: #8b5cf6; }
+.trade-ticker {
+  font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 32px;
+  letter-spacing: -0.5px; line-height: 1;
+}
+.trade-ticker-long { color: #2f6c46; }
+.trade-ticker-short { color: #a73a1f; }
+.trade-ticker-rotation { color: #5d9e63; }
+.trade-side {
+  font-family: 'Inter', sans-serif; font-weight: 700; font-size: 12px;
+  letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 9px;
+  border-radius: 3px; color: #fff;
+}
+.trade-side-long { background: #2f6c46; }
+.trade-side-short { background: #a73a1f; }
+.trade-side-rotation { background: #5d9e63; }
+.trade-conv {
+  font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600;
+  color: #555555; padding: 3px 8px; background: #fbe5be; border-radius: 3px;
+}
+.trade-setup {
+  width: 100%; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic;
+  font-size: 14px; color: #6B5C2A; margin-top: 4px;
+}
+.narrative-para-body {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-size: 15.5px; line-height: 1.6;
+  color: #1a1a1a;
+}
+.narrative-para-body strong { font-weight: 700; color: #555555; }
+.narrative-para-body em { font-style: italic; color: #6B5C2A; }
+.data-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.data-chip {
+  display: inline-flex; align-items: baseline; gap: 7px; padding: 6px 12px;
+  border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  border: 1px solid rgba(0,0,0,0.15);
+}
+.data-chip.chip-light { color: #1a1a1a; }
+.data-chip.chip-dark { color: #ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+.chip-light .chip-label { color: #1a1a1a; opacity: 0.65; font-weight: 500; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+.chip-light .chip-value { color: #1a1a1a; font-weight: 800; }
+.chip-dark .chip-label { color: rgba(255,255,255,0.85); font-weight: 500; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+.chip-dark .chip-value { color: #ffffff; font-weight: 800; }
+.unavailable { padding: 22px; background: #ffffff; border: 1px dashed #8b5cf6; border-radius: 4px; text-align: center; }
+.unav-icon { font-size: 22px; margin-bottom: 6px; color: #8b5cf6; }
+.unav-text { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic; color: #6B5C2A; font-size: 14px; }
+.unav-tag { display: inline-block; font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 2px 8px; border-radius: 3px; background: #8b5cf6; color: #fff; margin-bottom: 8px; }
+.unav-eta { margin-top: 6px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #888888; }
+
+/* Compact signal-group table: small monospace sub-line under each signal name */
+.data-table td .sig-sub { display: block; font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: #888888; font-weight: 400; margin-top: 2px; line-height: 1.3; white-space: normal; }
+.data-table td .sig-na { color: #a73a1f; font-style: italic; }
+
+/* Collapsible TOC groups (menu folds by theme) */
+nav.toc details.toc-group { margin: 12px 0 4px; }
+nav.toc details.toc-group > summary { font-size: 9.5px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #8b5cf6; cursor: pointer; list-style: none; padding: 5px 0; border-bottom: 1px solid #d8cfbb; outline: none; }
+nav.toc details.toc-group > summary::-webkit-details-marker { display: none; }
+nav.toc details.toc-group > summary::before { content: '▸ '; }
+nav.toc details.toc-group[open] > summary::before { content: '▾ '; }
+nav.toc details.toc-group > a { margin-top: 2px; }
+
+/* Collapsible section bodies (drill-down scans) */
+section.section details.sec-collapse { margin-top: 4px; }
+section.section details.sec-collapse > summary { cursor: pointer; list-style: none; color: #8b5cf6; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; padding: 4px 0; outline: none; }
+section.section details.sec-collapse > summary::-webkit-details-marker { display: none; }
+section.section details.sec-collapse > summary::before { content: '▸ Show detail'; }
+section.section details.sec-collapse[open] > summary::before { content: '▾ Hide detail'; }
+
+footer.page-footer {
+  margin-top: 36px; padding: 20px 0; border-top: 1px solid #d8cfbb; color: #888888;
+  font-size: 11px; font-family: 'JetBrains Mono', monospace; text-align: center;
+}
+
+@media (max-width: 1024px) {
+  .layout { flex-direction: column; }
+  nav.toc { position: relative; width: 100%; height: auto; max-height: 50vh; }
+  main { padding: 20px 14px 60px; }
+  header.intro h1 { font-size: 22px; }
+  .brick-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+main > section[id] { background:#ffffff; border:1px solid #e7e0cf; border-radius:9px;
+  padding:16px 20px 6px; margin-bottom:16px; box-shadow:0 1px 2px rgba(60,50,30,.04); }
+section.section .card-eyebrow { color:#a08a5c; }
+table.data-table { font-size:11.5px; border:1px solid #ece4d2; border-radius:6px; overflow:hidden; }
+table.data-table thead th { background:#efe7d6; color:#6b5d44; border-right:1px solid #e4dcc8;
+  border-bottom:2px solid #ddd3bd; }
+table.data-table tbody td { border-right:1px solid #f2ecdc; border-bottom:1px solid #efe9da; }
+table.data-table tbody td:first-child { background:#faf6ec; color:#1a1a1a; }
+table.data-table tbody tr:nth-child(even) td { background:#fcfaf4; }
+table.data-table tbody tr:nth-child(even) td:first-child { background:#f6f1e4; }
+table.data-table tbody tr:hover td { background:#f3ece0; }
+.how-to-read { background:#f4eee2; color:#5a4f3a; border:1px solid #e7e0cf; }
+.how-to-read-label { color:#9a8a5c; }
+.interp { background:#faf7ef; }
+.pill { display:inline-block; font-family:'Inter',sans-serif; font-size:10px; font-weight:700;
+  letter-spacing:.3px; padding:2px 9px; border-radius:11px; line-height:1.5; }
+.pill-green { background:#d6e4d2; color:#1f4d2e; }
+.pill-amber { background:#f4e3bf; color:#79560f; }
+.pill-red { background:#f0d6cf; color:#8a2f20; }
+.pill-grey { background:#e9e3d5; color:#6b5d44; }
+.dots { font-size:12px; letter-spacing:1.5px; vertical-align:middle; }
+.dots .off { color:#cdc3aa; }
+.dot-label { font-family:'Inter',sans-serif; font-size:11px; font-weight:600; margin-left:5px; }
+.kpi-strip { display:flex; gap:26px; flex-wrap:wrap; align-items:flex-start;
+  padding:11px 16px; background:#faf6ec; border:1px solid #ece4d2; border-radius:8px; margin:2px 0 12px; }
+.kpi-label { font-family:'Inter',sans-serif; font-size:9px; font-weight:700; letter-spacing:1.1px;
+  text-transform:uppercase; color:#a08a5c; }
+.kpi-value { font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:700; color:#1a1a1a;
+  margin-top:2px; line-height:1.2; }
+.kpi-value .sub { font-size:11px; font-weight:500; color:#8a7a5c; }
+.chip-bar { font-family:'Inter',sans-serif; font-size:12px; color:#8a7a5c; margin:0 0 12px; }
+.chip { display:inline-block; background:#fff; border:1px solid #e0d6c0; border-radius:12px;
+  padding:2px 10px; margin:2px 4px 2px 0; font-weight:700; color:#5b6b8c; }
+</style>
+</head><body>
+<div class="layout">
+  <nav class="toc">
+    <h1>Positioning &amp; Hedge</h1>
+    <div class="sub">Editorial cockpit</div>
+    <div class="meta">EOD 2026-08-31</div>
+    <div class="meta-fresh-mini">Positioning 2026-08-31</div>
+    <a href="#cot">COT Positioning</a><a href="#cta">CTA Positioning</a><a href="#pairs">Pair Spreads</a><a href="#hedge">Hedge Calculator</a>
+  </nav>
+  <main>
+    <header class="intro">
+      <div class="top-nav"><a href="ceo_dashboard.html">CEO</a><span style="opacity:.4;margin:0 8px">&middot;</span><a href="kerberos_dashboard.html">Kerberos</a><span style="opacity:.4;margin:0 8px">&middot;</span><a href="smart_money_desk.html">Smart Money &amp; Flow</a><span style="opacity:.4;margin:0 8px">&middot;</span><a href="volatility_desk.html">Volatility</a><span style="opacity:.4;margin:0 8px">&middot;</span><a href="trade_desk.html">Trade Desk</a></div>
+      <div class="eyebrow">EOD 2026-08-31</div>
+      <div class="data-freshness">EOD <strong>2026-08-31</strong> (CTA) &middot; COT weekly</div>
+      <h1>Positioning &amp; Hedge Desk</h1>
+      <div class="deck">Who is positioned where, plus the hedge toolkit: COT cohorts, CTA trend, pair spreads, beta hedge.</div>
+    </header>
+    <div class="interp"><strong>How this page is built.</strong> COT comes from the weekly CFTC report (SPX futures cohorts), CTA from each macro ETF position versus its moving averages, and the pair spreads and beta hedge from daily closes. Positioning and spreads are context for sizing and squeeze risk, not standalone trade signals. Our backtests show COT extremes trend rather than revert and the pair mean-reversion is REJECT out of sample, so the usable outputs are the cohort stance and the beta-hedge calculator, not mechanical fades.</div><section id="cot">
+<div class="card-meta">
+  <span class="card-num">01</span>
+  <div class="card-text">
+    <div class="card-eyebrow">Who is positioned in SPX futures</div>
+    <div class="card-title">COT Positioning </div>
+  </div>
+</div>
+<div class="kpi-strip"><div><div class="kpi-label">Stance</div><div class="kpi-value"><span style="color:#2f6c46;font-weight:800">NORMAL</span></div></div><div><div class="kpi-label">Z-score</div><div class="kpi-value"><strong>-0.05</strong></div></div><div><div class="kpi-label">Asset managers</div><div class="kpi-value">961K</div></div><div><div class="kpi-label">Leveraged funds</div><div class="kpi-value">-281K</div></div></div>
+
+<table class="data-table">
+  <thead><tr><th>Cohort</th><th>Net position</th><th>Read</th></tr></thead>
+  <tbody>
+    <tr><td>Dealers / intermediaries</td><td>-784K</td><td>market makers, hedged</td></tr><tr><td>Asset managers</td><td>961K</td><td>real-money longs</td></tr><tr><td>Leveraged funds</td><td>-281K</td><td>hedge funds / CTAs</td></tr><tr><td>Other reportables</td><td>-19K</td><td>—</td></tr>
+  </tbody>
+</table>
+
+
+<table class="data-table">
+  <thead><tr><th>Week</th><th>Z-score</th><th>Signal</th></tr></thead>
+  <tbody>
+    <tr><td>2026-08-18</td><td>-0.05</td><td>NORMAL</td></tr><tr><td>2026-08-11</td><td>0.96</td><td>NORMAL</td></tr><tr><td>2026-08-04</td><td>-0.65</td><td>NORMAL</td></tr><tr><td>2026-07-28</td><td>0.48</td><td>NORMAL</td></tr><tr><td>2026-07-21</td><td>0.83</td><td>NORMAL</td></tr><tr><td>2026-07-14</td><td>-0.06</td><td>NORMAL</td></tr>
+  </tbody>
+</table>
+<div class="interp">Asset-manager net longs versus leveraged-fund net shorts is the classic positioning gap. <strong>Honesty:</strong> our own backtest found COT extremes are momentum, not reversion (extreme positioning kept trending), so read this as context, not a contrarian trigger.</div>
+<details class="how-to-read">
+  <summary class="how-to-read-label">How to read</summary>
+  <div class="how-to-read-text">The z-score normalizes the dealer-vs-asset-manager spread against its own history. NORMAL means no extreme; the cohort net positions show who is long or short the index.</div>
+</details>
+
+<div class="ai-take">
+  <div class="ai-take-label">AI read</div>
+  <div class="ai-take-text"><p>Positioning in SPX futures is normal, with the combined z-score at <strong>-0.05</strong>, so nobody is pressed against a wall. Asset managers hold <strong>961K</strong> contracts long while leveraged funds are short <strong>-281K</strong>, a split that tells you this is a hedged market, not a crowded one.</p><p>You read this as context because futures positioning that gets extreme tends to keep trending in the same direction rather than snap back, so a normal reading means no squeeze fuel on either side right now. The thing to watch is a shift in that leveraged-fund short toward covering or adding, since that is the cohort that moves price when it flips.</p></div>
+</div>
+</section><section id="cta">
+<div class="card-meta">
+  <span class="card-num">02</span>
+  <div class="card-text">
+    <div class="card-eyebrow">Trend-following stance across macro ETFs</div>
+    <div class="card-title">CTA Positioning </div>
+  </div>
+</div>
+<div class="kpi-strip"><div><div class="kpi-label">Aggregate stance</div><div class="kpi-value"><span style="color:#2f6c46;font-weight:800">LONG</span></div></div><div><div class="kpi-label">Avg trend score</div><div class="kpi-value"><strong>1.6</strong></div></div><div><div class="kpi-label">Crowding</div><div class="kpi-value"><strong>NORMAL</strong></div></div></div><div class="chip-bar">Macro ETFs: <span class="chip">SPY</span><span class="chip">QQQ</span><span class="chip">USO</span><span class="chip">EEM</span><span class="chip">GLD</span><span class="chip">UUP</span><span class="chip">TLT</span></div>
+
+<table class="data-table">
+  <thead><tr><th>ETF</th><th>Price</th><th>Trend score</th><th>SMA50</th><th>SMA200</th><th>Nearest SMA</th><th>Risk</th></tr></thead>
+  <tbody>
+    <tr><td>SPY</td><td>767.05</td><td><span style="color:#2f6c46;font-weight:700">+3</span></td><td>754.4</td><td>710.3</td><td>SMA50 (1.7%)</td><td>APPROACHING STOP</td></tr><tr><td>QQQ</td><td>716.76</td><td><span style="color:#2f6c46;font-weight:700">+3</span></td><td>711.6</td><td>655.6</td><td>SMA50 (0.7%)</td><td>APPROACHING STOP</td></tr><tr><td>USO</td><td>133.70</td><td><span style="color:#2f6c46;font-weight:700">+3</span></td><td>121.3</td><td>106.1</td><td>SMA100 (4.5%)</td><td>—</td></tr><tr><td>EEM</td><td>67.02</td><td><span style="color:#2f6c46;font-weight:700">+3</span></td><td>65.9</td><td>61.5</td><td>SMA50 (1.7%)</td><td>APPROACHING STOP</td></tr><tr><td>GLD</td><td>408.42</td><td><span style="color:#2f6c46;font-weight:700">+1</span></td><td>386.5</td><td>414.9</td><td>SMA100 (1.5%)</td><td>APPROACHING STOP</td></tr><tr><td>UUP</td><td>28.12</td><td><span style="color:#2f6c46;font-weight:700">+1</span></td><td>28.3</td><td>27.7</td><td>SMA50 (0.5%)</td><td>—</td></tr><tr><td>TLT</td><td>82.52</td><td><span style="color:#b23b2e;font-weight:700">-3</span></td><td>83.8</td><td>86.4</td><td>SMA50 (1.5%)</td><td>—</td></tr>
+  </tbody>
+</table>
+<div class="interp">CTA trend score is +1 for each of SMA50/100/200 the price sits above, -1 below (range -3 to +3). Aggregate <strong>LONG</strong>. Crowding <strong>NORMAL</strong> flags when every ETF leans the same way (trend-followers all on one side, a squeeze risk if it reverses).</div>
+<details class="how-to-read">
+  <summary class="how-to-read-label">How to read</summary>
+  <div class="how-to-read-text">Trend-followers buy what is above its moving averages and sell what is below. A name near its SMA from above is approaching a CTA stop level. CROWDED means the herd is one-sided.</div>
+</details>
+
+<div class="ai-take">
+  <div class="ai-take-label">AI read</div>
+  <div class="ai-take-text"><p>Trend-following stance across macro ETFs is long, with an average trend score of <strong>1.6</strong>, so the systematic crowd is leaning risk-on. The crowding read is normal, which means the long is broad but not stretched enough to guarantee a violent unwind on a turn.</p><p>Leaders are <strong>SPY</strong>, <strong>QQQ</strong>, and <strong>USO</strong>, so the positioning is concentrated in the places that have already worked, and that is the squeeze risk if the trend bends. Watch whether the average score moves toward <strong>0</strong> or below, because a crowded long that stops trending becomes fast supply.</p></div>
+</div>
+</section><section id="pairs">
+<div class="card-meta">
+  <span class="card-num">03</span>
+  <div class="card-text">
+    <div class="card-eyebrow">Flagship ETF spreads (z-score + hedge ratio)</div>
+    <div class="card-title">Pair Spreads </div>
+  </div>
+</div>
+<details style="margin-top:6px"><summary style="cursor:pointer;color:#5b6b8c;font-weight:600;font-size:.92em;padding:4px 0">Show pair spreads (mean-reversion is REJECT out of sample, kept as relative-strength context)</summary><div class="kpi-strip"><div><div class="kpi-label">Most stretched</div><div class="kpi-value">XLE/XLU <span class='sub'>2.7&#963;</span></div></div><div><div class="kpi-label">Pairs tracked</div><div class="kpi-value">14</div></div></div><div class="chip-bar">Pairs: <span class="chip">XLE/XLU</span><span class="chip">XLU/QQQ</span><span class="chip">XLF/QQQ</span><span class="chip">XLI/XLU</span><span class="chip">QQQ/DIA</span><span class="chip">XLK/XLV</span></div>
+
+<table class="data-table">
+  <thead><tr><th>Pair</th><th>Theme</th><th>Z-score</th><th>Hedge ratio</th><th>Return corr</th><th>Spread read</th></tr></thead>
+  <tbody>
+    <tr><td>XLE/XLU</td><td>Energy vs Utilities</td><td><span style="color:#b23b2e;font-weight:700">+2.72</span></td><td>2.33</td><td>0.04</td><td><span style="color:#b23b2e">SHORT spread</span></td></tr><tr><td>XLU/QQQ</td><td>Utilities vs Tech</td><td><span style="color:#2f6c46;font-weight:700">-2.34</span></td><td>0.01</td><td>0.01</td><td><span style="color:#2f6c46">LONG spread</span></td></tr><tr><td>XLF/QQQ</td><td>Financials vs Tech</td><td><span style="color:#6b5d44;font-weight:700">+1.30</span></td><td>0.02</td><td>0.31</td><td><span style="color:#6b5d44">neutral</span></td></tr><tr><td>XLI/XLU</td><td>Industrials vs Utilities</td><td><span style="color:#6b5d44;font-weight:700">+1.00</span></td><td>3.53</td><td>0.30</td><td><span style="color:#6b5d44">neutral</span></td></tr><tr><td>QQQ/DIA</td><td>Nasdaq vs Dow</td><td><span style="color:#6b5d44;font-weight:700">-0.72</span></td><td>1.87</td><td>0.64</td><td><span style="color:#6b5d44">neutral</span></td></tr><tr><td>XLK/XLV</td><td>Tech vs Healthcare</td><td><span style="color:#6b5d44;font-weight:700">-0.64</span></td><td>1.18</td><td>-0.10</td><td><span style="color:#6b5d44">neutral</span></td></tr><tr><td>SPY/XLK</td><td>Market vs Tech</td><td><span style="color:#6b5d44;font-weight:700">+0.64</span></td><td>1.97</td><td>0.85</td><td><span style="color:#6b5d44">neutral</span></td></tr><tr><td>XLB/XLP</td><td>Materials vs Staples</td><td><span style="color:#6b5d44;font-weight:700">+0.35</span></td><td>0.91</td><td>0.33</td><td><span style="color:#6b5d44">neutral</span></td></tr><tr><td>QQQ/IWM</td><td>Large Growth vs Small Cap</td><td><span style="color:#6b5d44;font-weight:700">+0.23</span></td><td>2.14</td><td>0.72</td><td><span style="color:#6b5d44">neutral</span></td></tr><tr><td>GLD/TLT</td><td>Gold vs Bonds</td><td><span style="color:#6b5d44;font-weight:700">+0.17</span></td><td>-0.78</td><td>0.12</td><td><span style="color:#6b5d44">neutral</span></td></tr><tr><td>XLK/XLE</td><td>Tech vs Energy</td><td><span style="color:#6b5d44;font-weight:700">-0.17</span></td><td>1.88</td><td>-0.16</td><td><span style="color:#6b5d44">neutral</span></td></tr><tr><td>XLY/XLP</td><td>Discretionary vs Staples</td><td><span style="color:#6b5d44;font-weight:700">-0.09</span></td><td>-0.19</td><td>0.16</td><td><span style="color:#6b5d44">neutral</span></td></tr><tr><td>XLY/WMT</td><td>Cyclical vs Staple</td><td><span style="color:#6b5d44;font-weight:700">-0.07</span></td><td>0.01</td><td>0.06</td><td><span style="color:#6b5d44">neutral</span></td></tr><tr><td>SPY/TLT</td><td>Stocks vs Bonds</td><td><span style="color:#6b5d44;font-weight:700">-0.03</span></td><td>-11.63</td><td>0.20</td><td><span style="color:#6b5d44">neutral</span></td></tr>
+  </tbody>
+</table>
+<div class="interp">Z-score is the current spread versus its 100-day mean (in standard deviations). <strong>Honesty:</strong> trading the spread mean-reversion is REJECT out of sample (cointegration broke after 2022). Read the extremes as relative-strength context, and use the hedge ratio for sizing a market-neutral leg, not as a standalone trade.</div>
+<details class="how-to-read">
+  <summary class="how-to-read-label">How to read</summary>
+  <div class="how-to-read-text">Hedge ratio = OLS slope: how many shares of leg B offset one share of leg A. A z-score past +2 means A is rich versus B (and vice versa). Correlation gauges whether the pair still moves together (low correlation = the relationship has decayed).</div>
+</details>
+</details>
+<div class="ai-take">
+  <div class="ai-take-label">AI read</div>
+  <div class="ai-take-text"><p>The most stretched ETF spread is <strong>XLE/XLU</strong> at a z-score of <strong>2.72</strong> over <strong>14</strong> observations, which puts it in the top few percent of its recent range. Energy is rich versus utilities, a classic risk-on footprint, but you do not treat this as a mean-reversion trade because stretched relative strength can stay stretched for a long time when macro alignment is behind it.</p><p>The read is that the market is paying up for cyclical exposure against defensive yield, and it stays a context input for sizing risk-on positions. The level to watch is a break back below the prior high in that spread, which would say the relative trade is unwinding.</p></div>
+</div>
+</section><section id="hedge">
+<div class="card-meta">
+  <span class="card-num">04</span>
+  <div class="card-text">
+    <div class="card-eyebrow">Beta hedge: SPY offset per long position</div>
+    <div class="card-title">Hedge Calculator </div>
+  </div>
+</div>
+
+
+<table class="data-table">
+  <thead><tr><th>Name</th><th>Price</th><th>Beta vs SPY</th><th>SPY hedge ($10k long)</th><th>SPY shares</th></tr></thead>
+  <tbody>
+    <tr><td>NVDA</td><td>220.78</td><td>1.92</td><td>$19,227</td><td>25.1</td></tr><tr><td>AAPL</td><td>316.85</td><td>0.70</td><td>$7,004</td><td>9.1</td></tr><tr><td>MSFT</td><td>507.29</td><td>0.95</td><td>$9,452</td><td>12.3</td></tr><tr><td>META</td><td>572.34</td><td>1.41</td><td>$14,053</td><td>18.3</td></tr><tr><td>AMZN</td><td>259.77</td><td>1.43</td><td>$14,308</td><td>18.7</td></tr><tr><td>GOOGL</td><td>339.35</td><td>1.37</td><td>$13,737</td><td>17.9</td></tr><tr><td>TSLA</td><td>367.95</td><td>2.24</td><td>$22,423</td><td>29.2</td></tr><tr><td>AVGO</td><td>370.34</td><td>2.17</td><td>$21,668</td><td>28.2</td></tr><tr><td>JPM</td><td>356.02</td><td>0.78</td><td>$7,812</td><td>10.2</td></tr><tr><td>XOM</td><td>160.95</td><td>-0.52</td><td>$-5,244</td><td>-6.8</td></tr>
+  </tbody>
+</table>
+<div class="interp">For a long position, short beta times the notional in SPY to neutralize market risk. Example column assumes a $10,000 long. Beta is the 1-year daily regression versus SPY. This is the part of the pairs toolkit that holds up: a clean market hedge, independent of any mean-reversion claim.</div>
+<details class="how-to-read">
+  <summary class="how-to-read-label">How to read</summary>
+  <div class="how-to-read-text">Beta measures how much the name moves per 1% SPY move. Short beta x notional of SPY to hedge the market component, leaving the stock-specific bet. Re-check beta as it drifts.</div>
+</details>
+
+<div class="ai-take">
+  <div class="ai-take-label">AI read</div>
+  <div class="ai-take-text"><p>The highest-beta name on the list is <strong>TSLA</strong> at <strong>2.24</strong>, which means you need to short roughly <strong>2.24</strong> dollars of this name to hedge one dollar of long market exposure. This is the clean output of the beta hedge calculator, a market hedge that strips out idiosyncratic single-name risk as much as the math allows.</p><p>Use it when you want to take a name-specific bet without carrying the broad market move along with it. Watch whether that beta drifts higher into the next rebalance because a sharper beta means the hedge gets more expensive per dollar of market risk removed.</p></div>
+</div>
+</section>
+    <footer class="page-footer">Positioning and hedge desk built 2026-08-31 23:47 UTC. Sources: cot_positioning_history (weekly CFTC), cta_positioning_screener (7 macro ETFs vs SMA), ETF pair spreads and beta hedge from daily closes. Context for sizing, not a trigger.</footer>
+  </main>
+</div>
+<script>
+(function() {
+  // Highlight the active TOC link based on visible section, no scroll animation on click
+  function setActive(id) {
+    document.querySelectorAll('nav.toc a').forEach(a => {
+      const href = a.getAttribute('href') || '';
+      a.classList.toggle('active', href === '#' + id);
+    });
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('nav.toc a').forEach(a => {
+      a.addEventListener('click', function(e) {
+        const href = this.getAttribute('href') || '';
+        const id = href.replace(/^#/, '');
+        if (!id) return;
+        e.preventDefault();
+        const target = document.getElementById(id);
+        if (target) {
+          // Instant jump (no scroll animation)
+          target.scrollIntoView({ behavior: 'auto', block: 'start' });
+          history.replaceState(null, '', '#' + id);
+          setActive(id);
+        }
+      });
+    });
+    // Initial highlight from hash
+    const initial = (window.location.hash || '').replace(/^#/, '');
+    if (initial) setActive(initial);
+  });
+})();
+</script>
+</body></html>

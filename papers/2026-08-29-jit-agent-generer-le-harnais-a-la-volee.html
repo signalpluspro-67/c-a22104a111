@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JIT-Agent : générer le harnais à la volée</title>
+<style>*{box-sizing:border-box}
+body{margin:0;background:#faf7f2;color:#1c1b1a;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+ line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:820px;margin:0 auto;padding:48px 22px 90px}
+.kicker{color:#b4623a;font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:13px}
+h1{font-size:40px;line-height:1.12;margin:10px 0 14px;font-weight:800}
+.lead{font-size:24px;line-height:1.35;color:#3a3733;margin:0 0 6px;font-weight:600}
+h2{font-size:23px;margin:44px 0 12px;font-weight:750}
+p{margin:0 0 12px}
+.card{background:#fff;border:1px solid #e7e1d8;border-radius:14px;padding:26px 24px;
+ margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.bloc{display:flex;gap:24px;align-items:center}
+.pic{font-size:92px;line-height:1;flex:0 0 auto}
+.bt{font-size:26px;font-weight:750;margin:0 0 6px}
+.bx{color:#55504a;margin:0;font-size:17px}
+.num{color:#b4623a;font-weight:700;font-size:13px;letter-spacing:.04em}
+ul{margin:6px 0 0;padding-left:22px}li{margin:9px 0;font-size:17px}
+.tag{display:inline-block;background:#f6ece6;color:#b4623a;font-size:12px;font-weight:700;
+ padding:4px 10px;border-radius:20px;margin-bottom:10px}
+.mini{color:#8a837a;font-size:14px}
+a{color:#b4623a}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid #e7e1d8;color:#8a837a;font-size:14px}
+.verdict{border-radius:14px;padding:22px 24px;margin:26px 0 8px;border:1px solid}
+.vlabel{font-size:13px;font-weight:800;letter-spacing:.08em;margin-bottom:8px}
+.vtext{margin:0;font-size:18px;line-height:1.5}
+.vp{background:#eef6ee;border-color:#cbe0cb}.vp .vlabel{color:#3c6b3c}
+.vt{background:#fbf3e6;border-color:#ecdcc0}.vt .vlabel{color:#8a6320}
+.vx{background:#f3f1ef;border-color:#e2ded8}.vx .vlabel{color:#6b6660}
+.gros{padding:30px 28px}
+.sst{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+ color:#b4623a;margin:24px 0 8px}.gros .sst:first-child{margin-top:0}
+.etapes{counter-reset:e;list-style:none;padding-left:0;margin:8px 0 0}
+.etapes li{counter-increment:e;position:relative;padding-left:38px;margin:12px 0;font-size:17px}
+.etapes li::before{content:counter(e);position:absolute;left:0;top:1px;width:26px;height:26px;
+ border-radius:50%;background:#f6ece6;color:#b4623a;font-weight:800;font-size:13px;
+ display:flex;align-items:center;justify-content:center}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:640px){h1{font-size:30px}.lead{font-size:20px}.pic{font-size:64px}
+ .bloc{flex-direction:column;align-items:flex-start;gap:12px}.duo{grid-template-columns:1fr}}</style></head><body><div class="wrap">
+<span class="tag">Agents et outillage</span>
+<div class="kicker">Papier de la semaine · samedi 29 août</div>
+<h1>JIT-Agent : générer le harnais à la volée</h1>
+<p class="lead">Un modèle spécialisé fabrique automatiquement, pour chaque tâche, le squelette qui fait tourner un agent LLM.</p>
+<p class="mini">JIT-Agent: Scaling Harness Intelligence via Just-in-Time Harness Evolution · <a href="https://arxiv.org/abs/2608.25593">arXiv 2608.25593</a></p>
+
+<div class="verdict vx">
+  <div class="vlabel">PASSER</div>
+  <p class="vtext">Ton harnais d&#x27;agents tient sur launchd, cron, une passerelle LLM et une dizaine de scripts stables : la valeur d&#x27;un générateur de harnais est faible sur une infra aussi figée. Le levier réel chez toi reste la qualité des screeners et la validation statistique, pas la couche d&#x27;orchestration.</p>
+</div>
+
+<h2>Le problème qu'ils attaquent</h2>
+<div class="card"><p class="bx">Un agent LLM ne se résume pas au modèle. Autour du modèle il y a un harnais qui gère la mémoire, le plan d&#x27;action, l&#x27;appel aux outils et l&#x27;orchestration. Aujourd&#x27;hui ce harnais est écrit à la main pour chaque tâche, ce qui coûte cher et ne passe pas à l&#x27;échelle. Les auteurs veulent que le harnais lui-même devienne une chose qu&#x27;un modèle peut produire tout seul.</p></div>
+
+<h2>Comment ça marche</h2>
+<div class="card"><div class="bloc"><div class="pic">🧩</div><div><div class="num">01</div><p class="bt">Le harnais devient un objet standard</p><p class="bx">Ils imposent un format fixe en quatre modules : mémoire, planification, protocole d&#x27;action, orchestration d&#x27;outils. Chaque harnais devient donc un artefact composable qu&#x27;une machine peut lire et écrire. Ce cadre commun rend le harnais générable comme du code, alors qu&#x27;avant chacun bricolait le sien dans son coin.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🏭</div><div><div class="num">02</div><p class="bt">Un modèle qui pond le harnais</p><p class="bx">JIT-Agent est un modèle entraîné exprès pour cette tâche : on lui décrit un problème et un LLM cible, il sort le harnais adapté. Le harnais est produit juste avant l&#x27;exécution, d&#x27;où le nom just-in-time. Le LLM qui va vraiment travailler reste un modèle standard du marché, JIT-Agent n&#x27;est que l&#x27;assembleur autour.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🔧</div><div><div class="num">03</div><p class="bt">Il répare ses propres harnais</p><p class="bx">Un harnais généré peut planter, boucler, ou mal appeler un outil. JIT-Agent apprend à détecter ces défauts et à recomposer un harnais qui tient la route sur la durée. La stabilité en exécution devient une compétence explicite du générateur.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">📚</div><div><div class="num">04</div><p class="bt">Une archive qui le fait progresser</p><p class="bx">Chaque harnais essayé est gardé avec son score de performance sur la tâche visée. JIT-Agent distille ensuite ce qui marche depuis cette archive et s&#x27;améliore tout seul au fil du temps. Plus il tourne, plus sa banque d&#x27;exemples grossit et plus ses futurs harnais sont bons.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">📈</div><div><div class="num">05</div><p class="bt">Un vieux modèle devient compétitif</p><p class="bx">Habillé du bon harnais, DeepSeek-V4-Flash bat GPT-5.6 sur deux bancs de test agent. GLM-5.2 gagne jusqu&#x27;à vingt points sur les mêmes tâches sans changer de modèle. Le message central : le harnais compte autant que la taille du modèle sous-jacent.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🔁</div><div><div class="num">06</div><p class="bt">Comparable aux runtimes maison</p><p class="bx">Les harnais générés tiennent la comparaison avec des runtimes matures comme OpenCode et Claude Code. Autrement dit un harnais auto-généré atteint le niveau d&#x27;un harnais écrit à la main par une équipe dédiée. Le gain se répète sur plusieurs familles de modèles, DeepSeek, Mimo et Qwen.</p></div></div></div>
+
+<h2>Ce qu&#x27;ils ont mesuré</h2><div class="card"><ul><li>DeepSeek-V4-Flash gagne +9,1 points sur DeepSearchQA et +4,3 sur OdysseyBench face à GPT-5.6</li><li>GLM-5.2 gagne jusqu&#x27;à +20,2 points avec un harnais JIT-Agent</li><li>Testé sur trois familles de modèles : DeepSeek V4, Mimo-V2.5, Qwen3.6, sur DeepSearchQA et OdysseyBench (taille exacte non donnée dans le résumé)</li></ul></div>
+<h2>Ce que ça ne prouve pas</h2><div class="card"><ul><li>Le résumé ne donne pas la taille d&#x27;entraînement ni le coût d&#x27;inférence de JIT-Agent lui-même</li><li>Les gains sont mesurés sur des bancs agent généralistes, pas sur du trading ou du screening quantitatif</li><li>Rien ne dit comment se comporte le harnais généré quand les outils sont propriétaires ou peu documentés</li></ul></div>
+
+<h2>Chez nous</h2>
+<div class="card gros">
+  <p class="sst">Où ça se branche</p>
+  <p class="bx">aucun point d&#x27;entrée pertinent dans lib/llm_gateway.py, lib/model_tier.py, ni dans les screeners production</p>
+  <p class="sst">Le plan</p>
+  <ol class="etapes"><li>aucune action de codage justifiée sur le système actuel</li></ol>
+  <div class="duo">
+    <div><p class="sst">Effort</p><p class="bx">0 h</p></div>
+    <div><p class="sst">Ça remplace</p><p class="bx">ne remplace rien, le harnais maison est déjà spécialisé pour du trading et du screening</p></div>
+  </div>
+  <p class="sst">Le risque</p>
+  <p class="bx">brancher un générateur de harnais dans un pipeline qui appelle Polygon et écrit dans signal_outcome.db ajouterait une couche opaque, avec un signe clair de dérive : des jobs qui changent de comportement sans que rien n&#x27;ait été modifié à la main</p>
+</div>
+
+<h2>Le test qui tranche</h2>
+<div class="card"><p class="bx">si un jour tu veux vérifier l&#x27;idée, prends UN seul job non protégé de llm_gateway.py, laisse JIT-Agent générer son harnais, et compare le taux de succès sur cent runs. Invalidé si le taux de succès baisse ou si le coût par run monte de plus de 20 %.</p></div>
+
+<h2>Ce que j&#x27;ai simplifié</h2><div class="card"><ul><li>j&#x27;ai décrit le harnais comme un simple squelette de code, dans le papier c&#x27;est un protocole plus formel avec des contraintes sur chaque module</li><li>j&#x27;ai présenté l&#x27;archive comme un simple stockage de scores, la boucle d&#x27;auto-amélioration est en réalité une distillation qui réentraîne le générateur</li></ul></div>
+<footer>Veille papers · <a href="index.html">toutes les semaines</a></footer>
+</div></body></html>

@@ -1,0 +1,180 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Pullback That Keeps Paying — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Pullback That Keeps Paying</h1>
+<div class="subtitle">Goosehead Insurance printed a desk-tested buy signal. The math says the upside is thin. The track record says you take it anyway.</div>
+<div class="meta">EOD 2026-08-26 · GSHD · written from the desk · model deepseek-v4-pro</div>
+<div class="chips"><span class="chip">GSHD</span>
+<span class="chip">Financial Services</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-08-26: entry <b>$66.99</b> &rarr; <b>$71.26</b> (as of 2026-08-28) · <span class="pos">+6.4%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Financials sit in neutral right now. The sector isn&#x27;t accelerating and it isn&#x27;t contracting. That makes this a stock picker&#x27;s market inside the space. You don&#x27;t get a rising tide. You get to test whether a specific company&#x27;s operating model actually delivers.<br>Insurance brokerage thrives in this environment. People still need homeowner&#x27;s coverage and auto policies when the economy grinds sideways. Premiums rise, competition fragments, and the best distribution platforms take share. Goosehead Insurance built a franchise plus corporate model that scales without the balance sheet risk of an underwriter.<br>The macro backdrop rewards a capital-light service business that can grow agency count and revenue per agency even when GDP wobbles. A neutral sector doesn&#x27;t hurt a name like this. It just means the price has to do the work itself.</p>
+<h2>Introducing GSHD</h2>
+<p>Goosehead Insurance, Inc. is a holding company that runs a personal lines insurance agency platform across the United States. It distributes homeowner&#x27;s, auto, dwelling, flood, wind, earthquake, excess liability, and small business policies. It also offers life insurance and coverage for motorcycles and recreational vehicles.<br>The company uses two channels to reach clients. Corporate locations sell directly. Franchise locations are owned and operated by independent agents who license the Goosehead brand, technology, and carrier access. This franchise structure keeps capital costs low while the company earns royalty fees and benefits from the aggregate premium volume when negotiating with carriers.<br>Goosehead was founded in 2003 and is headquartered in Westlake, Texas. It employs <strong>1600</strong> people. The stock is small and it moves. That&#x27;s the point.</p>
+<h2>The Thesis</h2>
+<p>The desk call here is a tested pullback setup. The internal signal carries a risk-adjusted return score of <strong>1.10</strong>. An insider, a ten percent holder, bought <strong>$11.3 million</strong> worth of stock near <strong>$60.57</strong>. That&#x27;s real money committing at a level not far below the current price.<br>The stock has beaten the broad market by <strong>87.2%</strong> over the past three months. And yet it still sits <strong>21.4%</strong> below its <strong>52</strong>-week high of <strong>$90.16</strong>. The trend is strong and proven but the price hasn&#x27;t recaptured the peak. That creates a window. You&#x27;re buying a leader that hasn&#x27;t fully recovered, not chasing a name already making new highs.<br>The conviction is medium. The reward to risk ratio is just <strong>1.0 to 1</strong>. That&#x27;s the weakest leg of the three desk picks today. You size this smaller than a setup with a cleaner ratio. But the combination of a validated signal and confirmed insider buying still earns it a place in the book.</p>
+<h2>Technical Analysis</h2>
+<p><figure class="chart"><img src="img/2026-08-26-GSHD.png" alt="GSHD weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=GSHD&interval=1W" target="_blank" rel="noopener">📈 Open the GSHD weekly chart on TradingView ↗</a><figcaption>GSHD weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $73.00 · mark support near $61.23.</figcaption></figure><br>The price closed at <strong>$71.31</strong>. It sits above its <strong>30</strong>-week moving average. That&#x27;s the good news. The bad news is that the <strong>30</strong>-week line slopes down by <strong>9.1%</strong>. This is the least rested entry among the current desk selections. You&#x27;re buying a stock that still has overhead from a declining long-term average, even though price has crossed back above it.<br>The <strong>8</strong>-week and <strong>21</strong>-week exponential moving averages aren&#x27;t provided here. But the raw position in the yearly range tells you enough. The stock is in the top <strong>66.6%</strong> of its <strong>52</strong>-week range. It has traveled from a low of <strong>$33.68</strong> to the current price. That&#x27;s a <strong>107.5%</strong> rally off the bottom. The <strong>21</strong>-day return is <strong>+3.6%</strong>. The <strong>63</strong>-day return is a violent <strong>+89.3%</strong>. Relative strength versus the market over those <strong>63</strong> days is <strong>+87.2%</strong>. This thing has been sprinting.<br>The real reference points come from the desk levels. Entry is <strong>$66.99</strong>. You don&#x27;t chase the current price. You wait for a dip into that zone. The stop sits at <strong>$61.23</strong>. That&#x27;s <strong>8.6%</strong> below the entry. The initial target is <strong>$73.00</strong>. That&#x27;s a <strong>9.0%</strong> gain. The secondary target stretches to <strong>$79.95</strong>, a <strong>19.3%</strong> move from entry. The swing high marks the ceiling at <strong>$73.00</strong>, which also resistance lines up neatly with the primary target. Support at the swing low of <strong>$34.37</strong> is ancient history. The relevant floor is the <strong>30</strong>-week average and the entry zone above it.<br>RSI is <strong>63.6</strong>. You&#x27;re buying momentum, not a washed out level. You want to see volume expand on any push through the entry level to confirm institutions are stepping in, not just retail chasing the recent run.</p>
+<h2>Fundamentals</h2>
+<p><table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$2.65B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$2.00B</td></tr><tr><td class="k">52-week range</td><td class="v">$33.68 - $90.16</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">1.35</td></tr><tr><td class="k">Trailing P/E</td><td class="v">54.2</td></tr><tr><td class="k">Forward P/E</td><td class="v">27.5</td></tr><tr><td class="k">Price / sales</td><td class="v">8.8</td></tr><tr><td class="k">Price / book</td><td class="v">-15.7</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$402M  (+20.7% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$16.41</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$35M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">1.37 / 2.7</td></tr><tr><td class="k">Gross margin</td><td class="v">49.6%</td></tr><tr><td class="k">Operating margin</td><td class="v">23.4%</td></tr><tr><td class="k">Profit margin</td><td class="v">8.8%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$3.62</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$1.55</td></tr><tr><td class="k">Total cash / share</td><td class="v">$0.99</td></tr><tr><td class="k">Current ratio</td><td class="v">1.54</td></tr><tr><td class="k">Analyst consensus</td><td class="v">buy - mean target $68.92 (12 analysts)</td></tr></tbody></table><br>Goosehead&#x27;s income statement shows a business scaling fast. Revenue growth came in at <strong>20.7%</strong> year over year. Earnings growth hit <strong>122.2%</strong>. The trailing P/E is <strong>54.2</strong>. That&#x27;s steep. The forward P/E based on analyst estimates drops to <strong>27.5</strong>. The market is pricing a sharp earnings ramp, and the analysts expect the same.<br>Margins are the differentiator for a brokerage. Gross margin sits at <strong>49.6%</strong>. Operating margin runs at <strong>23.4%</strong>. That&#x27;s high for a service business. The company converts revenue to operating income cleanly.<br>The balance sheet carries quirks. Book value per share is negative at <strong>-$4.72</strong>. Price to book is meaningless here at <strong>-15.7</strong>. But the company generates solid cash. Operating cash flow is <strong>$86.2 million</strong> over the trailing twelve months. That&#x27;s <strong>$3.62</strong> per share. The current ratio is a comfortable <strong>1.54</strong>, and the quick ratio is <strong>1.21</strong>. Liquidity is fine.<br>The analyst community leans positive with a consensus recommendation of &quot;buy&quot; from <strong>12</strong> analysts. The mean target is <strong>$68.92</strong>. The stock already traded above that level recently at <strong>$74.23</strong>. You&#x27;re buying above the consensus target. That&#x27;s either a sign that analysts haven&#x27;t caught up yet or that you&#x27;re paying up for growth that&#x27;s already priced in. The next earnings date translates to late October 2026. You&#x27;re holding through a known event.</p>
+<h2>Why Now</h2>
+<p>The catalyst field is empty. There is no scheduled binary event driving this idea. The timing is purely technical and structural. The desk signal fired. The insider bought heavily near <strong>$60.57</strong>, adding <strong>$11.3 million</strong> to their position. The stock&#x27;s relative strength dwarfs the market at <strong>+87.2%</strong> over three months. The pullback from <strong>$90.16</strong> to the entry zone gives you a logical restart point on a trend that never broke.<br>Options flow data is absent, so there&#x27;s no derivative sentiment to read. Price and volume are the whole story. The setup doesn&#x27;t rely on a news event. It relies on the probability that a leader that corrects <strong>21.4%</strong> and finds buying pressure from a ten percent holder can recapture its range and run.</p>
+<h2>Risk Factors</h2>
+<p>The most obvious risk is that you&#x27;re buying a stock with an RSI at <strong>63.6</strong> that has already rallied <strong>107.5%</strong> off its <strong>52</strong>-week low. You aren&#x27;t buying a dip. You&#x27;re buying a pause in a powerful up move. If the broad market turns and growth reprices, names like this give back fast.<br>The <strong>30</strong>-week moving average sloped downward at <strong>-9.1%</strong>. This is the least rested technical base among the three desk picks. The rising price against a falling long-term average creates a tension. It often resolves in favor of the average pulling price back down, not price pulling the average up.<br>The single invalidation is the stop at <strong>$61.23</strong>. A close below that level breaks the swing structure and cuts through the insider&#x27;s average cost zone. You exit there. No argument.<br>Timing risk around the October earnings date is real. An earnings miss in a high-multiple name like this, trading at a trailing P/E of <strong>54.2</strong>, would punish the price violently. The reward to risk ratio at <strong>1.0 to 1</strong> leaves zero cushion for slippage on a gap down.</p>
+<h2>Bringing It All Together</h2>
+<p>- The desk signal is tested and validated, with an internal risk-adjusted return score of <strong>1.10</strong>.<br>- A ten percent holder put <strong>$11.3 million</strong> to work near <strong>$60.57</strong>, aligning smart money with the technical setup.<br>- Relentless relative strength at <strong>+87.2%</strong> over three months, yet the price remains <strong>21.4%</strong> below the <strong>$90.16</strong> high.<br>- Fundamentals show <strong>20.7%</strong> revenue growth, <strong>122.2%</strong> earnings growth, and a <strong>23.4%</strong> operating margin on a capital-light model.<br>- Catalyst is absent. The entire trade is price, pattern, and probability.<br>- Entry at <strong>$66.99</strong>, stop at <strong>$61.23</strong>, initial target at <strong>$73.00</strong>, secondary target at <strong>$79.95</strong>.</p>
+<h2>Conclusion</h2>
+<p>You have a leader that has proven it can run, an insider who backed the truck up at <strong>$60.57</strong>, and a desk process that has tested this setup and found it profitable. The ratio is tight at <strong>1.0 to 1</strong>. That&#x27;s the honest weakness. You size it for medium conviction and you stay disciplined around the <strong>$61.23</strong> line. Above that, the path of least resistance points toward the old highs. Below that, the long-term moving average slope was the warning you should have heeded.<br><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Goosehead Insurance, Inc. (GSHD) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $2.65B; 52-week range $34-$90; Revenue $402M +21% YoY; Net income $35M; Free cash flow/share $1.55. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Goosehead Insurance, Inc. (GSHD) inside the Financial Services space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Insurance brokerage with the tested pullback desk read firing (**tested · risk-adjusted return 1.10 · tested) and a ten percent holder who bought **$11.3M** near **$60.57**. The stock beats the market by **87.2%** over three months and stil. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Pullback That Keeps Paying
+
+*Goosehead Insurance printed a desk-tested buy signal. The math says the upside is thin. The track record says you take it anyway.*
+
+## The Big Picture
+Financials sit in neutral right now. The sector isn&#x27;t accelerating and it isn&#x27;t contracting. That makes this a stock picker&#x27;s market inside the space. You don&#x27;t get a rising tide. You get to test whether a specific company&#x27;s operating model actually delivers.
+Insurance brokerage thrives in this environment. People still need homeowner&#x27;s coverage and auto policies when the economy grinds sideways. Premiums rise, competition fragments, and the best distribution platforms take share. Goosehead Insurance built a franchise plus corporate model that scales without the balance sheet risk of an underwriter.
+The macro backdrop rewards a capital-light service business that can grow agency count and revenue per agency even when GDP wobbles. A neutral sector doesn&#x27;t hurt a name like this. It just means the price has to do the work itself.
+
+## Introducing GSHD
+Goosehead Insurance, Inc. is a holding company that runs a personal lines insurance agency platform across the United States. It distributes homeowner&#x27;s, auto, dwelling, flood, wind, earthquake, excess liability, and small business policies. It also offers life insurance and coverage for motorcycles and recreational vehicles.
+The company uses two channels to reach clients. Corporate locations sell directly. Franchise locations are owned and operated by independent agents who license the Goosehead brand, technology, and carrier access. This franchise structure keeps capital costs low while the company earns royalty fees and benefits from the aggregate premium volume when negotiating with carriers.
+Goosehead was founded in 2003 and is headquartered in Westlake, Texas. It employs **1600** people. The stock is small and it moves. That&#x27;s the point.
+
+## The Thesis
+The desk call here is a tested pullback setup. The internal signal carries a risk-adjusted return score of **1.10**. An insider, a ten percent holder, bought **$11.3 million** worth of stock near **$60.57**. That&#x27;s real money committing at a level not far below the current price.
+The stock has beaten the broad market by **87.2%** over the past three months. And yet it still sits **21.4%** below its **52**-week high of **$90.16**. The trend is strong and proven but the price hasn&#x27;t recaptured the peak. That creates a window. You&#x27;re buying a leader that hasn&#x27;t fully recovered, not chasing a name already making new highs.
+The conviction is medium. The reward to risk ratio is just **1.0 to 1**. That&#x27;s the weakest leg of the three desk picks today. You size this smaller than a setup with a cleaner ratio. But the combination of a validated signal and confirmed insider buying still earns it a place in the book.
+
+## Technical Analysis
+&gt; 📈 Insert the GSHD weekly chart here (TradingView): GSHD weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $73.00 · mark support near $61.23.
+The price closed at **$71.31**. It sits above its **30**-week moving average. That&#x27;s the good news. The bad news is that the **30**-week line slopes down by **9.1%**. This is the least rested entry among the current desk selections. You&#x27;re buying a stock that still has overhead from a declining long-term average, even though price has crossed back above it.
+The **8**-week and **21**-week exponential moving averages aren&#x27;t provided here. But the raw position in the yearly range tells you enough. The stock is in the top **66.6%** of its **52**-week range. It has traveled from a low of **$33.68** to the current price. That&#x27;s a **107.5%** rally off the bottom. The **21**-day return is **+3.6%**. The **63**-day return is a violent **+89.3%**. Relative strength versus the market over those **63** days is **+87.2%**. This thing has been sprinting.
+The real reference points come from the desk levels. Entry is **$66.99**. You don&#x27;t chase the current price. You wait for a dip into that zone. The stop sits at **$61.23**. That&#x27;s **8.6%** below the entry. The initial target is **$73.00**. That&#x27;s a **9.0%** gain. The secondary target stretches to **$79.95**, a **19.3%** move from entry. The swing high marks the ceiling at **$73.00**, which also resistance lines up neatly with the primary target. Support at the swing low of **$34.37** is ancient history. The relevant floor is the **30**-week average and the entry zone above it.
+RSI is **63.6**. You&#x27;re buying momentum, not a washed out level. You want to see volume expand on any push through the entry level to confirm institutions are stepping in, not just retail chasing the recent run.
+
+## Fundamentals
+| Metric | Value |
+|---|---|
+| Market cap | $2.65B |
+| Enterprise value | $2.00B |
+| 52-week range | $33.68 - $90.16 |
+| Dividend yield | None |
+| Beta | 1.35 |
+| Trailing P/E | 54.2 |
+| Forward P/E | 27.5 |
+| Price / sales | 8.8 |
+| Price / book | -15.7 |
+| Revenue (TTM) | $402M  (+20.7% YoY) |
+| Revenue / share | $16.41 |
+| Net income (TTM) | $35M |
+| EPS (TTM / fwd) | 1.37 / 2.7 |
+| Gross margin | 49.6% |
+| Operating margin | 23.4% |
+| Profit margin | 8.8% |
+| Operating cash flow / share | $3.62 |
+| Free cash flow / share | $1.55 |
+| Total cash / share | $0.99 |
+| Current ratio | 1.54 |
+| Analyst consensus | buy - mean target $68.92 (12 analysts) |
+Goosehead&#x27;s income statement shows a business scaling fast. Revenue growth came in at **20.7%** year over year. Earnings growth hit **122.2%**. The trailing P/E is **54.2**. That&#x27;s steep. The forward P/E based on analyst estimates drops to **27.5**. The market is pricing a sharp earnings ramp, and the analysts expect the same.
+Margins are the differentiator for a brokerage. Gross margin sits at **49.6%**. Operating margin runs at **23.4%**. That&#x27;s high for a service business. The company converts revenue to operating income cleanly.
+The balance sheet carries quirks. Book value per share is negative at **-$4.72**. Price to book is meaningless here at **-15.7**. But the company generates solid cash. Operating cash flow is **$86.2 million** over the trailing twelve months. That&#x27;s **$3.62** per share. The current ratio is a comfortable **1.54**, and the quick ratio is **1.21**. Liquidity is fine.
+The analyst community leans positive with a consensus recommendation of &quot;buy&quot; from **12** analysts. The mean target is **$68.92**. The stock already traded above that level recently at **$74.23**. You&#x27;re buying above the consensus target. That&#x27;s either a sign that analysts haven&#x27;t caught up yet or that you&#x27;re paying up for growth that&#x27;s already priced in. The next earnings date translates to late October 2026. You&#x27;re holding through a known event.
+
+## Why Now
+The catalyst field is empty. There is no scheduled binary event driving this idea. The timing is purely technical and structural. The desk signal fired. The insider bought heavily near **$60.57**, adding **$11.3 million** to their position. The stock&#x27;s relative strength dwarfs the market at **+87.2%** over three months. The pullback from **$90.16** to the entry zone gives you a logical restart point on a trend that never broke.
+Options flow data is absent, so there&#x27;s no derivative sentiment to read. Price and volume are the whole story. The setup doesn&#x27;t rely on a news event. It relies on the probability that a leader that corrects **21.4%** and finds buying pressure from a ten percent holder can recapture its range and run.
+
+## Risk Factors
+The most obvious risk is that you&#x27;re buying a stock with an RSI at **63.6** that has already rallied **107.5%** off its **52**-week low. You aren&#x27;t buying a dip. You&#x27;re buying a pause in a powerful up move. If the broad market turns and growth reprices, names like this give back fast.
+The **30**-week moving average sloped downward at **-9.1%**. This is the least rested technical base among the three desk picks. The rising price against a falling long-term average creates a tension. It often resolves in favor of the average pulling price back down, not price pulling the average up.
+The single invalidation is the stop at **$61.23**. A close below that level breaks the swing structure and cuts through the insider&#x27;s average cost zone. You exit there. No argument.
+Timing risk around the October earnings date is real. An earnings miss in a high-multiple name like this, trading at a trailing P/E of **54.2**, would punish the price violently. The reward to risk ratio at **1.0 to 1** leaves zero cushion for slippage on a gap down.
+
+## Bringing It All Together
+- The desk signal is tested and validated, with an internal risk-adjusted return score of **1.10**.
+- A ten percent holder put **$11.3 million** to work near **$60.57**, aligning smart money with the technical setup.
+- Relentless relative strength at **+87.2%** over three months, yet the price remains **21.4%** below the **$90.16** high.
+- Fundamentals show **20.7%** revenue growth, **122.2%** earnings growth, and a **23.4%** operating margin on a capital-light model.
+- Catalyst is absent. The entire trade is price, pattern, and probability.
+- Entry at **$66.99**, stop at **$61.23**, initial target at **$73.00**, secondary target at **$79.95**.
+
+## Conclusion
+You have a leader that has proven it can run, an insider who backed the truck up at **$60.57**, and a desk process that has tested this setup and found it profitable. The ratio is tight at **1.0 to 1**. That&#x27;s the honest weakness. You size it for medium conviction and you stay disciplined around the **$61.23** line. Above that, the path of least resistance points toward the old highs. Below that, the long-term moving average slope was the warning you should have heeded.
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

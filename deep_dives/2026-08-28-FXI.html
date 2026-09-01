@@ -1,0 +1,214 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Cheapest Lottery Ticket in the Room — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Cheapest Lottery Ticket in the Room</h1>
+<div class="subtitle">A fixed window of upside at the lowest option price in a year.</div>
+<div class="meta">EOD 2026-08-28 · FXI · written from the desk · model deepseek-v4-pro</div>
+<div class="chips"><span class="chip">FXI</span>
+<span class="chip"></span>
+<span class="chip lo">LOW conviction</span></div>
+<div class="track">Tracking since 2026-08-28: entry <b>$35.51</b> &rarr; <b>$35.51</b> (as of 2026-08-28) · <span class="pos">+0.0%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>You&#x27;ve watched China get unwound for three years straight. The trade is crowded on one side. Everyone has the same macro call: demographics are bad, the property bust is structural, regulation comes back whenever growth looks okay, and the government will never do the big reflation package the West keeps hoping for.</p>
+<p>That consensus has pushed iShares China Large-Cap ETF to a trailing P/E of <strong>9.6</strong>. That is cheap on any screen, even before you ask what the earnings base looks like. The fund&#x27;s 52-week low is <strong>31.19</strong>, set during this same grind of pessimism, and the high is <strong>42.0</strong>, where it traded before the last leg of disappointment.</p>
+<p>The setup is not a story about China turning around. It is a story about price. You are not betting on a new bull market. You are paying for a bounded, dated window of upside while the option market has given up on the asset class. That is the kind of asymmetry a desk wants after a long downtrend: cheap optionality, no narrative required.</p>
+<p>That is why FXI shows up here.</p>
+<h2>Introducing FXI</h2>
+<p>iShares China Large-Cap ETF is the simplest way to own the biggest Chinese companies available to international investors through Hong Kong listings. It holds large caps across banks, tech, energy, and telecoms, the state-owned anchors and the internet platforms that dominate the index.</p>
+<p>The fund invests at least <strong>80%</strong> of assets in the underlying index components, and the index itself tracks only the largest firms listed on the Hong Kong exchange that international investors can actually buy. That screen matters. You get the names with real liquidity and real earnings, not the small-cap speculative shells that make China headlines and then disappear.</p>
+<p>There is no exotic structure here. FXI is the boring, liquid, institution-grade China exposure. That is deep enough to enter and exit without moving the market, which matters when you are trading a dated option and need to close the position on your schedule.</p>
+<h2>The Thesis</h2>
+<p>This is a lottery ticket, and it should be sized like one. The conviction is low, and the desk has no tested edge here. The thesis is precise: the market is giving you a chance to buy a <strong>37.0</strong> call expiring <strong>2026-09-18</strong> at an implied volatility rank of <strong>5</strong>. That rank means the option&#x27;s implied volatility sits in the bottom <strong>5%</strong> of its one-year range. You are buying time near the cheapest it has priced all year.</p>
+<p>The call is slightly out of the money, which is exactly what you want in a lottery structure.</p>
+<p>The logic is not that China will do something specific. The logic is that the price of the option collapsed along with the sentiment, and any re-rating, any short squeeze, any surprise stimulus headline, any flow reversal from the crowded underweight gets you a multiple on your premium. The why-ranked note captures it: the only lottery line where the implied volatility rank of <strong>5</strong> means you are buying time cheaply. Size it so a <strong>100%</strong> loss changes nothing about your month.</p>
+<p>That is the whole trade.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-08-28-FXI.png" alt="FXI weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=FXI&interval=1W" target="_blank" rel="noopener">📈 Open the FXI weekly chart on TradingView ↗</a><figcaption>FXI weekly candlestick · add the 8-week and 21-week EMAs.</figcaption></figure>
+<p>The chart sits in the bottom half of its yearly range, with a <strong>14-day RSI of 14</strong> at <strong>36.5</strong>. That is approaching oversold, but not yet washed out. Prices are down from the 52-week high of <strong>42.0</strong>, currently <strong>84.5%</strong> of that level, and they sit at the <strong>40.0%</strong> mark inside the full 52-week range of <strong>31.19</strong> to <strong>42.0</strong>. This is a middle-of-the-pack location after a long decline, not an aggressive bounce off support.</p>
+<p>The distance to the high matters for the call. You need the underlying to carry above <strong>37.0</strong> in three weeks. The option would be deep in the money there.</p>
+<p>The closer definition is the <strong>31.19</strong> low from the yearly range. That is the structural support below which the bear case wins outright. If FXI slices through it, the option expires worthless and the trade is over. You are not looking for a trend confirmation on the weekly at this point. You are looking for a short-term pulse higher, with volume confirming any move toward <strong>37.0</strong>.</p>
+<p>Relative strength versus the broad U.S. market is not in the facts, and you should treat this as a standalone asset class call, not a momentum name outperforming. The RSI at <strong>36.5</strong> is your tell: oversold enough to bounce, weak enough that the bounce is still a hope rather than a fact.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">52-week range</td><td class="v">$31.19 - $42.00</td></tr><tr><td class="k">Trailing P/E</td><td class="v">9.6</td></tr></tbody></table>
+<p>At a trailing P/E of <strong>9.6</strong>, the ETF trades like the market is pricing in permanent earnings decline. You get the largest Chinese companies, the liquid Hong Kong names, at a single-digit multiple. That is the kind of valuation usually reserved for banks at the bottom of a credit cycle, not for a diversified large-cap index that still generates real cash flow from tech, energy, and financials.</p>
+<p>The weak spot is the index&#x27;s concentration and the regulatory cycle. A non-diversified fund means the biggest positions dominate, and in China those biggest positions are exactly the ones the state can push around. A P/E of <strong>9.6</strong> can stay at <strong>9.6</strong> for years if the state prefers stability over shareholder returns. Valuation is not a catalyst. It is a floor, and floors can stretch lower in China.</p>
+<p>The fund price of <strong>35.51</strong> sits above the 52-week low of <strong>31.19</strong>, so there is not yet a panic in the tape. You are not buying the bottom. You are buying a cheap option on a cheap asset class with a fixed stop in time. That is the honest framing.</p>
+<h2>Why Now</h2>
+<p>There is no named catalyst. No earnings date, no policy announcement, no specific macro event on the desk&#x27;s file. The timing is entirely a function of the option price itself. The implied volatility rank of <strong>5</strong> is the why-now, and it is enough if you accept the trade for what it is: a low-cost, dated bet on mean reversion or a surprise.</p>
+<p>Options flow is absent from the facts. You have no signal there. The one timing element you do have is the expiry: <strong>2026-09-18</strong>. That is three weeks. Short enough that you are not paying for a long-dated China recovery story, long enough that a single strong week can put the call in the money and give you a real return on premium.</p>
+<p>If there is a squeeze in Chinese large caps over the next three weeks, it starts from a very low base of expectations. The RSI of <strong>36.5</strong> says positioning is already washed out on a short-term basis. The 52-week high of <strong>42.0</strong> is far enough away to offer real upside if the flow reverses. That is the near-term setup.</p>
+<h2>Risk Factors</h2>
+<p>The most likely outcome is that the option expires worthless. The desk is explicit about that. There is no tested edge, no win rate on file, and the baseline expectation for any lottery line is a <strong>100%</strong> loss. You enter this only if that loss is meaningless to your month.</p>
+<p>The bear case is straightforward. FXI has already fallen from <strong>42.0</strong> to <strong>35.51</strong>, and the downtrend does not owe you a bounce. If the index continues to grind lower, the <strong>37.0</strong> call never gets close. The RSI at <strong>36.5</strong> shows you can stay oversold longer than you expect in China.</p>
+<p>The invalidation is the stop. You are not managing a price stop on this trade. You are managing a time stop. If FXI does not trade meaningfully above <strong>37.0</strong> within the next two weeks, the option&#x27;s time value decays fast and you exit the position. The single data point that kills this is the underlying staying below <strong>37.0</strong> on <strong>2026-09-18</strong>. That is the entire risk.</p>
+<h2>Bringing It All Together</h2>
+<p>- A <strong>37.0</strong> call expiring <strong>2026-09-18</strong> costs very little, with implied volatility rank at <strong>5</strong>, the cheapest pricing in the last year.<br>- FXI trades at <strong>35.51</strong>, with a trailing P/E of <strong>9.6</strong> on large-cap Chinese companies, so the underlying asset is already priced for pessimism.<br>- The 14-day RSI at <strong>36.5</strong> sits near oversold, and the index trades at <strong>84.5%</strong> of its 52-week high of <strong>42.0</strong>, leaving room for a sharp relief move.<br>- No catalyst is on file. The trade is purely a function of cheap optionality plus a wash-out technical state.<br>- The 52-week low of <strong>31.19</strong> is the bear target, and the option&#x27;s expiry on <strong>2026-09-18</strong> is the hard time stop.<br>- Size it so a <strong>100%</strong> loss does not register. This is a lottery ticket, nothing more.</p>
+<h2>Conclusion</h2>
+<p>You are not buying China. You are buying a mispriced expiry. The market has priced the option at the bottom of the implied volatility range, and the underlying is already down enough to make a relief move possible. The stake belongs in the category of money you lose on purpose.</p>
+<p>If FXI tags <strong>37.0</strong> before expiry, you have a real winner. If it does not, you lose the premium and move on. That is the trade, stated plainly, with the humility this setup demands.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;iShares China Large-Cap ETF (FXI) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: 52-week range $31-$42. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for iShares China Large-Cap ETF (FXI) inside the the market space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): A **37.0** call expiring **2026-09-18** with an implied volatility rank of **5**, meaning the option is priced near the cheapest it has been in a year. You are paying very little for a fixed window of upside.. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Cheapest Lottery Ticket in the Room
+
+*A fixed window of upside at the lowest option price in a year.*
+
+## The Big Picture
+
+You&#x27;ve watched China get unwound for three years straight. The trade is crowded on one side. Everyone has the same macro call: demographics are bad, the property bust is structural, regulation comes back whenever growth looks okay, and the government will never do the big reflation package the West keeps hoping for.
+
+That consensus has pushed iShares China Large-Cap ETF to a trailing P/E of **9.6**. That is cheap on any screen, even before you ask what the earnings base looks like. The fund&#x27;s 52-week low is **31.19**, set during this same grind of pessimism, and the high is **42.0**, where it traded before the last leg of disappointment.
+
+The setup is not a story about China turning around. It is a story about price. You are not betting on a new bull market. You are paying for a bounded, dated window of upside while the option market has given up on the asset class. That is the kind of asymmetry a desk wants after a long downtrend: cheap optionality, no narrative required.
+
+That is why FXI shows up here.
+
+## Introducing FXI
+
+iShares China Large-Cap ETF is the simplest way to own the biggest Chinese companies available to international investors through Hong Kong listings. It holds large caps across banks, tech, energy, and telecoms, the state-owned anchors and the internet platforms that dominate the index.
+
+The fund invests at least **80%** of assets in the underlying index components, and the index itself tracks only the largest firms listed on the Hong Kong exchange that international investors can actually buy. That screen matters. You get the names with real liquidity and real earnings, not the small-cap speculative shells that make China headlines and then disappear.
+
+There is no exotic structure here. FXI is the boring, liquid, institution-grade China exposure. That is deep enough to enter and exit without moving the market, which matters when you are trading a dated option and need to close the position on your schedule.
+
+## The Thesis
+
+This is a lottery ticket, and it should be sized like one. The conviction is low, and the desk has no tested edge here. The thesis is precise: the market is giving you a chance to buy a **37.0** call expiring **2026-09-18** at an implied volatility rank of **5**. That rank means the option&#x27;s implied volatility sits in the bottom **5%** of its one-year range. You are buying time near the cheapest it has priced all year.
+
+The call is slightly out of the money, which is exactly what you want in a lottery structure.
+
+The logic is not that China will do something specific. The logic is that the price of the option collapsed along with the sentiment, and any re-rating, any short squeeze, any surprise stimulus headline, any flow reversal from the crowded underweight gets you a multiple on your premium. The why-ranked note captures it: the only lottery line where the implied volatility rank of **5** means you are buying time cheaply. Size it so a **100%** loss changes nothing about your month.
+
+That is the whole trade.
+
+## Technical Analysis
+
+&gt; 📈 Insert the FXI weekly chart here (TradingView): FXI weekly candlestick · add the 8-week and 21-week EMAs.
+
+The chart sits in the bottom half of its yearly range, with a **14-day RSI of 14** at **36.5**. That is approaching oversold, but not yet washed out. Prices are down from the 52-week high of **42.0**, currently **84.5%** of that level, and they sit at the **40.0%** mark inside the full 52-week range of **31.19** to **42.0**. This is a middle-of-the-pack location after a long decline, not an aggressive bounce off support.
+
+The distance to the high matters for the call. You need the underlying to carry above **37.0** in three weeks. The option would be deep in the money there.
+
+The closer definition is the **31.19** low from the yearly range. That is the structural support below which the bear case wins outright. If FXI slices through it, the option expires worthless and the trade is over. You are not looking for a trend confirmation on the weekly at this point. You are looking for a short-term pulse higher, with volume confirming any move toward **37.0**.
+
+Relative strength versus the broad U.S. market is not in the facts, and you should treat this as a standalone asset class call, not a momentum name outperforming. The RSI at **36.5** is your tell: oversold enough to bounce, weak enough that the bounce is still a hope rather than a fact.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| 52-week range | $31.19 - $42.00 |
+| Trailing P/E | 9.6 |
+
+At a trailing P/E of **9.6**, the ETF trades like the market is pricing in permanent earnings decline. You get the largest Chinese companies, the liquid Hong Kong names, at a single-digit multiple. That is the kind of valuation usually reserved for banks at the bottom of a credit cycle, not for a diversified large-cap index that still generates real cash flow from tech, energy, and financials.
+
+The weak spot is the index&#x27;s concentration and the regulatory cycle. A non-diversified fund means the biggest positions dominate, and in China those biggest positions are exactly the ones the state can push around. A P/E of **9.6** can stay at **9.6** for years if the state prefers stability over shareholder returns. Valuation is not a catalyst. It is a floor, and floors can stretch lower in China.
+
+The fund price of **35.51** sits above the 52-week low of **31.19**, so there is not yet a panic in the tape. You are not buying the bottom. You are buying a cheap option on a cheap asset class with a fixed stop in time. That is the honest framing.
+
+## Why Now
+
+There is no named catalyst. No earnings date, no policy announcement, no specific macro event on the desk&#x27;s file. The timing is entirely a function of the option price itself. The implied volatility rank of **5** is the why-now, and it is enough if you accept the trade for what it is: a low-cost, dated bet on mean reversion or a surprise.
+
+Options flow is absent from the facts. You have no signal there. The one timing element you do have is the expiry: **2026-09-18**. That is three weeks. Short enough that you are not paying for a long-dated China recovery story, long enough that a single strong week can put the call in the money and give you a real return on premium.
+
+If there is a squeeze in Chinese large caps over the next three weeks, it starts from a very low base of expectations. The RSI of **36.5** says positioning is already washed out on a short-term basis. The 52-week high of **42.0** is far enough away to offer real upside if the flow reverses. That is the near-term setup.
+
+## Risk Factors
+
+The most likely outcome is that the option expires worthless. The desk is explicit about that. There is no tested edge, no win rate on file, and the baseline expectation for any lottery line is a **100%** loss. You enter this only if that loss is meaningless to your month.
+
+The bear case is straightforward. FXI has already fallen from **42.0** to **35.51**, and the downtrend does not owe you a bounce. If the index continues to grind lower, the **37.0** call never gets close. The RSI at **36.5** shows you can stay oversold longer than you expect in China.
+
+The invalidation is the stop. You are not managing a price stop on this trade. You are managing a time stop. If FXI does not trade meaningfully above **37.0** within the next two weeks, the option&#x27;s time value decays fast and you exit the position. The single data point that kills this is the underlying staying below **37.0** on **2026-09-18**. That is the entire risk.
+
+## Bringing It All Together
+
+- A **37.0** call expiring **2026-09-18** costs very little, with implied volatility rank at **5**, the cheapest pricing in the last year.
+- FXI trades at **35.51**, with a trailing P/E of **9.6** on large-cap Chinese companies, so the underlying asset is already priced for pessimism.
+- The 14-day RSI at **36.5** sits near oversold, and the index trades at **84.5%** of its 52-week high of **42.0**, leaving room for a sharp relief move.
+- No catalyst is on file. The trade is purely a function of cheap optionality plus a wash-out technical state.
+- The 52-week low of **31.19** is the bear target, and the option&#x27;s expiry on **2026-09-18** is the hard time stop.
+- Size it so a **100%** loss does not register. This is a lottery ticket, nothing more.
+
+## Conclusion
+
+You are not buying China. You are buying a mispriced expiry. The market has priced the option at the bottom of the implied volatility range, and the underlying is already down enough to make a relief move possible. The stake belongs in the category of money you lose on purpose.
+
+If FXI tags **37.0** before expiry, you have a real winner. If it does not, you lose the premium and move on. That is the trade, stated plainly, with the humility this setup demands.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
