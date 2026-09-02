@@ -1,0 +1,240 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Artisan Marketplace Is Cheap Again — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Artisan Marketplace Is Cheap Again</h1>
+<div class="subtitle">Etsy at 12 times forward earnings with sellers and buyers both active on the platform.</div>
+<div class="meta">EOD 2026-09-01 · ETSY · written from the desk · model deepseek-v4-pro</div>
+<div class="chips"><span class="chip">ETSY</span>
+<span class="chip">Consumer Cyclical</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-09-01: entry <b>$77.16</b> &rarr; <b>$81.75</b> (as of 2026-09-01) · <span class="pos">+5.9%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Consumer cyclical stocks sit in a neutral posture right now. The sector is not leading, and it is not collapsing. It is pausing.</p>
+<p>That pause matters for a company like Etsy. Etsy does not need a roaring consumer to work. It needs a stable one. Discretionary spending from households that still have jobs and still want something handmade or vintage.</p>
+<p>The macro backdrop is not giving you a tailwind. It is also not fighting you. Consumer cyclical as a sector just rolled into a NEW_DOWN acceleration signal. That means the broad group is losing momentum. But Etsy is a platform, not a store. It carries a <strong>1.82</strong> beta, so it moves more than the market. That cuts both ways.</p>
+<p>A neutral consumer with a high-beta internet retail name means you are making a stock-specific call, not a sector call. That is the right setup for a desk pick. You are not betting on the American shopper. You are betting that Etsy&#x27;s valuation and chart have already absorbed the bad news.</p>
+<h2>Introducing ETSY</h2>
+<p>Etsy operates two-sided marketplaces. Buyers come for handmade goods, vintage items, and craft supplies. Sellers pay listing fees, transaction fees, and optional advertising fees to reach those buyers. The company also runs Depop, a fashion resale marketplace aimed at younger buyers.</p>
+<p>The business model is capital light. Etsy does not hold inventory. It processes payments and takes a cut. That shows up in the gross margin of <strong>71.4%</strong>. The platform connects artisans and small sellers with consumers in the US, the UK, and a handful of international markets.</p>
+<p>The company is headquartered in Brooklyn. The edge is the marketplace itself. Sellers build shops. Buyers come for things they cannot find on Amazon. That loyalty is real, but it is also fragile when household budgets tighten.</p>
+<h2>The Thesis</h2>
+<p>The core read is simple. Etsy is cheap on forward earnings and the chart is coiling below resistance. The desk flags the RSI at <strong>50.1</strong>, dead neutral. That is not a falling knife. It is a stock that has reset from its highs and found a floor while the broad market moved sideways.</p>
+<p>You get relative strength confirmation. Absolute return over that window is <strong>17.2%</strong>. That is a stock repairing its reputation while the sector itself shows no leadership.</p>
+<p>Conviction here is MEDIUM. The reward to the first target is fine but not exceptional. You risk <strong>7.9%</strong> to the stop and get <strong>12.8%</strong> of upside to the target. That is a <strong>1.6</strong> reward-to-risk ratio. It works. It is not the best on the desk. The ranking note says it plainly: the least headroom to the 52-week high of the three candidates, so it ranks last on reward per unit of risk.</p>
+<p>You size this one as a normal position, no oversized bets. The setup is clean and valid, but the target sits only <strong>6.1%</strong> below the 52-week high. Resistance is close. That limits how far a trend can run before sellers show up.</p>
+<h2>Technical Analysis</h2>
+<p><figure class="chart"><img src="img/2026-09-01-ETSY.png" alt="ETSY weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=ETSY&interval=1W" target="_blank" rel="noopener">📈 Open the ETSY weekly chart on TradingView ↗</a><figcaption>ETSY weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $87.03 · mark support near $71.04.</figcaption></figure><br>The stock closed at <strong>81.75</strong>. That puts it at <strong>92.9%</strong> of its 52-week high of <strong>87.97</strong>. It sits in the top <strong>85.8%</strong> of its yearly range. The trend is up, but the remaining room is tight.</p>
+<p>Etsy is above its 30-week moving average. The slope of that line is positive at <strong>14.2%</strong>. That is a stock in a Stage 2 uptrend under the Weinstein framework. The longer trend supports the long side. The 21-day return is slightly negative at <strong>-1.7%</strong>. That is a short-term pause inside a longer uptrend.</p>
+<p>The 14-day RSI sits at <strong>50.1</strong>. Neutral. No overbought warning, no oversold bounce signal. The stock has already worked off any short-term heat. A break from neutral RSI often matches the start of a fresh leg.</p>
+<p>Support and resistance are clear. The swing high is <strong>87.03</strong>. The swing low is <strong>68.73</strong>. The desk levels are tighter. Entry at <strong>77.16</strong>, stop at <strong>71.04</strong>, target at <strong>87.03</strong>. The stop sits below the swing low. The target matches the swing high. That gives you a defined band to trade against.</p>
+<p>Confirmation on a breakout would be volume well above that average with a close over <strong>87.03</strong>. Without that volume expansion, a move into resistance is a place to reduce, not add.</p>
+<h2>Fundamentals</h2>
+<p><table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$7.60B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$9.46B</td></tr><tr><td class="k">52-week range</td><td class="v">$44.00 - $87.97</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">1.82</td></tr><tr><td class="k">Trailing P/E</td><td class="v">26.2</td></tr><tr><td class="k">Forward P/E</td><td class="v">12.0</td></tr><tr><td class="k">Price / sales</td><td class="v">2.6</td></tr><tr><td class="k">Price / book</td><td class="v">-5.5</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$2.94B  (+6.2% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$30.16</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$371M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">3.16 / 6.89</td></tr><tr><td class="k">Gross margin</td><td class="v">71.4%</td></tr><tr><td class="k">Operating margin</td><td class="v">18.7%</td></tr><tr><td class="k">Profit margin</td><td class="v">7.1%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$7.16</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$1.85</td></tr><tr><td class="k">Total cash / share</td><td class="v">$12.23</td></tr><tr><td class="k">Current ratio</td><td class="v">1.48</td></tr><tr><td class="k">Analyst consensus</td><td class="v">hold - mean target $87.04 (26 analysts)</td></tr></tbody></table><br>The valuation is the standout. You pay <strong>12.0</strong> times forward earnings for a business with a <strong>71.4%</strong> gross margin. The trailing PE is <strong>26.2</strong>. That gap between trailing and forward PE tells you earnings are expected to grow sharply. The forward EPS estimate is <strong>6.89</strong> against trailing EPS of <strong>3.16</strong>. That is a big expected jump.</p>
+<p>Revenue growth is modest at <strong>6.2%</strong> year over year. That is not a hypergrowth story. It is a mature platform that is still expanding slowly. The operating margin is <strong>18.7%</strong>. Profit margin is <strong>7.1%</strong>. Those are healthy for internet retail. Return on assets is <strong>10.5%</strong>.</p>
+<p>Cash generation is solid. The gap suggests meaningful capital outflows, likely from stock buybacks or internal investment. Cash per share is <strong>12.23</strong>. Total debt is <strong>$3.08 billion</strong>. The current ratio is <strong>1.48</strong>, but the quick ratio is <strong>0.89</strong>. That thin quick ratio means the company leans on inventory or other current assets to cover short-term obligations. For a marketplace with no physical inventory, that is less alarming than it looks. The current ratio accommodates receivables from payment processing.</p>
+<p>The balance sheet has one real blemish. Book value per share is negative at <strong>-15.1</strong>. That comes from years of buybacks and goodwill from acquisitions. Price to book is <strong>-5.5</strong>, which is meaningless as a valuation signal here. You do not buy Etsy for its book value. You buy it for the cash flow and the platform economics.</p>
+<p>Analysts are lukewarm. The consensus recommendation is a hold from <strong>26</strong> analysts. The mean target is <strong>87.04</strong>, almost exactly the desk target of <strong>87.03</strong>. That is a crowded consensus. When the target and the analyst target align, the easy money is already priced in.<br>The next earnings date is set for early September. That is the real swing factor. The forward PE of <strong>12.0</strong> depends on the company hitting that higher EPS number. If guidance disappoints, the multiple expands and the stock reprices lower fast.</p>
+<h2>Why Now</h2>
+<p>The timing is a combination of technical reset and relative strength. The stock has already corrected <strong>-1.7%</strong> over the last 21 days while the longer trend stays intact. That pause resets the RSI to neutral at <strong>50.1</strong>. You get a low-risk entry near support at <strong>77.16</strong> with a clear stop at <strong>71.04</strong>.</p>
+<p>There is no specific catalyst scheduled beyond the next earnings release. The catalyst field is empty in the research. That means you are trading the chart and the valuation, not an event. The next earnings date in early September is the one known date that could move the stock. You hold into it and accept the gap risk, or you take profits before it. The desk stance does not force you into an earnings hold.</p>
+<p>Options flow from August <strong>31</strong> shows light bullish lean. Call premium was <strong>$0.58 million</strong> against put premium of <strong>$0.28 million</strong>. The call wall sits at <strong>87</strong>, matching the target. The put wall sits at <strong>70</strong>, just below the stop of <strong>71.04</strong>. That options structure confirms the desk levels. Market makers see <strong>87</strong> as resistance and <strong>70</strong> as support.</p>
+<p>The macro backdrop is neutral. Consumer cyclical is not accelerating. That is the reason to act now rather than wait for a sector-wide green light.</p>
+<h2>Risk Factors</h2>
+<p>The biggest risk is the lack of headroom. The stock is at <strong>92.9%</strong> of its 52-week high. The target of <strong>87.03</strong> is only <strong>6.1%</strong> below the high of <strong>87.97</strong>. Resistance is stacked. A move to the target is a move into a wall. If the broad market stalls, Etsy stalls right at that wall.</p>
+<p>Consumer names roll over quickly when spending data disappoints. Etsy sells discretionary goods. A weak retail sales print or a downbeat consumer confidence number hits this stock before it hits staples. The beta of <strong>1.82</strong> amplifies that move.</p>
+<p>The stop at <strong>71.04</strong> is your invalidation. A close below that level breaks the swing low of <strong>68.73</strong> soon after. It also breaks the put wall at <strong>70</strong>. Volume would likely surge on that breakdown. You cut the position there. No averaging down, no waiting for a bounce.</p>
+<p>Timing risk centers on earnings. The company needs to defend that forward EPS of <strong>6.89</strong>. If it guides lower, the forward PE of <strong>12.0</strong> is an illusion. The stock could reprice to <strong>15</strong> times a lower number and still drop. You cannot control that. You can only size for it.</p>
+<p>The options flow is light. <strong>$0.58 million</strong> in call premium is small money. That is not institutional conviction. It is retail nibbling. Do not read big positioning into those numbers.</p>
+<h2>Bringing It All Together</h2>
+<p>- Etsy operates a capital-light two-sided marketplace with a <strong>71.4%</strong> gross margin and <strong>18.7%</strong> operating margin.<br>- The valuation is cheap at <strong>12.0</strong> times forward earnings, but that depends on a sharp EPS recovery to <strong>6.89</strong>.<br>- The chart is in a Stage 2 uptrend above the 30-week line with a <strong>14.2%</strong> slope and neutral RSI at <strong>50.1</strong>.</p>
+<p>- The desk levels give you entry at <strong>77.16</strong>, stop at <strong>71.04</strong>, and target at <strong>87.03</strong> for a <strong>1.6</strong> reward-to-risk.<br>- The invalidation is a close below <strong>71.04</strong>. The options put wall at <strong>70</strong> reinforces that line.</p>
+<h2>Conclusion</h2>
+<p>Etsy is a clean, defined long with a real valuation cushion and a neutral technical reset. You buy the relative strength and the forward multiple. You keep size normal because the target is close and the sector is not helping.</p>
+<p>This is a trade where the numbers line up. Entry, stop, target, and reward-to-risk all make sense. The burden is on earnings and consumer spending to hold. You manage that with the stop level and a clear invalidation.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Etsy, Inc. (ETSY) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $7.60B; 52-week range $44-$88; Revenue $2.94B +6% YoY; Net income $371M; Free cash flow/share $1.85. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Etsy, Inc. (ETSY) inside the Consumer Cyclical space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): RSI at **50.1** is dead neutral and the stock leads the market by **16.9%** over 63 days.. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Artisan Marketplace Is Cheap Again
+
+*Etsy at 12 times forward earnings with sellers and buyers both active on the platform.*
+
+## The Big Picture
+Consumer cyclical stocks sit in a neutral posture right now. The sector is not leading, and it is not collapsing. It is pausing.
+
+That pause matters for a company like Etsy. Etsy does not need a roaring consumer to work. It needs a stable one. Discretionary spending from households that still have jobs and still want something handmade or vintage.
+
+The macro backdrop is not giving you a tailwind. It is also not fighting you. Consumer cyclical as a sector just rolled into a NEW_DOWN acceleration signal. That means the broad group is losing momentum. But Etsy is a platform, not a store. It carries a **1.82** beta, so it moves more than the market. That cuts both ways.
+
+A neutral consumer with a high-beta internet retail name means you are making a stock-specific call, not a sector call. That is the right setup for a desk pick. You are not betting on the American shopper. You are betting that Etsy&#x27;s valuation and chart have already absorbed the bad news.
+
+## Introducing ETSY
+Etsy operates two-sided marketplaces. Buyers come for handmade goods, vintage items, and craft supplies. Sellers pay listing fees, transaction fees, and optional advertising fees to reach those buyers. The company also runs Depop, a fashion resale marketplace aimed at younger buyers.
+
+The business model is capital light. Etsy does not hold inventory. It processes payments and takes a cut. That shows up in the gross margin of **71.4%**. The platform connects artisans and small sellers with consumers in the US, the UK, and a handful of international markets.
+
+The company is headquartered in Brooklyn. The edge is the marketplace itself. Sellers build shops. Buyers come for things they cannot find on Amazon. That loyalty is real, but it is also fragile when household budgets tighten.
+
+## The Thesis
+The core read is simple. Etsy is cheap on forward earnings and the chart is coiling below resistance. The desk flags the RSI at **50.1**, dead neutral. That is not a falling knife. It is a stock that has reset from its highs and found a floor while the broad market moved sideways.
+
+You get relative strength confirmation. Absolute return over that window is **17.2%**. That is a stock repairing its reputation while the sector itself shows no leadership.
+
+Conviction here is MEDIUM. The reward to the first target is fine but not exceptional. You risk **7.9%** to the stop and get **12.8%** of upside to the target. That is a **1.6** reward-to-risk ratio. It works. It is not the best on the desk. The ranking note says it plainly: the least headroom to the 52-week high of the three candidates, so it ranks last on reward per unit of risk.
+
+You size this one as a normal position, no oversized bets. The setup is clean and valid, but the target sits only **6.1%** below the 52-week high. Resistance is close. That limits how far a trend can run before sellers show up.
+
+## Technical Analysis
+&gt; 📈 Insert the ETSY weekly chart here (TradingView): ETSY weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $87.03 · mark support near $71.04.
+The stock closed at **81.75**. That puts it at **92.9%** of its 52-week high of **87.97**. It sits in the top **85.8%** of its yearly range. The trend is up, but the remaining room is tight.
+
+Etsy is above its 30-week moving average. The slope of that line is positive at **14.2%**. That is a stock in a Stage 2 uptrend under the Weinstein framework. The longer trend supports the long side. The 21-day return is slightly negative at **-1.7%**. That is a short-term pause inside a longer uptrend.
+
+The 14-day RSI sits at **50.1**. Neutral. No overbought warning, no oversold bounce signal. The stock has already worked off any short-term heat. A break from neutral RSI often matches the start of a fresh leg.
+
+Support and resistance are clear. The swing high is **87.03**. The swing low is **68.73**. The desk levels are tighter. Entry at **77.16**, stop at **71.04**, target at **87.03**. The stop sits below the swing low. The target matches the swing high. That gives you a defined band to trade against.
+
+Confirmation on a breakout would be volume well above that average with a close over **87.03**. Without that volume expansion, a move into resistance is a place to reduce, not add.
+
+## Fundamentals
+| Metric | Value |
+|---|---|
+| Market cap | $7.60B |
+| Enterprise value | $9.46B |
+| 52-week range | $44.00 - $87.97 |
+| Dividend yield | None |
+| Beta | 1.82 |
+| Trailing P/E | 26.2 |
+| Forward P/E | 12.0 |
+| Price / sales | 2.6 |
+| Price / book | -5.5 |
+| Revenue (TTM) | $2.94B  (+6.2% YoY) |
+| Revenue / share | $30.16 |
+| Net income (TTM) | $371M |
+| EPS (TTM / fwd) | 3.16 / 6.89 |
+| Gross margin | 71.4% |
+| Operating margin | 18.7% |
+| Profit margin | 7.1% |
+| Operating cash flow / share | $7.16 |
+| Free cash flow / share | $1.85 |
+| Total cash / share | $12.23 |
+| Current ratio | 1.48 |
+| Analyst consensus | hold - mean target $87.04 (26 analysts) |
+The valuation is the standout. You pay **12.0** times forward earnings for a business with a **71.4%** gross margin. The trailing PE is **26.2**. That gap between trailing and forward PE tells you earnings are expected to grow sharply. The forward EPS estimate is **6.89** against trailing EPS of **3.16**. That is a big expected jump.
+
+Revenue growth is modest at **6.2%** year over year. That is not a hypergrowth story. It is a mature platform that is still expanding slowly. The operating margin is **18.7%**. Profit margin is **7.1%**. Those are healthy for internet retail. Return on assets is **10.5%**.
+
+Cash generation is solid. The gap suggests meaningful capital outflows, likely from stock buybacks or internal investment. Cash per share is **12.23**. Total debt is **$3.08 billion**. The current ratio is **1.48**, but the quick ratio is **0.89**. That thin quick ratio means the company leans on inventory or other current assets to cover short-term obligations. For a marketplace with no physical inventory, that is less alarming than it looks. The current ratio accommodates receivables from payment processing.
+
+The balance sheet has one real blemish. Book value per share is negative at **-15.1**. That comes from years of buybacks and goodwill from acquisitions. Price to book is **-5.5**, which is meaningless as a valuation signal here. You do not buy Etsy for its book value. You buy it for the cash flow and the platform economics.
+
+Analysts are lukewarm. The consensus recommendation is a hold from **26** analysts. The mean target is **87.04**, almost exactly the desk target of **87.03**. That is a crowded consensus. When the target and the analyst target align, the easy money is already priced in.
+The next earnings date is set for early September. That is the real swing factor. The forward PE of **12.0** depends on the company hitting that higher EPS number. If guidance disappoints, the multiple expands and the stock reprices lower fast.
+
+## Why Now
+The timing is a combination of technical reset and relative strength. The stock has already corrected **-1.7%** over the last 21 days while the longer trend stays intact. That pause resets the RSI to neutral at **50.1**. You get a low-risk entry near support at **77.16** with a clear stop at **71.04**.
+
+There is no specific catalyst scheduled beyond the next earnings release. The catalyst field is empty in the research. That means you are trading the chart and the valuation, not an event. The next earnings date in early September is the one known date that could move the stock. You hold into it and accept the gap risk, or you take profits before it. The desk stance does not force you into an earnings hold.
+
+Options flow from August **31** shows light bullish lean. Call premium was **$0.58 million** against put premium of **$0.28 million**. The call wall sits at **87**, matching the target. The put wall sits at **70**, just below the stop of **71.04**. That options structure confirms the desk levels. Market makers see **87** as resistance and **70** as support.
+
+The macro backdrop is neutral. Consumer cyclical is not accelerating. That is the reason to act now rather than wait for a sector-wide green light.
+
+## Risk Factors
+The biggest risk is the lack of headroom. The stock is at **92.9%** of its 52-week high. The target of **87.03** is only **6.1%** below the high of **87.97**. Resistance is stacked. A move to the target is a move into a wall. If the broad market stalls, Etsy stalls right at that wall.
+
+Consumer names roll over quickly when spending data disappoints. Etsy sells discretionary goods. A weak retail sales print or a downbeat consumer confidence number hits this stock before it hits staples. The beta of **1.82** amplifies that move.
+
+The stop at **71.04** is your invalidation. A close below that level breaks the swing low of **68.73** soon after. It also breaks the put wall at **70**. Volume would likely surge on that breakdown. You cut the position there. No averaging down, no waiting for a bounce.
+
+Timing risk centers on earnings. The company needs to defend that forward EPS of **6.89**. If it guides lower, the forward PE of **12.0** is an illusion. The stock could reprice to **15** times a lower number and still drop. You cannot control that. You can only size for it.
+
+The options flow is light. **$0.58 million** in call premium is small money. That is not institutional conviction. It is retail nibbling. Do not read big positioning into those numbers.
+
+## Bringing It All Together
+- Etsy operates a capital-light two-sided marketplace with a **71.4%** gross margin and **18.7%** operating margin.
+- The valuation is cheap at **12.0** times forward earnings, but that depends on a sharp EPS recovery to **6.89**.
+- The chart is in a Stage 2 uptrend above the 30-week line with a **14.2%** slope and neutral RSI at **50.1**.
+
+- The desk levels give you entry at **77.16**, stop at **71.04**, and target at **87.03** for a **1.6** reward-to-risk.
+- The invalidation is a close below **71.04**. The options put wall at **70** reinforces that line.
+
+## Conclusion
+Etsy is a clean, defined long with a real valuation cushion and a neutral technical reset. You buy the relative strength and the forward multiple. You keep size normal because the target is close and the sector is not helping.
+
+This is a trade where the numbers line up. Entry, stop, target, and reward-to-risk all make sense. The burden is on earnings and consumer spending to hold. You manage that with the stop level and a clear invalidation.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

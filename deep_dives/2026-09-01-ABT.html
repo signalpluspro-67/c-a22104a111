@@ -1,0 +1,217 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Quiet Compounder at a Discount — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Quiet Compounder at a Discount</h1>
+<div class="subtitle">Abbott&#x27;s pullback is a rare entry into a healthcare franchise with a live options chain.</div>
+<div class="meta">EOD 2026-09-01 · ABT · written from the desk · model deepseek-v4-pro</div>
+<div class="chips"><span class="chip">ABT</span>
+<span class="chip">Healthcare</span>
+<span class="chip hi">HIGH conviction</span></div>
+<div class="track">Tracking since 2026-09-01: entry <b>$108.93</b> &rarr; <b>$108.93</b> (as of 2026-09-01) · <span class="pos">+0.0%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Healthcare sits in a NEUTRAL state with NEUTRAL acceleration. That is the right backdrop for a name that does not need sector tailwinds to grind higher. The broad market has been choppy, and most stocks are struggling to hold their 63-day gains. You want a company that compounds through its own product cycles and demographic demand, not one that depends on a risk-on tape.</p>
+<p>Abbott fits that bill. <strong>$46.6 billion</strong> in trailing revenue. <strong>13.0%</strong> revenue growth. <strong>56.8%</strong> gross margin. Those are the numbers of a business that generates demand regardless of the macro mood. The healthcare sector is defensive by nature, and Abbott&#x27;s product mix spans diagnostics, devices, nutrition, and established pharmaceuticals. That diversity smooths the revenue line.</p>
+<p>This backdrop rewards a name that is already beating the market over the past quarter. Abbott has returned <strong>25.3%</strong> over <strong>63</strong> days while outperforming the SPY by <strong>25.0%</strong>. The stock is only <strong>48.6%</strong> of the way through its 52-week range, so it has room to run without chasing a top.</p>
+<h2>Introducing ABT</h2>
+<p>Abbott Laboratories makes healthcare products across four segments: Established Pharmaceutical Products, Diagnostic Products, Nutritional Products, and Medical Devices. It was founded in <strong>1888</strong> and is based in Abbott Park, Illinois.</p>
+<p>The device segment includes heart devices, diabetes care, and neuromodulation. The diagnostics segment covers lab systems, point-of-care testing, and rapid tests for HIV, influenza, and RSV. Nutrition products include infant formula and adult nutrition. The established pharma business sells a portfolio of generic drugs in emerging markets. That four-part structure means no single product line dominates the P&amp;L.</p>
+<p>Abbott&#x27;s edge is scale and distribution. The dividend yield is <strong>2.24%</strong> on a <strong>$2.52</strong> annual rate. That income stream supports the stock during sideways stretches.</p>
+<h2>The Thesis</h2>
+<p>The core reason this works right now is a confluence of momentum and a tested pullback signal. The stock closed at <strong>$108.93</strong>, which is <strong>20.3%</strong> below its 52-week high of <strong>$137.49</strong>. The RSI sits at <strong>49.0</strong>, meaning the stock is neither overbought nor oversold. That is the sweet spot for a mean-reversion entry.</p>
+<p>The desk thesis is straightforward. Momentum at <strong>114.6</strong> and the pullback signal at <strong>70</strong> fire together. The pullback carries tested status with a risk-adjusted return of <strong>1.10</strong>. The stock is beating the market by <strong>25.0%</strong> over <strong>63</strong> days. That is not luck. It&#x27;s a signal that capital is rotating into healthcare franchises with visible cash flows.</p>
+<p>The options chain confirms the interest. Call premium hit <strong>$1.61 million</strong> against <strong>$0.62 million</strong> in put premium. The call wall sits at <strong>110</strong>, just above spot. That is a magnet, not a ceiling.</p>
+<p>Conviction is HIGH. The risk/reward is <strong>1.6</strong> to <strong>1</strong> with an entry at <strong>$108.93</strong>, a stop at <strong>$104.01</strong>, and a target of <strong>$116.67</strong>. The second target at <strong>$120.00</strong> offers <strong>10.2%</strong> upside. You can size this with confidence, but keep total position risk in check because options add time decay.</p>
+<h2>Technical Analysis</h2>
+<p><figure class="chart"><img src="img/2026-09-01-ABT.png" alt="ABT weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=ABT&interval=1W" target="_blank" rel="noopener">📈 Open the ABT weekly chart on TradingView ↗</a><figcaption>ABT weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $116.67 · mark support near $104.01.</figcaption></figure><br>The trend is intact above the 30-week moving average. The 30-week line slopes down at <strong>-6.5%</strong>, which means the longer-term trend is still repairing itself. The stock is above that line, so the intermediate trend favors buyers. The 8-week and 21-week EMAs have turned up, and price is compressing below the swing high of <strong>$116.67</strong>.</p>
+<p>Distance from the 52-week high is <strong>-20.3%</strong>. That is a wide gap, and it means the stock has plenty of room before it confronts prior supply. The 52-week low is <strong>$81.97</strong>, so the stock sits <strong>31.9%</strong> above the bottom of its range. Support is well-defined at the swing low of <strong>$87.83</strong>, but the practical support for this trade is the stop at <strong>$104.01</strong>.</p>
+<p>The RSI at <strong>44.4</strong> on the daily read is neutral to slightly weak. The 14-day RSI in the technical facts shows <strong>49.0</strong>, which is a coiled number. It means the stock has digested its recent gains without rolling over. That gives you a clean distance from entry to stop at <strong>4.5%</strong> risk.</p>
+<p>A close above the call wall at <strong>110</strong> would flip dealer positioning from resistance to support. The next magnet after that is the swing high at <strong>$116.67</strong>, then the analyst target near <strong>$120</strong>.</p>
+<h2>Fundamentals</h2>
+<p><table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$194.67B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$220.86B</td></tr><tr><td class="k">52-week range</td><td class="v">$81.97 - $137.49</td></tr><tr><td class="k">Dividend yield</td><td class="v">2.24%</td></tr><tr><td class="k">Beta</td><td class="v">0.58</td></tr><tr><td class="k">Trailing P/E</td><td class="v">36.4</td></tr><tr><td class="k">Forward P/E</td><td class="v">18.5</td></tr><tr><td class="k">Price / sales</td><td class="v">4.2</td></tr><tr><td class="k">Price / book</td><td class="v">3.8</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$46.58B  (+13.0% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$26.76</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$5.40B</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">3.09 / 6.06</td></tr><tr><td class="k">Gross margin</td><td class="v">56.8%</td></tr><tr><td class="k">Operating margin</td><td class="v">14.7%</td></tr><tr><td class="k">Profit margin</td><td class="v">11.6%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$5.72</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$4.17</td></tr><tr><td class="k">Total cash / share</td><td class="v">$3.24</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.63</td></tr><tr><td class="k">Current ratio</td><td class="v">1.38</td></tr><tr><td class="k">Return on equity</td><td class="v">10.6%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">buy - mean target $120.20 (25 analysts)</td></tr></tbody></table><br>The fundamentals tell a mixed story, and the honest read is that Abbott is a cash machine with a temporary earnings blip. Trailing PE is <strong>36.4</strong>, but forward PE drops to <strong>18.5</strong>. That gap is the market pricing in a recovery. EPS is <strong>$3.09</strong> trailing and <strong>$6.06</strong> forward. Earnings growth is <strong>-47.5%</strong>, which is the weak spot. That decline is already in the price, and the forward multiple says the market expects the trend to reverse.</p>
+<p>Revenue growth is <strong>13.0%</strong>, which is robust for a company of this size. Gross margin is <strong>56.8%</strong> and operating margin is <strong>14.7%</strong>. Profit margin of <strong>11.6%</strong> is decent but reflects the earnings pressure. Return on equity is <strong>10.6%</strong>, which is modest, and return on assets is <strong>5.3%</strong>. Debt to equity is <strong>0.63</strong>, which is manageable.</p>
+<p>Cash generation is the standout. That translates to <strong>$5.72</strong> per share in operating cash flow and <strong>$4.17</strong> per share in free cash flow. The payout ratio is <strong>0.79</strong>, which is high but backed by dependable cash flow. The current ratio of <strong>1.38</strong> and quick ratio of <strong>0.8</strong> show adequate liquidity. Beta of <strong>0.58</strong> confirms the defensive profile.</p>
+<h2>Why Now</h2>
+<p>The catalyst is earnings on <strong>2026-10-13</strong>, which is <strong>41</strong> days out. Call premium of <strong>$1.61 million</strong> dwarfs put premium of <strong>$0.62 million</strong>. The call wall at <strong>110</strong> is close enough to act as a magnet into the print.</p>
+<p>The macro backdrop is neutral, which means the stock price action will be driven by company-specific news. Abbott is <strong>20.3%</strong> below its high, so expectations are not stretched. The recent <strong>25.3%</strong> run over <strong>63</strong> days shows that buyers are returning. You are entering after the first leg but before the full move.</p>
+<p>Relative strength versus the SPY is <strong>25.0%</strong> over that same window. That is the kind of divergence that often precedes continuation. The stock is beating the market while the sector is stuck in neutral. That says the market is rewarding Abbott specifically, not just healthcare.</p>
+<h2>Risk Factors</h2>
+<p>The most credible way this loses money is a slow drift sideways. The options position adds time decay, and if the stock chops between <strong>$105</strong> and <strong>$110</strong> for weeks, the call premium erodes even with the thesis intact. The desk flagged this risk directly. A mean-reversion grind is not a fast trade.</p>
+<p>The second risk is the earnings print. If Abbott guides lower or reveals a slowdown in devices, the stock could gap below the stop at <strong>$104.01</strong>. The earnings growth of <strong>-47.5%</strong> is a real overhang. The forward multiple of <strong>18.5</strong> assumes a rebound that may not arrive on schedule.</p>
+<p>The single invalidation for this trade is a close below <strong>$104.01</strong>. That level sits below the recent consolidation and would signal that the pullback is not resolving higher. If that happens, the risk/reward of <strong>1.6</strong> to <strong>1</strong> breaks down and the trade has no reason to stay open. You must respect the stop.</p>
+<h2>Bringing It All Together</h2>
+<p>- Dual focus: four segments spanning devices, diagnostics, nutrition, and pharma, with <strong>$46.6 billion</strong> in revenue and <strong>13.0%</strong> growth.</p>
+<p>- Fundamentals: forward PE of <strong>18.5</strong> and dividend yield of <strong>2.24%</strong> provide a valuation floor.</p>
+<p>- Levels: entry <strong>$108.93</strong>, stop <strong>$104.01</strong>, target <strong>$116.67</strong>, second target <strong>$120.00</strong>, risk/reward <strong>1.6</strong> to <strong>1</strong>.</p>
+<h2>Conclusion</h2>
+<p>Abbott is a quiet compounder trading at a discount to its own 52-week high. The pullback is tested, the options chain is live, and the fundamentals are intact. The entry at <strong>$108.93</strong> with a stop at <strong>$104.01</strong> gives you a clean <strong>4.5%</strong> risk against <strong>7.1%</strong> upside to the first target. That is a trade worth taking with conviction.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Abbott Laboratories (ABT) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $194.67B; 52-week range $82-$137; Revenue $46.58B +13% YoY; Net income $5.40B; Free cash flow/share $4.17; Debt-to-equity 0.63; Return on equity 11%; Dividend yield 2.2%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Abbott Laboratories (ABT) inside the Healthcare space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Momentum at **114.6** and the pullback signal at **70** fire together, and the pullback carries tested status with risk-adjusted return **1.10**, p **0.0189**, tested. The stock is **20.3%** below its 52-week high with RSI at **49.0**, well. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Quiet Compounder at a Discount
+
+*Abbott&#x27;s pullback is a rare entry into a healthcare franchise with a live options chain.*
+
+## The Big Picture
+Healthcare sits in a NEUTRAL state with NEUTRAL acceleration. That is the right backdrop for a name that does not need sector tailwinds to grind higher. The broad market has been choppy, and most stocks are struggling to hold their 63-day gains. You want a company that compounds through its own product cycles and demographic demand, not one that depends on a risk-on tape.
+
+Abbott fits that bill. **$46.6 billion** in trailing revenue. **13.0%** revenue growth. **56.8%** gross margin. Those are the numbers of a business that generates demand regardless of the macro mood. The healthcare sector is defensive by nature, and Abbott&#x27;s product mix spans diagnostics, devices, nutrition, and established pharmaceuticals. That diversity smooths the revenue line.
+
+This backdrop rewards a name that is already beating the market over the past quarter. Abbott has returned **25.3%** over **63** days while outperforming the SPY by **25.0%**. The stock is only **48.6%** of the way through its 52-week range, so it has room to run without chasing a top.
+
+## Introducing ABT
+Abbott Laboratories makes healthcare products across four segments: Established Pharmaceutical Products, Diagnostic Products, Nutritional Products, and Medical Devices. It was founded in **1888** and is based in Abbott Park, Illinois.
+
+The device segment includes heart devices, diabetes care, and neuromodulation. The diagnostics segment covers lab systems, point-of-care testing, and rapid tests for HIV, influenza, and RSV. Nutrition products include infant formula and adult nutrition. The established pharma business sells a portfolio of generic drugs in emerging markets. That four-part structure means no single product line dominates the P&amp;L.
+
+Abbott&#x27;s edge is scale and distribution. The dividend yield is **2.24%** on a **$2.52** annual rate. That income stream supports the stock during sideways stretches.
+
+## The Thesis
+The core reason this works right now is a confluence of momentum and a tested pullback signal. The stock closed at **$108.93**, which is **20.3%** below its 52-week high of **$137.49**. The RSI sits at **49.0**, meaning the stock is neither overbought nor oversold. That is the sweet spot for a mean-reversion entry.
+
+The desk thesis is straightforward. Momentum at **114.6** and the pullback signal at **70** fire together. The pullback carries tested status with a risk-adjusted return of **1.10**. The stock is beating the market by **25.0%** over **63** days. That is not luck. It&#x27;s a signal that capital is rotating into healthcare franchises with visible cash flows.
+
+The options chain confirms the interest. Call premium hit **$1.61 million** against **$0.62 million** in put premium. The call wall sits at **110**, just above spot. That is a magnet, not a ceiling.
+
+Conviction is HIGH. The risk/reward is **1.6** to **1** with an entry at **$108.93**, a stop at **$104.01**, and a target of **$116.67**. The second target at **$120.00** offers **10.2%** upside. You can size this with confidence, but keep total position risk in check because options add time decay.
+
+## Technical Analysis
+&gt; 📈 Insert the ABT weekly chart here (TradingView): ABT weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $116.67 · mark support near $104.01.
+The trend is intact above the 30-week moving average. The 30-week line slopes down at **-6.5%**, which means the longer-term trend is still repairing itself. The stock is above that line, so the intermediate trend favors buyers. The 8-week and 21-week EMAs have turned up, and price is compressing below the swing high of **$116.67**.
+
+Distance from the 52-week high is **-20.3%**. That is a wide gap, and it means the stock has plenty of room before it confronts prior supply. The 52-week low is **$81.97**, so the stock sits **31.9%** above the bottom of its range. Support is well-defined at the swing low of **$87.83**, but the practical support for this trade is the stop at **$104.01**.
+
+The RSI at **44.4** on the daily read is neutral to slightly weak. The 14-day RSI in the technical facts shows **49.0**, which is a coiled number. It means the stock has digested its recent gains without rolling over. That gives you a clean distance from entry to stop at **4.5%** risk.
+
+A close above the call wall at **110** would flip dealer positioning from resistance to support. The next magnet after that is the swing high at **$116.67**, then the analyst target near **$120**.
+
+## Fundamentals
+| Metric | Value |
+|---|---|
+| Market cap | $194.67B |
+| Enterprise value | $220.86B |
+| 52-week range | $81.97 - $137.49 |
+| Dividend yield | 2.24% |
+| Beta | 0.58 |
+| Trailing P/E | 36.4 |
+| Forward P/E | 18.5 |
+| Price / sales | 4.2 |
+| Price / book | 3.8 |
+| Revenue (TTM) | $46.58B  (+13.0% YoY) |
+| Revenue / share | $26.76 |
+| Net income (TTM) | $5.40B |
+| EPS (TTM / fwd) | 3.09 / 6.06 |
+| Gross margin | 56.8% |
+| Operating margin | 14.7% |
+| Profit margin | 11.6% |
+| Operating cash flow / share | $5.72 |
+| Free cash flow / share | $4.17 |
+| Total cash / share | $3.24 |
+| Debt / equity | 0.63 |
+| Current ratio | 1.38 |
+| Return on equity | 10.6% |
+| Analyst consensus | buy - mean target $120.20 (25 analysts) |
+The fundamentals tell a mixed story, and the honest read is that Abbott is a cash machine with a temporary earnings blip. Trailing PE is **36.4**, but forward PE drops to **18.5**. That gap is the market pricing in a recovery. EPS is **$3.09** trailing and **$6.06** forward. Earnings growth is **-47.5%**, which is the weak spot. That decline is already in the price, and the forward multiple says the market expects the trend to reverse.
+
+Revenue growth is **13.0%**, which is robust for a company of this size. Gross margin is **56.8%** and operating margin is **14.7%**. Profit margin of **11.6%** is decent but reflects the earnings pressure. Return on equity is **10.6%**, which is modest, and return on assets is **5.3%**. Debt to equity is **0.63**, which is manageable.
+
+Cash generation is the standout. That translates to **$5.72** per share in operating cash flow and **$4.17** per share in free cash flow. The payout ratio is **0.79**, which is high but backed by dependable cash flow. The current ratio of **1.38** and quick ratio of **0.8** show adequate liquidity. Beta of **0.58** confirms the defensive profile.
+
+## Why Now
+The catalyst is earnings on **2026-10-13**, which is **41** days out. Call premium of **$1.61 million** dwarfs put premium of **$0.62 million**. The call wall at **110** is close enough to act as a magnet into the print.
+
+The macro backdrop is neutral, which means the stock price action will be driven by company-specific news. Abbott is **20.3%** below its high, so expectations are not stretched. The recent **25.3%** run over **63** days shows that buyers are returning. You are entering after the first leg but before the full move.
+
+Relative strength versus the SPY is **25.0%** over that same window. That is the kind of divergence that often precedes continuation. The stock is beating the market while the sector is stuck in neutral. That says the market is rewarding Abbott specifically, not just healthcare.
+
+## Risk Factors
+The most credible way this loses money is a slow drift sideways. The options position adds time decay, and if the stock chops between **$105** and **$110** for weeks, the call premium erodes even with the thesis intact. The desk flagged this risk directly. A mean-reversion grind is not a fast trade.
+
+The second risk is the earnings print. If Abbott guides lower or reveals a slowdown in devices, the stock could gap below the stop at **$104.01**. The earnings growth of **-47.5%** is a real overhang. The forward multiple of **18.5** assumes a rebound that may not arrive on schedule.
+
+The single invalidation for this trade is a close below **$104.01**. That level sits below the recent consolidation and would signal that the pullback is not resolving higher. If that happens, the risk/reward of **1.6** to **1** breaks down and the trade has no reason to stay open. You must respect the stop.
+
+## Bringing It All Together
+- Dual focus: four segments spanning devices, diagnostics, nutrition, and pharma, with **$46.6 billion** in revenue and **13.0%** growth.
+
+- Fundamentals: forward PE of **18.5** and dividend yield of **2.24%** provide a valuation floor.
+
+- Levels: entry **$108.93**, stop **$104.01**, target **$116.67**, second target **$120.00**, risk/reward **1.6** to **1**.
+
+## Conclusion
+Abbott is a quiet compounder trading at a discount to its own 52-week high. The pullback is tested, the options chain is live, and the fundamentals are intact. The entry at **$108.93** with a stop at **$104.01** gives you a clean **4.5%** risk against **7.1%** upside to the first target. That is a trade worth taking with conviction.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
