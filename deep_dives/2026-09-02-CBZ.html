@@ -1,0 +1,231 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CBIZ&#x27;s Quiet Desk Signal — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>CBIZ&#x27;s Quiet Desk Signal</h1>
+<div class="subtitle">A pullback score at the top of the pool, a chain that trades calls only, and a name 18% below its high.</div>
+<div class="meta">EOD 2026-09-02 · CBZ · written from the desk · model deepseek-v4-pro</div>
+<div class="chips"><span class="chip">CBZ</span>
+<span class="chip">Industrials</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-09-02: entry <b>$54.01</b> &rarr; <b>$54.46</b> (as of 2026-09-02) · <span class="pos">+0.8%</span> · ⚠️ NEAR STOP</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>The Industrials sector sits in neutral with no acceleration. That&#x27;s a rough backdrop for most of the group. You want a name with its own internal rhythm, something that can move without a sector tailwind.</p>
+<p>The broad economy is still absorbing higher rates and tight credit. Small and medium-sized businesses feel it first. They cut spending on professional services. They delay insurance renewals. They stretch payables. That pressure has been building in the specialty business services space for several quarters.</p>
+<p>But the market trades on forward expectations, not yesterday&#x27;s invoice. The desk signal here is not about the sector. It&#x27;s about a single stock with a specific options profile. Price sits <strong>18.2%</strong> below the 52-week high. It&#x27;s up <strong>68.9%</strong> over three months. That divergence is the story.</p>
+<h2>Introducing CBZ</h2>
+<p>CBIZ, Inc. provides financial, insurance, and advisory services to small and medium-sized businesses across the United States and Canada. It runs three segments: Financial Services, Benefits and Insurance Services, and National Practices.</p>
+<p>The Financial Services segment handles accounting and tax, financial advisory, and government healthcare consulting. Benefits and Insurance covers employee benefits, payroll, human capital, property and casualty insurance, and retirement services. National Practices provides IT managed networking and hardware services.</p>
+<p>The model is sticky. Small businesses outsource these functions because they can&#x27;t afford full in-house teams. CBIZ collects recurring fees for compliance, benefits administration, and tax work. That&#x27;s durable revenue, though it is sensitive to the small-business cycle.</p>
+<h2>The Thesis</h2>
+<p>The desk has a proprietary pullback score at <strong>95</strong>, the highest in the pool. That number is tested and valid. It means CBIZ has pulled back in a way that historically sets up a rebound. The risk-adjusted return on the setup is <strong>1.10</strong>. The statistical validity check shows <strong>0.0189</strong>, which is a low false-signal probability in plain terms.</p>
+<p>The options chain traded <strong>801</strong> calls and <strong>0</strong> puts on September 1. That is a live bullish expression. Not theory. Real premium flowed into calls. The call wall sits at <strong>55</strong> and the put wall at <strong>50</strong>. The market is positioned for upside above <strong>55</strong> and downside protection below <strong>50</strong>. You&#x27;re not early to a quiet name. You&#x27;re seeing someone already commit.</p>
+<p>Price sits at <strong>54.46</strong>, which is <strong>18.2%</strong> below the 52-week high of <strong>67.24</strong>. Over the past month it&#x27;s down just <strong>1.1%</strong>. Over three months relative strength versus SPY is <strong>+67.4%</strong>. The stock has already proven it can run. The setup says the pullback is the entry.</p>
+<p>This is a MEDIUM conviction trade. Size it accordingly. You&#x27;re not betting the house on a sector that&#x27;s dead. You&#x27;re taking a targeted options-bull posture in a name with a hot chain and a tested pullback signal.</p>
+<h2>Technical Analysis</h2>
+<p><figure class="chart"><img src="img/2026-09-02-CBZ.png" alt="CBZ weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=CBZ&interval=1W" target="_blank" rel="noopener">📈 Open the CBZ weekly chart on TradingView ↗</a><figcaption>CBZ weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $55.25 · mark support near $53.41.</figcaption></figure><br>The chart shows a stock that&#x27;s had a massive run off a low base. The 52-week range is <strong>24.29</strong> to <strong>67.24</strong>. Price at <strong>54.46</strong> sits in the top <strong>70.2%</strong> of that yearly range. The 30-week moving average still supports price, with the close above it. But the slope of that 30-week line is down <strong>3.2%</strong>. The long-term trend is bending.</p>
+<p>RSI at <strong>73.2</strong> is hot. That&#x27;s a warning for a pullback entry. You&#x27;re buying a dip in a name that&#x27;s still overheated on the daily. The desk flagged this risk: RSI at <strong>73.2</strong> can decay a call quickly if the tape turns.</p>
+<p>Distance from the 52-week high is <strong>18.2%</strong>. That&#x27;s real headroom. The swing high is <strong>55.25</strong> and the swing low is <strong>28.66</strong>. The reference levels from the desk: entry at <strong>54.01</strong>, stop at <strong>53.41</strong>, target at <strong>55.25</strong>. That gives a risk-to-stop of <strong>1.1%</strong> and upside to target of <strong>2.3%</strong>. The reward-to-risk ratio is <strong>2.1</strong>. A secondary target sits at <strong>55.36</strong>, or <strong>2.5%</strong> upside.</p>
+<p>That&#x27;s the threshold for real participation. Without it, any pop toward the call wall at <strong>55</strong> will fade.</p>
+<h2>Fundamentals</h2>
+<p><table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$2.96B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$4.85B</td></tr><tr><td class="k">52-week range</td><td class="v">$24.29 - $67.24</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">0.93</td></tr><tr><td class="k">Trailing P/E</td><td class="v">26.2</td></tr><tr><td class="k">Forward P/E</td><td class="v">12.9</td></tr><tr><td class="k">Price / sales</td><td class="v">1.1</td></tr><tr><td class="k">Price / book</td><td class="v">1.6</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$2.77B  (-0.2% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$45.15</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$122M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">2.08 / 4.25</td></tr><tr><td class="k">Gross margin</td><td class="v">15.2%</td></tr><tr><td class="k">Operating margin</td><td class="v">5.0%</td></tr><tr><td class="k">Profit margin</td><td class="v">4.4%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$5.34</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$4.43</td></tr><tr><td class="k">Total cash / share</td><td class="v">$0.39</td></tr><tr><td class="k">Debt / equity</td><td class="v">1.02</td></tr><tr><td class="k">Current ratio</td><td class="v">1.47</td></tr><tr><td class="k">Return on equity</td><td class="v">6.5%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">none - mean target $51.67 (3 analysts)</td></tr></tbody></table><br>CBIZ is not cheap on trailing earnings. The trailing P/E is <strong>26.2</strong>. But the forward P/E is <strong>12.9</strong>. That gap tells you the market expects a major earnings recovery. Forward EPS estimate is <strong>4.25</strong> versus trailing <strong>2.08</strong>. That&#x27;s a big jump, and it&#x27;s the crux of this trade.</p>
+<p>Revenue growth is slightly negative at <strong>-0.2%</strong>. Earnings growth over the same period is <strong>-53%</strong>. That&#x27;s the weak spot. The company&#x27;s bottom line has been hit hard. Profit margin is <strong>4.4%</strong>, operating margin <strong>5.0%</strong>, and gross margin <strong>15.2%</strong>. Thin margins, typical for a services roll-up.</p>
+<p>Cash generation is strong despite the earnings hit. On a per-share basis, OCF is <strong>5.34</strong> and FCF is <strong>4.43</strong>. That&#x27;s real cash. The balance sheet is leveraged. Current ratio is <strong>1.47</strong> and quick ratio <strong>1.07</strong>. Liquidity is adequate, but the debt load is meaningful for a business with falling earnings.</p>
+<p>Analyst coverage is thin. Only <strong>3</strong> analysts cover this name, with a mean target of <strong>51.67</strong>. That sits below the current price of <strong>54.46</strong>. The analysts haven&#x27;t caught up to this run. That&#x27;s actually a feature, not a bug. Low coverage means fewer eyes and less efficient pricing.</p>
+<h2>Why Now</h2>
+<p>The catalyst is the options chain itself. On September 1, the market traded <strong>801</strong> calls and <strong>0</strong> puts. Call premium was <strong>$0.56 million</strong>, put premium <strong>$0.0</strong>. The call wall is <strong>55</strong> and the put wall is <strong>50</strong>. Someone is actively positioning for a move above <strong>55</strong>. That positioning is fresh, not stale.</p>
+<p>The macro backdrop offers no sector acceleration. Industrials are neutral and dead on momentum. So the near-term driver is idiosyncratic. The stock is up <strong>68.9%</strong> over three months, and relative strength versus SPY is <strong>+67.4%</strong>. That momentum is real. The pullback over the past month is only <strong>-1.1%</strong>. The name is consolidating, not breaking down.</p>
+<p>There is no formal catalyst in the desk data. No scheduled event drives this setup. It&#x27;s a technical and options-flow trade. That&#x27;s a timing risk. You&#x27;re relying on the signal, not an earnings date or a macro release. The next earnings epoch is forthcoming but not the trigger here.</p>
+<h2>Risk Factors</h2>
+<p>The most direct way this loses money is simple: the 30-week moving average slope is down <strong>3.2%</strong>. A stock can stay above its long-term line while that line is rolling over. That&#x27;s dangerous for a pullback entry. The long-term trend is weakening.</p>
+<p>RSI at <strong>73.2</strong> is the second risk. You&#x27;re buying a pullback in a name that&#x27;s still overheated on the daily. Any broad market turn will hit this one hard. Sellers can push it down fast.</p>
+<p>The balance sheet is a third risk. Cash per share is only <strong>0.39</strong>. The company is funded by debt, not cash reserves.</p>
+<p>The single invalidation is the stop at <strong>53.41</strong>. If price closes below that level, the setup is dead. That&#x27;s a <strong>1.1%</strong> risk from entry. Tight but real. You don&#x27;t get a second chance on a pullback signal.</p>
+<p>Timing risk is material. There&#x27;s no named catalyst. You&#x27;re holding a call position that decays if the stock drifts sideways. The bullish flow exists, but it can roll off just as fast.</p>
+<h2>Bringing It All Together</h2>
+<p>- Pullback score of <strong>95</strong> is the strongest in the desk pool, tested and valid.<br>- Options chain traded <strong>801</strong> calls and <strong>0</strong> puts with call wall at <strong>55</strong>.<br>- Price is <strong>18.2%</strong> below the 52-week high but up <strong>68.9%</strong> over three months.<br>- Entry <strong>54.01</strong>, stop <strong>53.41</strong>, target <strong>55.25</strong>, secondary <strong>55.36</strong>.<br>- Forward P/E of <strong>12.9</strong> versus trailing <strong>26.2</strong> implies a big earnings recovery.<br>- No sector tailwind, meaning this is a pure idiosyncratic play.</p>
+<h2>Conclusion</h2>
+<p>CBIZ is a specific, targeted trade. The pullback signal is the strongest in the pool. The options chain confirms bullish intent. The technicals are hot but not broken.</p>
+<p>This is a MEDIUM conviction setup. The RSI and the weak long-term trend are the reasons not to oversize. But the levels are tight and the reward-to-risk at <strong>2.1</strong> gives you a clean structure.</p>
+<p>Take the entry near <strong>54.01</strong>. Honor the stop at <strong>53.41</strong>. Look for the move to <strong>55.25</strong> and then <strong>55.36</strong>.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;CBIZ, Inc. (CBZ) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $2.96B; 52-week range $24-$67; Revenue $2.77B -0% YoY; Net income $122M; Free cash flow/share $4.43; Debt-to-equity 1.02; Return on equity 6%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for CBIZ, Inc. (CBZ) inside the Industrials space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): CBZ fires a proprietary desk read at **95**, the highest pullback score in the pool, with validity tested, risk-adjusted return **1.10**, p_bonf **0.0189**, tested. The chain traded **801** calls and **0** puts, so the bullish expression is. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># CBIZ&#x27;s Quiet Desk Signal
+
+*A pullback score at the top of the pool, a chain that trades calls only, and a name 18% below its high.*
+
+## The Big Picture
+The Industrials sector sits in neutral with no acceleration. That&#x27;s a rough backdrop for most of the group. You want a name with its own internal rhythm, something that can move without a sector tailwind.
+
+The broad economy is still absorbing higher rates and tight credit. Small and medium-sized businesses feel it first. They cut spending on professional services. They delay insurance renewals. They stretch payables. That pressure has been building in the specialty business services space for several quarters.
+
+But the market trades on forward expectations, not yesterday&#x27;s invoice. The desk signal here is not about the sector. It&#x27;s about a single stock with a specific options profile. Price sits **18.2%** below the 52-week high. It&#x27;s up **68.9%** over three months. That divergence is the story.
+
+## Introducing CBZ
+CBIZ, Inc. provides financial, insurance, and advisory services to small and medium-sized businesses across the United States and Canada. It runs three segments: Financial Services, Benefits and Insurance Services, and National Practices.
+
+The Financial Services segment handles accounting and tax, financial advisory, and government healthcare consulting. Benefits and Insurance covers employee benefits, payroll, human capital, property and casualty insurance, and retirement services. National Practices provides IT managed networking and hardware services.
+
+The model is sticky. Small businesses outsource these functions because they can&#x27;t afford full in-house teams. CBIZ collects recurring fees for compliance, benefits administration, and tax work. That&#x27;s durable revenue, though it is sensitive to the small-business cycle.
+
+## The Thesis
+The desk has a proprietary pullback score at **95**, the highest in the pool. That number is tested and valid. It means CBIZ has pulled back in a way that historically sets up a rebound. The risk-adjusted return on the setup is **1.10**. The statistical validity check shows **0.0189**, which is a low false-signal probability in plain terms.
+
+The options chain traded **801** calls and **0** puts on September 1. That is a live bullish expression. Not theory. Real premium flowed into calls. The call wall sits at **55** and the put wall at **50**. The market is positioned for upside above **55** and downside protection below **50**. You&#x27;re not early to a quiet name. You&#x27;re seeing someone already commit.
+
+Price sits at **54.46**, which is **18.2%** below the 52-week high of **67.24**. Over the past month it&#x27;s down just **1.1%**. Over three months relative strength versus SPY is **+67.4%**. The stock has already proven it can run. The setup says the pullback is the entry.
+
+This is a MEDIUM conviction trade. Size it accordingly. You&#x27;re not betting the house on a sector that&#x27;s dead. You&#x27;re taking a targeted options-bull posture in a name with a hot chain and a tested pullback signal.
+
+## Technical Analysis
+&gt; 📈 Insert the CBZ weekly chart here (TradingView): CBZ weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $55.25 · mark support near $53.41.
+The chart shows a stock that&#x27;s had a massive run off a low base. The 52-week range is **24.29** to **67.24**. Price at **54.46** sits in the top **70.2%** of that yearly range. The 30-week moving average still supports price, with the close above it. But the slope of that 30-week line is down **3.2%**. The long-term trend is bending.
+
+RSI at **73.2** is hot. That&#x27;s a warning for a pullback entry. You&#x27;re buying a dip in a name that&#x27;s still overheated on the daily. The desk flagged this risk: RSI at **73.2** can decay a call quickly if the tape turns.
+
+Distance from the 52-week high is **18.2%**. That&#x27;s real headroom. The swing high is **55.25** and the swing low is **28.66**. The reference levels from the desk: entry at **54.01**, stop at **53.41**, target at **55.25**. That gives a risk-to-stop of **1.1%** and upside to target of **2.3%**. The reward-to-risk ratio is **2.1**. A secondary target sits at **55.36**, or **2.5%** upside.
+
+That&#x27;s the threshold for real participation. Without it, any pop toward the call wall at **55** will fade.
+
+## Fundamentals
+| Metric | Value |
+|---|---|
+| Market cap | $2.96B |
+| Enterprise value | $4.85B |
+| 52-week range | $24.29 - $67.24 |
+| Dividend yield | None |
+| Beta | 0.93 |
+| Trailing P/E | 26.2 |
+| Forward P/E | 12.9 |
+| Price / sales | 1.1 |
+| Price / book | 1.6 |
+| Revenue (TTM) | $2.77B  (-0.2% YoY) |
+| Revenue / share | $45.15 |
+| Net income (TTM) | $122M |
+| EPS (TTM / fwd) | 2.08 / 4.25 |
+| Gross margin | 15.2% |
+| Operating margin | 5.0% |
+| Profit margin | 4.4% |
+| Operating cash flow / share | $5.34 |
+| Free cash flow / share | $4.43 |
+| Total cash / share | $0.39 |
+| Debt / equity | 1.02 |
+| Current ratio | 1.47 |
+| Return on equity | 6.5% |
+| Analyst consensus | none - mean target $51.67 (3 analysts) |
+CBIZ is not cheap on trailing earnings. The trailing P/E is **26.2**. But the forward P/E is **12.9**. That gap tells you the market expects a major earnings recovery. Forward EPS estimate is **4.25** versus trailing **2.08**. That&#x27;s a big jump, and it&#x27;s the crux of this trade.
+
+Revenue growth is slightly negative at **-0.2%**. Earnings growth over the same period is **-53%**. That&#x27;s the weak spot. The company&#x27;s bottom line has been hit hard. Profit margin is **4.4%**, operating margin **5.0%**, and gross margin **15.2%**. Thin margins, typical for a services roll-up.
+
+Cash generation is strong despite the earnings hit. On a per-share basis, OCF is **5.34** and FCF is **4.43**. That&#x27;s real cash. The balance sheet is leveraged. Current ratio is **1.47** and quick ratio **1.07**. Liquidity is adequate, but the debt load is meaningful for a business with falling earnings.
+
+Analyst coverage is thin. Only **3** analysts cover this name, with a mean target of **51.67**. That sits below the current price of **54.46**. The analysts haven&#x27;t caught up to this run. That&#x27;s actually a feature, not a bug. Low coverage means fewer eyes and less efficient pricing.
+
+## Why Now
+The catalyst is the options chain itself. On September 1, the market traded **801** calls and **0** puts. Call premium was **$0.56 million**, put premium **$0.0**. The call wall is **55** and the put wall is **50**. Someone is actively positioning for a move above **55**. That positioning is fresh, not stale.
+
+The macro backdrop offers no sector acceleration. Industrials are neutral and dead on momentum. So the near-term driver is idiosyncratic. The stock is up **68.9%** over three months, and relative strength versus SPY is **+67.4%**. That momentum is real. The pullback over the past month is only **-1.1%**. The name is consolidating, not breaking down.
+
+There is no formal catalyst in the desk data. No scheduled event drives this setup. It&#x27;s a technical and options-flow trade. That&#x27;s a timing risk. You&#x27;re relying on the signal, not an earnings date or a macro release. The next earnings epoch is forthcoming but not the trigger here.
+
+## Risk Factors
+The most direct way this loses money is simple: the 30-week moving average slope is down **3.2%**. A stock can stay above its long-term line while that line is rolling over. That&#x27;s dangerous for a pullback entry. The long-term trend is weakening.
+
+RSI at **73.2** is the second risk. You&#x27;re buying a pullback in a name that&#x27;s still overheated on the daily. Any broad market turn will hit this one hard. Sellers can push it down fast.
+
+The balance sheet is a third risk. Cash per share is only **0.39**. The company is funded by debt, not cash reserves.
+
+The single invalidation is the stop at **53.41**. If price closes below that level, the setup is dead. That&#x27;s a **1.1%** risk from entry. Tight but real. You don&#x27;t get a second chance on a pullback signal.
+
+Timing risk is material. There&#x27;s no named catalyst. You&#x27;re holding a call position that decays if the stock drifts sideways. The bullish flow exists, but it can roll off just as fast.
+
+## Bringing It All Together
+- Pullback score of **95** is the strongest in the desk pool, tested and valid.
+- Options chain traded **801** calls and **0** puts with call wall at **55**.
+- Price is **18.2%** below the 52-week high but up **68.9%** over three months.
+- Entry **54.01**, stop **53.41**, target **55.25**, secondary **55.36**.
+- Forward P/E of **12.9** versus trailing **26.2** implies a big earnings recovery.
+- No sector tailwind, meaning this is a pure idiosyncratic play.
+
+## Conclusion
+CBIZ is a specific, targeted trade. The pullback signal is the strongest in the pool. The options chain confirms bullish intent. The technicals are hot but not broken.
+
+This is a MEDIUM conviction setup. The RSI and the weak long-term trend are the reasons not to oversize. But the levels are tight and the reward-to-risk at **2.1** gives you a clean structure.
+
+Take the entry near **54.01**. Honor the stop at **53.41**. Look for the move to **55.25** and then **55.36**.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

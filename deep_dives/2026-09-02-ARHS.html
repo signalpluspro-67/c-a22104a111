@@ -1,0 +1,235 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Buying the Quiet Before the Turn — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>Buying the Quiet Before the Turn</h1>
+<div class="subtitle">Arhaus trades 33% below its high with nobody chasing it. That is the point.</div>
+<div class="meta">EOD 2026-09-02 · ARHS · written from the desk · model deepseek-v4-pro</div>
+<div class="chips"><span class="chip">ARHS</span>
+<span class="chip">Consumer Cyclical</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-09-02: entry <b>$8.43</b> &rarr; <b>$8.43</b> (as of 2026-09-02) · <span class="pos">+0.0%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>The home furnishing sector is doing nothing exciting. Consumer cyclical stands NEUTRAL with NEUTRAL acceleration. No momentum. No tailwind. No crowd.</p>
+<p>You should care because that is exactly the environment where a beat-up small cap with a clean balance sheet can reset higher before anyone notices. The broad market keeps rewarding the obvious. This name hides in the quiet. The setup trades <strong>32.9%</strong> below its 52-week high with an RSI in low territory. That is a buying condition most desks miss because the chart looks boring.</p>
+<p>Arhaus fits that backdrop. It sells premium furniture through showrooms and digital channels. The sector backdrop rewards a name with real cash flow, a low valuation, and a chart that has already absorbed the selling. You are not paying for a story. You are paying for a reset.</p>
+<h2>Introducing ARHS</h2>
+<p>Arhaus is a premium home furnishings retailer based in Boston Heights, Ohio. Founded in 1986, it sells sofas, dining tables, beds, outdoor furniture, lighting, rugs, and décor through showrooms, ecommerce, catalogs, and interior designer trade services.</p>
+<p>The company runs an omni-channel model. That means customers can buy the same product in a showroom, online, or through a designer. The brand leans high-end, yet the stock trades at a discount to its own history. Enterprise value is <strong>$1.63 billion</strong>. This is a small cap with a real business, real revenue, and real earnings.</p>
+<p>What gives it an edge is the premium positioning with a relatively low price-to-sales ratio. You are buying a premium retailer at a <strong>0.9</strong> times sales valuation. That is the kind of mismatch that closes when sentiment shifts.</p>
+<h2>The Thesis</h2>
+<p>The core reason this works is simple. You are paying a quiet, low-excitement price for a company with positive earnings, decent cash generation, and a chart that has not confirmed any breakdown. The desk read stands at <strong>90</strong> on one screen and <strong>65</strong> on another. The weaker of the two, <strong>65</strong>, is the lowest tier, and I will not pretend otherwise. The trade is not built on maximum conviction.</p>
+<p>It is built on the risk-reward. Entry at <strong>$8.43</strong>, stop at <strong>$7.53</strong>, target at <strong>$10.03</strong>. That gives you <strong>1.8</strong> to 1 reward to risk. You risk <strong>10.7%</strong> to make <strong>19.0%</strong>. A secondary target at <strong>$10.46</strong> stretches the upside to <strong>24.1%</strong>.</p>
+<p>The conviction is MEDIUM. That is the honest read. You are not betting the farm. You are taking a measured position in a name that has been left behind but has not broken down. The 52-week high is <strong>$12.42</strong>. The low is <strong>$5.57</strong>. Current price <strong>$8.43</strong> sits <strong>41.8%</strong> of the way up from the low. That is not a falling knife. It is a base.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-09-02-ARHS.png" alt="ARHS weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=ARHS&interval=1W" target="_blank" rel="noopener">📈 Open the ARHS weekly chart on TradingView ↗</a><figcaption>ARHS weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $10.03 · mark support near $7.53.</figcaption></figure>
+<p>The trend picture is mixed, and you should know that before buying. Price sits above the 30-week moving average, which is the good part. But the 30-week slope is down <strong>8.4%</strong>. That means the longer trend is still declining even though price has nudged above the line. No Weinstein violation appears, so the break above the 30-week line has not been invalidated.</p>
+<p>The shorter-term picture is healthier. The 21-day return is <strong>+1.8%</strong>. The 63-day return is <strong>+29.5%</strong>. Arhaus has been quietly outperforming the broad market even as the sector stays flat.</p>
+<p>RSI sits at <strong>43.4</strong>. That is neutral-to-cool, well below overbought. You are not chasing a hot chart. Distance from the 52-week high is <strong>-32.9%</strong>. That is the drawdown you are buying into. The option chain from <strong>2026-09-01</strong> printed <strong>355</strong> puts against <strong>1</strong> call. Nobody on the options side is positioning for upside. That is a cautious signal, but it also means sentiment is washed out. If a catalyst appears, there is room for reverse flow.</p>
+<p>The levels are tight. Swing high is <strong>$10.03</strong>, which is also your target. Swing low is <strong>$6.68</strong>. Stop at <strong>$7.53</strong> sits above that low but below entry by <strong>10.7%</strong>. Average true range is <strong>$0.45</strong>. That gives you room to breathe on a daily basis without panicking out.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$1.26B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$1.63B</td></tr><tr><td class="k">52-week range</td><td class="v">$5.57 - $12.42</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">2.3</td></tr><tr><td class="k">Trailing P/E</td><td class="v">17.8</td></tr><tr><td class="k">Forward P/E</td><td class="v">15.7</td></tr><tr><td class="k">Price / sales</td><td class="v">0.9</td></tr><tr><td class="k">Price / book</td><td class="v">3.0</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$1.41B  (+7.4% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$9.99</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$69M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">0.5 / 0.57</td></tr><tr><td class="k">Gross margin</td><td class="v">38.0%</td></tr><tr><td class="k">Operating margin</td><td class="v">7.9%</td></tr><tr><td class="k">Profit margin</td><td class="v">4.9%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$2.12</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$1.46</td></tr><tr><td class="k">Total cash / share</td><td class="v">$1.62</td></tr><tr><td class="k">Debt / equity</td><td class="v">1.47</td></tr><tr><td class="k">Current ratio</td><td class="v">1.33</td></tr><tr><td class="k">Return on equity</td><td class="v">17.3%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">buy - mean target $10.50 (13 analysts)</td></tr></tbody></table>
+<p>The numbers are fine, not spectacular, and that is honest. Earnings per share is <strong>$0.50</strong>, with forward EPS of <strong>$0.57</strong>. Earnings growth stands at <strong>12.4%</strong>. Those are steady numbers for a retailer in a flat sector.</p>
+<p>Profitability is respectable for this space. Gross margin is <strong>38.0%</strong>. Operating margin is <strong>7.9%</strong>. Net margin is <strong>4.9%</strong>. Return on equity is <strong>17.3%</strong>, which is the standout number on this list. The company creates real shareholder value. Return on assets is a low <strong>3.1%</strong>, reflecting the capital intensity of showrooms and inventory.</p>
+<p>Cash generation is real. That comes to <strong>$1.46</strong> per share in free cash flow against a stock price of <strong>$8.43</strong>. The free cash flow yield is strong, even if warrants no fanfare. Cash per share is <strong>$1.62</strong>.</p>
+<p>The weak spot is the balance sheet if you look at it through a short-term liquidity lens. Debt to equity is <strong>1.47</strong>. That is high for a small cap. Current ratio is <strong>1.33</strong>, acceptable. Quick ratio is <strong>0.48</strong>, thin. The company depends on inventory converting to cash. In a consumer downturn, that inventory-heavy model gets pressured. The payout ratio is <strong>0.0%</strong>, so no dividend cushions the downside.</p>
+<p>Trailing P/E is <strong>17.8</strong>. Forward P/E is <strong>15.7</strong>. Price to sales is <strong>0.9</strong>. Analysts are on board with a mean target of <strong>$10.50</strong> and a buy rating across <strong>13</strong> analysts. That debt is the main structural risk.</p>
+<h2>Why Now</h2>
+<p>The timing is not built around a single event. There is no near-term catalyst. No earnings date to circle. No scheduled announcement. The desk flagged this name because the chart is clean, the risk-reward is acceptable, and the broader tape has not yet rewarded it.</p>
+<p>What makes the timing interesting is the combination of a washed-out options chain and a stock that has already trended up <strong>29.5%</strong> over the last 63 days. The put-heavy flow from <strong>2026-09-01</strong> suggests the crowd expects more downside, yet the stock holds above the 30-week line. That divergence is where the opportunity sits. The put wall is at <strong>$7.50</strong>, near your stop. The call wall is at <strong>$10.00</strong>, just below your target. The options market is not pricing a breakout. If price pushes toward $10, the repositioning could be sharp.</p>
+<p>The macro tailwinds are quiet. Consumer cyclical is NEUTRAL, not a headwind. No acceleration either way. That stable backdrop lets a stock-specific recovery play out. Sometimes the catalyst is simply that nobody expects one.</p>
+<h2>Risk Factors</h2>
+<p>The most credible way this loses you money is the longer trend. The 30-week slope is down <strong>8.4%</strong>. That is a bearish undercurrent. Price above a declining line is weaker than price above a rising line. If the broad market wobbles, Arhaus could get dragged back under the 30-week line quickly.</p>
+<p>The second risk is the balance sheet. Inventory-heavy retail with a quick ratio of <strong>0.48</strong> needs steady turnover. Any demand shock hits both earnings and liquidity.</p>
+<p>The third risk is the options posture. On <strong>2026-09-01</strong>, the chain printed <strong>355</strong> puts against <strong>1</strong> call. Premiums were tiny, <strong>$0.03 million</strong> on puts and effectively nothing on calls. That is not a bearish whale, but it shows no one is paying for upside. The absence of call buying means a rally may be slower than you hope.</p>
+<p>The invalidation is clear. A close below <strong>$7.53</strong> signals the setup failed. That level is <strong>10.7%</strong> below entry. You take the loss and move on. The timing risk is that no catalyst exists. This trade could sit flat for weeks. You are paid for patience through the risk-reward, but the absence of a hard date means frustration is part of the position.</p>
+<h2>Bringing It All Together</h2>
+<p>- Premium home furnishings retailer at <strong>0.9</strong> times sales with <strong>7.4%</strong> revenue growth and <strong>17.3%</strong> return on equity.</p>
+<p>- Chart is quiet but constructive: above the 30-week line, RSI <strong>43.4</strong>, <strong>19.0%</strong> upside to the <strong>$10.03</strong> target against <strong>10.7%</strong> downside to the stop.<br>- No catalyst, no fanfare, no call buying. That is the setup.<br>- Stop at <strong>$7.53</strong> is the single invalidation. Below that, you leave.</p>
+<h2>Conclusion</h2>
+<p>Arhaus is a measured, unglamorous long. You are buying a profitable premium retailer at a <strong>32.9%</strong> discount to its high with a <strong>1.8</strong> risk-reward and a clean, if cooling, chart. The 30-week slope is down, the options crowd is leaning put-heavy, and the balance sheet carries real debt. None of that cancels the setup. It defines the size. MEDIUM conviction means a normal position, not a concentrated one. The trade works if price holds the 30-week line and grinds toward <strong>$10.03</strong>. It fails below <strong>$7.53</strong>. That is the whole read.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Arhaus, Inc. (ARHS) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $1.26B; 52-week range $6-$12; Revenue $1.41B +7% YoY; Net income $69M; Free cash flow/share $1.46; Debt-to-equity 1.47; Return on equity 17%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Arhaus, Inc. (ARHS) inside the Consumer Cyclical space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): ARHS combines a proprietary desk read at **90** with a proprietary desk read at **65**, validity tested, risk-adjusted return **1.10**, p_bonf **0.0189**, tested. It trades **32.9%** below the 52-week high with RSI **43.4**, so you are buyi. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># Buying the Quiet Before the Turn
+
+*Arhaus trades 33% below its high with nobody chasing it. That is the point.*
+
+## The Big Picture
+
+The home furnishing sector is doing nothing exciting. Consumer cyclical stands NEUTRAL with NEUTRAL acceleration. No momentum. No tailwind. No crowd.
+
+You should care because that is exactly the environment where a beat-up small cap with a clean balance sheet can reset higher before anyone notices. The broad market keeps rewarding the obvious. This name hides in the quiet. The setup trades **32.9%** below its 52-week high with an RSI in low territory. That is a buying condition most desks miss because the chart looks boring.
+
+Arhaus fits that backdrop. It sells premium furniture through showrooms and digital channels. The sector backdrop rewards a name with real cash flow, a low valuation, and a chart that has already absorbed the selling. You are not paying for a story. You are paying for a reset.
+
+## Introducing ARHS
+
+Arhaus is a premium home furnishings retailer based in Boston Heights, Ohio. Founded in 1986, it sells sofas, dining tables, beds, outdoor furniture, lighting, rugs, and décor through showrooms, ecommerce, catalogs, and interior designer trade services.
+
+The company runs an omni-channel model. That means customers can buy the same product in a showroom, online, or through a designer. The brand leans high-end, yet the stock trades at a discount to its own history. Enterprise value is **$1.63 billion**. This is a small cap with a real business, real revenue, and real earnings.
+
+What gives it an edge is the premium positioning with a relatively low price-to-sales ratio. You are buying a premium retailer at a **0.9** times sales valuation. That is the kind of mismatch that closes when sentiment shifts.
+
+## The Thesis
+
+The core reason this works is simple. You are paying a quiet, low-excitement price for a company with positive earnings, decent cash generation, and a chart that has not confirmed any breakdown. The desk read stands at **90** on one screen and **65** on another. The weaker of the two, **65**, is the lowest tier, and I will not pretend otherwise. The trade is not built on maximum conviction.
+
+It is built on the risk-reward. Entry at **$8.43**, stop at **$7.53**, target at **$10.03**. That gives you **1.8** to 1 reward to risk. You risk **10.7%** to make **19.0%**. A secondary target at **$10.46** stretches the upside to **24.1%**.
+
+The conviction is MEDIUM. That is the honest read. You are not betting the farm. You are taking a measured position in a name that has been left behind but has not broken down. The 52-week high is **$12.42**. The low is **$5.57**. Current price **$8.43** sits **41.8%** of the way up from the low. That is not a falling knife. It is a base.
+
+## Technical Analysis
+
+&gt; 📈 Insert the ARHS weekly chart here (TradingView): ARHS weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $10.03 · mark support near $7.53.
+
+The trend picture is mixed, and you should know that before buying. Price sits above the 30-week moving average, which is the good part. But the 30-week slope is down **8.4%**. That means the longer trend is still declining even though price has nudged above the line. No Weinstein violation appears, so the break above the 30-week line has not been invalidated.
+
+The shorter-term picture is healthier. The 21-day return is **+1.8%**. The 63-day return is **+29.5%**. Arhaus has been quietly outperforming the broad market even as the sector stays flat.
+
+RSI sits at **43.4**. That is neutral-to-cool, well below overbought. You are not chasing a hot chart. Distance from the 52-week high is **-32.9%**. That is the drawdown you are buying into. The option chain from **2026-09-01** printed **355** puts against **1** call. Nobody on the options side is positioning for upside. That is a cautious signal, but it also means sentiment is washed out. If a catalyst appears, there is room for reverse flow.
+
+The levels are tight. Swing high is **$10.03**, which is also your target. Swing low is **$6.68**. Stop at **$7.53** sits above that low but below entry by **10.7%**. Average true range is **$0.45**. That gives you room to breathe on a daily basis without panicking out.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $1.26B |
+| Enterprise value | $1.63B |
+| 52-week range | $5.57 - $12.42 |
+| Dividend yield | None |
+| Beta | 2.3 |
+| Trailing P/E | 17.8 |
+| Forward P/E | 15.7 |
+| Price / sales | 0.9 |
+| Price / book | 3.0 |
+| Revenue (TTM) | $1.41B  (+7.4% YoY) |
+| Revenue / share | $9.99 |
+| Net income (TTM) | $69M |
+| EPS (TTM / fwd) | 0.5 / 0.57 |
+| Gross margin | 38.0% |
+| Operating margin | 7.9% |
+| Profit margin | 4.9% |
+| Operating cash flow / share | $2.12 |
+| Free cash flow / share | $1.46 |
+| Total cash / share | $1.62 |
+| Debt / equity | 1.47 |
+| Current ratio | 1.33 |
+| Return on equity | 17.3% |
+| Analyst consensus | buy - mean target $10.50 (13 analysts) |
+
+The numbers are fine, not spectacular, and that is honest. Earnings per share is **$0.50**, with forward EPS of **$0.57**. Earnings growth stands at **12.4%**. Those are steady numbers for a retailer in a flat sector.
+
+Profitability is respectable for this space. Gross margin is **38.0%**. Operating margin is **7.9%**. Net margin is **4.9%**. Return on equity is **17.3%**, which is the standout number on this list. The company creates real shareholder value. Return on assets is a low **3.1%**, reflecting the capital intensity of showrooms and inventory.
+
+Cash generation is real. That comes to **$1.46** per share in free cash flow against a stock price of **$8.43**. The free cash flow yield is strong, even if warrants no fanfare. Cash per share is **$1.62**.
+
+The weak spot is the balance sheet if you look at it through a short-term liquidity lens. Debt to equity is **1.47**. That is high for a small cap. Current ratio is **1.33**, acceptable. Quick ratio is **0.48**, thin. The company depends on inventory converting to cash. In a consumer downturn, that inventory-heavy model gets pressured. The payout ratio is **0.0%**, so no dividend cushions the downside.
+
+Trailing P/E is **17.8**. Forward P/E is **15.7**. Price to sales is **0.9**. Analysts are on board with a mean target of **$10.50** and a buy rating across **13** analysts. That debt is the main structural risk.
+
+## Why Now
+
+The timing is not built around a single event. There is no near-term catalyst. No earnings date to circle. No scheduled announcement. The desk flagged this name because the chart is clean, the risk-reward is acceptable, and the broader tape has not yet rewarded it.
+
+What makes the timing interesting is the combination of a washed-out options chain and a stock that has already trended up **29.5%** over the last 63 days. The put-heavy flow from **2026-09-01** suggests the crowd expects more downside, yet the stock holds above the 30-week line. That divergence is where the opportunity sits. The put wall is at **$7.50**, near your stop. The call wall is at **$10.00**, just below your target. The options market is not pricing a breakout. If price pushes toward $10, the repositioning could be sharp.
+
+The macro tailwinds are quiet. Consumer cyclical is NEUTRAL, not a headwind. No acceleration either way. That stable backdrop lets a stock-specific recovery play out. Sometimes the catalyst is simply that nobody expects one.
+
+## Risk Factors
+
+The most credible way this loses you money is the longer trend. The 30-week slope is down **8.4%**. That is a bearish undercurrent. Price above a declining line is weaker than price above a rising line. If the broad market wobbles, Arhaus could get dragged back under the 30-week line quickly.
+
+The second risk is the balance sheet. Inventory-heavy retail with a quick ratio of **0.48** needs steady turnover. Any demand shock hits both earnings and liquidity.
+
+The third risk is the options posture. On **2026-09-01**, the chain printed **355** puts against **1** call. Premiums were tiny, **$0.03 million** on puts and effectively nothing on calls. That is not a bearish whale, but it shows no one is paying for upside. The absence of call buying means a rally may be slower than you hope.
+
+The invalidation is clear. A close below **$7.53** signals the setup failed. That level is **10.7%** below entry. You take the loss and move on. The timing risk is that no catalyst exists. This trade could sit flat for weeks. You are paid for patience through the risk-reward, but the absence of a hard date means frustration is part of the position.
+
+## Bringing It All Together
+
+- Premium home furnishings retailer at **0.9** times sales with **7.4%** revenue growth and **17.3%** return on equity.
+
+- Chart is quiet but constructive: above the 30-week line, RSI **43.4**, **19.0%** upside to the **$10.03** target against **10.7%** downside to the stop.
+- No catalyst, no fanfare, no call buying. That is the setup.
+- Stop at **$7.53** is the single invalidation. Below that, you leave.
+
+## Conclusion
+
+Arhaus is a measured, unglamorous long. You are buying a profitable premium retailer at a **32.9%** discount to its high with a **1.8** risk-reward and a clean, if cooling, chart. The 30-week slope is down, the options crowd is leaning put-heavy, and the balance sheet carries real debt. None of that cancels the setup. It defines the size. MEDIUM conviction means a normal position, not a concentrated one. The trade works if price holds the 30-week line and grinds toward **$10.03**. It fails below **$7.53**. That is the whole read.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
