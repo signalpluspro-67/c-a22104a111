@@ -1,0 +1,240 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Pay-It-Forward Studio — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Pay-It-Forward Studio</h1>
+<div class="subtitle">Insider buying, bullish options flow, and a price that holds above its 30-week average while sitting 72% below the high.</div>
+<div class="meta">EOD 2026-09-03 · ANGX · written from the desk · model deepseek-v4-pro</div>
+<div class="chips"><span class="chip">ANGX</span>
+<span class="chip">Communication Services</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-09-03: entry <b>$4.06</b> &rarr; <b>$4.49</b> (as of 2026-09-03) · <span class="pos">+10.6%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Communication Services is in a momentum regime and it is riding an acceleration. That is the setup the desk sees. You have a sector state of MOMENTUM with a sector accel of RIDING, which means money is already in the trade and still coming. That combination rewards small caps that have a reason to break out.</p>
+<p>The macro backdrop favors a name with room to run. Angel Studios sits <strong>71.9%</strong> below its 52-week high of <strong>20.39</strong>. That is an enormous gap. No overhead supply sits anywhere near the current price of <strong>4.49</strong>. A momentum sector plus a deep reset is the kind of mismatch that sharp desks look for.</p>
+<p>You don&#x27;t need the whole sector to rip. You need one stock that has already started to turn while the sector confirms the direction. That is what the data shows here.</p>
+<h2>Introducing ANGX</h2>
+<p>Angel Studios is a media and technology company. It produces and distributes films and series. It also licenses films and shows from other creators. The business runs on a streaming platform where viewers watch movies, shows, and documentaries.</p>
+<p>It makes money beyond streaming, too. Merchandise, apparel, DVDs, Blu-rays, books, and a direct online store all feed the top line. There is also theatrical distribution, ticket presales, and a membership program called Angel Guild. A pay-it-forward feature lets one buyer fund another person&#x27;s ticket, which is a different angle in entertainment.</p>
+<p>The company was founded in 2013 as VidAngel and renamed Angel Studios in March 2021. It is based in Provo, Utah. It employs <strong>290</strong> people. That small size is the core of both the opportunity and the risk.</p>
+<h2>The Thesis</h2>
+<p>The desk thesis is simple. Several insiders bought at once and the bullish options flow lines up with them. The pullback desk read scores <strong>95</strong> here, with a tested risk-adjusted return of <strong>1.10</strong>. That is an unusually strong signal. You are buying a name that a proven screen identifies as washed out and turning up.</p>
+<p>Price holds above its 30-week average. Three-month relative strength versus the broad market is <strong>+43.7%</strong>. That is real outperformance. And it sits <strong>71.9%</strong> below the 52-week high, so the path above has no resistance anywhere near current levels. The combination of relative strength and absolute distance from the high is rare.</p>
+<p>Conviction is MEDIUM. Size it accordingly. The reason it ranks behind AAT and GENI is liquidity: <strong>$4.8M</strong> a day. That is the cost of admission for a name this small. The desk rate is <strong>95</strong> because the technical and insider signals align, but a $4.8M daily tape demands respect.</p>
+<p>The risk/reward is <strong>1.4</strong>. Entry at <strong>4.06</strong>, stop at <strong>3.48</strong>, target at <strong>4.85</strong>. A second target sits at <strong>5.36</strong>, which is <strong>32.0%</strong> above the entry. That is the runway.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-09-03-ANGX.png" alt="ANGX weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=ANGX&interval=1W" target="_blank" rel="noopener">📈 Open the ANGX weekly chart on TradingView ↗</a><figcaption>ANGX weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $4.85 · mark support near $3.48.</figcaption></figure>
+<p>The trend is up over the relevant window. Price closed at <strong>4.49</strong>, up <strong>5.9%</strong> over 21 days and <strong>45.8%</strong> over 63 days. It holds above the 30-week average, which is the slow trend filter that matters. The 30-week average itself has a slope of <strong>-5.7%</strong>, which tells you the long base is still healing even as the shorter-term price action turns up. That negative slope is the one wrinkle in an otherwise clean long setup.</p>
+<p>Price is <strong>22.0%</strong> of the 52-week high of <strong>20.39</strong>. It sits in the bottom portion of its yearly range, at <strong>13.3%</strong> from the low. But relative strength versus the broad market is <strong>+43.7%</strong> over three months. That is the key. The stock is not just bouncing. It is beating the market by a wide margin.</p>
+<p>The 8 and 21-week EMAs are not explicitly provided, but with 21-day return at <strong>+5.9%</strong> and 63-day return at <strong>+45.8%</strong>, the shorter averages are positioned constructively. RSI at <strong>54.9</strong> is neutral to slightly constructive. It is not overbought. There is room for continuation before any momentum exhaustion shows up.</p>
+<p>The real levels are the desk levels. Entry at <strong>4.06</strong>. Stop at <strong>3.48</strong>. Target at <strong>4.85</strong>. The swing high is <strong>4.85</strong> and the swing low is <strong>2.84</strong>. That would confirm the breakout.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$844M</td></tr><tr><td class="k">Enterprise value</td><td class="v">$867M</td></tr><tr><td class="k">52-week range</td><td class="v">$2.04 - $20.39</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">-0.0</td></tr><tr><td class="k">Forward P/E</td><td class="v">-18.8</td></tr><tr><td class="k">Price / sales</td><td class="v">2.0</td></tr><tr><td class="k">Price / book</td><td class="v">-29.0</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$413M  (+27.5% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$2.43</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$-155M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">-0.83 / -0.24</td></tr><tr><td class="k">Gross margin</td><td class="v">57.9%</td></tr><tr><td class="k">Operating margin</td><td class="v">-16.6%</td></tr><tr><td class="k">Profit margin</td><td class="v">-37.5%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$-0.34</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$0.06</td></tr><tr><td class="k">Total cash / share</td><td class="v">$0.26</td></tr><tr><td class="k">Current ratio</td><td class="v">0.65</td></tr><tr><td class="k">Analyst consensus</td><td class="v">none - mean target $8.00 (5 analysts)</td></tr></tbody></table>
+<p>Revenue is growing. Revenue per share is <strong>2.43</strong>. Gross margin is <strong>57.9%</strong>, which is healthy for an entertainment company. The top line is not the problem. Growth is real.</p>
+<p>Profitability is the weak spot. Operating margin is <strong>-16.6%</strong>. EPS is <strong>-$0.83</strong> trailing. Operating cash flow is negative <strong>$44.2M</strong>. The company burns cash at the operating level. The free cash flow per share is <strong>$0.06</strong>.</p>
+<p>The balance sheet is thin. Cash per share is <strong>$0.26</strong>. The current ratio is <strong>0.65</strong>, which means current liabilities exceed current assets about 1.5 to 1. The quick ratio is <strong>0.46</strong>. Book value per share is negative <strong>$0.16</strong>, which pushes price to book to <strong>-29.0</strong>. A negative book value means the company has a shareholder deficit on paper. That is a real balance-sheet constraint, and it matters if the business needs to raise capital.</p>
+<p>Analysts see something better. The mean target is <strong>$8.00</strong> across <strong>5</strong> analysts. Forward EPS is <strong>-$0.24</strong>, a much smaller loss than the trailing <strong>-$0.83</strong>. Earnings are expected around late November 2026, based on the next earnings timestamp. If the company narrows losses while revenue keeps growing at the current pace, the market will likely re-rate it. The path there depends on execution.</p>
+<h2>Why Now</h2>
+<p>There is no named catalyst in the data. No earnings date specific to a quarter, no product launch, no regulatory event. That is important. You are not buying a binary event. You are buying a technical and insider alignment. That lowers the risk of a gap against you into a known date.</p>
+<p>The near-term timing signal is the options flow from September 2, 2026. Calls traded <strong>343</strong> contracts against only <strong>7</strong> puts. Call premium was <strong>$0.03M</strong> versus effectively zero put premium. Small dollar amounts, but the direction matches the insider buying and the desk read. When flow, insiders, and technicals all point the same way in a name this small, the odds shift.</p>
+<p>Macro momentum in Communication Services is the tailwind. The sector state is MOMENTUM and the accel is RIDING. That means the sector is moving up and accelerating, not just holding. A name with <strong>+43.7%</strong> relative strength versus the broad market in that sector gets more attention. Institutions hunting for momentum want exactly this profile.</p>
+<p>The <strong>$4.8M</strong> daily average volume is the limiting factor. You will not get a clean institutional fill. But the small float and the distance from the high mean a modest shift in demand can move the stock hard. That is the benefit of buying a small cap in an accelerating sector.</p>
+<h2>Risk Factors</h2>
+<p>The first risk is liquidity. A bad tape gaps it rather than walks it down. If the broad market rolls over, this stock has no cushion. You can get stopped out without the stock ever trading at your stop price. That is a real cost of small-cap exposure.</p>
+<p>The second risk is the balance sheet. Negative book value, a current ratio of <strong>0.65</strong>, and operating cash flow of negative <strong>$44.2M</strong> mean the company may need to raise capital. A dilutive raise would hit the stock hard, especially with shareholder equity already negative. The market sometimes ignores this during momentum phases. It does not ignore it forever.</p>
+<p>The third risk is the negative 30-week average slope of <strong>-5.7%</strong>. Price is above the average, but the average is still falling. That means the long-term trend has not fully turned up. A failed breakout at the <strong>4.85</strong> swing high could send price back toward the <strong>2.84</strong> swing low. That is a <strong>36.9%</strong> drop from current levels.</p>
+<p>The invalidation is the stop at <strong>3.48</strong>. If price closes below that, the desk read is wrong. The insider buying and options flow thesis fails. A close below <strong>3.48</strong> means the washout is still in progress and the turnaround call was early. Exit there and do not look back.</p>
+<p>Timing risk is muted because there is no dated catalyst. But earnings are expected around late November 2026. If the company reports a wider loss than the forward estimate of <strong>-$0.24</strong> per share, the stock could gap down sharply. Manage size around that date.</p>
+<h2>Bringing It All Together</h2>
+<p>- Insider buying and bullish options flow align with a <strong>95</strong> desk score and a tested risk-adjusted return of <strong>1.10</strong>.<br>- Price holds above the 30-week average with <strong>+43.7%</strong> three-month relative strength versus the broad market.<br>- Revenue grows at <strong>27.5%</strong> and gross margin is <strong>57.9%</strong>, but the company loses money on a <strong>-37.5%</strong> net margin.<br>- No named catalyst, but <strong>343</strong> calls versus <strong>7</strong> puts on September 2 shows clear directional flow.<br>- Entry at <strong>4.06</strong>, stop at <strong>3.48</strong>, target at <strong>4.85</strong> with a second target at <strong>5.36</strong>.</p>
+<h2>Conclusion</h2>
+<p>Angel Studios is a thin, speculative long with real alignment behind it. Insiders bought. Options flow is bullish. The technical setup holds above the 30-week average with strong relative strength. Revenue growth is real, and analysts expect losses to narrow. The balance sheet is a legitimate concern, and liquidity is the price you pay for this setup.</p>
+<p>You are buying a stock at <strong>22.0%</strong> of its 52-week high in an accelerating sector with insiders and options flow on your side. The risk/reward is <strong>1.4</strong> to the first target and the second target offers <strong>32.0%</strong> upside. If price closes below <strong>3.48</strong>, the thesis is broken. Until then, the path of least resistance is up.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Angel Studios, Inc. (ANGX) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $844M; 52-week range $2-$20; Revenue $413M +28% YoY; Net income $-155M; Free cash flow/share $0.06. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Angel Studios, Inc. (ANGX) inside the Communication Services space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Several insiders bought at once and the bullish options flow lines up with them. The proven pullback desk read scores **95** here (**tested · risk-adjusted return 1.10 · tested), price holds above its 30-week average, and three-month relati. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Pay-It-Forward Studio
+
+*Insider buying, bullish options flow, and a price that holds above its 30-week average while sitting 72% below the high.*
+
+## The Big Picture
+
+Communication Services is in a momentum regime and it is riding an acceleration. That is the setup the desk sees. You have a sector state of MOMENTUM with a sector accel of RIDING, which means money is already in the trade and still coming. That combination rewards small caps that have a reason to break out.
+
+The macro backdrop favors a name with room to run. Angel Studios sits **71.9%** below its 52-week high of **20.39**. That is an enormous gap. No overhead supply sits anywhere near the current price of **4.49**. A momentum sector plus a deep reset is the kind of mismatch that sharp desks look for.
+
+You don&#x27;t need the whole sector to rip. You need one stock that has already started to turn while the sector confirms the direction. That is what the data shows here.
+
+## Introducing ANGX
+
+Angel Studios is a media and technology company. It produces and distributes films and series. It also licenses films and shows from other creators. The business runs on a streaming platform where viewers watch movies, shows, and documentaries.
+
+It makes money beyond streaming, too. Merchandise, apparel, DVDs, Blu-rays, books, and a direct online store all feed the top line. There is also theatrical distribution, ticket presales, and a membership program called Angel Guild. A pay-it-forward feature lets one buyer fund another person&#x27;s ticket, which is a different angle in entertainment.
+
+The company was founded in 2013 as VidAngel and renamed Angel Studios in March 2021. It is based in Provo, Utah. It employs **290** people. That small size is the core of both the opportunity and the risk.
+
+## The Thesis
+
+The desk thesis is simple. Several insiders bought at once and the bullish options flow lines up with them. The pullback desk read scores **95** here, with a tested risk-adjusted return of **1.10**. That is an unusually strong signal. You are buying a name that a proven screen identifies as washed out and turning up.
+
+Price holds above its 30-week average. Three-month relative strength versus the broad market is **+43.7%**. That is real outperformance. And it sits **71.9%** below the 52-week high, so the path above has no resistance anywhere near current levels. The combination of relative strength and absolute distance from the high is rare.
+
+Conviction is MEDIUM. Size it accordingly. The reason it ranks behind AAT and GENI is liquidity: **$4.8M** a day. That is the cost of admission for a name this small. The desk rate is **95** because the technical and insider signals align, but a $4.8M daily tape demands respect.
+
+The risk/reward is **1.4**. Entry at **4.06**, stop at **3.48**, target at **4.85**. A second target sits at **5.36**, which is **32.0%** above the entry. That is the runway.
+
+## Technical Analysis
+
+&gt; 📈 Insert the ANGX weekly chart here (TradingView): ANGX weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $4.85 · mark support near $3.48.
+
+The trend is up over the relevant window. Price closed at **4.49**, up **5.9%** over 21 days and **45.8%** over 63 days. It holds above the 30-week average, which is the slow trend filter that matters. The 30-week average itself has a slope of **-5.7%**, which tells you the long base is still healing even as the shorter-term price action turns up. That negative slope is the one wrinkle in an otherwise clean long setup.
+
+Price is **22.0%** of the 52-week high of **20.39**. It sits in the bottom portion of its yearly range, at **13.3%** from the low. But relative strength versus the broad market is **+43.7%** over three months. That is the key. The stock is not just bouncing. It is beating the market by a wide margin.
+
+The 8 and 21-week EMAs are not explicitly provided, but with 21-day return at **+5.9%** and 63-day return at **+45.8%**, the shorter averages are positioned constructively. RSI at **54.9** is neutral to slightly constructive. It is not overbought. There is room for continuation before any momentum exhaustion shows up.
+
+The real levels are the desk levels. Entry at **4.06**. Stop at **3.48**. Target at **4.85**. The swing high is **4.85** and the swing low is **2.84**. That would confirm the breakout.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $844M |
+| Enterprise value | $867M |
+| 52-week range | $2.04 - $20.39 |
+| Dividend yield | None |
+| Beta | -0.0 |
+| Forward P/E | -18.8 |
+| Price / sales | 2.0 |
+| Price / book | -29.0 |
+| Revenue (TTM) | $413M  (+27.5% YoY) |
+| Revenue / share | $2.43 |
+| Net income (TTM) | $-155M |
+| EPS (TTM / fwd) | -0.83 / -0.24 |
+| Gross margin | 57.9% |
+| Operating margin | -16.6% |
+| Profit margin | -37.5% |
+| Operating cash flow / share | $-0.34 |
+| Free cash flow / share | $0.06 |
+| Total cash / share | $0.26 |
+| Current ratio | 0.65 |
+| Analyst consensus | none - mean target $8.00 (5 analysts) |
+
+Revenue is growing. Revenue per share is **2.43**. Gross margin is **57.9%**, which is healthy for an entertainment company. The top line is not the problem. Growth is real.
+
+Profitability is the weak spot. Operating margin is **-16.6%**. EPS is **-$0.83** trailing. Operating cash flow is negative **$44.2M**. The company burns cash at the operating level. The free cash flow per share is **$0.06**.
+
+The balance sheet is thin. Cash per share is **$0.26**. The current ratio is **0.65**, which means current liabilities exceed current assets about 1.5 to 1. The quick ratio is **0.46**. Book value per share is negative **$0.16**, which pushes price to book to **-29.0**. A negative book value means the company has a shareholder deficit on paper. That is a real balance-sheet constraint, and it matters if the business needs to raise capital.
+
+Analysts see something better. The mean target is **$8.00** across **5** analysts. Forward EPS is **-$0.24**, a much smaller loss than the trailing **-$0.83**. Earnings are expected around late November 2026, based on the next earnings timestamp. If the company narrows losses while revenue keeps growing at the current pace, the market will likely re-rate it. The path there depends on execution.
+
+## Why Now
+
+There is no named catalyst in the data. No earnings date specific to a quarter, no product launch, no regulatory event. That is important. You are not buying a binary event. You are buying a technical and insider alignment. That lowers the risk of a gap against you into a known date.
+
+The near-term timing signal is the options flow from September 2, 2026. Calls traded **343** contracts against only **7** puts. Call premium was **$0.03M** versus effectively zero put premium. Small dollar amounts, but the direction matches the insider buying and the desk read. When flow, insiders, and technicals all point the same way in a name this small, the odds shift.
+
+Macro momentum in Communication Services is the tailwind. The sector state is MOMENTUM and the accel is RIDING. That means the sector is moving up and accelerating, not just holding. A name with **+43.7%** relative strength versus the broad market in that sector gets more attention. Institutions hunting for momentum want exactly this profile.
+
+The **$4.8M** daily average volume is the limiting factor. You will not get a clean institutional fill. But the small float and the distance from the high mean a modest shift in demand can move the stock hard. That is the benefit of buying a small cap in an accelerating sector.
+
+## Risk Factors
+
+The first risk is liquidity. A bad tape gaps it rather than walks it down. If the broad market rolls over, this stock has no cushion. You can get stopped out without the stock ever trading at your stop price. That is a real cost of small-cap exposure.
+
+The second risk is the balance sheet. Negative book value, a current ratio of **0.65**, and operating cash flow of negative **$44.2M** mean the company may need to raise capital. A dilutive raise would hit the stock hard, especially with shareholder equity already negative. The market sometimes ignores this during momentum phases. It does not ignore it forever.
+
+The third risk is the negative 30-week average slope of **-5.7%**. Price is above the average, but the average is still falling. That means the long-term trend has not fully turned up. A failed breakout at the **4.85** swing high could send price back toward the **2.84** swing low. That is a **36.9%** drop from current levels.
+
+The invalidation is the stop at **3.48**. If price closes below that, the desk read is wrong. The insider buying and options flow thesis fails. A close below **3.48** means the washout is still in progress and the turnaround call was early. Exit there and do not look back.
+
+Timing risk is muted because there is no dated catalyst. But earnings are expected around late November 2026. If the company reports a wider loss than the forward estimate of **-$0.24** per share, the stock could gap down sharply. Manage size around that date.
+
+## Bringing It All Together
+
+- Insider buying and bullish options flow align with a **95** desk score and a tested risk-adjusted return of **1.10**.
+- Price holds above the 30-week average with **+43.7%** three-month relative strength versus the broad market.
+- Revenue grows at **27.5%** and gross margin is **57.9%**, but the company loses money on a **-37.5%** net margin.
+- No named catalyst, but **343** calls versus **7** puts on September 2 shows clear directional flow.
+- Entry at **4.06**, stop at **3.48**, target at **4.85** with a second target at **5.36**.
+
+## Conclusion
+
+Angel Studios is a thin, speculative long with real alignment behind it. Insiders bought. Options flow is bullish. The technical setup holds above the 30-week average with strong relative strength. Revenue growth is real, and analysts expect losses to narrow. The balance sheet is a legitimate concern, and liquidity is the price you pay for this setup.
+
+You are buying a stock at **22.0%** of its 52-week high in an accelerating sector with insiders and options flow on your side. The risk/reward is **1.4** to the first target and the second target offers **32.0%** upside. If price closes below **3.48**, the thesis is broken. Until then, the path of least resistance is up.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>
