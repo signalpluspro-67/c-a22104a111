@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calibrer ensemble SPX et VIX sur plusieurs échéances</title>
+<style>*{box-sizing:border-box}
+body{margin:0;background:#faf7f2;color:#1c1b1a;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+ line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:820px;margin:0 auto;padding:48px 22px 90px}
+.kicker{color:#b4623a;font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:13px}
+h1{font-size:40px;line-height:1.12;margin:10px 0 14px;font-weight:800}
+.lead{font-size:24px;line-height:1.35;color:#3a3733;margin:0 0 6px;font-weight:600}
+h2{font-size:23px;margin:44px 0 12px;font-weight:750}
+p{margin:0 0 12px}
+.card{background:#fff;border:1px solid #e7e1d8;border-radius:14px;padding:26px 24px;
+ margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.bloc{display:flex;gap:24px;align-items:center}
+.pic{font-size:92px;line-height:1;flex:0 0 auto}
+.bt{font-size:26px;font-weight:750;margin:0 0 6px}
+.bx{color:#55504a;margin:0;font-size:17px}
+.num{color:#b4623a;font-weight:700;font-size:13px;letter-spacing:.04em}
+ul{margin:6px 0 0;padding-left:22px}li{margin:9px 0;font-size:17px}
+.tag{display:inline-block;background:#f6ece6;color:#b4623a;font-size:12px;font-weight:700;
+ padding:4px 10px;border-radius:20px;margin-bottom:10px}
+.mini{color:#8a837a;font-size:14px}
+a{color:#b4623a}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid #e7e1d8;color:#8a837a;font-size:14px}
+.verdict{border-radius:14px;padding:22px 24px;margin:26px 0 8px;border:1px solid}
+.vlabel{font-size:13px;font-weight:800;letter-spacing:.08em;margin-bottom:8px}
+.vtext{margin:0;font-size:18px;line-height:1.5}
+.vp{background:#eef6ee;border-color:#cbe0cb}.vp .vlabel{color:#3c6b3c}
+.vt{background:#fbf3e6;border-color:#ecdcc0}.vt .vlabel{color:#8a6320}
+.vx{background:#f3f1ef;border-color:#e2ded8}.vx .vlabel{color:#6b6660}
+.gros{padding:30px 28px}
+.sst{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+ color:#b4623a;margin:24px 0 8px}.gros .sst:first-child{margin-top:0}
+.etapes{counter-reset:e;list-style:none;padding-left:0;margin:8px 0 0}
+.etapes li{counter-increment:e;position:relative;padding-left:38px;margin:12px 0;font-size:17px}
+.etapes li::before{content:counter(e);position:absolute;left:0;top:1px;width:26px;height:26px;
+ border-radius:50%;background:#f6ece6;color:#b4623a;font-weight:800;font-size:13px;
+ display:flex;align-items:center;justify-content:center}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:640px){h1{font-size:30px}.lead{font-size:20px}.pic{font-size:64px}
+ .bloc{flex-direction:column;align-items:flex-start;gap:12px}.duo{grid-template-columns:1fr}}</style></head><body><div class="wrap">
+<span class="tag">Marchés</span>
+<div class="kicker">Papier de la semaine · samedi 5 septembre</div>
+<h1>Calibrer ensemble SPX et VIX sur plusieurs échéances</h1>
+<p class="lead">Le papier propose une façon de caler un modèle de marché qui colle en même temps aux prix d&#x27;options du S&amp;P 500 et du VIX sur plusieurs mois, sans supposer que chaque mois est indépendant du passé.</p>
+<p class="mini">Global Multi-Maturity SPX-VIX Calibration Beyond Markovian Stitching · <a href="https://arxiv.org/abs/2609.04087">arXiv 2609.04087</a></p>
+
+<div class="verdict vx">
+  <div class="vlabel">PASSER</div>
+  <p class="vtext">Le système ici est un moteur de screeners actions sur données EOD, avec un peu de flux options via GEX et positionnement dealers. Il n&#x27;y a aucune brique de calibration jointe SPX-VIX ni de pricing de produits multi-périodes qui utiliserait ce genre de modèle, donc le papier n&#x27;a pas de point d&#x27;accroche.</p>
+</div>
+
+<h2>Le problème qu'ils attaquent</h2>
+<div class="card"><p class="bx">Pour pricer des produits qui dépendent à la fois du S&amp;P et du VIX, il faut un modèle qui reproduise les smiles d&#x27;options des deux indices, sur plusieurs échéances. La méthode habituelle recolle des morceaux mois par mois, avec une hypothèse cachée que le futur ne dépend du passé qu&#x27;à travers le niveau actuel du SPX. Cette hypothèse jette de l&#x27;information sur l&#x27;histoire du chemin, donc deux modèles qui matchent les mêmes smiles mensuels peuvent donner des prix très différents pour des produits multi-périodes. Les auteurs veulent un cadre global qui garde cette dépendance historique.</p></div>
+
+<h2>Comment ça marche</h2>
+<div class="card"><div class="bloc"><div class="pic">🧩</div><div><div class="num">01</div><p class="bt">Le problème du recollage</p><p class="bx">Un smile d&#x27;options te donne la loi du prix à une date donnée. Quand tu recolles deux smiles voisins, tu obtiens une loi jointe qui décrit le passage d&#x27;un mois au suivant. Le problème, c&#x27;est que ce recollage suppose que le mois suivant ne dépend du passé qu&#x27;à travers la valeur du SPX aujourd&#x27;hui. Toute la mémoire plus ancienne du chemin disparaît.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🔗</div><div><div class="num">02</div><p class="bt">Local ok, global pas forcément</p><p class="bx">Les auteurs montrent que faisabilité locale et globale sont équivalentes au sens des marges. Toute loi globale peut être ramenée à une version markovienne qui garde les mêmes triplets mensuels SPX-VIX-SPX suivant. Mais l&#x27;ensemble des chemins possibles avec mémoire longue est strictement plus grand que celui des chemins recollés. Deux modèles peuvent donc coller aux mêmes smiles et pricer différemment un produit qui regarde plusieurs mois.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">📐</div><div><div class="num">03</div><p class="bt">L&#x27;entropie choisit le plus simple</p><p class="bx">Si tu prends une référence markovienne et que tu cherches la loi la plus proche au sens de l&#x27;entropie relative, tu retombes sur la solution recollée. Pour capturer la vraie dépendance historique, il te faut soit de l&#x27;info qui traverse les périodes, soit un objectif différent, soit une référence qui a déjà de la mémoire. Autrement dit, la solution habituelle est un minimum d&#x27;information, pas une vérité.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">⚙️</div><div><div class="num">04</div><p class="bt">Descente miroir augmentée</p><p class="bx">Pour la version numérique en états finis, ils proposent un algorithme de descente miroir de Bregman avec pénalités augmentées. Il garde le fit aux moments observables des quotes tout en contrôlant deux résidus, celui de martingalité et celui de dispersion. L&#x27;idée est de séparer ce qui est vraiment contraint par le marché de ce qui vient d&#x27;un choix arbitraire, en exposant l&#x27;écart dans les lignes conditionnelles.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🧪</div><div><div class="num">05</div><p class="bt">Test sur système contrôlé</p><p class="bx">Ils fabriquent un système affine volontairement infaisable pour voir comment leur méthode se comporte. Le split entre marges et conditionnelles garde les marges prescrites environ 25 fois plus serrées que la projection cyclique par lignes. Ils montrent aussi un exemple fini exact où la markovisation change matériellement le prix de produits multi-périodes.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">📈</div><div><div class="num">06</div><p class="bt">Sur vraies surfaces SPX VIX</p><p class="bx">Ils appliquent le schéma sur des surfaces lissées de SPX et VIX avec un budget fini de pénalité. La pire erreur sur les smiles fittés reste sous 0,70 point de vol sur toute la plage testée. En parallèle, les diagnostics conditionnels s&#x27;améliorent nettement, ce qui veut dire que le modèle capture mieux la dépendance historique sans casser les prix mono-période.</p></div></div></div>
+
+<h2>Ce qu&#x27;ils ont mesuré</h2><div class="card"><ul><li>Marges prescrites gardées environ 25 fois plus serrées que la projection cyclique par lignes, sur système affine infaisable contrôlé</li><li>Pire erreur de smile fitté sous 0,70 point de volatilité sur toute la plage du sweep, sur surfaces SPX et VIX lissées</li><li>Pas de taille d&#x27;échantillon marché indiquée dans le résumé, tests sur surfaces lissées et systèmes synthétiques finis</li></ul></div>
+<h2>Ce que ça ne prouve pas</h2><div class="card"><ul><li>Résultats numériques sur surfaces lissées et exemples finis, pas de backtest sur données de marché brutes</li><li>Le contrôle des résidus dépend d&#x27;un budget de pénalité choisi, l&#x27;article ne dit pas comment le fixer en production</li><li>Rien sur le coût de calcul, la stabilité dans le temps ou l&#x27;usage pour du hedging réel</li></ul></div>
+
+<h2>Chez nous</h2>
+<div class="card gros">
+  <p class="sst">Où ça se branche</p>
+  <p class="bx">Aucun point d&#x27;accroche dans le système actuel. Les modules options touchés seraient GEX, dealer positioning, VARIANCE_PREMIUM et VVIX_SIGNAL, mais aucun ne construit ni ne consomme une surface de vol calibrée jointe SPX-VIX.</p>
+  <p class="sst">Le plan</p>
+  <ol class="etapes"><li>Ne pas coder. Le prérequis manquant est un moteur de calibration de surface de vol et un usage de prix multi-périodes, absents du système.</li><li>Si un jour un module de pricing d&#x27;options multi-échéances arrive, alors relire le papier pour choisir entre recollage markovien et cadre global.</li><li>En attendant, garder VARIANCE_PREMIUM et VVIX_SIGNAL comme signaux statistiques simples, sans modèle de surface.</li></ol>
+  <div class="duo">
+    <div><p class="sst">Effort</p><p class="bx">0 h aujourd&#x27;hui, plusieurs semaines si un moteur de calibration doit être bâti d&#x27;abord</p></div>
+    <div><p class="sst">Ça remplace</p><p class="bx">Rien. Ça n&#x27;ajoute rien à un système de screeners actions EOD.</p></div>
+  </div>
+  <p class="sst">Le risque</p>
+  <p class="bx">Le vrai risque serait de brancher pour brancher, ajouter une dépendance lourde et un modèle stochastique complexe pour zéro gain sur des signaux qui vivent en EOD.</p>
+</div>
+
+<h2>Le test qui tranche</h2>
+<div class="card"><p class="bx">Pas de test à lancer. Le critère de bascule vers PLUS TARD serait l&#x27;apparition dans le système d&#x27;un besoin concret de pricer un produit qui dépend à la fois du SPX et du VIX sur plusieurs mois, avec un écart de prix mesurable entre recollage et cadre global qui dépasse le coût opérationnel.</p></div>
+
+<h2>Ce que j&#x27;ai simplifié</h2><div class="card"><ul><li>J&#x27;ai résumé la markovisation comme jeter la mémoire du chemin, la vraie définition est plus fine et concerne la loi conditionnelle sachant l&#x27;état courant</li><li>J&#x27;ai décrit la descente miroir de Bregman comme un solveur avec pénalités, sans entrer dans la géométrie de l&#x27;entropie qui justifie le choix des mises à jour</li></ul></div>
+<footer>Veille papers · <a href="index.html">toutes les semaines</a></footer>
+</div></body></html>
