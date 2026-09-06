@@ -222,24 +222,35 @@ const elK=document.getElementById('kicker'), elN=document.getElementById('num'),
       elT=document.getElementById('title'), elS=document.getElementById('sub');
 const bgImages={}; let bg=null; let fmt={w:1200,h:600}; let preset='classic';
 
+// Le fond plein n'est decode qu'a la selection : garder les 97 bitmaps 1472x832
+// en memoire (~500 Mo) figeait l'onglet. La bande de vignettes tape sur bg/thumb/.
+const bgPending={};
+function ensureFull(url){
+  if(bgImages[url]) return Promise.resolve(bgImages[url]);
+  if(!bgPending[url]) bgPending[url]=new Promise(res=>{ const im=new Image();
+    im.onload=()=>{ bgImages[url]=im; res(im); }; im.onerror=()=>res(null); im.src=url; });
+  return bgPending[url];
+}
 function applyBg(url,thumb){ bg=url; card.style.backgroundImage=`url('${url}')`;
+  ensureFull(url);
   document.querySelectorAll('.sw').forEach(s=>s.classList.remove('on')); if(thumb) thumb.classList.add('on'); }
 
-function loadBackgrounds(urlFor){
+function loadBackgrounds(urlFor,thumbFor){
   const FILES=window.BG_FILES||[];
   if(FILES.length) applyBg(urlFor(FILES[0]));
-  FILES.forEach((name)=>{ const url=urlFor(name); if(!url) return; const im=new Image();
-    im.onload=()=>{ bgImages[url]=im; const d=document.createElement('div'); d.className='sw';
-      d.style.backgroundImage=`url('${url}')`; d.onclick=()=>applyBg(url,d); strip.appendChild(d);
-      if(url===bg) d.classList.add('on'); };
-    im.src=url; });
+  FILES.forEach((name)=>{ const url=urlFor(name); if(!url) return;
+    const d=document.createElement('div'); d.className='sw';
+    d.style.backgroundImage=`url('${(thumbFor?thumbFor(name):url)}')`;
+    d.onclick=()=>applyBg(url,d); strip.appendChild(d);
+    if(url===bg) d.classList.add('on'); });
 }
 if(location.protocol==='file:'){
   const s=document.createElement('script'); s.src='bg/bg_data.js';
-  s.onload=()=>loadBackgrounds(n=>(window.BG_DATA||{})[n]);
+  s.onload=()=>loadBackgrounds(n=>(window.BG_DATA||{})[n],
+                              n=>(window.BG_THUMBS||{})[n]||(window.BG_DATA||{})[n]);
   document.head.appendChild(s);
 } else {
-  loadBackgrounds(n=>'bg/'+n);
+  loadBackgrounds(n=>'bg/'+n, n=>'bg/thumb/'+n);
 }
 
 // preset = swap the .card class; background + aspect-ratio live on inline styles, untouched.
@@ -483,7 +494,7 @@ function draw(){
   }
 }
 
-document.getElementById('dl').onclick=()=>{ draw(); cv.toBlob(b=>{ const a=document.createElement('a');
+document.getElementById('dl').onclick=async()=>{ await ensureFull(bg); draw(); cv.toBlob(b=>{ const a=document.createElement('a');
   const safe=((elT.innerText||'cover').trim().replace(/[^a-z0-9]+/gi,'-').toLowerCase().slice(0,40))||'cover';
   a.href=URL.createObjectURL(b); a.download=`cover-${preset}-${safe}.png`; a.click(); },'image/png'); };
 </script>
