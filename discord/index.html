@@ -10,7 +10,7 @@
  .kicker{color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
  h1{font-family:Georgia,serif;font-size:34px;line-height:1.15;margin:10px 0 6px}
  .sub{color:var(--ink3);font-size:13px;margin-bottom:22px}
- .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:16px;position:sticky;top:0;background:var(--bg);padding:10px 0;z-index:2}
+ .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px;position:sticky;top:0;background:var(--bg);padding:10px 0;z-index:2}
  .tab{font:inherit;font-size:13px;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink2);border-radius:99px;padding:6px 13px}
  .tab.on{background:var(--ink);color:#fff;border-color:var(--ink)}
  .tab small{color:inherit;opacity:.6;margin-left:4px}
@@ -40,8 +40,9 @@
 </style></head><body><div class="wrap">
 <div class="kicker">The Philosopher Investor · desk output</div>
 <h1>Discord production, last 2 days</h1>
-<div class="sub">14 posts across 5 channels · rebuilt every morning · last build 08/09/2026 19:14 · each post is shown as it will paste into Substack · click <b>Copy</b>, then Cmd+V in the Substack editor.</div>
+<div class="sub">14 posts across 5 channels · rebuilt every morning · last build 08/09/2026 19:22 · each post is shown as it will paste into Substack · click <b>Copy</b>, then Cmd+V in the Substack editor.</div>
 <div class="bar" id="bar"><input class="q" id="q" placeholder="Search…"></div>
+<div id="quiet" class="sub" style="margin-top:-6px"></div>
 <div id="root"></div>
 <footer>Images are copied out of Discord at build time; the page is rebuilt daily. Source: #PUBLICATION SOCIALS + #PUBLICATION ARTICLES + #track-record.</footer>
 </div>
@@ -74,35 +75,35 @@ async function copy(btn,i){
   btn.textContent='Copied ✓';btn.classList.add('done');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('done');},1500);
 }
 const FLAT=[];let cur='all';
+function dayKey(iso){const d=new Date(iso);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function dayLabel(k){const d=new Date(k+'T12:00:00');const t=dayKey(new Date().toISOString());const y=dayKey(new Date(Date.now()-864e5).toISOString());const lbl=d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});return (k===t?'Today · ':k===y?'Yesterday · ':'')+lbl;}
+function card(m){
+  let cs='<div class="msg"><div class="meta"><span>#'+esc(m.ch)+' · '+fmtDate(m.ts)+' · <a href="'+m.link+'" target="_blank">open in Discord</a></span><button class="copy" onclick="copy(this,'+m.i+')">Copy</button></div>';
+  if(m.pub_html)cs+='<div class="body">'+m.pub_html+'</div>';
+  for(const e of m.embeds)cs+='<div class="embed">'+(e.title?'<b>'+(e.url?'<a href="'+e.url+'">'+esc(e.title)+'</a>':esc(e.title))+'</b>':'')+(e.description?md(e.description):'')+(e.image?'<img src="'+e.image+'" style="max-width:100%;margin-top:8px;border-radius:6px">':'')+'</div>';
+  if(m.attachments.length){cs+='<div class="att">';for(const a of m.attachments)cs+=a.image?'<img src="'+a.url+'" loading="lazy">':'<a class="file" href="'+a.url+'">📎 '+esc(a.name)+'</a>';cs+='</div>';}
+  return cs+'</div>';
+}
 function render(){
   const q=document.getElementById('q').value.toLowerCase();
-  const root=document.getElementById('root');let out='';let n=0;
-  for(const cat of DATA.cats){
-    let cs='';
-    for(const ch of cat.channels){
-      if(cur!=='all'&&cur!==ch.name)continue;
-      const ms=ch.msgs.filter(m=>!q||(m.pub+' '+m.embeds.map(e=>(e.title||'')+' '+(e.description||'')).join(' ')).toLowerCase().includes(q));
-      if(!ms.length)continue;
-      cs+='<h3 class="chan"># '+ch.name+' · '+ms.length+'</h3>';
-      for(const m of ms){
-        n++;const i=m.i;
-        cs+='<div class="msg"><div class="meta"><span>'+esc(m.author)+' · '+fmtDate(m.ts)+' · <a href="'+m.link+'" target="_blank">open in Discord</a></span><button class="copy" onclick="copy(this,'+i+')">Copy</button></div>';
-        if(m.pub_html)cs+='<div class="body">'+m.pub_html+'</div>';
-        for(const e of m.embeds)cs+='<div class="embed">'+(e.title?'<b>'+(e.url?'<a href="'+e.url+'">'+esc(e.title)+'</a>':esc(e.title))+'</b>':'')+(e.description?md(e.description):'')+(e.image?'<img src="'+e.image+'" style="max-width:100%;margin-top:8px;border-radius:6px">':'')+'</div>';
-        if(m.attachments.length){cs+='<div class="att">';for(const a of m.attachments)cs+=a.image?'<img src="'+a.url+'" loading="lazy">':'<a class="file" href="'+a.url+'">📎 '+esc(a.name)+'</a>';cs+='</div>';}
-        cs+='</div>';
-      }
-    }
-    if(cs)out+='<h2 class="cat">'+esc(cat.name)+'</h2>'+cs;
+  const root=document.getElementById('root');let out='';
+  const ms=FLAT.filter(m=>(cur==='all'||cur===m.ch)&&(!q||(m.pub+' '+m.embeds.map(e=>(e.title||'')+' '+(e.description||'')).join(' ')).toLowerCase().includes(q)));
+  const days={};for(const m of ms){(days[dayKey(m.ts)]=days[dayKey(m.ts)]||[]).push(m);}
+  for(const k of Object.keys(days).sort().reverse()){
+    const list=days[k].sort((a,b)=>a.ord-b.ord||b.ts.localeCompare(a.ts));
+    out+='<h2 class="cat">'+dayLabel(k)+' <small style="font-weight:400;font-size:13px;color:var(--ink3)">'+list.length+' posts</small></h2>';
+    let last='';
+    for(const m of list){if(m.ch!==last){out+='<h3 class="chan"># '+esc(m.ch)+'</h3>';last=m.ch;}out+=card(m);}
   }
   root.innerHTML=out||'<p class="empty">Nothing in the window.</p>';
 }
 (function(){
-  const bar=document.getElementById('bar');const counts=[];
-  for(const cat of DATA.cats)for(const ch of cat.channels){for(const m of ch.msgs){m.i=FLAT.length;FLAT.push(m);}if(ch.msgs.length)counts.push([ch.name,ch.msgs.length]);}
+  const bar=document.getElementById('bar');const counts=[];const quiet=[];let ord=0;
+  for(const cat of DATA.cats)for(const ch of cat.channels){ord++;for(const m of ch.msgs){m.i=FLAT.length;m.ch=ch.name;m.ord=ord;FLAT.push(m);}if(ch.msgs.length)counts.push([ch.name,ch.msgs.length]);else quiet.push(ch.name);}
   const mk=(name,label,n)=>{const b=document.createElement('button');b.className='tab'+(name==='all'?' on':'');b.innerHTML=label+(n!=null?'<small>'+n+'</small>':'');b.onclick=()=>{cur=name;[...bar.querySelectorAll('.tab')].forEach(x=>x.classList.remove('on'));b.classList.add('on');render();};return b;};
   const q=document.getElementById('q');bar.insertBefore(mk('all','All',FLAT.length),q);
   for(const [c,n] of counts)bar.insertBefore(mk(c,'#'+c,n),q);
+  if(quiet.length)document.getElementById('quiet').textContent='Quiet in this window: '+quiet.map(c=>'#'+c).join(', ')+'. They show up here the morning after they post.';
   q.oninput=render;render();
 })();
 </script></body></html>
