@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mémoire évolutive pour agents à long horizon</title>
+<style>*{box-sizing:border-box}
+body{margin:0;background:#faf7f2;color:#1c1b1a;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+ line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:820px;margin:0 auto;padding:48px 22px 90px}
+.kicker{color:#b4623a;font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:13px}
+h1{font-size:40px;line-height:1.12;margin:10px 0 14px;font-weight:800}
+.lead{font-size:24px;line-height:1.35;color:#3a3733;margin:0 0 6px;font-weight:600}
+h2{font-size:23px;margin:44px 0 12px;font-weight:750}
+p{margin:0 0 12px}
+.card{background:#fff;border:1px solid #e7e1d8;border-radius:14px;padding:26px 24px;
+ margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.bloc{display:flex;gap:24px;align-items:center}
+.pic{font-size:92px;line-height:1;flex:0 0 auto}
+.bt{font-size:26px;font-weight:750;margin:0 0 6px}
+.bx{color:#55504a;margin:0;font-size:17px}
+.num{color:#b4623a;font-weight:700;font-size:13px;letter-spacing:.04em}
+ul{margin:6px 0 0;padding-left:22px}li{margin:9px 0;font-size:17px}
+.tag{display:inline-block;background:#f6ece6;color:#b4623a;font-size:12px;font-weight:700;
+ padding:4px 10px;border-radius:20px;margin-bottom:10px}
+.mini{color:#8a837a;font-size:14px}
+a{color:#b4623a}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid #e7e1d8;color:#8a837a;font-size:14px}
+.verdict{border-radius:14px;padding:22px 24px;margin:26px 0 8px;border:1px solid}
+.vlabel{font-size:13px;font-weight:800;letter-spacing:.08em;margin-bottom:8px}
+.vtext{margin:0;font-size:18px;line-height:1.5}
+.vp{background:#eef6ee;border-color:#cbe0cb}.vp .vlabel{color:#3c6b3c}
+.vt{background:#fbf3e6;border-color:#ecdcc0}.vt .vlabel{color:#8a6320}
+.vx{background:#f3f1ef;border-color:#e2ded8}.vx .vlabel{color:#6b6660}
+.gros{padding:30px 28px}
+.sst{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+ color:#b4623a;margin:24px 0 8px}.gros .sst:first-child{margin-top:0}
+.etapes{counter-reset:e;list-style:none;padding-left:0;margin:8px 0 0}
+.etapes li{counter-increment:e;position:relative;padding-left:38px;margin:12px 0;font-size:17px}
+.etapes li::before{content:counter(e);position:absolute;left:0;top:1px;width:26px;height:26px;
+ border-radius:50%;background:#f6ece6;color:#b4623a;font-weight:800;font-size:13px;
+ display:flex;align-items:center;justify-content:center}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:640px){h1{font-size:30px}.lead{font-size:20px}.pic{font-size:64px}
+ .bloc{flex-direction:column;align-items:flex-start;gap:12px}.duo{grid-template-columns:1fr}}</style></head><body><div class="wrap">
+<span class="tag">Agents et outillage</span>
+<div class="kicker">Papier de la semaine · samedi 12 septembre</div>
+<h1>Mémoire évolutive pour agents à long horizon</h1>
+<p class="lead">Les auteurs proposent une architecture où un agent LLM sépare sa mémoire de travail de sa mémoire de compétences, et un méta-agent réécrit les compétences après chaque échec repéré.</p>
+<p class="mini">Recursive Experiential-Working Memory Evolution for Long-Horizon Agent Harnesses · <a href="https://arxiv.org/abs/2608.24876">arXiv 2608.24876</a></p>
+
+<div class="verdict vt">
+  <div class="vlabel">PLUS TARD</div>
+  <p class="vtext">L&#x27;idée s&#x27;applique au harness d&#x27;agents LLM maison, pas aux screeners quantitatifs qui n&#x27;ont pas de compétences à réécrire. Ça vaut le coup une fois que le harness aura au moins une dizaine de tâches longues récurrentes qui échouent de façon repérable, sinon il n&#x27;y a rien à corriger.</p>
+</div>
+
+<h2>Le problème qu'ils attaquent</h2>
+<div class="card"><p class="bx">Quand un agent LLM enchaîne des dizaines de tours, son historique gonfle et devient du bruit. Le modèle perd de vue l&#x27;état courant de la tâche et déclenche les mauvaises compétences au mauvais moment. Les architectures classiques rejouent tout l&#x27;historique à chaque tour, ce qui coûte cher et dégrade la décision. Personne n&#x27;avait de boucle propre pour améliorer les compétences elles-mêmes à partir des exécutions passées.</p></div>
+
+<h2>Comment ça marche</h2>
+<div class="card"><div class="bloc"><div class="pic">🧠</div><div><div class="num">01</div><p class="bt">Deux mémoires séparées</p><p class="bx">La mémoire de travail garde une fiche courte de la tâche en cours, avec l&#x27;état et le prochain pas. La mémoire expérientielle stocke les compétences réutilisables, une par une. L&#x27;agent choisit une compétence à partir de la fiche de travail. Il ne fouille pas dans tout l&#x27;historique brut pour décider.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🔎</div><div><div class="num">02</div><p class="bt">L&#x27;exécution devient une preuve</p><p class="bx">Chaque tour d&#x27;exécution est enregistré comme trace structurée, avec l&#x27;entrée, la compétence appelée et le résultat. Quand la tâche échoue, on peut pointer le tour fautif et la compétence responsable. La panne est attribuée à un composant précis de la mémoire. Ça donne un signal exploitable au lieu d&#x27;un simple « raté ».</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🛠️</div><div><div class="num">03</div><p class="bt">Un méta-agent réécrit les compétences</p><p class="bx">Un second agent, plus lent, lit la trace de l&#x27;échec et propose une modification ciblée de la compétence fautive. La modification passe par une validation avant d&#x27;être écrite dans la mémoire des compétences. La compétence corrigée sert au prochain tour et génère de nouvelles traces. La boucle continue tant qu&#x27;elle améliore le score, avec un budget borné.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🔁</div><div><div class="num">04</div><p class="bt">Une boucle bornée d&#x27;auto-amélioration</p><p class="bx">L&#x27;agent produit des traces, le méta-agent corrige, la nouvelle compétence produit d&#x27;autres traces. C&#x27;est ça la recursive self-improvement : le système apprend de lui-même sans intervention humaine. La borne est simple, on arrête si la validation ne monte plus. Ça évite la dérive infinie qui casse ce genre de systèmes.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">📈</div><div><div class="num">05</div><p class="bt">Le gain grandit avec l&#x27;horizon</p><p class="bx">Plus la tâche est longue en nombre de tours, plus l&#x27;écart avec les baselines se creuse. Sur les tâches les plus longues des benchmarks, ils mesurent 32 points de plus. Les pannes typiques de long horizon, style l&#x27;agent qui oublie l&#x27;objectif, chutent fortement. C&#x27;est là que l&#x27;idée paye, sur des chaînes de plus de vingt tours.</p></div></div></div>
+
+<h2>Ce qu&#x27;ils ont mesuré</h2><div class="card"><ul><li>Amélioration sur 35 des 37 paires modèle-benchmark testées</li><li>+17.8 points pour GPT-5.6 Sol et +15.6 pour Claude Opus 5 sur tau-bench, portant Opus 5 à 87.9%</li><li>Quatre benchmarks de long horizon, dix modèles évalués, gain jusqu&#x27;à +32.2 points sur les tâches les plus longues et pannes réduites jusqu&#x27;à 80%</li></ul></div>
+<h2>Ce que ça ne prouve pas</h2><div class="card"><ul><li>Les benchmarks sont des tâches d&#x27;agent style tau-bench et SkillFlow, pas du trading ni de la finance</li><li>Le méta-agent coûte des appels LLM en plus, le papier ne détaille pas le surcoût en tokens dans le résumé</li><li>La qualité des corrections dépend du modèle qui joue le méta-agent, ça peut mal se généraliser sur un petit modèle</li></ul></div>
+
+<h2>Chez nous</h2>
+<div class="card gros">
+  <p class="sst">Où ça se branche</p>
+  <p class="bx">Le harness d&#x27;agents LLM lancé par launchd et cron, la passerelle lib/llm_gateway.py, et une future table skill_memory à créer à côté de signal_outcome.db. Les cibles concrètes sont les jobs PROTECTED du gateway, en particulier trade_desk et publish_brief, qui sont longs et coûteux.</p>
+  <p class="sst">Le plan</p>
+  <ol class="etapes"><li>Créer une base skill_memory.db avec deux tables, working_memory (task_id, step, state, next_action) et skill_memory (skill_id, version, prompt, code, score)</li><li>Instrumenter lib/llm_gateway.py pour logger chaque appel comme trace structurée (task_id, skill_id, input_hash, output, success) dans une table execution_traces</li><li>Écrire un méta-agent Python qui lit les traces d&#x27;échec du dernier run trade_desk, pointe la compétence fautive, propose une nouvelle version du prompt et l&#x27;écrit en version n+1 dans skill_memory</li><li>Ajouter une gate de validation qui rejoue les N derniers cas de la compétence sur la nouvelle version et ne la promeut que si le score monte</li></ol>
+  <div class="duo">
+    <div><p class="sst">Effort</p><p class="bx">20 h pour un prototype sur un seul job (trade_desk), 60 h pour couvrir les jobs PROTECTED</p></div>
+    <div><p class="sst">Ça remplace</p><p class="bx">Ça ajoute une couche au-dessus de lib/llm_gateway et lib/model_tier, ça ne remplace pas les screeners quantitatifs ni la validation en 8 étapes</p></div>
+  </div>
+  <p class="sst">Le risque</p>
+  <p class="bx">Le méta-agent peut dégrader une compétence en la réécrivant mal. Signe qui le montrerait, le score de validation d&#x27;une compétence baisse deux versions de suite, il faut alors bloquer les promotions automatiques.</p>
+</div>
+
+<h2>Le test qui tranche</h2>
+<div class="card"><p class="bx">Prendre le job trade_desk sur un mois de runs archivés, mesurer le taux de succès (recos qui passent les 8 étapes de validation) version baseline, puis rejouer avec Recuris branché. Si le taux de succès ne monte pas d&#x27;au moins 5 points absolus après trois cycles de méta-agent, c&#x27;est mort pour ce système.</p></div>
+
+<h2>Ce que j&#x27;ai simplifié</h2><div class="card"><ul><li>J&#x27;ai fusionné mémoire expérientielle et mémoire de compétences, le papier fait probablement une distinction plus fine</li><li>J&#x27;ai décrit la validation comme un simple rejeu, la vraie mécanique du papier est sûrement plus élaborée avec des tests unitaires ou des juges LLM</li></ul></div>
+<footer>Veille papers · <a href="index.html">toutes les semaines</a></footer>
+</div></body></html>

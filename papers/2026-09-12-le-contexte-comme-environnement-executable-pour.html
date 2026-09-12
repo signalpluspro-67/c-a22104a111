@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le contexte comme environnement exécutable pour agents</title>
+<style>*{box-sizing:border-box}
+body{margin:0;background:#faf7f2;color:#1c1b1a;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+ line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:820px;margin:0 auto;padding:48px 22px 90px}
+.kicker{color:#b4623a;font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:13px}
+h1{font-size:40px;line-height:1.12;margin:10px 0 14px;font-weight:800}
+.lead{font-size:24px;line-height:1.35;color:#3a3733;margin:0 0 6px;font-weight:600}
+h2{font-size:23px;margin:44px 0 12px;font-weight:750}
+p{margin:0 0 12px}
+.card{background:#fff;border:1px solid #e7e1d8;border-radius:14px;padding:26px 24px;
+ margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.bloc{display:flex;gap:24px;align-items:center}
+.pic{font-size:92px;line-height:1;flex:0 0 auto}
+.bt{font-size:26px;font-weight:750;margin:0 0 6px}
+.bx{color:#55504a;margin:0;font-size:17px}
+.num{color:#b4623a;font-weight:700;font-size:13px;letter-spacing:.04em}
+ul{margin:6px 0 0;padding-left:22px}li{margin:9px 0;font-size:17px}
+.tag{display:inline-block;background:#f6ece6;color:#b4623a;font-size:12px;font-weight:700;
+ padding:4px 10px;border-radius:20px;margin-bottom:10px}
+.mini{color:#8a837a;font-size:14px}
+a{color:#b4623a}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid #e7e1d8;color:#8a837a;font-size:14px}
+.verdict{border-radius:14px;padding:22px 24px;margin:26px 0 8px;border:1px solid}
+.vlabel{font-size:13px;font-weight:800;letter-spacing:.08em;margin-bottom:8px}
+.vtext{margin:0;font-size:18px;line-height:1.5}
+.vp{background:#eef6ee;border-color:#cbe0cb}.vp .vlabel{color:#3c6b3c}
+.vt{background:#fbf3e6;border-color:#ecdcc0}.vt .vlabel{color:#8a6320}
+.vx{background:#f3f1ef;border-color:#e2ded8}.vx .vlabel{color:#6b6660}
+.gros{padding:30px 28px}
+.sst{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+ color:#b4623a;margin:24px 0 8px}.gros .sst:first-child{margin-top:0}
+.etapes{counter-reset:e;list-style:none;padding-left:0;margin:8px 0 0}
+.etapes li{counter-increment:e;position:relative;padding-left:38px;margin:12px 0;font-size:17px}
+.etapes li::before{content:counter(e);position:absolute;left:0;top:1px;width:26px;height:26px;
+ border-radius:50%;background:#f6ece6;color:#b4623a;font-weight:800;font-size:13px;
+ display:flex;align-items:center;justify-content:center}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:640px){h1{font-size:30px}.lead{font-size:20px}.pic{font-size:64px}
+ .bloc{flex-direction:column;align-items:flex-start;gap:12px}.duo{grid-template-columns:1fr}}</style></head><body><div class="wrap">
+<span class="tag">Agents et outillage</span>
+<div class="kicker">Papier de la semaine · samedi 12 septembre</div>
+<h1>Le contexte comme environnement exécutable pour agents</h1>
+<p class="lead">Les auteurs proposent de gérer la mémoire d&#x27;un agent LLM comme un programme Python vivant, où l&#x27;agent écrit du code pour retrouver ce dont il a besoin au lieu de tout empiler dans le prompt.</p>
+<p class="mini">Context as an Environment: Programmatic Context Management for Long-Horizon Agents · <a href="https://arxiv.org/abs/2608.21690">arXiv 2608.21690</a></p>
+
+<div class="verdict vx">
+  <div class="vlabel">PASSER</div>
+  <p class="vtext">Le système de Daniel tourne sur des scripts Python courts lancés par cron et launchd, avec des sessions LLM brèves qui produisent un livrable et s&#x27;arrêtent. Il n&#x27;y a pas d&#x27;agent long-horizon dont la mémoire déborde du contexte, donc l&#x27;appareillage lourd de Scroll ne trouve rien à améliorer ici.</p>
+</div>
+
+<h2>Le problème qu'ils attaquent</h2>
+<div class="card"><p class="bx">Un agent LLM qui tourne longtemps accumule un historique bien plus gros que sa fenêtre de contexte. Les méthodes actuelles compressent ou résument le passé, en devinant à l&#x27;avance ce qui servira plus tard. Ce pari est souvent perdu, car on jette une info qui redevient utile dix étapes plus loin. Les auteurs veulent un système où rien n&#x27;est perdu et où l&#x27;agent va chercher lui-même la bonne info au bon moment.</p></div>
+
+<h2>Comment ça marche</h2>
+<div class="card"><div class="bloc"><div class="pic">📜</div><div><div class="num">01</div><p class="bt">Un journal qui garde tout</p><p class="bx">Chaque action de l&#x27;agent, chaque sortie d&#x27;outil, chaque message est ajouté à un Event Log. Ce journal ne s&#x27;efface jamais et sert de vérité de référence. Si une info a existé un jour dans la session, elle est encore là, adressable par une position exacte. C&#x27;est la mémoire longue du système, brute et complète.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🐍</div><div><div class="num">02</div><p class="bt">Un noyau Python qui persiste</p><p class="bx">À côté du journal tourne un vrai interpréteur Python en bac à sable. Les sorties d&#x27;outils et les résultats sont attachés à des variables typées qui survivent d&#x27;un appel du modèle au suivant. L&#x27;agent peut donc stocker un DataFrame ou une liste et le rappeler par son nom plus tard. Le prompt n&#x27;a plus à recontenir la donnée brute à chaque tour.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">⌨️</div><div><div class="num">03</div><p class="bt">Le modèle écrit du code</p><p class="bx">Pour retrouver ou transformer une info, le modèle écrit un bout de Python exécuté dans le noyau. Seul ce que le code imprime volontairement revient dans la fenêtre visible du prochain appel. Gérer sa mémoire devient une tâche de programmation, qui profite des progrès des LLM en code. L&#x27;agent choisit ce qui remonte à sa vue courante à chaque étape.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">📚</div><div><div class="num">04</div><p class="bt">Éviction avec adresse de retour</p><p class="bx">Quand la vue de travail sature, les vieux passages sont sortis pour libérer la place. Un petit index d&#x27;éviction garde un repère compact pour chaque zone évincée, avec l&#x27;adresse exacte dans l&#x27;Event Log. Si l&#x27;agent a besoin d&#x27;un vieux passage, il saute directement à sa position au lieu de fouiller. Rien n&#x27;est jamais vraiment perdu, juste rangé plus loin.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🎯</div><div><div class="num">05</div><p class="bt">Trois bancs de test longs</p><p class="bx">Ils évaluent le système sur trois épreuves de mémoire longue et d&#x27;agent à long horizon. Le modèle qui pilote est Qwen3.8-Max, un LLM open source de grande taille. Les scores montent nettement au-dessus des meilleurs systèmes de mémoire publiés. Le gain le plus gros arrive sur la tâche la plus longue, où les autres approches craquent.</p></div></div></div>
+
+<h2>Ce qu&#x27;ils ont mesuré</h2><div class="card"><ul><li>94,8 % de score sur LongMemEval_S avec Qwen3.8-Max</li><li>73,1 % sur BEAM_10M, soit 5,1 points au-dessus du meilleur système mémoire publié</li><li>86,7 % sur LOCA_256K, soit 37,4 points au-dessus du meilleur agent long-horizon publié</li></ul></div>
+<h2>Ce que ça ne prouve pas</h2><div class="card"><ul><li>Résultats montrés avec un seul backbone Qwen3.8-Max, la transposition à Claude ou GPT n&#x27;est pas prouvée dans le résumé</li><li>Un bac à sable Python persistant ajoute une surface d&#x27;attaque et un coût d&#x27;infra que le résumé ne chiffre pas</li><li>Le résumé ne donne pas le surcoût en tokens ni la latence par tour par rapport à un simple résumé glissant</li></ul></div>
+
+<h2>Chez nous</h2>
+<div class="card gros">
+  <p class="sst">Où ça se branche</p>
+  <p class="bx">Rien à brancher. Les scripts screener, lib/llm_gateway.py, le Trade Desk nocturne et les jobs Discord font tous des appels LLM ponctuels sans état inter-appels à préserver.</p>
+  <p class="sst">Le plan</p>
+  <ol class="etapes"><li>Aucune. Garder l&#x27;idée en tête si un jour un agent tourne en boucle sur des heures avec un vrai historique à interroger.</li></ol>
+  <div class="duo">
+    <div><p class="sst">Effort</p><p class="bx">0 h</p></div>
+    <div><p class="sst">Ça remplace</p><p class="bx">Rien. Le harness actuel n&#x27;a pas de composant de gestion de mémoire long-horizon à remplacer.</p></div>
+  </div>
+  <p class="sst">Le risque</p>
+  <p class="bx">Le vrai risque est de le brancher quand même par curiosité et d&#x27;ajouter un noyau Python persistant à maintenir pour zéro gain.</p>
+</div>
+
+<h2>Le test qui tranche</h2>
+<div class="card"><p class="bx">Si un futur agent maison dépasse 50 appels LLM dans une même session avec besoin de relire des sorties d&#x27;il y a plus de 20 tours, alors relire ce papier. En dessous, un simple résumé glissant suffit et Scroll est du sur-dimensionnement.</p></div>
+
+<h2>Ce que j&#x27;ai simplifié</h2><div class="card"><ul><li>J&#x27;ai présenté l&#x27;Event Log et le noyau Python comme deux briques séparées, alors qu&#x27;ils sont couplés par un système d&#x27;adressage précis dont je passe le détail.</li><li>Les scores cités viennent d&#x27;un seul backbone Qwen3.8-Max, je n&#x27;ai pas dit à quel point ils dépendent de la qualité du modèle qui écrit le code de gestion mémoire.</li></ul></div>
+<footer>Veille papers · <a href="index.html">toutes les semaines</a></footer>
+</div></body></html>
