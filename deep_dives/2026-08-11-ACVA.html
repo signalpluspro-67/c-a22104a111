@@ -1,0 +1,232 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bidding on the Comeback in Wholesale Auto — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>Bidding on the Comeback in Wholesale Auto</h1>
+<div class="subtitle">ACV Auctions is down 50% from its high, turning cash-flow positive, and sitting in a sector with real momentum.</div>
+<div class="meta">EOD 2026-08-11 · ACVA · written from the desk · model glm-5.2</div>
+<div class="chips"><span class="chip">ACVA</span>
+<span class="chip">Consumer Cyclical</span>
+<span class="chip hi">HIGH conviction</span></div>
+<div class="track">Tracking since 2026-08-11: entry <b>$6.52</b> &rarr; <b>$8.19</b> (as of 2026-08-14) · <span class="pos">+25.6%</span> · 🟢 CLOSED — target hit</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Consumer cyclicals are in a momentum phase right now. The sector state reads MOMENTUM and the acceleration reads RIDING, which means the group is advancing and still gaining strength. That matters because most of the broad market is choppy, and you want the sector wind at your back when you buy a small cap.</p>
+<p>The used-vehicle market sits inside this sector. It is a cyclical business tied to dealer inventory cycles, financing conditions, and consumer replacement demand. When the sector is riding momentum, the intermediate setup for a beaten-down name improves because buyers are already rotating into the group.</p>
+<p>A name like ACV Auctions benefits doubly here. You get the sector tailwind pulling the group forward. You also get a stock trading <strong>49.8%</strong> below its <strong>52</strong>-week high, which means the recovery runway is long if the fundamental story cooperates.</p>
+<h2>Introducing ACVA</h2>
+<p>ACV Auctions runs a wholesale digital marketplace for used vehicles between dealers. A selling dealer lists a car. Buying dealers bid in a live auction. The platform handles the inspection, the condition report, the transportation quote, and the financing. ACV takes a cut on each transaction.</p>
+<p>The company has built a full stack around that core auction. ACV Transportation gives buyers real-time shipping quotes. ACV Capital offers short-term inventory financing so buyers can purchase vehicles on the platform. Go Green is a customer assurance program covering defect claims. True360 provides cosmetic and structural vehicle assessments integrated into vehicle history reports. ACV MAX is inventory management software that helps dealers price and turn vehicles. The company also runs remarketing centers that handle reconditioning and storage for fleet, rental car, and financial-sector consignors.</p>
+<p>That bundle matters. Each layer adds revenue per transaction and increases switching costs. A dealer using ACV for auctions, financing, transportation, and inventory management is expensive to displace. The company employs roughly <strong>3,200</strong> people and is headquartered in Buffalo, New York. It was incorporated in <strong>2014</strong>.</p>
+<h2>The Thesis</h2>
+<p>The desk conviction is HIGH on this long. Three independent desk reads flagged the same setup, which is rare for a small cap. The core signal is a mean-reversion read with a real track record, risk-adjusted return of <strong>1.10</strong> and a p_bonf of <strong>0.0189</strong>, meaning the false-positive rate on this signal is under <strong>2%</strong>. That gives you statistical confidence the setup is not noise.</p>
+<p>The price structure supports the call. The stock closed at <strong>$7.26</strong>, which is <strong>49.8%</strong> below the <strong>52</strong>-week high of <strong>$14.75</strong>. RSI sits at <strong>46.6</strong>, neutral and unloved. You are entering with zero crowding and maximum overhead room. The risk/reward ratio is <strong>1.7</strong>, with <strong>25.6%</strong> upside to the primary target and <strong>33.7%</strong> to the secondary target.</p>
+<p>Consumer cyclicals are one of the sectors currently in force. The sector state is MOMENTUM and the acceleration is RIDING. You have a statistically backed signal, a washed-out chart, and a sector pushing in the same direction. That is a HIGH conviction setup and you size it accordingly.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-08-11-ACVA.png" alt="ACVA weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=ACVA&interval=1W" target="_blank" rel="noopener">📈 Open the ACVA weekly chart on TradingView ↗</a><figcaption>ACVA weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $8.19 · mark support near $5.54.</figcaption></figure>
+<p>The chart says this stock is bottoming, not breaking out. ACVA closed at <strong>$7.26</strong>, which is <strong>49.8%</strong> below the <strong>52</strong>-week high of <strong>$14.75</strong> and <strong>74.9%</strong> above the <strong>52</strong>-week low of <strong>$4.07</strong>. It sits in the bottom <strong>30%</strong> of its yearly range. The stock is above its <strong>30</strong>-week moving average, but that average is sloping down at <strong>-3.8%</strong>. The long-term trend has not turned. It is stabilizing.</p>
+<p>The short-term posture is more constructive. The <strong>21</strong>-day return is <strong>+6.6%</strong> and the <strong>63</strong>-day return is <strong>+19.2%</strong>. ACVA is outperforming the broad market over the intermediate term while still trading near multi-month lows on an absolute basis. That divergence is the setup. The stock is building a base while the market notices.</p>
+<p>RSI reads <strong>46.6</strong> on the daily, which is neutral. There is no overbought risk and no oversold panic. The swing high is <strong>$8.19</strong> and the swing low is <strong>$5.65</strong>. Your entry is <strong>$6.52</strong>, which sits between the swing low and the current close. The stop is <strong>$5.54</strong>, just below the swing low. The primary target is <strong>$8.19</strong>, which is the swing high. The secondary target is <strong>$8.72</strong>. Expect noisy daily moves. Volume expansion on a push above <strong>$7.26</strong> toward <strong>$8.19</strong> would confirm the base is real. If volume dries up on a test of <strong>$6.52</strong>, the base is failing.</p>
+<p>The options flow on <strong>August 10</strong> is thin but skewed bullish. Call volume was <strong>841</strong> contracts versus put volume of <strong>125</strong>. Call premium was <strong>$0.05M</strong> against put premium of <strong>$0.01M</strong>. The call wall and put wall both sit at <strong>$7.5</strong>. That pinning level is right above the current close. A clean break above <strong>$7.50</strong> with call volume expanding would tell you the flow is confirming the chart.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$1.35B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$1.21B</td></tr><tr><td class="k">52-week range</td><td class="v">$4.07 - $14.75</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">1.84</td></tr><tr><td class="k">Forward P/E</td><td class="v">23.1</td></tr><tr><td class="k">Price / sales</td><td class="v">1.7</td></tr><tr><td class="k">Price / book</td><td class="v">3.1</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$781M  (+11.8% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$4.55</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$-62M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">-0.36 / 0.33</td></tr><tr><td class="k">Gross margin</td><td class="v">27.1%</td></tr><tr><td class="k">Operating margin</td><td class="v">-4.5%</td></tr><tr><td class="k">Profit margin</td><td class="v">-8.0%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$0.50</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$0.02</td></tr><tr><td class="k">Total cash / share</td><td class="v">$1.95</td></tr><tr><td class="k">Debt / equity</td><td class="v">0.57</td></tr><tr><td class="k">Current ratio</td><td class="v">1.47</td></tr><tr><td class="k">Return on equity</td><td class="v">-14.3%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">buy - mean target $9.43 (12 analysts)</td></tr></tbody></table>
+<p>Revenue is growing and the company is approaching breakeven. Revenue per share is <strong>$4.55</strong>. Gross margin is <strong>27.1%</strong>, which is solid for a marketplace business. Operating margin is <strong>-4.5%</strong> and net margin is <strong>-8.0%</strong>. EPS on a trailing basis is <strong>-$0.36</strong>. Forward EPS is <strong>$0.33</strong>. The Street expects ACVA to cross into profitability next year.</p>
+<p>The cash generation story is improving. Positive operating cash flow with near-breakeven free cash flow tells you the business model works at scale. The company is funding its own operations without burning equity. Cash per share is <strong>$1.95</strong>. The current ratio is <strong>1.47</strong> and the quick ratio is <strong>1.43</strong>. The balance sheet can handle the debt load.</p>
+<p>Valuation reflects the turnaround. Forward P/E is <strong>23.1x</strong> on the <strong>$0.33</strong> forward EPS. Price-to-sales is <strong>1.7x</strong>, which is cheap for a marketplace growing revenue at nearly <strong>12%</strong>. Price-to-book is <strong>3.1x</strong> with book value at <strong>$2.48</strong> per share. The analyst consensus is a buy, with <strong>12</strong> analysts covering and a mean target of <strong>$9.43</strong>. That target is <strong>29.8%</strong> above the current price. Return on equity is <strong>-14.3%</strong> and return on assets is <strong>-2.5%</strong>. Both are negative because the company is still losing money. That is the weak spot. If the forward EPS does not materialize, the valuation has no floor.</p>
+<p>Beta is <strong>1.84</strong>. This stock moves nearly twice the market. You accept that risk at entry.</p>
+<h2>Why Now</h2>
+<p>The timing here is about the convergence of three signals. The sector is in a momentum state with riding acceleration. The chart is basing above the <strong>30</strong>-week line with positive relative strength of <strong>+15.0%</strong> over <strong>63</strong> days. The fundamentals are crossing from cash burn to cash generation with forward EPS turning positive at <strong>$0.33</strong>.</p>
+<p>No specific near-term catalyst is flagged by the desk. The next earnings date is not in the facts. What you have is a setup where the statistical signal, the sector wind, and the fundamental inflection all point the same direction. That is speculative, but it is directional. Someone is betting the stock clears <strong>$7.50</strong> soon.</p>
+<p>You are buying the base, the sector momentum, and the cash-flow inflection. The absence of a hard catalyst means you need patience. The entry at <strong>$6.52</strong> is below the current close of <strong>$7.26</strong>, so you wait for a pullback or a consolidation entry. If the stock runs straight to <strong>$8.19</strong> without pulling back, you respect the discipline and do not chase.</p>
+<h2>Risk Factors</h2>
+<p>The biggest risk is liquidity and gap behavior. At that size, bad news creates gaps that blow through your stop before you can act. An earnings miss or a sector reversal could move <strong>15%</strong> or more in a single session.</p>
+<p>The second risk is the profitability question. Forward EPS of <strong>$0.33</strong> is an estimate, not a fact. If revenue growth decelerates from <strong>11.8%</strong> or operating margins fail to improve from <strong>-4.5%</strong>, the forward EPS disappears and the <strong>23.1x</strong> forward P/E becomes meaningless. A stock priced for a turnaround that fails to turn gets rerated hard.</p>
+<p>The third risk is the <strong>30</strong>-week moving average sloping down at <strong>-3.8%</strong>. The long-term trend is still negative. A base can fail and roll over. The stop at <strong>$5.54</strong> is your invalidation level. That is <strong>15.0%</strong> below the entry of <strong>$6.52</strong>. If the stock closes below <strong>$5.54</strong>, the base is broken and you exit. No rationalizing. The swing low at <strong>$5.65</strong> is the last support before the <strong>52</strong>-week low at <strong>$4.07</strong>.</p>
+<p>Beta of <strong>1.84</strong> cuts both ways. In a sector momentum phase it amplifies your upside. In a sector reversal it amplifies your downside. Consumer cyclicals are riding now, but if the sector state shifts from MOMENTUM to anything weaker, ACVA will underperform the broad market fast.</p>
+<h2>Bringing It All Together</h2>
+<p>- Consumer cyclicals are in a MOMENTUM state with RIDING acceleration, giving ACVA sector wind at its back.<br>- The stock is <strong>49.8%</strong> below its <strong>52</strong>-week high with RSI at <strong>46.6</strong>, meaning no crowding and maximum recovery runway.<br>- Three independent desk reads flagged this setup with a mean-reversion signal carrying a risk-adjusted return of <strong>1.10</strong> and a false-positive rate under <strong>2%</strong>.</p>
+<p>- Entry at <strong>$6.52</strong> with a stop at <strong>$5.54</strong> gives <strong>15.0%</strong> downside risk against <strong>25.6%</strong> upside to the primary target at <strong>$8.19</strong>.<br>- Options flow on <strong>August 10</strong> showed <strong>841</strong> calls versus <strong>125</strong> puts with both walls at <strong>$7.50</strong>, a bullish skew in thin volume.</p>
+<h2>Conclusion</h2>
+<p>ACV Auctions is a HIGH conviction long. You have a statistically backed mean-reversion signal, a sector in momentum, a stock basing with positive relative strength, and a fundamental inflection from cash burn to cash generation. The risks are real: thin liquidity, negative trailing earnings, and a negative long-term trend line. You handle those risks with the stop at <strong>$5.54</strong> and position sizing that respects the <strong>1.84</strong> beta. The entry is <strong>$6.52</strong>. The primary target is <strong>$8.19</strong>. The secondary target is <strong>$8.72</strong>. If the stock closes below <strong>$5.54</strong>, you are wrong and you exit. Until then, you hold the base and let the sector momentum do the work.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;ACV Auctions Inc. (ACVA) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $1.35B; 52-week range $4-$15; Revenue $781M +12% YoY; Net income $-62M; Free cash flow/share $0.02; Debt-to-equity 0.57; Return on equity -14%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for ACV Auctions Inc. (ACVA) inside the Consumer Cyclical space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Three coherent desk reads agree on one small cap, anchored by a mean-reversion signal with a real record (**tested · risk-adjusted return 1.10 · p_bonf 0.0189 · tested). RSI at **46.6** with the stock **49.8%** below its 52-week high gives . Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># Bidding on the Comeback in Wholesale Auto
+
+*ACV Auctions is down 50% from its high, turning cash-flow positive, and sitting in a sector with real momentum.*
+
+## The Big Picture
+
+Consumer cyclicals are in a momentum phase right now. The sector state reads MOMENTUM and the acceleration reads RIDING, which means the group is advancing and still gaining strength. That matters because most of the broad market is choppy, and you want the sector wind at your back when you buy a small cap.
+
+The used-vehicle market sits inside this sector. It is a cyclical business tied to dealer inventory cycles, financing conditions, and consumer replacement demand. When the sector is riding momentum, the intermediate setup for a beaten-down name improves because buyers are already rotating into the group.
+
+A name like ACV Auctions benefits doubly here. You get the sector tailwind pulling the group forward. You also get a stock trading **49.8%** below its **52**-week high, which means the recovery runway is long if the fundamental story cooperates.
+
+## Introducing ACVA
+
+ACV Auctions runs a wholesale digital marketplace for used vehicles between dealers. A selling dealer lists a car. Buying dealers bid in a live auction. The platform handles the inspection, the condition report, the transportation quote, and the financing. ACV takes a cut on each transaction.
+
+The company has built a full stack around that core auction. ACV Transportation gives buyers real-time shipping quotes. ACV Capital offers short-term inventory financing so buyers can purchase vehicles on the platform. Go Green is a customer assurance program covering defect claims. True360 provides cosmetic and structural vehicle assessments integrated into vehicle history reports. ACV MAX is inventory management software that helps dealers price and turn vehicles. The company also runs remarketing centers that handle reconditioning and storage for fleet, rental car, and financial-sector consignors.
+
+That bundle matters. Each layer adds revenue per transaction and increases switching costs. A dealer using ACV for auctions, financing, transportation, and inventory management is expensive to displace. The company employs roughly **3,200** people and is headquartered in Buffalo, New York. It was incorporated in **2014**.
+
+## The Thesis
+
+The desk conviction is HIGH on this long. Three independent desk reads flagged the same setup, which is rare for a small cap. The core signal is a mean-reversion read with a real track record, risk-adjusted return of **1.10** and a p_bonf of **0.0189**, meaning the false-positive rate on this signal is under **2%**. That gives you statistical confidence the setup is not noise.
+
+The price structure supports the call. The stock closed at **$7.26**, which is **49.8%** below the **52**-week high of **$14.75**. RSI sits at **46.6**, neutral and unloved. You are entering with zero crowding and maximum overhead room. The risk/reward ratio is **1.7**, with **25.6%** upside to the primary target and **33.7%** to the secondary target.
+
+Consumer cyclicals are one of the sectors currently in force. The sector state is MOMENTUM and the acceleration is RIDING. You have a statistically backed signal, a washed-out chart, and a sector pushing in the same direction. That is a HIGH conviction setup and you size it accordingly.
+
+## Technical Analysis
+
+&gt; 📈 Insert the ACVA weekly chart here (TradingView): ACVA weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $8.19 · mark support near $5.54.
+
+The chart says this stock is bottoming, not breaking out. ACVA closed at **$7.26**, which is **49.8%** below the **52**-week high of **$14.75** and **74.9%** above the **52**-week low of **$4.07**. It sits in the bottom **30%** of its yearly range. The stock is above its **30**-week moving average, but that average is sloping down at **-3.8%**. The long-term trend has not turned. It is stabilizing.
+
+The short-term posture is more constructive. The **21**-day return is **+6.6%** and the **63**-day return is **+19.2%**. ACVA is outperforming the broad market over the intermediate term while still trading near multi-month lows on an absolute basis. That divergence is the setup. The stock is building a base while the market notices.
+
+RSI reads **46.6** on the daily, which is neutral. There is no overbought risk and no oversold panic. The swing high is **$8.19** and the swing low is **$5.65**. Your entry is **$6.52**, which sits between the swing low and the current close. The stop is **$5.54**, just below the swing low. The primary target is **$8.19**, which is the swing high. The secondary target is **$8.72**. Expect noisy daily moves. Volume expansion on a push above **$7.26** toward **$8.19** would confirm the base is real. If volume dries up on a test of **$6.52**, the base is failing.
+
+The options flow on **August 10** is thin but skewed bullish. Call volume was **841** contracts versus put volume of **125**. Call premium was **$0.05M** against put premium of **$0.01M**. The call wall and put wall both sit at **$7.5**. That pinning level is right above the current close. A clean break above **$7.50** with call volume expanding would tell you the flow is confirming the chart.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $1.35B |
+| Enterprise value | $1.21B |
+| 52-week range | $4.07 - $14.75 |
+| Dividend yield | None |
+| Beta | 1.84 |
+| Forward P/E | 23.1 |
+| Price / sales | 1.7 |
+| Price / book | 3.1 |
+| Revenue (TTM) | $781M  (+11.8% YoY) |
+| Revenue / share | $4.55 |
+| Net income (TTM) | $-62M |
+| EPS (TTM / fwd) | -0.36 / 0.33 |
+| Gross margin | 27.1% |
+| Operating margin | -4.5% |
+| Profit margin | -8.0% |
+| Operating cash flow / share | $0.50 |
+| Free cash flow / share | $0.02 |
+| Total cash / share | $1.95 |
+| Debt / equity | 0.57 |
+| Current ratio | 1.47 |
+| Return on equity | -14.3% |
+| Analyst consensus | buy - mean target $9.43 (12 analysts) |
+
+Revenue is growing and the company is approaching breakeven. Revenue per share is **$4.55**. Gross margin is **27.1%**, which is solid for a marketplace business. Operating margin is **-4.5%** and net margin is **-8.0%**. EPS on a trailing basis is **-$0.36**. Forward EPS is **$0.33**. The Street expects ACVA to cross into profitability next year.
+
+The cash generation story is improving. Positive operating cash flow with near-breakeven free cash flow tells you the business model works at scale. The company is funding its own operations without burning equity. Cash per share is **$1.95**. The current ratio is **1.47** and the quick ratio is **1.43**. The balance sheet can handle the debt load.
+
+Valuation reflects the turnaround. Forward P/E is **23.1x** on the **$0.33** forward EPS. Price-to-sales is **1.7x**, which is cheap for a marketplace growing revenue at nearly **12%**. Price-to-book is **3.1x** with book value at **$2.48** per share. The analyst consensus is a buy, with **12** analysts covering and a mean target of **$9.43**. That target is **29.8%** above the current price. Return on equity is **-14.3%** and return on assets is **-2.5%**. Both are negative because the company is still losing money. That is the weak spot. If the forward EPS does not materialize, the valuation has no floor.
+
+Beta is **1.84**. This stock moves nearly twice the market. You accept that risk at entry.
+
+## Why Now
+
+The timing here is about the convergence of three signals. The sector is in a momentum state with riding acceleration. The chart is basing above the **30**-week line with positive relative strength of **+15.0%** over **63** days. The fundamentals are crossing from cash burn to cash generation with forward EPS turning positive at **$0.33**.
+
+No specific near-term catalyst is flagged by the desk. The next earnings date is not in the facts. What you have is a setup where the statistical signal, the sector wind, and the fundamental inflection all point the same direction. That is speculative, but it is directional. Someone is betting the stock clears **$7.50** soon.
+
+You are buying the base, the sector momentum, and the cash-flow inflection. The absence of a hard catalyst means you need patience. The entry at **$6.52** is below the current close of **$7.26**, so you wait for a pullback or a consolidation entry. If the stock runs straight to **$8.19** without pulling back, you respect the discipline and do not chase.
+
+## Risk Factors
+
+The biggest risk is liquidity and gap behavior. At that size, bad news creates gaps that blow through your stop before you can act. An earnings miss or a sector reversal could move **15%** or more in a single session.
+
+The second risk is the profitability question. Forward EPS of **$0.33** is an estimate, not a fact. If revenue growth decelerates from **11.8%** or operating margins fail to improve from **-4.5%**, the forward EPS disappears and the **23.1x** forward P/E becomes meaningless. A stock priced for a turnaround that fails to turn gets rerated hard.
+
+The third risk is the **30**-week moving average sloping down at **-3.8%**. The long-term trend is still negative. A base can fail and roll over. The stop at **$5.54** is your invalidation level. That is **15.0%** below the entry of **$6.52**. If the stock closes below **$5.54**, the base is broken and you exit. No rationalizing. The swing low at **$5.65** is the last support before the **52**-week low at **$4.07**.
+
+Beta of **1.84** cuts both ways. In a sector momentum phase it amplifies your upside. In a sector reversal it amplifies your downside. Consumer cyclicals are riding now, but if the sector state shifts from MOMENTUM to anything weaker, ACVA will underperform the broad market fast.
+
+## Bringing It All Together
+
+- Consumer cyclicals are in a MOMENTUM state with RIDING acceleration, giving ACVA sector wind at its back.
+- The stock is **49.8%** below its **52**-week high with RSI at **46.6**, meaning no crowding and maximum recovery runway.
+- Three independent desk reads flagged this setup with a mean-reversion signal carrying a risk-adjusted return of **1.10** and a false-positive rate under **2%**.
+
+- Entry at **$6.52** with a stop at **$5.54** gives **15.0%** downside risk against **25.6%** upside to the primary target at **$8.19**.
+- Options flow on **August 10** showed **841** calls versus **125** puts with both walls at **$7.50**, a bullish skew in thin volume.
+
+## Conclusion
+
+ACV Auctions is a HIGH conviction long. You have a statistically backed mean-reversion signal, a sector in momentum, a stock basing with positive relative strength, and a fundamental inflection from cash burn to cash generation. The risks are real: thin liquidity, negative trailing earnings, and a negative long-term trend line. You handle those risks with the stop at **$5.54** and position sizing that respects the **1.84** beta. The entry is **$6.52**. The primary target is **$8.19**. The secondary target is **$8.72**. If the stock closes below **$5.54**, you are wrong and you exit. Until then, you hold the base and let the sector momentum do the work.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

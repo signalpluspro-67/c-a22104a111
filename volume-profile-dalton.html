@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Volume Profile — le cours (approche Dalton)</title>
+<style>
+  :root{
+    --paper:#f3ead9; --paper2:#eaddc6; --card:#fbf6ec; --card2:#f7efe0;
+    --ink:#352b21; --ink2:#6a5c49; --muted:#9d8c74; --line:#e4d7bf; --line2:#d8c8ab;
+    --gold:#bd8524; --gold-soft:rgba(189,133,36,.16);
+    --buy:#2e7d5b; --buy-soft:rgba(46,125,91,.14);
+    --sell:#b0472c; --sell-soft:rgba(176,71,44,.14);
+    --bar:#a2814f; --bar2:#6f5535;
+    --blue:#3a6b8a;
+    --shadow:0 1px 2px rgba(60,45,25,.06),0 6px 20px rgba(60,45,25,.07);
+    --mono:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--paper);
+    color:var(--ink);
+    font:16px/1.65 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:900px;margin:0 auto;padding:0 22px}
+
+  /* ---- top nav ---- */
+  nav.top{
+    position:sticky;top:0;z-index:20;background:rgba(243,234,217,.93);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line2);
+  }
+  nav.top .wrap{display:flex;align-items:center;gap:14px;height:52px;overflow-x:auto}
+  nav.top a{color:var(--ink2);text-decoration:none;font-size:13px;white-space:nowrap;
+    font-family:var(--mono);letter-spacing:.02em}
+  nav.top a:hover{color:var(--gold)}
+  nav.top .brand{font-weight:700;color:var(--ink);font-family:inherit;font-size:15px}
+
+  /* ---- hero ---- */
+  header.hero{padding:60px 0 26px;border-bottom:1px solid var(--line)}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+  h1{font-size:clamp(30px,5vw,46px);line-height:1.1;margin:0 0 16px;font-weight:700;letter-spacing:-.01em}
+  .sub{font-size:19px;color:var(--ink2);margin:0;max-width:620px}
+
+  /* ---- sections ---- */
+  section{padding:52px 0;border-bottom:1px solid var(--line)}
+  .modnum{font-family:var(--mono);font-size:13px;color:var(--gold);letter-spacing:.12em;margin:0 0 6px}
+  h2{font-size:29px;line-height:1.15;margin:0 0 8px;font-weight:700;letter-spacing:-.01em}
+  h3{font-size:20px;margin:34px 0 10px;font-weight:700;color:var(--ink)}
+  h4{font-size:16px;margin:22px 0 6px;font-weight:700;color:var(--ink2);font-family:var(--mono);letter-spacing:.02em}
+  p{margin:0 0 15px}
+  .lead{font-size:18px;color:var(--ink2);margin-bottom:22px}
+  strong{color:var(--ink);font-weight:700}
+  em{color:var(--bar2)}
+  a.inl{color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold-soft)}
+
+  ul,ol{margin:0 0 16px;padding-left:22px}
+  li{margin:0 0 8px}
+
+  /* ---- figure ---- */
+  figure{margin:26px 0;background:var(--card);border:1px solid var(--line);
+    border-radius:14px;padding:18px 18px 12px;box-shadow:var(--shadow);overflow-x:auto}
+  figure svg{display:block;width:100%;height:auto;min-width:520px}
+  figcaption{font-size:13.5px;color:var(--muted);margin-top:10px;font-family:var(--mono);line-height:1.5}
+  figcaption b{color:var(--ink2)}
+
+  /* ---- quote ---- */
+  blockquote{margin:22px 0;padding:16px 20px;background:var(--card2);
+    border-left:3px solid var(--gold);border-radius:0 10px 10px 0}
+  blockquote p{margin:0 0 6px;font-style:italic;color:var(--ink)}
+  blockquote cite{font-style:normal;font-family:var(--mono);font-size:12px;color:var(--muted);display:block;margin-top:6px}
+
+  /* ---- callouts ---- */
+  .box{border-radius:12px;padding:18px 20px;margin:22px 0;border:1px solid var(--line)}
+  .box .bt{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;margin:0 0 8px;font-weight:700}
+  .box p:last-child{margin-bottom:0}
+  .verdict{background:linear-gradient(180deg,#fbf3e2,#f6ecd6);border-color:var(--line2)}
+  .verdict .bt{color:var(--gold)}
+  .tip{background:var(--buy-soft);border-color:rgba(46,125,91,.3)}
+  .tip .bt{color:var(--buy)}
+  .warn{background:var(--sell-soft);border-color:rgba(176,71,44,.3)}
+  .warn .bt{color:var(--sell)}
+  .kerb{background:#eef1ec;border-color:#cdd6c8}
+  .kerb .bt{color:#4a6b52}
+
+  /* ---- key concepts grid ---- */
+  .bricks{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:24px 0}
+  .brick{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 15px}
+  .brick .b-tag{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--gold);margin:0 0 4px}
+  .brick .b-name{font-weight:700;font-size:15px;margin:0 0 5px}
+  .brick p{font-size:13.5px;color:var(--ink2);margin:0;line-height:1.5}
+
+  /* ---- tables ---- */
+  .tbl{width:100%;border-collapse:collapse;margin:22px 0;font-size:14.5px;overflow:hidden;border-radius:10px;box-shadow:var(--shadow)}
+  .tbl th,.tbl td{text-align:left;padding:11px 13px;border-bottom:1px solid var(--line)}
+  .tbl th{background:var(--paper2);font-family:var(--mono);font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink2)}
+  .tbl tr:last-child td{border-bottom:none}
+  .tbl td:first-child{font-weight:700}
+  .tbl .vp{color:var(--buy);font-weight:700}
+  .tbl .ema{color:var(--blue);font-weight:700}
+
+  /* ---- svg text helpers ---- */
+  .st{font-family:var(--mono);font-size:12px;fill:var(--ink2)}
+  .stl{font-family:var(--mono);font-size:11px;fill:var(--muted)}
+  .stb{font-family:var(--mono);font-size:12px;fill:var(--ink);font-weight:700}
+  .stw{font-family:var(--mono);font-size:12px;fill:#fff;font-weight:700}
+  .title-s{font-family:var(--mono);font-size:13px;fill:var(--ink);font-weight:700}
+
+  /* ---- cheatsheet ---- */
+  .cheat{background:var(--card);border:2px solid var(--gold);border-radius:14px;padding:8px 4px}
+  .cheat h3{margin:14px 16px 8px}
+  .cheat .row{display:grid;grid-template-columns:170px 1fr;gap:10px;padding:9px 16px;border-top:1px solid var(--line);font-size:14.5px}
+  .cheat .row .k{font-weight:700;font-family:var(--mono);font-size:13px;color:var(--gold)}
+  .cheat .row .v{color:var(--ink2)}
+
+  footer{padding:40px 0 70px;color:var(--muted);font-size:13px;font-family:var(--mono)}
+  .toc-mini{columns:2;column-gap:26px;margin:18px 0 0}
+  .toc-mini a{display:block;color:var(--ink2);text-decoration:none;font-size:14px;padding:4px 0;border-bottom:1px solid transparent}
+  .toc-mini a:hover{color:var(--gold)}
+  .toc-mini a b{color:var(--gold);font-family:var(--mono);font-size:12px;margin-right:8px}
+  @media(max-width:640px){.cheat .row{grid-template-columns:1fr}.toc-mini{columns:1}}
+</style>
+</head>
+<body>
+
+<nav class="top"><div class="wrap">
+  <span class="brand">Volume Profile</span>
+  <a href="#m0">0·Pourquoi</a>
+  <a href="#m1">1·Enchère</a>
+  <a href="#m2">2·Anatomie</a>
+  <a href="#m3">3·TPO vs Vol</a>
+  <a href="#m4">4·Accept/Reject</a>
+  <a href="#m5">5·La journée</a>
+  <a href="#m6">6·Timeframes</a>
+  <a href="#m7">7·Composite</a>
+  <a href="#m8">8·Playbook</a>
+  <a href="#m9">9·VP vs EMA</a>
+  <a href="#m10">10·Kerb</a>
+  <a href="#m11">11·Cheat sheet</a>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <p class="kicker">Cours complet · d'après Mind Over Markets — James F. Dalton</p>
+  <h1>Le Volume Profile,<br>expliqué pour de bon</h1>
+  <p class="sub">Ta référence lit le marché avec deux EMA. Toi, tu vas le lire avec la structure du volume. Voici tout ce que ça implique, brique par brique, du « pourquoi » jusqu'aux setups.</p>
+
+  <div class="box verdict" style="margin-top:34px">
+    <p class="bt">La réponse à ta question, d'abord</p>
+    <p><strong>Oui, c'est une bonne approche, et même plus profonde que les EMA.</strong> Une EMA lisse le prix passé et te le rend en retard. Le Volume Profile te dit <em>où</em> le marché considère que la valeur est juste, et <em>pourquoi</em> il quitte une zone. C'est un cran au-dessus comme grille de lecture.</p>
+    <p style="margin-top:10px">Ton inquiétude est juste mais gérable. Les <strong>5 briques de base</strong> (POC, Value Area, HVN, LVN, excès) sont aussi simples à expliquer qu'un croisement 8/21. La différence : le VP n'est pas un bouton « achète / vends », c'est une <em>lentille de contexte</em>. Ça se lit, ça ne se déclenche pas. La maîtrise vient avec les reps, comme tout. Ma reco concrète est en <a class="inl" href="#m9">module 9</a>.</p>
+  </div>
+
+  <div class="toc-mini">
+    <a href="#m0"><b>00</b>Pourquoi le Volume Profile</a>
+    <a href="#m1"><b>01</b>La théorie de l'enchère</a>
+    <a href="#m2"><b>02</b>Anatomie d'un profil</a>
+    <a href="#m3"><b>03</b>Market Profile vs Volume Profile</a>
+    <a href="#m4"><b>04</b>Acceptance vs Rejection</a>
+    <a href="#m5"><b>05</b>La journée en direct</a>
+    <a href="#m6"><b>06</b>Qui contrôle le marché</a>
+    <a href="#m7"><b>07</b>Composite &amp; naked POC</a>
+    <a href="#m8"><b>08</b>Trader avec (playbook)</a>
+    <a href="#m9"><b>09</b>Volume Profile vs EMA</a>
+    <a href="#m10"><b>10</b>Ce que Kerb en dit</a>
+    <a href="#m11"><b>11</b>Glossaire &amp; cheat sheet</a>
+  </div>
+</div></header>
+
+<main class="wrap">
+
+<!-- ============ MODULE 0 ============ -->
+<section id="m0">
+  <p class="modnum">MODULE 00</p>
+  <h2>Pourquoi le Volume Profile</h2>
+  <p class="lead">Le geste mental qui change tout : tu fais pivoter le graphique de 90°. Tu arrêtes de regarder le prix dans le temps, tu regardes le volume au prix.</p>
+
+  <p>Un graphique classique montre le prix <strong>en fonction du temps</strong> : axe horizontal = le temps, axe vertical = le prix. Une EMA est un résumé de cet axe : la moyenne du prix récent. Utile, mais ça ne répond qu'à une question, « où est allé le prix ». Ça ne dit pas <em>où le marché a réellement fait des affaires</em>.</p>
+
+  <p>Le Volume Profile répond à cette question-là. Il empile le volume échangé <strong>à chaque niveau de prix</strong>. Le résultat est un histogramme horizontal : les prix où beaucoup s'est traité forment de longues barres, ceux où presque rien ne s'est traité forment de courtes barres. Prends le même marché, tourne-le de 90°, et tu vois apparaître une cloche.</p>
+
+  <figure>
+    <svg viewBox="0 0 760 340" role="img" aria-label="Un graphique en chandeliers pivoté de 90 degrés donne un profil de volume en cloche">
+      <!-- shared price grid -->
+      <line x1="60" y1="40" x2="700" y2="40" stroke="#e4d7bf" stroke-width="1"/>
+      <line x1="60" y1="156" x2="700" y2="156" stroke="#efe0c6" stroke-width="1" stroke-dasharray="3 4"/>
+      <line x1="60" y1="290" x2="700" y2="290" stroke="#e4d7bf" stroke-width="1"/>
+      <text x="60" y="24" class="title-s">Chart classique : prix × temps</text>
+      <text x="404" y="24" class="title-s">Profil : volume × prix</text>
+
+      <!-- price axis center -->
+      <line x1="392" y1="34" x2="392" y2="300" stroke="#d8c8ab" stroke-width="1.5"/>
+      <text x="378" y="48" class="stl" text-anchor="end">haut</text>
+      <text x="378" y="294" class="stl" text-anchor="end">bas</text>
+
+      <!-- LEFT: candlesticks clustering mid-band -->
+      <g stroke="#6f5535" stroke-width="1.4">
+        <line x1="88"  y1="70"  x2="88"  y2="196"/>
+        <line x1="122" y1="96"  x2="122" y2="205"/>
+        <line x1="156" y1="110" x2="156" y2="212"/>
+        <line x1="190" y1="120" x2="190" y2="230"/>
+        <line x1="224" y1="130" x2="224" y2="238"/>
+        <line x1="258" y1="118" x2="258" y2="224"/>
+        <line x1="292" y1="108" x2="292" y2="216"/>
+        <line x1="326" y1="126" x2="326" y2="234"/>
+        <line x1="360" y1="140" x2="360" y2="255"/>
+      </g>
+      <g>
+        <rect x="81"  y="120" width="14" height="60" rx="2" fill="#b0472c"/>
+        <rect x="115" y="130" width="14" height="55" rx="2" fill="#2e7d5b"/>
+        <rect x="149" y="150" width="14" height="48" rx="2" fill="#b0472c"/>
+        <rect x="183" y="150" width="14" height="62" rx="2" fill="#2e7d5b"/>
+        <rect x="217" y="160" width="14" height="58" rx="2" fill="#b0472c"/>
+        <rect x="251" y="140" width="14" height="60" rx="2" fill="#2e7d5b"/>
+        <rect x="285" y="138" width="14" height="56" rx="2" fill="#2e7d5b"/>
+        <rect x="319" y="158" width="14" height="54" rx="2" fill="#b0472c"/>
+        <rect x="353" y="170" width="14" height="60" rx="2" fill="#2e7d5b"/>
+      </g>
+
+      <!-- rotation arrow -->
+      <path d="M372 315 q20 14 40 0" fill="none" stroke="#bd8524" stroke-width="2"/>
+      <path d="M410 309 l4 6 -8 2 z" fill="#bd8524"/>
+      <text x="392" y="335" class="stb" text-anchor="middle" fill="#bd8524">rotation 90°</text>
+
+      <!-- RIGHT: horizontal volume profile bell -->
+      <g fill="#a2814f">
+        <rect x="404" y="42"  width="12"  height="10" rx="2" opacity=".8"/>
+        <rect x="404" y="54"  width="20"  height="10" rx="2" opacity=".8"/>
+        <rect x="404" y="66"  width="36"  height="10" rx="2" opacity=".85"/>
+        <rect x="404" y="78"  width="58"  height="10" rx="2" opacity=".85"/>
+        <rect x="404" y="90"  width="88"  height="10" rx="2"/>
+        <rect x="404" y="102" width="122" height="10" rx="2"/>
+        <rect x="404" y="114" width="158" height="10" rx="2"/>
+        <rect x="404" y="126" width="186" height="10" rx="2"/>
+        <rect x="404" y="138" width="212" height="10" rx="2"/>
+        <rect x="404" y="150" width="230" height="10" rx="2" fill="#bd8524"/>
+        <rect x="404" y="162" width="216" height="10" rx="2"/>
+        <rect x="404" y="174" width="192" height="10" rx="2"/>
+        <rect x="404" y="186" width="164" height="10" rx="2"/>
+        <rect x="404" y="198" width="132" height="10" rx="2"/>
+        <rect x="404" y="210" width="100" height="10" rx="2"/>
+        <rect x="404" y="222" width="70"  height="10" rx="2"/>
+        <rect x="404" y="234" width="46"  height="10" rx="2" opacity=".85"/>
+        <rect x="404" y="246" width="28"  height="10" rx="2" opacity=".85"/>
+        <rect x="404" y="258" width="16"  height="10" rx="2" opacity=".8"/>
+        <rect x="404" y="270" width="10"  height="10" rx="2" opacity=".8"/>
+      </g>
+      <line x1="404" y1="155" x2="700" y2="155" stroke="#bd8524" stroke-width="1.4" stroke-dasharray="5 4"/>
+      <text x="648" y="150" class="stb" fill="#bd8524">POC</text>
+      <text x="640" y="70" class="stl">peu de volume</text>
+      <text x="636" y="278" class="stl">peu de volume</text>
+    </svg>
+    <figcaption><b>Le même marché, deux vues.</b> À gauche, neuf séances qui tournent dans une fourchette. À droite, on empile le volume par prix : le milieu, là où les affaires se sont faites, devient la barre la plus longue (le <b>POC</b>). L'EMA te donne une ligne ; le profil te donne une carte.</figcaption>
+  </figure>
+
+  <div class="box tip">
+    <p class="bt">L'idée en une phrase</p>
+    <p>Une EMA te dit <em>dans quel sens</em> le prix a bougé. Le Volume Profile te dit <em>où</em> le marché s'est mis d'accord sur un prix, et donc où il va probablement défendre, rejeter, ou accélérer. C'est de la lecture de niveaux, pas de la lecture de direction.</p>
+  </div>
+</section>
+
+<!-- ============ MODULE 1 ============ -->
+<section id="m1">
+  <p class="modnum">MODULE 01</p>
+  <h2>La théorie de l'enchère</h2>
+  <p class="lead">C'est le socle de tout Dalton. Sans lui, le profil n'est qu'un joli dessin. Avec lui, chaque barre raconte une histoire.</p>
+
+  <p>Pour Dalton, le marché n'existe que pour une seule raison : <strong>faciliter l'échange</strong>. Ce n'est pas une machine à prédire. C'est une enchère continue, à double sens, qui cherche en permanence un prix où acheteurs et vendeurs acceptent tous les deux de traiter.</p>
+
+  <blockquote>
+    <p>« L'objectif du marché est de faciliter le commerce, et il le fait en faisant une enchère de haut en bas et de bas en haut, afin de trouver une zone où le commerce peut être au mieux facilité. »</p>
+    <cite>Dalton — Mind Over Markets, ch. 2</cite>
+  </blockquote>
+
+  <p>Le mécanisme est exactement celui d'une vente aux enchères de bétail. Le prix monte tant qu'il reste des acheteurs. Dès qu'il monte trop haut, les acheteurs disparaissent, les vendeurs prennent le dessus, et le prix redescend chercher de la demande. Puis ça recommence. Le prix fait de la publicité : il monte pour attirer des vendeurs, il descend pour attirer des acheteurs.</p>
+
+  <figure>
+    <svg viewBox="0 0 760 300" role="img" aria-label="Le prix monte chercher des vendeurs et descend chercher des acheteurs autour d'une zone de valeur">
+      <!-- value band -->
+      <rect x="60" y="120" width="640" height="70" fill="var(--gold-soft)"/>
+      <line x1="60" y1="120" x2="700" y2="120" stroke="#bd8524" stroke-width="1" stroke-dasharray="4 4"/>
+      <line x1="60" y1="190" x2="700" y2="190" stroke="#bd8524" stroke-width="1" stroke-dasharray="4 4"/>
+      <text x="70" y="160" class="stb" fill="#bd8524">ZONE DE VALEUR</text>
+      <text x="70" y="176" class="stl">là où les deux camps traitent volontiers</text>
+
+      <!-- zigzag auction path -->
+      <polyline points="60,155 140,60 220,150 300,55 380,150 460,235 540,150 620,240 700,150"
+        fill="none" stroke="#6f5535" stroke-width="2.5"/>
+      <!-- top rejections -->
+      <circle cx="140" cy="60" r="5" fill="#b0472c"/><text x="140" y="46" class="st" text-anchor="middle" fill="#b0472c">vendeurs ↓</text>
+      <circle cx="300" cy="55" r="5" fill="#b0472c"/><text x="300" y="41" class="st" text-anchor="middle" fill="#b0472c">trop haut → rejet</text>
+      <!-- bottom rejections -->
+      <circle cx="460" cy="235" r="5" fill="#2e7d5b"/><text x="460" y="255" class="st" text-anchor="middle" fill="#2e7d5b">acheteurs ↑</text>
+      <circle cx="620" cy="240" r="5" fill="#2e7d5b"/><text x="620" y="260" class="st" text-anchor="middle" fill="#2e7d5b">trop bas → rejet</text>
+      <text x="60" y="24" class="title-s">L'enchère à double sens</text>
+    </svg>
+    <figcaption><b>Le prix cherche, il ne se promène pas.</b> Il monte jusqu'à épuiser les acheteurs (les vendeurs le repoussent), descend jusqu'à épuiser les vendeurs (les acheteurs le repoussent). Entre les deux, la zone où l'échange coule tout seul : la valeur. Le profil est simplement la <b>trace</b> laissée par ce va-et-vient.</figcaption>
+  </figure>
+
+  <p>Voilà le lien avec le module 0 : la cloche du profil n'est pas un hasard statistique, c'est la <strong>photographie de l'enchère</strong>. Là où le prix est resté longtemps, l'échange était facile, donc le volume s'accumule (les longues barres). Là où le prix est passé vite, l'échange était refusé, donc presque pas de volume (les barres courtes, aux extrêmes). Chaque barre te dit : « ici, le marché était d'accord » ou « ici, il a fui ».</p>
+
+  <div class="box verdict">
+    <p class="bt">Les deux grandes questions de Dalton</p>
+    <p>Tout se ramène à ça, en direct : <strong>1) Dans quel sens le marché essaie-t-il d'aller ?</strong> (la direction tentée) et <strong>2) Y arrive-t-il bien ?</strong> (la performance). Le profil est l'outil qui répond aux deux d'un coup d'œil. On y revient au module 6.</p>
+  </div>
+</section>
+
+<!-- ============ MODULE 2 ============ -->
+<section id="m2">
+  <p class="modnum">MODULE 02</p>
+  <h2>Anatomie d'un profil : les 5 briques</h2>
+  <p class="lead">Voici le cœur du cours. Maîtrise ces cinq mots et tu lis 80 % de ce qu'un profil raconte. Chacun est aussi simple qu'« EMA rapide au-dessus de l'EMA lente ».</p>
+
+  <figure>
+    <svg viewBox="0 0 760 470" role="img" aria-label="Profil de volume annoté avec POC, Value Area, HVN, LVN et queues">
+      <!-- value area shading -->
+      <rect x="120" y="120" width="560" height="230" fill="var(--gold-soft)"/>
+      <line x1="120" y1="120" x2="680" y2="120" stroke="#bd8524" stroke-width="1.3" stroke-dasharray="6 4"/>
+      <line x1="120" y1="350" x2="680" y2="350" stroke="#bd8524" stroke-width="1.3" stroke-dasharray="6 4"/>
+      <text x="690" y="124" class="stb" fill="#bd8524">VAH</text>
+      <text x="690" y="354" class="stb" fill="#bd8524">VAL</text>
+      <text x="556" y="112" class="stl">Value Area = 70% du volume</text>
+
+      <!-- bars -->
+      <g fill="#a2814f">
+        <rect x="120" y="40"  width="26"  height="14" rx="3" opacity=".8"/>
+        <rect x="120" y="58"  width="40"  height="14" rx="3" opacity=".85"/>
+        <rect x="120" y="76"  width="66"  height="14" rx="3" opacity=".9"/>
+        <rect x="120" y="94"  width="96"  height="14" rx="3"/>
+        <rect x="120" y="112" width="118" height="14" rx="3"/>
+        <rect x="120" y="130" width="150" height="14" rx="3"/>
+        <rect x="120" y="148" width="182" height="14" rx="3"/>
+        <rect x="120" y="166" width="214" height="14" rx="3"/>
+        <rect x="120" y="184" width="250" height="14" rx="3"/>
+        <rect x="120" y="202" width="300" height="14" rx="3" fill="#bd8524"/>
+        <rect x="120" y="220" width="276" height="14" rx="3"/>
+        <rect x="120" y="238" width="120" height="14" rx="3"/>
+        <rect x="120" y="256" width="96"  height="14" rx="3"/>
+        <rect x="120" y="274" width="210" height="14" rx="3"/>
+        <rect x="120" y="292" width="240" height="14" rx="3"/>
+        <rect x="120" y="310" width="188" height="14" rx="3"/>
+        <rect x="120" y="328" width="140" height="14" rx="3"/>
+        <rect x="120" y="346" width="100" height="14" rx="3"/>
+        <rect x="120" y="364" width="66"  height="14" rx="3" opacity=".9"/>
+        <rect x="120" y="382" width="30"  height="14" rx="3" opacity=".85"/>
+        <rect x="120" y="400" width="16"  height="14" rx="3" opacity=".8"/>
+        <rect x="120" y="428" width="14"  height="14" rx="3" opacity=".75"/>
+      </g>
+
+      <!-- POC line -->
+      <line x1="120" y1="209" x2="700" y2="209" stroke="#bd8524" stroke-width="1.6"/>
+      <text x="430" y="205" class="stb" fill="#bd8524">◀ POC · le prix le plus juste</text>
+
+      <!-- HVN callout -->
+      <path d="M370 285 h60" stroke="#6f5535" stroke-width="1" fill="none"/>
+      <text x="436" y="289" class="stb">HVN — nœud dense (le marché adhère)</text>
+
+      <!-- LVN callout -->
+      <path d="M240 247 h180" stroke="#b0472c" stroke-width="1" fill="none" stroke-dasharray="3 3"/>
+      <text x="426" y="251" class="stb" fill="#b0472c">LVN — nœud creux (le marché refuse)</text>
+
+      <!-- tails -->
+      <rect x="112" y="38" width="6" height="34" fill="#b0472c" rx="2"/>
+      <text x="150" y="30" class="stb" fill="#b0472c">queue de vente (excès)</text>
+      <rect x="112" y="398" width="6" height="46" fill="#2e7d5b" rx="2"/>
+      <text x="150" y="452" class="stb" fill="#2e7d5b">queue d'achat (excès)</text>
+
+      <!-- price axis -->
+      <line x1="118" y1="34" x2="118" y2="446" stroke="#d8c8ab" stroke-width="1.5"/>
+      <text x="108" y="44" class="stl" text-anchor="end">prix ↑</text>
+      <text x="108" y="444" class="stl" text-anchor="end">prix ↓</text>
+    </svg>
+    <figcaption><b>Un profil, tout annoté.</b> La longueur d'une barre = le volume traité à ce prix. Le renflement au milieu est la zone d'accord ; les extrémités fines sont les zones de refus. Repère le creux (LVN) vers le haut de la Value Area : c'est un endroit où le prix passera vite.</figcaption>
+  </figure>
+
+  <div class="bricks">
+    <div class="brick"><p class="b-tag">BRIQUE 1</p><p class="b-name">POC</p><p><em>Point of Control.</em> La barre la plus longue. Le prix où le plus de volume s'est traité, donc « le plus juste » de la séance. Agit comme un aimant.</p></div>
+    <div class="brick"><p class="b-tag">BRIQUE 2</p><p class="b-name">Value Area</p><p>La zone qui contient <strong>70 %</strong> du volume (≈ un écart-type). Bornée par le <em>VAH</em> (haut) et le <em>VAL</em> (bas). C'est le « juste prix » accepté par les deux camps.</p></div>
+    <div class="brick"><p class="b-tag">BRIQUE 3</p><p class="b-name">HVN</p><p><em>High Volume Node.</em> Un nœud dense, une longue barre. Le marché adhère à ce prix : il y ralentit, y revient, s'y défend. Support / résistance solide.</p></div>
+    <div class="brick"><p class="b-tag">BRIQUE 4</p><p class="b-name">LVN</p><p><em>Low Volume Node.</em> Un creux, une barre courte au milieu du profil. Le marché a refusé ce prix : il le traverse vite. Zone d'accélération.</p></div>
+    <div class="brick"><p class="b-tag">BRIQUE 5</p><p class="b-name">Excès (queues)</p><p>Les barres très courtes aux extrémités. Un rejet net et rapide. Une <em>queue</em> longue = forte présence de l'autre timeframe (module 4).</p></div>
+  </div>
+
+  <blockquote>
+    <p>« La ligne de TPO la plus longue, la plus proche du centre, s'appelle le point de contrôle. C'est le prix où la plupart de l'activité s'est déroulée, donc le prix le plus juste du jour. »</p>
+    <cite>Dalton — Mind Over Markets, ch. 2</cite>
+  </blockquote>
+
+  <div class="box tip">
+    <p class="bt">Le réflexe HVN / LVN à graver</p>
+    <p><strong>HVN = mur.</strong> Le prix ralentit, hésite, rebondit. Tu t'attends à de la friction. <strong>LVN = tunnel.</strong> Le prix accélère, personne ne veut traiter là. Quand le prix quitte une valeur et tombe sur un LVN, il fonce jusqu'au prochain HVN. C'est la base de la moitié des setups du module 8.</p>
+  </div>
+</section>
+
+<!-- ============ MODULE 3 ============ -->
+<section id="m3">
+  <p class="modnum">MODULE 03</p>
+  <h2>Market Profile vs Volume Profile</h2>
+  <p class="lead">Piège à éviter tout de suite : le livre de Dalton parle de <em>Market Profile</em>, pas de <em>Volume Profile</em>. Même théorie, instrument différent. Voici la traduction exacte.</p>
+
+  <p>Dalton construit son profil avec le <strong>temps</strong>, pas le volume. Chaque demi-heure de séance reçoit une lettre (A, B, C…). Si un prix se traite pendant la demi-heure B, on inscrit un « B » à côté. C'est le <strong>TPO</strong> — <em>Time Price Opportunity</em>. Empile les lettres et tu obtiens la même cloche. Le profil de Dalton mesure donc <strong>le temps passé à chaque prix</strong>.</p>
+
+  <p>Le Volume Profile moderne (le VPVR de TradingView, par exemple) remplace le comptage des lettres par le <strong>volume réel</strong> échangé à chaque prix. Même forme, même vocabulaire (POC, VAH, VAL, HVN, LVN), autre carburant.</p>
+
+  <figure>
+    <svg viewBox="0 0 760 340" role="img" aria-label="Comparaison côte à côte d'un profil TPO en lettres et d'un profil de volume en barres">
+      <text x="60"  y="24" class="title-s">Market Profile (TPO · temps)</text>
+      <text x="430" y="24" class="title-s">Volume Profile (volume)</text>
+
+      <!-- LEFT TPO letters -->
+      <g class="stb" fill="#6f5535" font-size="13">
+        <text x="70" y="70">D</text>
+        <text x="70" y="92">C D</text>
+        <text x="70" y="114">C D E</text>
+        <text x="70" y="136">B C D E F</text>
+        <text x="70" y="158">A B C D E F G</text>
+        <text x="70" y="180">A B C D E F G H</text>
+        <text x="70" y="202" fill="#bd8524">A B C D E F G H I  ◀ POC</text>
+        <text x="70" y="224">A B C D E F G H</text>
+        <text x="70" y="246">A B C E F</text>
+        <text x="70" y="268">A B</text>
+        <text x="70" y="290">A</text>
+      </g>
+      <text x="70" y="312" class="stl">1 lettre = 1 demi-heure où ce prix s'est traité</text>
+
+      <!-- RIGHT volume bars (same shape) -->
+      <g fill="#a2814f">
+        <rect x="430" y="60"  width="22"  height="14" rx="3" opacity=".85"/>
+        <rect x="430" y="82"  width="48"  height="14" rx="3" opacity=".9"/>
+        <rect x="430" y="104" width="74"  height="14" rx="3"/>
+        <rect x="430" y="126" width="120" height="14" rx="3"/>
+        <rect x="430" y="148" width="168" height="14" rx="3"/>
+        <rect x="430" y="170" width="200" height="14" rx="3"/>
+        <rect x="430" y="192" width="234" height="14" rx="3" fill="#bd8524"/>
+        <rect x="430" y="214" width="196" height="14" rx="3"/>
+        <rect x="430" y="236" width="130" height="14" rx="3"/>
+        <rect x="430" y="258" width="70"  height="14" rx="3" opacity=".9"/>
+        <rect x="430" y="280" width="30"  height="14" rx="3" opacity=".85"/>
+      </g>
+      <text x="668" y="203" class="stb" fill="#bd8524">POC</text>
+      <text x="430" y="312" class="stl">longueur = volume réel échangé à ce prix</text>
+    </svg>
+    <figcaption><b>Deux carburants, une seule forme.</b> À gauche le TPO de Dalton (le temps), à droite le volume. Les concepts sont interchangeables. Tu apprends la théorie chez Dalton, tu l'appliques avec le volume sur tes charts.</figcaption>
+  </figure>
+
+  <p>Fait rassurant : Dalton lui-même traite la question dans son Appendix II. Il décompose l'enchère en trois ingrédients.</p>
+
+  <div class="bricks">
+    <div class="brick"><p class="b-tag">INGRÉDIENT 1</p><p class="b-name">Le prix</p><p>Il fait de la publicité. Il annonce toutes les opportunités.</p></div>
+    <div class="brick"><p class="b-tag">INGRÉDIENT 2</p><p class="b-name">Le temps</p><p>Il régule les opportunités. Un prix non accepté dans le temps est, de fait, rejeté.</p></div>
+    <div class="brick"><p class="b-tag">INGRÉDIENT 3</p><p class="b-name">Le volume</p><p>Il mesure le succès ou l'échec de l'opportunité annoncée.</p></div>
+  </div>
+
+  <blockquote>
+    <p>« Après une vie à observer les marchés, je donne plus de poids au Market Profile, car je crois que c'est la combinaison du temps et du volume, plutôt que du volume seul, qui livre l'aperçu le plus pertinent. »</p>
+    <cite>Dalton — Mind Over Markets, Appendix II</cite>
+  </blockquote>
+
+  <div class="box warn">
+    <p class="bt">À savoir, sans te décourager</p>
+    <p>Dalton préfère le TPO parce qu'il ajoute la dimension du temps. Le Volume Profile te fait perdre cette info explicite. En échange, le volume est plus honnête sur <em>l'intensité</em> de l'échange (une demi-heure calme et une demi-heure frénétique comptent pareil en TPO, pas en volume). Pour toi, sur actions et ETF, <strong>le Volume Profile est le bon choix</strong> : la donnée de volume est fiable et dispo partout. Garde juste en tête que tu lis une variante, pas l'original.</p>
+  </div>
+</section>
+
+<!-- ============ MODULE 4 ============ -->
+<section id="m4">
+  <p class="modnum">MODULE 04</p>
+  <h2>Acceptance vs Rejection</h2>
+  <p class="lead">Le marché dit « oui » ou « non » à un prix. Apprends à voir les deux dans la structure, et le profil devient un détecteur de mensonge.</p>
+
+  <p><strong>Acceptance</strong> : le prix reste, l'échange se fait, le volume s'accumule. Une longue barre, un HVN. Le marché valide ce prix comme juste. <strong>Rejection</strong> : le prix est visité puis violemment repoussé. Peu de volume, une barre courte, souvent une <em>queue</em> (tail) à l'extrémité. Le marché déclare ce prix injuste.</p>
+
+  <figure>
+    <svg viewBox="0 0 760 360" role="img" aria-label="Excès avec queues nettes contre poor high sans queue">
+      <!-- LEFT: excess with tails -->
+      <text x="60" y="24" class="title-s">Excès : rejet net (bon)</text>
+      <g fill="#a2814f">
+        <rect x="120" y="70"  width="70"  height="12" rx="3"/>
+        <rect x="120" y="86"  width="120" height="12" rx="3"/>
+        <rect x="120" y="102" width="170" height="12" rx="3"/>
+        <rect x="120" y="118" width="200" height="12" rx="3" fill="#bd8524"/>
+        <rect x="120" y="134" width="168" height="12" rx="3"/>
+        <rect x="120" y="150" width="120" height="12" rx="3"/>
+        <rect x="120" y="166" width="70"  height="12" rx="3"/>
+      </g>
+      <!-- selling tail top -->
+      <rect x="120" y="40" width="26" height="12" rx="3" fill="#a2814f" opacity=".6"/>
+      <rect x="120" y="54" width="40" height="12" rx="3" fill="#a2814f" opacity=".75"/>
+      <rect x="112" y="40" width="6" height="26" rx="2" fill="#b0472c"/>
+      <text x="170" y="50" class="st" fill="#b0472c">queue de vente</text>
+      <!-- buying tail bottom -->
+      <rect x="120" y="182" width="40" height="12" rx="3" fill="#a2814f" opacity=".75"/>
+      <rect x="120" y="196" width="26" height="12" rx="3" fill="#a2814f" opacity=".6"/>
+      <rect x="112" y="182" width="6" height="26" rx="2" fill="#2e7d5b"/>
+      <text x="170" y="206" class="st" fill="#2e7d5b">queue d'achat</text>
+      <text x="120" y="238" class="stl" font-size="12">Fin en pointe → le marché a claqué la porte.</text>
+      <text x="120" y="254" class="stl" font-size="12">Extrême fiable, il tient souvent.</text>
+
+      <!-- RIGHT: poor high -->
+      <text x="430" y="24" class="title-s">Poor high : pas de rejet (fragile)</text>
+      <g fill="#a2814f">
+        <rect x="470" y="54"  width="150" height="12" rx="3"/>
+        <rect x="470" y="70"  width="152" height="12" rx="3"/>
+        <rect x="470" y="86"  width="120" height="12" rx="3"/>
+        <rect x="470" y="102" width="170" height="12" rx="3"/>
+        <rect x="470" y="118" width="200" height="12" rx="3" fill="#bd8524"/>
+        <rect x="470" y="134" width="168" height="12" rx="3"/>
+        <rect x="470" y="150" width="120" height="12" rx="3"/>
+        <rect x="470" y="166" width="80"  height="12" rx="3"/>
+      </g>
+      <line x1="470" y1="50" x2="640" y2="50" stroke="#b0472c" stroke-width="1.4" stroke-dasharray="4 3"/>
+      <text x="470" y="44" class="st" fill="#b0472c">sommet plat, sans pointe</text>
+      <text x="470" y="238" class="stl">Aucune pointe : l'enchère n'est pas finie.</text>
+      <text x="470" y="254" class="stl">« Poor high » : sera re-testé plus tard.</text>
+    </svg>
+    <figcaption><b>Une extrémité en pointe se respecte, une extrémité plate se méfie.</b> À gauche, l'excès (les queues) : rejet violent, l'extrême tient. À droite, le <b>poor high</b> : le marché s'est arrêté sans rejeter, il reviendra sans doute finir le travail.</figcaption>
+  </figure>
+
+  <h3>Le vocabulaire de Dalton, traduit</h3>
+  <ul>
+    <li><strong>Queue d'achat</strong> (<em>buying tail</em>) : des <em>single prints</em> en bas du profil. L'acheteur de l'autre timeframe a réagi fort à un prix trop bas et l'a repoussé en une seule période. Plus la queue est longue, plus l'acheteur était agressif.</li>
+    <li><strong>Queue de vente</strong> (<em>selling tail</em>) : pareil en haut. Le vendeur a jugé le prix trop élevé et l'a écrasé vite.</li>
+    <li><strong>Single print</strong> : un prix touché une seule fois, jamais revisité. Une trace de rejet pur. Sur un Volume Profile, ça se lit comme une barre minuscule.</li>
+    <li><strong>Poor high / poor low</strong> : un extrême sans queue, plat. Le signe que l'enchère n'a pas été « finie ». Dalton le voit comme une cible à revisiter.</li>
+  </ul>
+
+  <blockquote>
+    <p>« La queue est un point de référence important : elle indique que l'acheteur de l'autre timeframe a réagi fortement au prix annoncé sous la valeur, le rejetant hors de la fourchette en une seule période. Plus la queue est longue, plus forte est l'activité. »</p>
+    <cite>Dalton — Mind Over Markets, ch. 2</cite>
+  </blockquote>
+
+  <div class="box tip">
+    <p class="bt">Règle de validité (Dalton)</p>
+    <p>Une queue ne compte que si elle fait <strong>au moins 2 niveaux</strong> de long et qu'elle est <strong>validée par le rejet dans les périodes suivantes</strong>. Une pointe formée à la toute dernière demi-heure n'est pas une vraie queue : rien n'est venu la confirmer.</p>
+  </div>
+</section>
+
+<!-- ============ MODULE 5 ============ -->
+<section id="m5">
+  <p class="modnum">MODULE 05</p>
+  <h2>La journée en direct</h2>
+  <p class="lead">Dalton ne lit pas qu'une photo figée. Il lit la séance <em>pendant qu'elle se forme</em>. Trois outils : l'Initial Balance, les types d'ouverture, les types de journée.</p>
+
+  <h3>Initial Balance &amp; Range Extension</h3>
+  <p>L'<strong>Initial Balance (IB)</strong>, c'est la fourchette des <strong>deux premières périodes</strong> (la première heure). Ce sont les intervenants locaux qui la posent : ils cherchent une zone où l'échange à double sens fonctionne. Tout mouvement <strong>au-delà</strong> de l'IB s'appelle une <strong>Range Extension</strong>, et signale l'entrée d'un acteur plus gros (l'autre timeframe).</p>
+
+  <figure>
+    <svg viewBox="0 0 760 300" role="img" aria-label="Initial Balance encadrée et extension de fourchette vers le haut">
+      <!-- IB box -->
+      <rect x="120" y="110" width="220" height="90" fill="none" stroke="#6f5535" stroke-width="1.6" stroke-dasharray="5 4" rx="4"/>
+      <text x="128" y="102" class="stb">Initial Balance (1re heure)</text>
+      <g fill="#a2814f">
+        <rect x="130" y="118" width="120" height="12" rx="3"/>
+        <rect x="130" y="134" width="180" height="12" rx="3"/>
+        <rect x="130" y="150" width="200" height="12" rx="3" fill="#bd8524"/>
+        <rect x="130" y="166" width="170" height="12" rx="3"/>
+        <rect x="130" y="182" width="110" height="12" rx="3"/>
+      </g>
+      <!-- range extension up -->
+      <g fill="#2e7d5b" opacity=".85">
+        <rect x="130" y="70"  width="70"  height="12" rx="3"/>
+        <rect x="130" y="86"  width="110" height="12" rx="3"/>
+      </g>
+      <path d="M360 150 C 420 150, 420 92, 470 92" fill="none" stroke="#2e7d5b" stroke-width="2"/>
+      <path d="M470 86 l8 6 -8 6 z" fill="#2e7d5b"/>
+      <text x="360" y="60" class="stb" fill="#2e7d5b">Range Extension ↑</text>
+      <text x="360" y="80" class="stl">l'autre timeframe entre : quelque chose a changé</text>
+      <text x="490" y="96" class="st">nouvelle valeur en construction</text>
+    </svg>
+    <figcaption><b>La base, puis la cassure.</b> Les locaux posent l'IB (fourchette pointillée). Quand le prix en sort avec du volume, c'est un acteur de plus long terme qui pousse. Dalton : « plus la base est étroite, plus grandes sont les chances qu'elle soit renversée ».</figcaption>
+  </figure>
+
+  <h3>Les 4 types d'ouverture</h3>
+  <p>La façon dont la séance ouvre trahit le niveau de conviction dès les premières minutes. Du plus fort au plus mou :</p>
+
+  <figure>
+    <svg viewBox="0 0 800 240" role="img" aria-label="Les quatre types d'ouverture représentés par des trajectoires de prix">
+      <!-- axes baseline for each -->
+      <g stroke="#e4d7bf" stroke-width="1">
+        <line x1="40" y1="120" x2="190" y2="120"/>
+        <line x1="220" y1="120" x2="370" y2="120"/>
+        <line x1="400" y1="120" x2="550" y2="120"/>
+        <line x1="580" y1="120" x2="730" y2="120"/>
+      </g>
+      <!-- open markers -->
+      <g fill="#9d8c74"><circle cx="50" cy="120" r="3"/><circle cx="230" cy="120" r="3"/><circle cx="410" cy="120" r="3"/><circle cx="590" cy="120" r="3"/></g>
+
+      <!-- Open-Drive -->
+      <polyline points="50,120 90,90 130,55 175,35" fill="none" stroke="#2e7d5b" stroke-width="2.5"/>
+      <text x="40" y="150" class="stb">Open-Drive</text>
+      <text x="40" y="168" class="stl" style="font-size:10px">file droit dès l'open,</text>
+      <text x="40" y="181" class="stl" style="font-size:10px">ne revient jamais. Fiable.</text>
+
+      <!-- Open-Test-Drive -->
+      <polyline points="230,120 255,150 275,150 320,70 360,45" fill="none" stroke="#3a6b8a" stroke-width="2.5"/>
+      <text x="220" y="150" class="stb">Open-Test-Drive</text>
+      <text x="220" y="168" class="stl" style="font-size:10px">teste sous un niveau, rien,</text>
+      <text x="220" y="181" class="stl" style="font-size:10px">puis file. 2e + fiable.</text>
+
+      <!-- Open-Rejection-Reverse -->
+      <polyline points="410,120 435,80 460,78 500,150 540,175" fill="none" stroke="#bd8524" stroke-width="2.5"/>
+      <text x="400" y="150" class="stb" font-size="11">Open-Rejection-Reverse</text>
+      <text x="400" y="168" class="stl" style="font-size:10px">part d'un côté, se fait</text>
+      <text x="400" y="181" class="stl" style="font-size:10px">retourner. Conviction moyenne.</text>
+
+      <!-- Open-Auction -->
+      <polyline points="590,120 610,100 630,135 650,105 670,130 690,110 710,122" fill="none" stroke="#b0472c" stroke-width="2.5"/>
+      <text x="580" y="150" class="stb">Open-Auction</text>
+      <text x="580" y="168" class="stl" style="font-size:10px">hésite autour de l'ouverture.</text>
+      <text x="580" y="181" class="stl" style="font-size:10px">peu de conviction (voir contexte).</text>
+    </svg>
+    <figcaption><b>Plus l'ouverture est décidée, plus l'extrême du jour tient.</b> Après un Open-Drive, l'extrême laissé derrière tient presque toujours la journée. Un Open-Auction <em>hors</em> de la valeur de la veille est le seul cas où l'hésitation cache un gros potentiel (souvent une journée à double distribution).</figcaption>
+  </figure>
+
+  <h3>Les 6 types de journée</h3>
+  <p>Selon qui prend le contrôle et quand, la séance prend une forme reconnaissable. Apprends les silhouettes, tu anticiperas la suite.</p>
+
+  <figure>
+    <svg viewBox="0 0 760 300" role="img" aria-label="Les six formes de journée en profils miniatures">
+      <!-- helper: each mini profile -->
+      <!-- Normal -->
+      <g transform="translate(40,30)">
+        <g fill="#a2814f">
+          <rect x="0" y="10" width="18" height="8" rx="2"/><rect x="0" y="22" width="36" height="8" rx="2"/>
+          <rect x="0" y="34" width="60" height="8" rx="2"/><rect x="0" y="46" width="72" height="8" rx="2" fill="#bd8524"/>
+          <rect x="0" y="58" width="58" height="8" rx="2"/><rect x="0" y="70" width="34" height="8" rx="2"/>
+          <rect x="0" y="82" width="16" height="8" rx="2"/>
+        </g>
+        <text x="0" y="112" class="stb">Normal</text>
+        <text x="0" y="128" class="stl">IB large, journée</text>
+        <text x="0" y="140" class="stl">calme et équilibrée</text>
+      </g>
+      <!-- Normal Variation -->
+      <g transform="translate(210,30)">
+        <g fill="#a2814f">
+          <rect x="0" y="4" width="20" height="8" rx="2" fill="#2e7d5b" opacity=".8"/>
+          <rect x="0" y="16" width="40" height="8" rx="2"/><rect x="0" y="28" width="66" height="8" rx="2"/>
+          <rect x="0" y="40" width="78" height="8" rx="2" fill="#bd8524"/><rect x="0" y="52" width="60" height="8" rx="2"/>
+          <rect x="0" y="64" width="34" height="8" rx="2"/><rect x="0" y="76" width="16" height="8" rx="2"/>
+        </g>
+        <text x="0" y="112" class="stb">Normal Variation</text>
+        <text x="0" y="128" class="stl">l'autre timeframe étend</text>
+        <text x="0" y="140" class="stl">la fourchette d'un côté</text>
+      </g>
+      <!-- Trend -->
+      <g transform="translate(390,30)">
+        <g fill="#a2814f">
+          <rect x="0" y="2" width="30" height="8" rx="2"/><rect x="0" y="14" width="34" height="8" rx="2"/>
+          <rect x="0" y="26" width="30" height="8" rx="2"/><rect x="0" y="38" width="36" height="8" rx="2" fill="#bd8524"/>
+          <rect x="0" y="50" width="30" height="8" rx="2"/><rect x="0" y="62" width="34" height="8" rx="2"/>
+          <rect x="0" y="74" width="28" height="8" rx="2"/><rect x="0" y="86" width="30" height="8" rx="2"/>
+        </g>
+        <text x="0" y="112" class="stb">Trend</text>
+        <text x="0" y="128" class="stl">fin et allongé, un camp</text>
+        <text x="0" y="140" class="stl">contrôle tout le jour</text>
+      </g>
+      <!-- Double Distribution -->
+      <g transform="translate(560,30)">
+        <g fill="#a2814f">
+          <rect x="0" y="2" width="20" height="8" rx="2"/><rect x="0" y="14" width="48" height="8" rx="2"/>
+          <rect x="0" y="26" width="30" height="8" rx="2"/>
+          <rect x="0" y="38" width="8" height="8" rx="2" fill="#b0472c"/>
+          <rect x="0" y="50" width="8" height="8" rx="2" fill="#b0472c"/>
+          <rect x="0" y="62" width="30" height="8" rx="2"/><rect x="0" y="74" width="52" height="8" rx="2"/>
+          <rect x="0" y="86" width="22" height="8" rx="2"/>
+        </g>
+        <text x="0" y="112" class="stb">Double Distribution</text>
+        <text x="0" y="128" class="stl">deux renflements séparés</text>
+        <text x="0" y="140" class="stl">par des single prints (LVN)</text>
+      </g>
+      <!-- Neutral -->
+      <g transform="translate(120,190)">
+        <g fill="#a2814f">
+          <rect x="0" y="2" width="24" height="8" rx="2" fill="#b0472c" opacity=".8"/>
+          <rect x="0" y="14" width="46" height="8" rx="2"/><rect x="0" y="26" width="68" height="8" rx="2"/>
+          <rect x="0" y="38" width="76" height="8" rx="2" fill="#bd8524"/><rect x="0" y="50" width="66" height="8" rx="2"/>
+          <rect x="0" y="62" width="44" height="8" rx="2"/>
+          <rect x="0" y="74" width="24" height="8" rx="2" fill="#2e7d5b" opacity=".8"/>
+        </g>
+        <text x="0" y="102" class="stb">Neutral</text>
+        <text x="0" y="118" class="stl">les DEUX camps étendent :</text>
+        <text x="0" y="130" class="stl">extension des deux côtés</text>
+      </g>
+      <!-- Nontrend -->
+      <g transform="translate(360,190)">
+        <g fill="#a2814f">
+          <rect x="0" y="20" width="30" height="8" rx="2"/><rect x="0" y="32" width="40" height="8" rx="2"/>
+          <rect x="0" y="44" width="44" height="8" rx="2" fill="#bd8524"/><rect x="0" y="56" width="38" height="8" rx="2"/>
+          <rect x="0" y="68" width="28" height="8" rx="2"/>
+        </g>
+        <text x="0" y="102" class="stb">Nontrend</text>
+        <text x="0" y="118" class="stl">minuscule, sans direction :</text>
+        <text x="0" y="130" class="stl">le marché attend une news</text>
+      </g>
+    </svg>
+    <figcaption><b>Six silhouettes.</b> Le Trend (fin et allongé) est le plus dangereux à rater : Dalton dit que « ne pas reconnaître une journée de Trend est l'une des erreurs les plus coûteuses ». Le Double Distribution laisse un LVN au milieu, futur niveau clé.</figcaption>
+  </figure>
+
+  <div class="box warn">
+    <p class="bt">La bourde qui coûte cher</p>
+    <p>Fader (parier contre) une journée de Trend. Quand un seul camp contrôle du début à la fin, le profil reste fin et chaque période enchérit plus haut (ou plus bas) sans repasser sous la précédente. Ce jour-là, tu suis, tu ne contres pas.</p>
+  </div>
+</section>
+
+<!-- ============ MODULE 6 ============ -->
+<section id="m6">
+  <p class="modnum">MODULE 06</p>
+  <h2>Qui contrôle le marché</h2>
+  <p class="lead">La question centrale de Dalton. Le profil ne sert à rien si tu ne sais pas dire, à chaque instant, qui tient le volant : le court terme ou le long terme.</p>
+
+  <p>Dalton sépare deux populations. Les <strong>locaux</strong> (day timeframe) fournissent de la <em>liquidité</em>, pas de la direction : ils font tourner le prix dans une fourchette serrée. L'<strong>autre timeframe</strong> (OTF, <em>other timeframe</em>) regroupe tous ceux qui gardent une position plus d'une journée. C'est lui qui <strong>déplace</strong> le marché.</p>
+
+  <blockquote>
+    <p>« C'est l'activité de l'autre timeframe qui déplace et façonne le marché, exactement comme General Motors et les consommateurs façonnent le marché automobile. Comprendre ce que fait l'autre timeframe est vital. »</p>
+    <cite>Dalton — Mind Over Markets, ch. 2</cite>
+  </blockquote>
+
+  <p>Comment savoir qui contrôle ? Tu lis quatre indices dans la structure :</p>
+  <ul>
+    <li><strong>Les queues</strong> aux extrêmes → l'OTF a réagi fort (module 4).</li>
+    <li><strong>La range extension</strong> → l'OTF pousse au-delà de l'IB (module 5).</li>
+    <li><strong>Le placement de la valeur</strong> vs la veille : value area qui monte = acheteur OTF aux commandes ; qui descend = vendeur OTF.</li>
+    <li><strong>Initiative vs Responsive</strong> : acheter <em>dans ou au-dessus</em> de la valeur de la veille = initiative (forte conviction) ; acheter <em>sous</em> la valeur = responsive (on répond à une aubaine).</li>
+  </ul>
+
+  <figure>
+    <svg viewBox="0 0 760 220" role="img" aria-label="Marché en tendance contre marché en fourchette, valeur qui se déplace ou qui stagne">
+      <text x="60" y="24" class="title-s">Trend : la valeur se déplace</text>
+      <g fill="#a2814f" opacity=".9">
+        <g transform="translate(70,40)"><rect x="0" y="60" width="40" height="30" rx="3"/></g>
+        <g transform="translate(130,40)"><rect x="0" y="40" width="40" height="30" rx="3"/></g>
+        <g transform="translate(190,40)"><rect x="0" y="20" width="40" height="30" rx="3"/></g>
+        <g transform="translate(250,40)"><rect x="0" y="0" width="40" height="30" rx="3" fill="#2e7d5b"/></g>
+      </g>
+      <path d="M75 120 L300 60" stroke="#2e7d5b" stroke-width="1.6" stroke-dasharray="4 3" fill="none"/>
+      <text x="70" y="175" class="stl">chaque jour, la value area migre</text>
+      <text x="70" y="189" class="stl">dans le même sens → tendance</text>
+
+      <text x="430" y="24" class="title-s">Bracket : la valeur stagne</text>
+      <g fill="#a2814f" opacity=".9">
+        <g transform="translate(440,40)"><rect x="0" y="30" width="40" height="30" rx="3"/></g>
+        <g transform="translate(500,40)"><rect x="0" y="34" width="40" height="30" rx="3"/></g>
+        <g transform="translate(560,40)"><rect x="0" y="28" width="40" height="30" rx="3" fill="#bd8524"/></g>
+        <g transform="translate(620,40)"><rect x="0" y="32" width="40" height="30" rx="3"/></g>
+      </g>
+      <rect x="440" y="66" width="220" height="34" fill="var(--gold-soft)"/>
+      <text x="440" y="175" class="stl">la valeur reste au même niveau</text>
+      <text x="440" y="189" class="stl">→ fourchette, on fade les bords</text>
+    </svg>
+    <figcaption><b>Tendance ou fourchette : deux régimes, deux stratégies.</b> En tendance (~20-30 % du temps), tu suis le déplacement de la valeur. En fourchette, tu fades les bords vers le POC. Confondre les deux, c'est fader une tendance ou suivre un range. Les deux font mal.</figcaption>
+  </figure>
+
+  <div class="box tip">
+    <p class="bt">Le raccourci de lecture</p>
+    <p>Value area d'aujourd'hui <strong>plus haute</strong> qu'hier + queue d'achat en bas + extension vers le haut = <strong>l'acheteur OTF contrôle</strong>. L'inverse pour le vendeur. Si la valeur chevauche celle d'hier et que les extensions vont des deux côtés, personne ne contrôle : c'est l'équilibre, tu joues les bords.</p>
+  </div>
+</section>
+
+<!-- ============ MODULE 7 ============ -->
+<section id="m7">
+  <p class="modnum">MODULE 07</p>
+  <h2>Composite &amp; naked POC : l'usage moderne</h2>
+  <p class="lead">Jusqu'ici, un profil = une journée. Mais ta vraie force viendra d'agréger plusieurs jours et de repérer les niveaux que le marché n'a pas fini de traiter.</p>
+
+  <h3>Le profil composite</h3>
+  <p>Additionne les profils de plusieurs séances (une semaine, un mois, une vague entière) et tu obtiens un <strong>composite</strong>. Il révèle la vraie structure : les gros HVN où le marché a passé des semaines (aimants et supports majeurs) et les LVN entre deux zones de valeur (là où le prix voyage vite). C'est ta carte de bataille pour le swing.</p>
+
+  <h3>Le naked POC</h3>
+  <p>Un <strong>naked POC</strong> (ou <em>virgin POC</em>) est un POC d'une séance passée que le prix <strong>n'est jamais revenu toucher</strong>. Comme le POC est « le prix le plus juste » de ce jour-là, le marché a tendance à revenir le chercher tôt ou tard. Ça en fait des cibles naturelles.</p>
+
+  <figure>
+    <svg viewBox="0 0 760 320" role="img" aria-label="Profils journaliers fusionnés en composite avec un naked POC agissant comme aimant">
+      <!-- daily profiles -->
+      <text x="40" y="24" class="title-s">Profils journaliers</text>
+      <g fill="#a2814f" opacity=".85">
+        <!-- day1 -->
+        <g transform="translate(50,50)">
+          <rect x="0" y="30" width="30" height="9"/><rect x="0" y="42" width="50" height="9"/>
+          <rect x="0" y="54" width="60" height="9" fill="#bd8524"/><rect x="0" y="66" width="44" height="9"/>
+          <rect x="0" y="78" width="24" height="9"/>
+        </g>
+        <!-- day2 higher -->
+        <g transform="translate(50,10)">
+          <rect x="0" y="20" width="28" height="9"/><rect x="0" y="32" width="52" height="9" fill="#bd8524"/>
+          <rect x="0" y="44" width="40" height="9"/>
+        </g>
+        <!-- day3 -->
+        <g transform="translate(50,90)">
+          <rect x="0" y="30" width="34" height="9"/><rect x="0" y="42" width="58" height="9" fill="#bd8524"/>
+          <rect x="0" y="54" width="40" height="9"/><rect x="0" y="66" width="20" height="9"/>
+        </g>
+      </g>
+      <!-- naked POC line -->
+      <line x1="50" y1="196" x2="470" y2="196" stroke="#b0472c" stroke-width="1.6" stroke-dasharray="6 4"/>
+      <text x="55" y="190" class="stb" fill="#b0472c">naked POC (jamais retesté) ▼</text>
+
+      <!-- arrow to composite -->
+      <path d="M150 240 h60" stroke="#6f5535" stroke-width="1.5" fill="none"/>
+      <path d="M210 234 l8 6 -8 6 z" fill="#6f5535"/>
+      <text x="120" y="262" class="stl">on fusionne →</text>
+
+      <!-- composite -->
+      <text x="540" y="24" class="title-s">Composite</text>
+      <g fill="#a2814f">
+        <rect x="540" y="34"  width="40"  height="10" rx="2" opacity=".85"/>
+        <rect x="540" y="48"  width="70"  height="10" rx="2"/>
+        <rect x="540" y="62"  width="120" height="10" rx="2"/>
+        <rect x="540" y="76"  width="150" height="10" rx="2" fill="#bd8524"/>
+        <rect x="540" y="90"  width="110" height="10" rx="2"/>
+        <rect x="540" y="104" width="40"  height="10" rx="2" fill="#b0472c" opacity=".7"/>
+        <rect x="540" y="118" width="34"  height="10" rx="2" fill="#b0472c" opacity=".7"/>
+        <rect x="540" y="132" width="120" height="10" rx="2"/>
+        <rect x="540" y="146" width="90"  height="10" rx="2"/>
+        <rect x="540" y="160" width="40"  height="10" rx="2" opacity=".85"/>
+      </g>
+      <text x="700" y="82" class="stb" fill="#bd8524">HVN</text>
+      <path d="M600 112 h95" stroke="#b0472c" stroke-width="1" stroke-dasharray="3 3" fill="none"/>
+      <text x="470" y="200" class="stl">le LVN central = zone où le prix</text>
+      <text x="470" y="214" class="stl">accélère (peu de volume)</text>
+      <text x="700" y="112" class="stb" fill="#b0472c">LVN</text>
+    </svg>
+    <figcaption><b>De la photo du jour à la carte du terrain.</b> Le composite montre les vrais murs (HVN) et les vrais couloirs (LVN). Un naked POC laissé en route reste une cible que le marché aime revenir chercher.</figcaption>
+  </figure>
+
+  <h3>En pratique sur TradingView</h3>
+  <ul>
+    <li><strong>VRVP</strong> (<em>Visible Range Volume Profile</em>) : le profil de tout ce qui est affiché à l'écran. Parfait pour cadrer une zone (une vague, une consolidation).</li>
+    <li><strong>VPVR</strong> (<em>Visible Range, ancré</em>) / <strong>Session Volume</strong> : profil par séance, pour le day trading.</li>
+    <li><strong>Fixed Range</strong> : tu traces le profil sur une plage que tu choisis (un range précis, un impulse). L'outil le plus utile pour isoler un HVN/LVN.</li>
+    <li>Réglages : garde <strong>Value Area à 70 %</strong>, active la ligne de POC, affiche VAH/VAL. Résolution des rangées assez fine pour voir les LVN, pas au point de tout hacher.</li>
+  </ul>
+</section>
+
+<!-- ============ MODULE 8 ============ -->
+<section id="m8">
+  <p class="modnum">MODULE 08</p>
+  <h2>Trader avec : le playbook</h2>
+  <p class="lead">La théorie devient utile ici. Quatre setups qui découlent directement des briques, plus le seul truc que Kerb tire du profil.</p>
+
+  <figure>
+    <svg viewBox="0 0 760 360" role="img" aria-label="Quatre setups de trading basés sur le profil de volume">
+      <!-- Setup 1: fade value edge -->
+      <g transform="translate(20,20)">
+        <rect x="0" y="30" width="150" height="70" fill="var(--gold-soft)"/>
+        <line x1="0" y1="30" x2="150" y2="30" stroke="#bd8524" stroke-dasharray="4 3"/>
+        <line x1="0" y1="100" x2="150" y2="100" stroke="#bd8524" stroke-dasharray="4 3"/>
+        <line x1="0" y1="65" x2="150" y2="65" stroke="#bd8524" stroke-width="1.4"/>
+        <text x="155" y="34" class="stl">VAH</text><text x="155" y="69" class="stl">POC</text><text x="155" y="104" class="stl">VAL</text>
+        <polyline points="10,20 40,32 60,55 90,63" fill="none" stroke="#2e7d5b" stroke-width="2"/>
+        <path d="M60,55 l-6,-2 4,-6 z" fill="#2e7d5b"/>
+        <text x="0" y="132" class="stb">1 · Fade du bord de valeur</text>
+        <text x="0" y="148" class="stl" font-size="11">Prix rejeté au VAH → retour vers le POC.</text>
+        <text x="0" y="160" class="stl" font-size="11">Marché en fourchette uniquement.</text>
+      </g>
+      <!-- Setup 2: balance breakout -->
+      <g transform="translate(410,20)">
+        <rect x="0" y="30" width="120" height="70" fill="var(--gold-soft)"/>
+        <line x1="0" y1="30" x2="120" y2="30" stroke="#bd8524" stroke-dasharray="4 3"/>
+        <polyline points="20,90 40,70 60,50 90,32 130,18" fill="none" stroke="#2e7d5b" stroke-width="2.2"/>
+        <path d="M130,18 l-2,7 -6,-4 z" fill="#2e7d5b"/>
+        <text x="0" y="132" class="stb">2 · Cassure de balance</text>
+        <text x="0" y="148" class="stl" font-size="11">Sortie nette de la value area avec</text>
+        <text x="0" y="160" class="stl" font-size="11">volume → on suit l'extension.</text>
+      </g>
+      <!-- Setup 3: POC retest -->
+      <g transform="translate(20,200)">
+        <line x1="0" y1="60" x2="150" y2="60" stroke="#bd8524" stroke-width="1.6"/>
+        <text x="155" y="64" class="stl">POC</text>
+        <polyline points="10,20 40,45 70,58 100,45 130,22" fill="none" stroke="#3a6b8a" stroke-width="2.2"/>
+        <circle cx="70" cy="58" r="4" fill="#3a6b8a"/>
+        <text x="0" y="112" class="stb">3 · Retest du POC</text>
+        <text x="0" y="128" class="stl" font-size="11">Le prix revient tester le POC (support),</text>
+        <text x="0" y="140" class="stl" font-size="11">tient, et repart. Entrée à faible risque.</text>
+      </g>
+      <!-- Setup 4: LVN acceleration -->
+      <g transform="translate(410,200)">
+        <g fill="#a2814f">
+          <rect x="0" y="10" width="60" height="9" rx="2"/>
+          <rect x="0" y="34" width="10" height="9" rx="2" fill="#b0472c"/>
+          <rect x="0" y="46" width="10" height="9" rx="2" fill="#b0472c"/>
+          <rect x="0" y="70" width="60" height="9" rx="2"/>
+        </g>
+        <path d="M90 78 C 120 78, 120 40, 150 40 S 170 15, 190 12" fill="none" stroke="#2e7d5b" stroke-width="2.2"/>
+        <path d="M190,12 l-3,6 -5,-4 z" fill="#2e7d5b"/>
+        <text x="0" y="112" class="stb">4 · Accélération sur LVN</text>
+        <text x="0" y="128" class="stl" font-size="11">Le prix entre dans le creux (LVN) et</text>
+        <text x="0" y="140" class="stl" font-size="11">fonce jusqu'au HVN suivant.</text>
+      </g>
+    </svg>
+    <figcaption><b>Quatre setups, deux régimes.</b> Setups 1 et 3 en marché de fourchette (on joue le retour à la valeur). Setups 2 et 4 en marché directionnel (on joue le départ de la valeur). Le régime, tu le lis au module 6.</figcaption>
+  </figure>
+
+  <h3>La logique commune</h3>
+  <p>Tous ces setups reposent sur une seule idée de Dalton : <strong>le prix quitte la valeur ou y revient</strong>. Soit le marché défend un niveau (tu joues le rebond sur un HVN, un POC, un bord de value area), soit il le refuse (tu joues l'accélération dans un LVN, la cassure d'une balance). Le stop se place là où ta lecture est invalidée : de l'autre côté du niveau que tu joues.</p>
+
+  <div class="box kerb">
+    <p class="bt">Le nugget de Kerb : le trap au POC</p>
+    <p>Kerb utilise très peu le profil (voir module 10), mais il décrit un setup net en intraday sur les futures ES : le <strong>bull trap / bear trap au POC</strong>. Un gros volume vendeur s'accumule au POC, se fait piéger, puis les acheteurs entrent et poussent le prix au-dessus du POC. Le POC agit comme la ligne de bascule : ceux du mauvais côté sont coincés et alimentent le mouvement. À garder pour l'intraday, pas pour le swing.</p>
+  </div>
+
+  <div class="box warn">
+    <p class="bt">Le garde-fou honnête</p>
+    <p>Ces setups sont des <strong>lectures</strong>, pas des signaux backtestés. Aucun n'a de win rate validé façon Bonferroni. Traite le profil comme une carte qui te dit où l'action est probable, puis confirme avec le prix (rejet visible, volume, structure). C'est un filtre d'attention de haute qualité, pas un automate.</p>
+  </div>
+</section>
+
+<!-- ============ MODULE 9 ============ -->
+<section id="m9">
+  <p class="modnum">MODULE 09</p>
+  <h2>Volume Profile vs EMA</h2>
+  <p class="lead">La réponse complète à ton inquiétude de départ. Les deux ne jouent pas le même match. Voici quand chacun brille, et pourquoi les marier bat le choix de l'un contre l'autre.</p>
+
+  <table class="tbl">
+    <thead><tr><th>Critère</th><th>Volume Profile</th><th>EMA 8/21</th></tr></thead>
+    <tbody>
+      <tr><td>Question posée</td><td class="vp">Où est la valeur ?</td><td class="ema">Dans quel sens ça va ?</td></tr>
+      <tr><td>Nature</td><td class="vp">Carte de niveaux (statique + contexte)</td><td class="ema">Signal de direction (dynamique)</td></tr>
+      <tr><td>Retard</td><td class="vp">Aucun : c'est de la donnée brute</td><td class="ema">Oui : moyenne du passé</td></tr>
+      <tr><td>Facilité de déclenchement</td><td class="ema">Faible : ça se lit, pas de trigger</td><td class="vp">Forte : croisement = signal clair</td></tr>
+      <tr><td>Profondeur d'explication</td><td class="vp">Dit <em>pourquoi</em> le prix réagit</td><td class="ema">Dit seulement <em>que</em> ça bouge</td></tr>
+      <tr><td>Où il brille</td><td class="vp">Niveaux, S/R, cibles, régime</td><td class="ema">Momentum, trailing stop, filtre de tendance</td></tr>
+      <tr><td>Où il déçoit</td><td class="vp">Ne donne pas la direction seul</td><td class="ema">Faux signaux en range, toujours en retard</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box verdict">
+    <p class="bt">Ma reco concrète pour toi</p>
+    <p><strong>Volume Profile en outil principal + une tendance simple en filtre.</strong> Le profil te donne les niveaux (où entrer, où viser, où poser le stop) et le régime (fourchette ou tendance). Une EMA (même les 8/21 de ta référence) ou une MA 200 te donne le biais directionnel d'un coup d'œil. Tu n'opposes pas les deux, tu les empiles : le profil dit « où », la tendance dit « dans quel sens ». C'est plus robuste que l'un des deux seul.</p>
+  </div>
+
+  <p><strong>Sur ton vrai souci « est-ce aussi simple à s'expliquer ? »</strong> — oui pour les fondations, non pour la maîtrise, et c'est vrai des deux côtés. « 8 croise 21 vers le haut = achat » est simple à dire mais dur à trader (combien de faux signaux tu as mangés ?). « Le prix rejette le VAH et revient au POC » est tout aussi simple à dire, et te donne en plus une raison, un niveau d'entrée, une cible et un stop. La courbe d'apprentissage du VP est un peu plus longue au début parce qu'il faut lire un contexte, mais elle plafonne plus haut.</p>
+</section>
+
+<!-- ============ MODULE 10 ============ -->
+<section id="m10">
+  <p class="modnum">MODULE 10</p>
+  <h2>Ce que Kerb en dit</h2>
+  <p class="lead">Tu m'as demandé de croiser avec Kerberos. Verdict clair après lecture de son framework et de ses threads : le Volume Profile sera <strong>ton</strong> outil, pas un héritage de Kerb.</p>
+
+  <p>Kerb n'utilise le profil qu'à la marge. Sa doctrine validée (les signaux testés Bonferroni) repose sur la breadth, le VIX, le sentiment cross-asset et des z-scores. <strong>Zéro signal de son framework n'est basé sur le volume ou le market profile.</strong> Centralité chez lui : environ 2 sur 10.</p>
+
+  <p>Là où il le mentionne, c'est utile à connaître :</p>
+  <ul>
+    <li><strong>Le trap au POC en intraday</strong> (thread 2020-04-23) : son seul vrai usage tactique, repris au module 8. « Un gros volume vendeur au POC se fait piéger, les acheteurs entrent et poussent au-dessus du POC ». Réservé au day trading sur futures.</li>
+    <li><strong>Le POC comme confluence</strong> (thread 2020-05-10) : il liste un POC mensuel à côté d'un Fibonacci, d'une SMA et d'un support classique. Le profil n'est qu'un niveau parmi d'autres, pas une méthode.</li>
+    <li><strong>VAH-VAL comme métaphore</strong> (thread 2020-08-25) : il se sert de « 70 % du volume » pour expliquer un z-score à ceux qui bloquaient sur son graphe. Usage pédagogique, pas stratégique.</li>
+  </ul>
+
+  <div class="box kerb">
+    <p class="bt">Ce que ça implique pour ton système</p>
+    <p>Tu n'as pas de contradiction à gérer : Kerb lit le <em>macro</em> (est-ce le moment d'être long ou short le marché), le Volume Profile lit la <em>structure</em> (où entrer et sortir sur un titre). Les deux se complètent au lieu de se marcher dessus. Kerb te dit <em>quand</em> le vent est favorable, le profil te dit <em>où</em> te placer. Le seul emprunt direct utile, c'est son trap au POC.</p>
+  </div>
+
+  <div class="box warn">
+    <p class="bt">Discipline doctrine (ta propre règle)</p>
+    <p>Le Volume Profile n'a pas de verdict backtesté chez toi. C'est une lentille de lecture discrétionnaire. Tiens-le comme tel : un cadre pour orienter ton attention et structurer une entrée, jamais comme un edge statistiquement prouvé. Le jour où tu voudras en tirer un signal mécanique (« acheter tout retest de naked POC »), il faudra le passer au backtest MCPT comme n'importe quel autre.</p>
+  </div>
+</section>
+
+<!-- ============ MODULE 11 ============ -->
+<section id="m11">
+  <p class="modnum">MODULE 11</p>
+  <h2>Glossaire &amp; cheat sheet</h2>
+  <p class="lead">La page à garder sous les yeux. Tout le vocabulaire, une ligne chacun. C'est ta version « aussi simple que l'EMA ».</p>
+
+  <div class="cheat">
+    <h3>Les briques</h3>
+    <div class="row"><span class="k">POC</span><span class="v">Point of Control. Barre la plus longue. Le prix le plus juste. Aimant.</span></div>
+    <div class="row"><span class="k">Value Area</span><span class="v">Les 70 % du volume. Le prix accepté. Bornée par VAH (haut) et VAL (bas).</span></div>
+    <div class="row"><span class="k">HVN</span><span class="v">High Volume Node. Nœud dense. Mur. Le prix ralentit, rebondit.</span></div>
+    <div class="row"><span class="k">LVN</span><span class="v">Low Volume Node. Creux. Tunnel. Le prix accélère, traverse vite.</span></div>
+    <div class="row"><span class="k">Excès / queue</span><span class="v">Barres courtes aux extrêmes. Rejet net. Queue longue = OTF agressif.</span></div>
+
+    <h3>La journée</h3>
+    <div class="row"><span class="k">Initial Balance</span><span class="v">Fourchette de la 1re heure, posée par les locaux.</span></div>
+    <div class="row"><span class="k">Range Extension</span><span class="v">Sortie de l'IB. L'autre timeframe entre en jeu.</span></div>
+    <div class="row"><span class="k">Open-Drive</span><span class="v">Ouverture qui file droit. Le plus fiable, l'extrême tient.</span></div>
+    <div class="row"><span class="k">Trend day</span><span class="v">Profil fin et allongé, un camp contrôle. Ne jamais fader.</span></div>
+    <div class="row"><span class="k">Poor high/low</span><span class="v">Extrême plat, sans queue. Sera re-testé.</span></div>
+
+    <h3>Qui contrôle</h3>
+    <div class="row"><span class="k">Day timeframe</span><span class="v">Les locaux. Liquidité, pas direction. Fourchette serrée.</span></div>
+    <div class="row"><span class="k">Other timeframe</span><span class="v">Le long terme (OTF). C'est lui qui déplace le marché.</span></div>
+    <div class="row"><span class="k">Initiative</span><span class="v">Acheter dans/au-dessus de la valeur. Forte conviction.</span></div>
+    <div class="row"><span class="k">Responsive</span><span class="v">Acheter sous la valeur. On répond à une aubaine.</span></div>
+    <div class="row"><span class="k">Valeur qui monte</span><span class="v">Acheteur OTF aux commandes (et inverse).</span></div>
+
+    <h3>Composite &amp; outils</h3>
+    <div class="row"><span class="k">Composite</span><span class="v">Plusieurs jours fusionnés. La carte du terrain pour le swing.</span></div>
+    <div class="row"><span class="k">Naked POC</span><span class="v">POC passé jamais retesté. Cible : le marché y revient.</span></div>
+    <div class="row"><span class="k">VRVP / Fixed Range</span><span class="v">Profils TradingView. Fixed Range pour isoler un HVN/LVN.</span></div>
+
+    <h3>Les 4 setups</h3>
+    <div class="row"><span class="k">Fade du bord</span><span class="v">Rejet au VAH/VAL → retour au POC. En fourchette.</span></div>
+    <div class="row"><span class="k">Cassure de balance</span><span class="v">Sortie de valeur avec volume → suivre. En tendance.</span></div>
+    <div class="row"><span class="k">Retest POC</span><span class="v">Retour sur le POC support, tient, repart. Faible risque.</span></div>
+    <div class="row"><span class="k">Accélération LVN</span><span class="v">Entrée dans le creux → fonce au HVN suivant.</span></div>
+  </div>
+
+  <div class="box verdict" style="margin-top:28px">
+    <p class="bt">La règle d'or, si tu ne retiens qu'une chose</p>
+    <p><strong>Le prix cherche à faciliter l'échange.</strong> Il reste où l'échange est facile (les HVN, la valeur), il fuit où il est refusé (les LVN, les excès). Tout le reste n'est que du vocabulaire posé sur cette seule idée. Lis chaque barre comme une réponse du marché : « ici oui » ou « ici non ».</p>
+  </div>
+</section>
+
+</main>
+
+<footer><div class="wrap">
+  Cours perso · d'après <em>Mind Over Markets</em> (Dalton, Jones, Dalton — Wiley) · croisé avec l'archive Kerberos007.<br>
+  Fichier local, aucune dépendance réseau. Ouvre-le, annote-le, reviens-y.
+</div></footer>
+
+</body>
+</html>

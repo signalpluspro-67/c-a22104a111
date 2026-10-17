@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L&#x27;analyste dans le prompt : biais de rôle et mémoire</title>
+<style>*{box-sizing:border-box}
+body{margin:0;background:#faf7f2;color:#1c1b1a;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+ line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:820px;margin:0 auto;padding:48px 22px 90px}
+.kicker{color:#b4623a;font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:13px}
+h1{font-size:40px;line-height:1.12;margin:10px 0 14px;font-weight:800}
+.lead{font-size:24px;line-height:1.35;color:#3a3733;margin:0 0 6px;font-weight:600}
+h2{font-size:23px;margin:44px 0 12px;font-weight:750}
+p{margin:0 0 12px}
+.card{background:#fff;border:1px solid #e7e1d8;border-radius:14px;padding:26px 24px;
+ margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.bloc{display:flex;gap:24px;align-items:center}
+.pic{font-size:92px;line-height:1;flex:0 0 auto}
+.bt{font-size:26px;font-weight:750;margin:0 0 6px}
+.bx{color:#55504a;margin:0;font-size:17px}
+.num{color:#b4623a;font-weight:700;font-size:13px;letter-spacing:.04em}
+ul{margin:6px 0 0;padding-left:22px}li{margin:9px 0;font-size:17px}
+.tag{display:inline-block;background:#f6ece6;color:#b4623a;font-size:12px;font-weight:700;
+ padding:4px 10px;border-radius:20px;margin-bottom:10px}
+.mini{color:#8a837a;font-size:14px}
+a{color:#b4623a}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid #e7e1d8;color:#8a837a;font-size:14px}
+.verdict{border-radius:14px;padding:22px 24px;margin:26px 0 8px;border:1px solid}
+.vlabel{font-size:13px;font-weight:800;letter-spacing:.08em;margin-bottom:8px}
+.vtext{margin:0;font-size:18px;line-height:1.5}
+.vp{background:#eef6ee;border-color:#cbe0cb}.vp .vlabel{color:#3c6b3c}
+.vt{background:#fbf3e6;border-color:#ecdcc0}.vt .vlabel{color:#8a6320}
+.vx{background:#f3f1ef;border-color:#e2ded8}.vx .vlabel{color:#6b6660}
+.gros{padding:30px 28px}
+.sst{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+ color:#b4623a;margin:24px 0 8px}.gros .sst:first-child{margin-top:0}
+.etapes{counter-reset:e;list-style:none;padding-left:0;margin:8px 0 0}
+.etapes li{counter-increment:e;position:relative;padding-left:38px;margin:12px 0;font-size:17px}
+.etapes li::before{content:counter(e);position:absolute;left:0;top:1px;width:26px;height:26px;
+ border-radius:50%;background:#f6ece6;color:#b4623a;font-weight:800;font-size:13px;
+ display:flex;align-items:center;justify-content:center}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:640px){h1{font-size:30px}.lead{font-size:20px}.pic{font-size:64px}
+ .bloc{flex-direction:column;align-items:flex-start;gap:12px}.duo{grid-template-columns:1fr}}</style></head><body><div class="wrap">
+<span class="tag">Agents et outillage</span>
+<div class="kicker">Papier de la semaine · samedi 5 septembre</div>
+<h1>L&#x27;analyste dans le prompt : biais de rôle et mémoire</h1>
+<p class="lead">Quand tu dis à un LLM qui tu es, il lit le même document financier et en tire une conclusion différente.</p>
+<p class="mini">The Analyst in the Prompt: Role, Retrieval, and Memory Biases in LLM Financial Analysis · <a href="https://arxiv.org/abs/2609.03218">arXiv 2609.03218</a></p>
+
+<div class="verdict vx">
+  <div class="vlabel">PASSER</div>
+  <p class="vtext">Le harness LLM du système sert à écrire des briefs et poster dans Discord, pas à rendre un verdict d&#x27;achat conditionné par un profil utilisateur. Les décisions de trade viennent des screeners Python validés en 8 étapes, où aucun LLM ne juge, donc le biais décrit ici n&#x27;a pas de porte d&#x27;entrée dans les signaux.</p>
+</div>
+
+<h2>Le problème qu'ils attaquent</h2>
+<div class="card"><p class="bx">Les LLM personnalisent leurs réponses avec la mémoire, un profil utilisateur ou un rôle assigné. En finance, la même preuve doit donner la même lecture, sinon la décision devient un miroir du profil. Les travaux existants regardaient surtout la sortie finale, sans séparer deux effets qui se mélangent. Ils ne disent pas si le biais vient du choix des preuves ou de leur interprétation.</p></div>
+
+<h2>Comment ça marche</h2>
+<div class="card"><div class="bloc"><div class="pic">🎭</div><div><div class="num">01</div><p class="bt">Le rôle change la lecture</p><p class="bx">L&#x27;utilisateur donne au modèle un rôle, par exemple analyste value ou trader momentum. Le modèle lit ensuite un dépôt SEC et rend un verdict. Sur le même document, deux rôles différents produisent deux verdicts différents. C&#x27;est ça que le papier appelle spillover : le rôle déborde sur le jugement.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🔎</div><div><div class="num">02</div><p class="bt">Séparer recherche et interprétation</p><p class="bx">Le modèle fait deux choses quand tu lui donnes un long document. Il choisit d&#x27;abord les passages à lire, c&#x27;est la retrieval. Il interprète ensuite ces passages pour conclure. Les auteurs testent les deux étapes séparément pour savoir laquelle porte le biais.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🧠</div><div><div class="num">03</div><p class="bt">Le biais est dans l&#x27;interprétation</p><p class="bx">Ils comparent une retrieval conditionnée par le rôle et une retrieval neutre. Le résultat clé : même avec exactement les mêmes passages sélectionnés, les rôles produisent encore des conclusions différentes. Le modèle ne choisit pas des preuves différentes, il lit les mêmes preuves différemment. Le problème n&#x27;est donc pas au niveau du filtre, il est au niveau de la tête qui juge.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">💾</div><div><div class="num">04</div><p class="bt">Mémoire versus rôle assigné</p><p class="bx">Ils testent aussi un contexte injecté sous forme de mémoire, comme si le modèle se souvenait de toi. Puis un profil utilisateur au lieu d&#x27;un rôle d&#x27;assistant. La forme du contexte change l&#x27;ampleur du biais, pas juste son contenu. Un même profil, formulé côté user, fuit moins qu&#x27;un rôle assigné à l&#x27;assistant.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🧪</div><div><div class="num">05</div><p class="bt">Deux mitigations testées</p><p class="bx">Première parade : exprimer le profil investisseur comme un fait sur l&#x27;utilisateur au lieu d&#x27;un rôle donné à l&#x27;assistant. Deuxième parade : séparer deux sorties, une lecture basée sur la preuve et une lecture personnalisée. Les deux réduisent le débordement du rôle sur le verdict. Aucune ne le supprime totalement, et l&#x27;efficacité varie beaucoup d&#x27;un modèle à l&#x27;autre.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">📉</div><div><div class="num">06</div><p class="bt">Ce que ça coûte en pratique</p><p class="bx">Sur douze modèles testés, aucun n&#x27;est immunisé. Un pipeline qui met du contexte utilisateur dans le prompt du modèle produit des verdicts qui bougent avec le profil, à preuves égales. Pour un système qui décide de trades ou d&#x27;alertes, ça veut dire que l&#x27;audit d&#x27;une reco doit inclure le contexte fourni au modèle. Sans ça, tu ne peux pas reproduire la sortie.</p></div></div></div>
+
+<h2>Ce qu&#x27;ils ont mesuré</h2><div class="card"><ul><li>3 575 dépôts SEC utilisés comme corpus de test</li><li>12 modèles LLM comparés en parallèle</li><li>Effet mesuré : divergence des conclusions à preuves identiques selon le rôle, réduite mais non éliminée par les deux mitigations</li></ul></div>
+<h2>Ce que ça ne prouve pas</h2><div class="card"><ul><li>Le résumé ne donne pas de chiffre chiffré sur l&#x27;ampleur du spillover</li><li>L&#x27;étude porte sur des dépôts SEC longs, pas sur des signaux techniques ou options</li><li>Les deux mitigations marchent inégalement selon les modèles, sans règle claire pour choisir</li></ul></div>
+
+<h2>Chez nous</h2>
+<div class="card gros">
+  <p class="sst">Où ça se branche</p>
+  <p class="bx">Aucun point d&#x27;entrée pertinent. Les modules qui appellent un LLM sont lib/llm_gateway.py, les jobs trade_desk et publish_brief, l&#x27;app pi-companion/app/ai_ask.py, et tpi-discord. Aucun ne prend en input un profil utilisateur qui influencerait un verdict sur un dépôt SEC.</p>
+  <p class="sst">Le plan</p>
+  <ol class="etapes"><li>Rien à coder tant qu&#x27;un LLM ne rend pas un verdict d&#x27;achat conditionné par un profil utilisateur</li><li>Si un jour ai_ask.py sert des réponses personnalisées sur des 10-K, alors relire ce papier</li><li>Dans ce cas seulement, séparer la sortie evidence-based de la sortie personnalisée dans le prompt</li><li>Et logger le contexte utilisateur envoyé au modèle pour rejouer la réponse</li></ol>
+  <div class="duo">
+    <div><p class="sst">Effort</p><p class="bx">0 h maintenant</p></div>
+    <div><p class="sst">Ça remplace</p><p class="bx">Rien. Aucune brique actuelle ne rend de verdict conditionné par un profil.</p></div>
+  </div>
+  <p class="sst">Le risque</p>
+  <p class="bx">Le seul risque serait de brancher ce papier par principe et de complexifier des prompts qui n&#x27;ont pas ce problème. Signe que ça part en vrille : du code de mitigation dans un job qui ne prend même pas de profil utilisateur en entrée.</p>
+</div>
+
+<h2>Le test qui tranche</h2>
+<div class="card"><p class="bx">Compter dans le code combien de jobs LLM prennent un profil utilisateur ou un rôle variable en entrée pour rendre un jugement financier. Si le compte est zéro, le papier ne s&#x27;applique pas. Ce compte est zéro aujourd&#x27;hui.</p></div>
+
+<h2>Ce que j&#x27;ai simplifié</h2><div class="card"><ul><li>J&#x27;ai résumé retrieval par choix des passages, alors que le papier compare des variantes plus fines de récupération</li><li>J&#x27;ai regroupé les douze modèles comme un bloc, alors que le papier montre une variance importante entre eux</li></ul></div>
+<footer>Veille papers · <a href="index.html">toutes les semaines</a></footer>
+</div></body></html>

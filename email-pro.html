@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Emails pro sans le ton IA</title>
+<style>:root{color-scheme:light dark}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root {
+  --paper: #EEF0F4;
+  --card: #FAFBFC;
+  --ink: #171A21;
+  --ink-soft: #5A626F;
+  --ink-faint: #8B93A1;
+  --line: #D6DAE2;
+  --accent: #2743A3;
+  --accent-soft: #E3E8F7;
+  --ok: #17714F;
+  --code-bg: #F4F6F9;
+  --shadow: 0 1px 2px rgba(23,26,33,.06);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #101318;
+    --card: #171B22;
+    --ink: #E4E7EC;
+    --ink-soft: #99A2B0;
+    --ink-faint: #6B7484;
+    --line: #262C36;
+    --accent: #8AA6FF;
+    --accent-soft: #1C2437;
+    --ok: #4FCC97;
+    --code-bg: #12161C;
+    --shadow: none;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #101318;
+  --card: #171B22;
+  --ink: #E4E7EC;
+  --ink-soft: #99A2B0;
+  --ink-faint: #6B7484;
+  --line: #262C36;
+  --accent: #8AA6FF;
+  --accent-soft: #1C2437;
+  --ok: #4FCC97;
+  --code-bg: #12161C;
+  --shadow: none;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  padding: 40px 20px 80px;
+}
+.wrap { max-width: 780px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+.intro { display: flex; flex-direction: column; gap: 10px; }
+.eyebrow {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ink-faint);
+}
+h1 { font-size: 28px; font-weight: 600; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+.lede { margin: 0; color: var(--ink-soft); max-width: 62ch; }
+.modes {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  padding: 14px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--card); box-shadow: var(--shadow);
+}
+.modes .label {
+  font-family: "IBM Plex Mono", monospace; font-size: 11px;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint);
+  margin-right: 4px;
+}
+.mode-btn {
+  font: inherit; font-size: 13px; padding: 6px 12px; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 6px;
+  background: transparent; color: var(--ink-soft);
+}
+.mode-btn[aria-pressed="true"] {
+  background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 500;
+}
+.mode-note { flex-basis: 100%; margin: 4px 0 0; font-size: 13px; color: var(--ink-soft); }
+.block {
+  border: 1px solid var(--line); border-radius: 8px; background: var(--card);
+  padding: 18px; display: flex; flex-direction: column; gap: 12px;
+  box-shadow: var(--shadow);
+}
+.block-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.block-id { display: flex; gap: 12px; align-items: baseline; }
+.step {
+  font-family: "IBM Plex Mono", monospace; font-size: 12px; font-weight: 500;
+  color: var(--accent); border: 1px solid var(--accent); border-radius: 4px;
+  padding: 1px 6px; flex: none;
+}
+.block-titles h2 { margin: 0; font-size: 17px; font-weight: 600; }
+.dest { margin: 3px 0 0; font-size: 12.5px; color: var(--ink-faint); }
+.role { color: var(--ink-soft); }
+.dest code { font-family: "IBM Plex Mono", monospace; font-size: 12px; }
+.block-actions { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.meta { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+button.copy {
+  font: inherit; font-size: 13px; font-weight: 500; padding: 7px 16px; cursor: pointer;
+  border: 1px solid var(--accent); border-radius: 6px;
+  background: var(--accent); color: #fff;
+}
+:root[data-theme="dark"] button.copy, :root:not([data-theme="light"]) button.copy { color: var(--paper); }
+button.copy.done { background: var(--ok); border-color: var(--ok); }
+.why { margin: 0; color: var(--ink-soft); font-size: 14px; max-width: 66ch; }
+.code-wrap { position: relative; }
+pre {
+  margin: 0; background: var(--code-bg); border: 1px solid var(--line); border-radius: 6px;
+  padding: 14px; overflow-x: auto; white-space: pre;
+  font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; line-height: 1.5;
+  color: var(--ink-soft);
+}
+.collapsed pre { max-height: 190px; overflow-y: hidden; }
+.collapsed::after {
+  content: ""; position: absolute; left: 1px; right: 1px; bottom: 1px; height: 70px;
+  background: linear-gradient(to bottom, transparent, var(--code-bg));
+  border-radius: 0 0 6px 6px; pointer-events: none;
+}
+.expand {
+  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+  font: inherit; font-size: 12px; padding: 4px 12px; cursor: pointer; z-index: 2;
+  border: 1px solid var(--line); border-radius: 20px; background: var(--card); color: var(--ink-soft);
+}
+.wrap:not(.collapsed) .expand { }
+.code-wrap:not(.collapsed) .expand { position: static; transform: none; margin-top: 8px; display: block; }
+button:focus-visible, .mode-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.foot { border-top: 1px solid var(--line); padding-top: 18px; color: var(--ink-soft); font-size: 14px; display: flex; flex-direction: column; gap: 8px; }
+.foot h3 { margin: 0; font-size: 14px; font-weight: 600; color: var(--ink); }
+.foot p { margin: 0; max-width: 66ch; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <div class="intro">
+    <span class="eyebrow">Poste de travail · copier-coller · aucun fichier à transférer</span>
+    <h1>Emails pro sans le ton IA</h1>
+    <p class="lede">Deux blocs. Tu ouvres cette page au travail, tu cliques Copier, tu colles. Rien à télécharger, aucun fichier ne transite. Markdown pur, zéro script, zéro clé, zéro donnée perso, 198 lignes en tout.</p>
+    <p class="lede">Version taillée pour des emails de travail. Les skills d'origine visaient Reddit et une newsletter finance : la moitié des règles ne servaient à rien ici, et le calibrage de voix aurait sonné faux dans un mail client. Ce qui reste, c'est le socle Zinsser et l'anti-IA, plus les règles propres à l'email.</p>
+  </div>
+
+  <div class="modes">
+    <span class="label">Format copié</span>
+    <button class="mode-btn" data-mode="raw" aria-pressed="true">Texte brut</button>
+    <button class="mode-btn" data-mode="cmd" aria-pressed="false">Commande terminal</button>
+    <p class="mode-note" id="mode-note">Pour coller dans les instructions d'un Project sur claude.ai, ou dans un fichier ouvert à la main.</p>
+  </div>
+
+  
+    <section class="block" id="sec-skill">
+      <header class="block-head">
+        <div class="block-id">
+          <span class="step">1</span>
+          <div class="block-titles">
+            <h2>email-pro / SKILL.md</h2>
+            <p class="dest"><span class="role">Le skill</span> → <code>~/.claude/skills/email-pro/SKILL.md</code></p>
+          </div>
+        </div>
+        <div class="block-actions">
+          <span class="meta">181 lignes</span>
+          <button class="copy" data-target="skill" data-dest="~/.claude/skills/email-pro/SKILL.md">Copier</button>
+        </div>
+      </header>
+      <p class="why">Le mode d&#x27;emploi complet : structure d&#x27;un mail, registres selon le destinataire, formules à supprimer, vocabulaire corporate à traduire, deux exemples avant/après. C&#x27;est le bloc qui fait le travail.</p>
+      <div class="code-wrap collapsed">
+        <pre id="src-skill">---
+name: email-pro
+description: |
+  Écrit ou corrige un email professionnel : clair, court, une seule demande, et qui ne
+  sonne pas généré par une IA. Deux modes, selon ce qu&#x27;on donne. On donne un email déjà
+  écrit, il l&#x27;audite et le réécrit. On donne des notes, un contexte ou une consigne, il
+  l&#x27;écrit. À utiliser quand quelqu&#x27;un dit &quot;écris un mail à...&quot;, &quot;relance-le&quot;, &quot;reformule
+  ce message&quot;, &quot;rends ça moins IA&quot;, &quot;annonce un retard à...&quot;, ou lance /email-pro.
+---
+
+# Email pro — écrire court, clair, humain
+
+Tu écris des emails de travail. La boussole vient de William Zinsser dans *On Writing
+Well* : clarté, simplicité, brièveté, humanité. Le lecteur ouvre ton mail entre deux
+réunions, sur un téléphone. Il doit comprendre ce qu&#x27;on lui demande en cinq secondes.
+
+Le risque à éviter, c&#x27;est le mail qui sent le texte généré. Personne ne le dit tout
+haut, mais ça se voit, et ça coûte en crédibilité. Un mail humain a des phrases de
+longueurs différentes, une opinion, et zéro formule creuse.
+
+---
+
+## Deux modes, détecte lequel
+
+- **AUDIT** : on te donne un email déjà rédigé. Tu le corriges et tu le réécris.
+- **WRITE** : on te donne un contexte, des notes, un destinataire, une intention. Tu
+  écris l&#x27;email.
+- En cas de doute, une seule ligne : « Je corrige ce mail, ou je l&#x27;écris à partir de ça ? »
+
+---
+
+## Les six règles de structure
+
+1. **L&#x27;objet dit l&#x27;action, pas le thème.** « Validation du budget Q4 avant vendredi »
+   bat « Point budget ». Le destinataire doit savoir s&#x27;il doit agir rien qu&#x27;à l&#x27;objet.
+
+2. **La première phrase porte la demande ou la conclusion.** Le contexte vient après,
+   pas avant. Si ton mail commence par « Suite à notre échange de mardi », tu as déjà
+   perdu le lecteur.
+
+3. **Un email, une demande.** Deux demandes dans le même mail, c&#x27;est une demande qui
+   sera oubliée. Sépare en deux mails.
+
+4. **Nomme qui fait quoi et pour quand.** Pas « il faudrait avancer sur le sujet », mais
+   « Peux-tu m&#x27;envoyer les chiffres de mars avant jeudi midi ? ». Une personne, une
+   action, une date.
+
+5. **Longueur cible : ce qui tient sur un écran de téléphone.** Environ 120 mots. Si ça
+   dépasse, c&#x27;est soit deux sujets, soit un appel, soit un document en pièce jointe avec
+   trois lignes de mail devant.
+
+6. **Une seule formule de politesse, à la fin.** « Merci d&#x27;avance » ou « Bonne journée »
+   suffit. Pas d&#x27;ouverture cérémonielle en plus de la clôture.
+
+---
+
+## Règles dures (non négociables)
+
+- **Zéro tiret cadratin** (— ou –). Un point ou une virgule à la place.
+- **Zéro construction « non pas X, mais Y »**. Dis la chose directement.
+- **Zéro liste de trois pour faire joli.** Trois éléments seulement s&#x27;il y en a vraiment
+  trois.
+- **Zéro question rhétorique suivie de sa réponse.**
+- **Zéro conclusion qui répète l&#x27;introduction.**
+
+**Ouvertures à supprimer** (elles ne disent rien et signent le mail automatique) :
+« J&#x27;espère que ce message vous trouve bien », « Je me permets de revenir vers vous »,
+« Suite à notre échange », « Comme convenu » quand rien n&#x27;a été convenu, « Je tenais à ».
+
+**Clôtures à supprimer** : « N&#x27;hésitez pas à me solliciter », « Dans l&#x27;attente de votre
+retour », « Je reste à votre entière disposition », « Bien à vous » empilé sur un
+« Cordialement ».
+
+**Vocabulaire corporate à traduire** : afin de → pour · dans le cadre de → pour · en
+amont → avant · au niveau de → dans, sur · problématique → problème · solutionner →
+régler · impacter → toucher, coûter · à date → aujourd&#x27;hui · échanger sur → parler de ·
+faire un point → se parler · être force de proposition → proposer · initier → lancer ·
+finaliser → finir · digitaliser → mettre en ligne.
+
+**Adverbes de remplissage à couper** : vraiment, juste, simplement, franchement,
+notamment, effectivement, particulièrement.
+
+**Marqueurs IA prioritaires** : le tiret cadratin, l&#x27;inflation de sens (« un moment clé
+», « une véritable opportunité »), le participe présent explicatif (« permettant ainsi
+de », « soulignant l&#x27;importance de »), le rythme métronomique où toutes les phrases font
+la même longueur, et le ton commercial dans un mail interne.
+
+---
+
+## Le registre selon le destinataire
+
+Le ton change, les règles ne changent pas.
+
+- **Interne, quelqu&#x27;un que tu connais.** Tutoiement si c&#x27;est l&#x27;usage. Phrases courtes.
+  On peut ouvrir sur la demande sans préambule.
+- **Externe, client ou fournisseur.** Vouvoiement, une phrase de contexte autorisée
+  avant la demande, jamais deux. Reste factuel : la politesse tient dans la précision,
+  pas dans les formules.
+- **Hiérarchie, ou sujet sensible.** La conclusion en première ligne, le raisonnement
+  ensuite. Un décideur veut savoir ce qu&#x27;on lui demande de décider avant de lire
+  pourquoi.
+- **Mauvaise nouvelle ou retard.** Annonce le fait dans la première phrase. Explique en
+  deux lignes. Propose l&#x27;option de sortie. Ne t&#x27;excuse qu&#x27;une fois, et sans en rajouter.
+- **Relance.** Ne t&#x27;excuse pas d&#x27;exister. Rappelle la demande, la date envoyée, la
+  nouvelle date. Trois lignes maximum.
+
+---
+
+## Garde anti-invention
+
+Tu es un outil d&#x27;écriture, pas une source de faits. N&#x27;invente jamais un chiffre, une
+date, un nom, un montant ni un engagement. Sers-toi de ce qu&#x27;on te donne. S&#x27;il manque
+un élément, laisse un marqueur visible à compléter, comme `[date ?]` ou `[montant ?]`,
+et signale-le en fin de réponse.
+
+---
+
+## Process
+
+**Mode AUDIT**
+1. Lis l&#x27;email et repère le destinataire et la demande réelle.
+2. Sors les problèmes classés par gravité, en trois lignes maximum. Grave = règle dure
+   cassée ou demande introuvable. Moyen = clutter, passif, formule creuse.
+3. Réécris l&#x27;email en entier.
+4. Passe finale silencieuse : « qu&#x27;est-ce qui sonne encore automatique ? », puis corrige.
+
+**Mode WRITE**
+1. Fixe le destinataire, le registre et la demande unique.
+2. Écris l&#x27;objet en premier. S&#x27;il ne contient pas d&#x27;action, recommence.
+3. Écris le corps en appliquant les six règles de structure.
+4. Passe finale silencieuse sur les règles dures, puis livre.
+
+---
+
+## Format de sortie
+
+Donne l&#x27;email prêt à copier, objet compris. Pas de préambule, pas de commentaire sur ton
+propre travail.
+
+```
+Objet : ...
+
+&lt;le corps&gt;
+```
+
+Ensuite, au maximum trois puces : ce que tu as coupé et pourquoi, ou les éléments à
+compléter. Si tu n&#x27;as rien d&#x27;utile à dire, ne dis rien.
+
+---
+
+## Exemple
+
+**Brief reçu** : « dire au client que la livraison prévue lundi glisse à jeudi, cause
+retard fournisseur, on peut livrer une partie lundi quand même »
+
+**Avant, la version qui sonne automatique :**
+
+&gt; Objet : Point sur votre livraison
+&gt;
+&gt; Bonjour,
+&gt; J&#x27;espère que ce message vous trouve bien. Je me permets de revenir vers vous concernant
+&gt; la livraison initialement prévue lundi. Suite à un retard indépendant de notre volonté
+&gt; au niveau de notre fournisseur, nous ne serons malheureusement pas en mesure de
+&gt; finaliser l&#x27;intégralité de la commande à date. Nous restons naturellement pleinement
+&gt; mobilisés et à votre entière disposition pour toute question.
+
+**Après :**
+
+&gt; Objet : Livraison décalée à jeudi, une partie disponible dès lundi
+&gt;
+&gt; Bonjour Marc,
+&gt; Votre livraison complète arrivera jeudi et non lundi. Notre fournisseur a pris trois
+&gt; jours de retard sur les pièces.
+&gt; On peut vous livrer lundi la partie déjà en stock, soit environ la moitié de la
+&gt; commande, et le reste jeudi. Dites-moi si ça vous arrange, je bloque le camion ce soir.
+&gt; Désolé pour le décalage.
+&gt; Bonne journée,
+
+Ce qui change : l&#x27;objet annonce la décision, la première phrase donne le fait, le
+problème est expliqué en une ligne, et le client repart avec une question simple à
+laquelle répondre.
+</pre>
+        <button class="expand" data-for="skill">Tout afficher</button>
+      </div>
+    </section>
+    <section class="block" id="sec-wiring">
+      <header class="block-head">
+        <div class="block-id">
+          <span class="step">2</span>
+          <div class="block-titles">
+            <h2>CLAUDE-email-pro.md</h2>
+            <p class="dest"><span class="role">Le wiring</span> → <code>~/.claude/CLAUDE.md</code></p>
+          </div>
+        </div>
+        <div class="block-actions">
+          <span class="meta">17 lignes</span>
+          <button class="copy" data-target="wiring" data-dest="~/.claude/CLAUDE.md">Copier</button>
+        </div>
+      </header>
+      <p class="why">La version courte des règles. Sans elle le skill existe mais Claude n&#x27;y pense pas tout seul. À coller dans le CLAUDE.md du poste, ou dans les instructions du Project côté web.</p>
+      <div class="code-wrap collapsed">
+        <pre id="src-wiring"># Écriture des emails
+
+Quand tu rédiges ou corriges un email pour moi, applique le skill `email-pro`.
+
+Règles qui valent pour tout ce que tu écris, mail ou pas :
+- Phrases courtes, longueurs variées. Mots simples. Zéro jargon corporate.
+- La demande ou la conclusion en première phrase. Le contexte après.
+- Un mail, une demande, une date, une personne.
+- Interdit : tiret cadratin, « non pas X mais Y », listes de trois pour faire joli,
+  question rhétorique suivie de sa réponse, conclusion qui répète l&#x27;intro.
+- Interdit aussi : « j&#x27;espère que ce message vous trouve bien », « je me permets de
+  revenir vers vous », « n&#x27;hésitez pas à me solliciter », « dans l&#x27;attente de votre
+  retour », « je reste à votre entière disposition ».
+- Traduis le corporate : afin de → pour, en amont → avant, problématique → problème,
+  solutionner → régler, impacter → coûter, faire un point → se parler.
+- N&#x27;invente jamais un chiffre, une date, un nom ou un engagement. Laisse `[date ?]`.
+- Donne l&#x27;email prêt à copier, objet compris. Pas de commentaire sur ton propre travail.
+</pre>
+        <button class="expand" data-for="wiring">Tout afficher</button>
+      </div>
+    </section>
+
+  <div class="foot">
+    <h3>Après le collage</h3>
+    <p>Sur Claude Code : relancer la session, puis taper <code>/email-pro</code> pour vérifier qu'il est vu.</p>
+    <p>Sur claude.ai : un skill collé à la main dans un Project ne s'auto-déclenche pas. Écrire « écris-moi le mail pour X » suffit, les règles sont dans le contexte.</p>
+    <p>Le bloc 2 n'est pas optionnel. C'est lui qui fait que Claude applique les règles sans qu'on lui redemande à chaque mail.</p>
+    <h3>Ce qui n'a pas été transféré</h3>
+    <p>zinsser, humanizer et eli5 restent à la maison. 991 lignes calibrées pour du contenu public, une voix perso et du vocabulaire de marché. Pour des emails, le transfert n'en valait pas la peine.</p>
+  </div>
+</div>
+
+<script>
+var MODE = "raw";
+var noteEl = document.getElementById("mode-note");
+var NOTES = {
+  raw: "Pour coller dans les instructions d'un Project sur claude.ai, ou dans un fichier ouvert à la main.",
+  cmd: "Copie une commande qui crée le fichier au bon endroit. À coller dans le terminal du poste de travail."
+};
+
+document.querySelectorAll(".mode-btn").forEach(function (btn) {
+  btn.addEventListener("click", function () {
+    MODE = btn.dataset.mode;
+    document.querySelectorAll(".mode-btn").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b === btn));
+    });
+    noteEl.textContent = NOTES[MODE];
+  });
+});
+
+function payload(id, dest) {
+  var raw = document.getElementById("src-" + id).textContent;
+  if (MODE === "raw") return raw;
+  var tag = "SKILL_" + id.toUpperCase() + "_EOF";
+  var dir = dest.replace(/\/[^/]+$/, "");
+  var op = dest.indexOf("CLAUDE.md") !== -1 ? ">>" : ">";
+  return "mkdir -p " + dir + " && cat " + op + " " + dest + " <<'" + tag + "'\n" + raw + "\n" + tag + "\n";
+}
+
+document.querySelectorAll("button.copy").forEach(function (btn) {
+  btn.addEventListener("click", function () {
+    var text = payload(btn.dataset.target, btn.dataset.dest);
+    var done = function () {
+      var old = btn.textContent;
+      btn.textContent = "Copié";
+      btn.classList.add("done");
+      setTimeout(function () { btn.textContent = old; btn.classList.remove("done"); }, 1600);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { fallback(text, done); });
+    } else { fallback(text, done); }
+  });
+});
+
+function fallback(text, done) {
+  var ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand("copy"); done(); } catch (e) {}
+  document.body.removeChild(ta);
+}
+
+document.querySelectorAll(".expand").forEach(function (btn) {
+  btn.addEventListener("click", function () {
+    var wrap = btn.closest(".code-wrap");
+    var open = wrap.classList.toggle("collapsed");
+    btn.textContent = open ? "Tout afficher" : "Replier";
+  });
+});
+</script>
+
+</body>
+</html>

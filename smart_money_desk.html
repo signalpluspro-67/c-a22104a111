@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Money &amp; Flow</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: auto; }
+body { background: #f9f5ee; color: #1a1a1a; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+
+.layout { display: flex; min-height: 100vh; }
+nav.toc {
+  position: sticky; top: 0; width: 280px; height: 100vh;
+  background: #ffffff; border-right: 1px solid #d8cfbb;
+  padding: 28px 22px; overflow-y: auto; flex-shrink: 0;
+}
+nav.toc h1 { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-size: 18px; font-weight: 700; color: #1a1a1a; letter-spacing: -0.3px; }
+nav.toc .sub { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic; font-size: 11px; color: #888888; margin-bottom: 14px; }
+nav.toc .meta { font-size: 9.5px; color: #888888; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid #d8cfbb; }
+nav.toc h3 { font-size: 9.5px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #1a1a1a; margin: 14px 0 5px; }
+nav.toc a { display: block; font-size: 11px; color: #555555; text-decoration: none; padding: 3px 0 3px 8px; margin-left: -10px; border-left: 2px solid transparent; transition: all 0.15s ease; }
+nav.toc a:hover { color: #1a1a1a; border-left-color: #8b5cf6; background: #efe7d6; }
+nav.toc a .badge { font-size: 9px; padding: 1px 4px; border-radius: 2px; margin-left: 6px; color: #fff; }
+
+main { flex: 1; padding: 32px 44px 80px; max-width: 1280px; }
+
+header.intro {
+  background: #ffffff; color: #1a1a1a; padding: 36px 48px 44px;
+  border-radius: 6px; margin-bottom: 28px; box-shadow: 0 6px 26px rgba(0,0,0,0.4);
+}
+header.intro .eyebrow {
+  font-size: 11px; font-weight: 600; letter-spacing: 2.4px; text-transform: uppercase;
+  color: #8b5cf6; margin-bottom: 10px;
+}
+header.intro h1 {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 900; font-size: 28px;
+  letter-spacing: -0.3px; line-height: 1.15; color: #1a1a1a; max-width: 920px;
+}
+header.intro .deck {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic; font-size: 16px;
+  color: #555555; margin-top: 10px; max-width: 820px; line-height: 1.45;
+}
+header.intro .meta-line {
+  margin-top: 16px; font-size: 11px; color: #888888;
+  font-family: 'JetBrains Mono', monospace; letter-spacing: 0.4px;
+}
+
+/* === Data Freshness Banner === */
+.freshness-banner {
+  margin: 18px 0 24px; padding: 18px 22px; border-radius: 6px;
+  background: #fff; border: 3px solid #2a8a2a;
+  box-shadow: 0 2px 8px rgba(42,138,42,0.15);
+}
+.freshness-headline {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 900; font-size: 20px;
+  letter-spacing: 0.3px; margin-bottom: 14px;
+}
+.freshness-details {
+  display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;
+}
+.freshness-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 14px; border-radius: 4px;
+  background: #efe7d6; border: 1.5px solid #2a8a2a;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  color: #1a1a1a;
+}
+.freshness-chip .freshness-icon { font-size: 14px; }
+.freshness-chip .freshness-label {
+  text-transform: uppercase; font-size: 10px; letter-spacing: 0.6px;
+  color: #555555; font-weight: 700;
+}
+.freshness-chip .freshness-value { font-weight: 800; color: #1a1a1a; }
+.freshness-chip .freshness-suffix { color: #888888; font-size: 10px; font-style: italic; margin-left: 2px; }
+.freshness-intraday {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #1a1a1a;
+  padding: 8px 0 2px; margin-bottom: 8px;
+}
+.freshness-explain {
+  font-size: 12px; color: #555555; line-height: 1.5;
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic;
+  border-top: 1px solid rgba(184,154,58,0.3); padding-top: 10px;
+}
+
+/* Sidebar mini status — single line, matches menu typography */
+.toc .meta-fresh-mini {
+  margin: 8px 0 14px; padding: 0;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+  font-family: 'Inter', sans-serif;
+}
+.toc .meta-fresh-mini.fresh { color: #4ade80; }
+.toc .meta-fresh-mini.stale { color: #ef4444; }
+
+section.section {
+  background: #ffffff; color: #1a1a1a; padding: 28px 32px 32px;
+  border-radius: 6px; margin-bottom: 22px; box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+  scroll-margin-top: 16px;
+}
+nav.toc a.active { color: #1a1a1a; font-weight: 700; border-left-color: #8b5cf6; background: #efe7d6; }
+section.section .card-meta {
+  display: flex; gap: 14px; align-items: flex-start; margin-bottom: 16px;
+  padding-bottom: 12px; border-bottom: 1px solid #d8cfbb;
+}
+section.section .card-num {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 700; font-size: 26px;
+  color: #8b5cf6; letter-spacing: -0.3px; line-height: 1; flex-shrink: 0;
+}
+section.section .card-eyebrow {
+  font-size: 10px; font-weight: 600; letter-spacing: 1.6px; text-transform: uppercase;
+  color: #888888; margin-bottom: 3px;
+}
+section.section .card-title {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 700; font-size: 18px;
+  color: #1a1a1a; line-height: 1.25;
+}
+.status-badge {
+  display: inline-block; font-family: 'Inter', sans-serif; font-size: 9px;
+  font-weight: 600; letter-spacing: 1px; padding: 2px 7px; border-radius: 3px;
+  color: #fff; margin-left: 8px; vertical-align: middle; text-transform: uppercase;
+}
+
+table.data-table {
+  width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px; background: #ffffff; margin-bottom: 14px;
+}
+table.data-table thead th {
+  background: #1a1a1a; color: #ffffff; padding: 9px 7px; text-align: right;
+  font-weight: 600; letter-spacing: 0.4px; font-size: 10px; font-family: 'Inter', sans-serif;
+  text-transform: uppercase; border-right: 1px solid #3a3322;
+}
+table.data-table thead th:first-child { text-align: left; }
+table.data-table tbody td {
+  padding: 6px 7px; text-align: right; border-bottom: 1px solid #e5e0d0;
+  border-right: 1px solid #f1e6b8; color: #1a1a1a;
+}
+table.data-table tbody td:first-child {
+  text-align: left; font-weight: 700; background: #1a1a1a; color: #ffffff; font-size: 12px;
+}
+.table-caption {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic; font-size: 13px;
+  color: #6B5C2A; margin-bottom: 8px;
+}
+
+td.hot-1 { background: #fbe5be; color: #4d3c00; }
+td.hot-2 { background: #f7d39a; color: #4d3c00; }
+td.hot-3 { background: #f1bb70; color: #2e2200; }
+td.hot-4 { background: #d97a3d; color: #fff; }
+td.hot-5 { background: #a73a1f; color: #fff; font-weight: 600; }
+td.cool-1 { background: #d6e4d2; color: #1f3024; }
+td.cool-2 { background: #b6d2b1; color: #1f3024; }
+td.cool-3 { background: #8cba85; color: #fff; }
+td.cool-4 { background: #5d9e63; color: #fff; }
+td.cool-5 { background: #2f6c46; color: #fff; font-weight: 600; }
+td.neutral { background: #ffffff; }
+
+.gauge { background: #ffffff; padding: 18px 22px; border-radius: 4px; border: 1px solid #e5e0d0; margin-bottom: 14px; }
+.gauge-track { position: relative; height: 8px; background: #e5e0d0; border-radius: 4px; overflow: hidden; }
+.gauge-fill { height: 100%; transition: width 0.3s ease; }
+.gauge-marker { position: absolute; top: -3px; width: 2px; height: 14px; background: #1a1a1a; }
+.gauge-meta { display: flex; justify-content: space-between; align-items: baseline; margin-top: 8px; }
+.gauge-value { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700; color: #1a1a1a; }
+.gauge-tier { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-size: 18px; font-weight: 700; }
+.gauge-desc { margin-top: 6px; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic; font-size: 13px; color: #6B5C2A; }
+.gauge-na { padding: 18px 22px; }
+
+.brick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 14px; }
+.brick { background: #ffffff; padding: 14px 16px; border-radius: 4px; border: 1px solid #e5e0d0; text-align: center; }
+.brick-on { background: #d6e4d2; border-color: #5d9e63; }
+.brick-off { background: #ffffff; }
+.brick-light { font-size: 18px; margin-bottom: 4px; }
+.brick-name { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 700; font-size: 13px; color: #1a1a1a; margin-bottom: 4px; }
+.brick-detail { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #6B5C2A; }
+
+.interp {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-size: 14.5px; line-height: 1.55;
+  color: #1a1a1a; padding: 14px 18px; background: #ffffff; border-left: 3px solid #8b5cf6;
+  border-radius: 0 4px 4px 0; margin-bottom: 12px;
+}
+.interp ul { margin: 8px 0 8px 0; padding-left: 22px; }
+.interp li { margin: 5px 0; line-height: 1.5; }
+.interp li strong { color: #555555; }
+.interp p { margin: 6px 0; }
+.interp p + p { margin-top: 10px; }
+.ai-take { background: #f6f1e7; border-left: 3px solid #2f6c46; border-radius: 0 4px 4px 0; padding: 12px 18px; margin-top: 10px; }
+.ai-take-label { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: #2f6c46; margin-bottom: 5px; }
+.ai-take-text { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-size: 13.5px; line-height: 1.55; color: #1a1a1a; }
+.ai-take-text p { margin: 0 0 8px; }
+.ai-take-text p:last-child { margin-bottom: 0; }
+.top-nav { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.4px; margin-bottom: 14px; }
+.top-nav a { color: #555555; text-decoration: none; padding: 2px 0; }
+.top-nav a:hover { color: #8b5cf6; }
+.top-nav .nav-sep { color: #d8cfbb; margin: 0 7px; }
+.top-nav .nav-here { color: #8b5cf6; font-weight: 700; }
+.how-to-read { background: #1a1a1a; color: #ffffff; padding: 10px 18px; border-radius: 4px; }
+.how-to-read-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
+  color: #8b5cf6; margin-bottom: 5px;
+}
+summary.how-to-read-label { cursor: pointer; margin-bottom: 0; list-style: none; }
+summary.how-to-read-label::-webkit-details-marker { display: none; }
+summary.how-to-read-label::before { content: "\25B8  "; }
+details.how-to-read[open] summary.how-to-read-label::before { content: "\25BE  "; }
+details.how-to-read[open] { padding-bottom: 14px; }
+details.how-to-read[open] .how-to-read-text { margin-top: 7px; }
+.how-to-read-text { font-size: 12.5px; line-height: 1.55; }
+
+.narrative-head {
+  background: #ffffff; padding: 18px 24px; border-radius: 4px;
+  margin-bottom: 18px;
+}
+.narrative-headline {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-size: 28px; font-weight: 900;
+  letter-spacing: -0.3px; line-height: 1.15;
+}
+.narrative-para {
+  background: #ffffff; padding: 18px 22px; border-radius: 4px; margin-bottom: 14px;
+  border-left: 3px solid #d8cfbb;
+}
+.narrative-para-title {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 700; font-size: 24px;
+  color: #1a1a1a; margin-bottom: 14px; letter-spacing: -0.3px;
+  line-height: 1.25; text-transform: none;
+}
+.trade-title {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 12px;
+  padding: 8px 0; margin-bottom: 8px;
+  border-bottom: 2px solid #8b5cf6;
+}
+.trade-num { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 700; font-size: 22px; color: #8b5cf6; }
+.trade-ticker {
+  font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 32px;
+  letter-spacing: -0.5px; line-height: 1;
+}
+.trade-ticker-long { color: #2f6c46; }
+.trade-ticker-short { color: #a73a1f; }
+.trade-ticker-rotation { color: #5d9e63; }
+.trade-side {
+  font-family: 'Inter', sans-serif; font-weight: 700; font-size: 12px;
+  letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 9px;
+  border-radius: 3px; color: #fff;
+}
+.trade-side-long { background: #2f6c46; }
+.trade-side-short { background: #a73a1f; }
+.trade-side-rotation { background: #5d9e63; }
+.trade-conv {
+  font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600;
+  color: #555555; padding: 3px 8px; background: #fbe5be; border-radius: 3px;
+}
+.trade-setup {
+  width: 100%; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic;
+  font-size: 14px; color: #6B5C2A; margin-top: 4px;
+}
+.narrative-para-body {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-size: 15.5px; line-height: 1.6;
+  color: #1a1a1a;
+}
+.narrative-para-body strong { font-weight: 700; color: #555555; }
+.narrative-para-body em { font-style: italic; color: #6B5C2A; }
+.data-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.data-chip {
+  display: inline-flex; align-items: baseline; gap: 7px; padding: 6px 12px;
+  border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  border: 1px solid rgba(0,0,0,0.15);
+}
+.data-chip.chip-light { color: #1a1a1a; }
+.data-chip.chip-dark { color: #ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+.chip-light .chip-label { color: #1a1a1a; opacity: 0.65; font-weight: 500; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+.chip-light .chip-value { color: #1a1a1a; font-weight: 800; }
+.chip-dark .chip-label { color: rgba(255,255,255,0.85); font-weight: 500; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+.chip-dark .chip-value { color: #ffffff; font-weight: 800; }
+.unavailable { padding: 22px; background: #ffffff; border: 1px dashed #8b5cf6; border-radius: 4px; text-align: center; }
+.unav-icon { font-size: 22px; margin-bottom: 6px; color: #8b5cf6; }
+.unav-text { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-style: italic; color: #6B5C2A; font-size: 14px; }
+.unav-tag { display: inline-block; font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 2px 8px; border-radius: 3px; background: #8b5cf6; color: #fff; margin-bottom: 8px; }
+.unav-eta { margin-top: 6px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #888888; }
+
+/* Compact signal-group table: small monospace sub-line under each signal name */
+.data-table td .sig-sub { display: block; font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: #888888; font-weight: 400; margin-top: 2px; line-height: 1.3; white-space: normal; }
+.data-table td .sig-na { color: #a73a1f; font-style: italic; }
+
+/* Collapsible TOC groups (menu folds by theme) */
+nav.toc details.toc-group { margin: 12px 0 4px; }
+nav.toc details.toc-group > summary { font-size: 9.5px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #8b5cf6; cursor: pointer; list-style: none; padding: 5px 0; border-bottom: 1px solid #d8cfbb; outline: none; }
+nav.toc details.toc-group > summary::-webkit-details-marker { display: none; }
+nav.toc details.toc-group > summary::before { content: '▸ '; }
+nav.toc details.toc-group[open] > summary::before { content: '▾ '; }
+nav.toc details.toc-group > a { margin-top: 2px; }
+
+/* Collapsible section bodies (drill-down scans) */
+section.section details.sec-collapse { margin-top: 4px; }
+section.section details.sec-collapse > summary { cursor: pointer; list-style: none; color: #8b5cf6; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; padding: 4px 0; outline: none; }
+section.section details.sec-collapse > summary::-webkit-details-marker { display: none; }
+section.section details.sec-collapse > summary::before { content: '▸ Show detail'; }
+section.section details.sec-collapse[open] > summary::before { content: '▾ Hide detail'; }
+
+footer.page-footer {
+  margin-top: 36px; padding: 20px 0; border-top: 1px solid #d8cfbb; color: #888888;
+  font-size: 11px; font-family: 'JetBrains Mono', monospace; text-align: center;
+}
+
+@media (max-width: 1024px) {
+  .layout { flex-direction: column; }
+  nav.toc { position: relative; width: 100%; height: auto; max-height: 50vh; }
+  main { padding: 20px 14px 60px; }
+  header.intro h1 { font-size: 22px; }
+  .brick-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+main > section[id] { background:#ffffff; border:1px solid #e7e0cf; border-radius:9px;
+  padding:16px 20px 6px; margin-bottom:16px; box-shadow:0 1px 2px rgba(60,50,30,.04); }
+section.section .card-eyebrow { color:#a08a5c; }
+table.data-table { font-size:11.5px; border:1px solid #ece4d2; border-radius:6px; overflow:hidden; }
+table.data-table thead th { background:#efe7d6; color:#6b5d44; border-right:1px solid #e4dcc8;
+  border-bottom:2px solid #ddd3bd; }
+table.data-table tbody td { border-right:1px solid #f2ecdc; border-bottom:1px solid #efe9da; }
+table.data-table tbody td:first-child { background:#faf6ec; color:#1a1a1a; }
+table.data-table tbody tr:nth-child(even) td { background:#fcfaf4; }
+table.data-table tbody tr:nth-child(even) td:first-child { background:#f6f1e4; }
+table.data-table tbody tr:hover td { background:#f3ece0; }
+.how-to-read { background:#f4eee2; color:#5a4f3a; border:1px solid #e7e0cf; }
+.how-to-read-label { color:#9a8a5c; }
+.interp { background:#faf7ef; }
+.pill { display:inline-block; font-family:'Inter',sans-serif; font-size:10px; font-weight:700;
+  letter-spacing:.3px; padding:2px 9px; border-radius:11px; line-height:1.5; }
+.pill-green { background:#d6e4d2; color:#1f4d2e; }
+.pill-amber { background:#f4e3bf; color:#79560f; }
+.pill-red { background:#f0d6cf; color:#8a2f20; }
+.pill-grey { background:#e9e3d5; color:#6b5d44; }
+.dots { font-size:12px; letter-spacing:1.5px; vertical-align:middle; }
+.dots .off { color:#cdc3aa; }
+.dot-label { font-family:'Inter',sans-serif; font-size:11px; font-weight:600; margin-left:5px; }
+.kpi-strip { display:flex; gap:26px; flex-wrap:wrap; align-items:flex-start;
+  padding:11px 16px; background:#faf6ec; border:1px solid #ece4d2; border-radius:8px; margin:2px 0 12px; }
+.kpi-label { font-family:'Inter',sans-serif; font-size:9px; font-weight:700; letter-spacing:1.1px;
+  text-transform:uppercase; color:#a08a5c; }
+.kpi-value { font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:700; color:#1a1a1a;
+  margin-top:2px; line-height:1.2; }
+.kpi-value .sub { font-size:11px; font-weight:500; color:#8a7a5c; }
+.chip-bar { font-family:'Inter',sans-serif; font-size:12px; color:#8a7a5c; margin:0 0 12px; }
+.chip { display:inline-block; background:#fff; border:1px solid #e0d6c0; border-radius:12px;
+  padding:2px 10px; margin:2px 4px 2px 0; font-weight:700; color:#5b6b8c; }
+</style>
+</head><body>
+<div class="layout">
+  <nav class="toc">
+    <h1>Smart Money &amp; Flow</h1>
+    <div class="sub">Editorial cockpit</div>
+    <div class="meta">Insiders 2026-10-16 · Options 2026-10-15</div>
+    <div class="meta-fresh-mini">Smart Money 2026-10-16</div>
+    <details class="toc-group" open><summary>Today</summary><a href="#verdict">Today's smart money</a><a href="#actionable">Actionable today</a></details><details class="toc-group" open><summary>Informed money</summary><a href="#buys">Insider Buys</a><a href="#confluence">Insider x Options</a><a href="#bets">Biggest Options Bets</a></details><details class="toc-group"><summary>Detail</summary><a href="#setups">Insider to Setup</a><a href="#sentiment">Insider Sentiment</a><a href="#prints">Unusual Options Premium</a><a href="#earnings">Pre-Earnings Buildup</a><a href="#novelty">Novel & Dormant</a></details><details class="toc-group"><summary>Money Flow</summary><a href="#conviction">Conviction Board</a><a href="#smart-dumb">Smart vs Dumb Money</a><a href="#accumulation">Accumulation Radar</a><a href="#today">Today's Money Flow</a><a href="#rs-leaders">RS Leaders Dip</a><a href="#inst13f">Institutional 13F</a><a href="#receipts">Receipts</a><a href="#flow-report">Flow Report</a></details>
+  </nav>
+  <main>
+    <header class="intro">
+      <div class="top-nav"><a href="ceo_dashboard.html">CEO</a><span style="opacity:.4;margin:0 8px">&middot;</span><a href="kerberos_dashboard.html">Kerberos</a><span style="opacity:.4;margin:0 8px">&middot;</span><a href="volatility_desk.html">Volatility</a><span style="opacity:.4;margin:0 8px">&middot;</span><a href="positioning_desk.html">Positioning &amp; Hedge</a><span style="opacity:.4;margin:0 8px">&middot;</span><a href="trade_desk.html">Trade Desk</a></div>
+      <div class="eyebrow">Insiders 2026-10-16 · Options 2026-10-15</div>
+      <div class="data-freshness">Insiders <strong>2026-10-16</strong> &middot; options flow <strong>2026-10-15</strong></div>
+      <h1>Smart Money &amp; Flow</h1>
+      <div class="deck">Insider buys, options whales, and where the money is moving in stocks, on one page.</div>
+    </header>
+    <section id="verdict"><div style="border-left:4px solid #2f6c46;background:#eef3ec;border-radius:0 8px 8px 0;padding:16px 20px;margin:4px 0 14px"><div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#2f6c46">&#129504; Today's smart money</div><div style="font-size:14.5px;line-height:1.6;color:#1a1a1a;margin-top:6px"><p>LEN, CRBG, and SBLK are where genuinely informed money is positioned today. LEN leads with a <strong>$595.3M</strong> insider open-market buy at <strong>$79.96</strong> from a <strong>10%</strong> holder, the largest single buy on the desk.</p><p>CRBG follows with <strong>$213.3M</strong> at <strong>$34.4</strong>. SBLK carries strong confluence, where insider buying meets bullish options flow, and that dual signal is the cleanest tell you get.</p><p>Look at these three first; the trade plan is on the Trade Desk.</p></div><div style="margin-top:8px"><a href="trade_desk.html" style="font-weight:700;color:#5b6b8c;text-decoration:none">Open the Trade Desk &#8599;</a></div></div></section><section id="actionable"><div style="border-left:4px solid #b06a4a;background:#f3ece0;border-radius:0 8px 8px 0;padding:16px 20px;margin:4px 0 8px"><div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#b06a4a">&#127919; Actionable today</div><div style="font-size:19px;font-weight:800;color:#1a1a1a;margin:3px 0 2px">The desk trades, and which ones smart money is also backing</div><div style="font-size:13px;color:#6b5d44">Every trade plan (entry, stop, target) lives on the Trade Desk. <a href="trade_desk.html" style="font-weight:700;color:#5b6b8c;text-decoration:none">Open the Trade Desk &#8599;</a></div></div><div class="kpi-strip"><div><div class="kpi-label">Live trades</div><div class="kpi-value"><strong>8</strong></div></div><div><div class="kpi-label">Smart-money backed</div><div class="kpi-value"><strong>1</strong></div></div><div><div class="kpi-label">High conviction</div><div class="kpi-value"><strong>2</strong></div></div></div><div class="chip-bar">Backed by smart money: <span class="chip">BBD</span></div>
+
+<table class="data-table">
+  <thead><tr><th>Ticker</th><th>Trade</th><th>Conviction</th><th>Smart money on this page</th><th></th></tr></thead>
+  <tbody>
+    <tr><td><a href="https://www.tradingview.com/chart/?symbol=BBD" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">BBD</a></td><td><span style="color:#2f6c46;font-weight:700">LONG</span> &middot; Swing</td><td><span class="pill pill-amber">MEDIUM</span> <span style="color:#9a8a5c">ENTER</span></td><td><span style="color:#2f6c46;font-weight:600">clean setup at the buy</span> &middot; <span style="color:#2f6c46;font-weight:600">insider + bullish options</span></td><td><a href="trade_desk.html" style="font-weight:700;color:#5b6b8c;text-decoration:none">Trade plan &#8599;</a></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=NOW" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">NOW</a></td><td><span style="color:#2f6c46;font-weight:700">LONG</span> &middot; Swing</td><td><span class="pill pill-green">HIGH</span> <span style="color:#9a8a5c">ENTER</span></td><td><span style="color:#9a8f7a">no smart-money tag on this page</span></td><td><a href="trade_desk.html" style="font-weight:700;color:#5b6b8c;text-decoration:none">Trade plan &#8599;</a></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=AMPH" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">AMPH</a></td><td><span style="color:#2f6c46;font-weight:700">LONG</span> &middot; Small cap</td><td><span class="pill pill-green">HIGH</span> <span style="color:#9a8a5c">ENTER</span></td><td><span style="color:#9a8f7a">no smart-money tag on this page</span></td><td><a href="trade_desk.html" style="font-weight:700;color:#5b6b8c;text-decoration:none">Trade plan &#8599;</a></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=BLK" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">BLK</a></td><td><span style="color:#2f6c46;font-weight:700">LONG</span> &middot; Swing</td><td><span class="pill pill-amber">MEDIUM</span> <span style="color:#9a8a5c">ENTER</span></td><td><span style="color:#9a8f7a">no smart-money tag on this page</span></td><td><a href="trade_desk.html" style="font-weight:700;color:#5b6b8c;text-decoration:none">Trade plan &#8599;</a></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=MDT" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">MDT</a></td><td><span style="color:#2f6c46;font-weight:700">LONG</span> &middot; Options &middot; bull</td><td><span class="pill pill-amber">MEDIUM</span> <span style="color:#9a8a5c">ENTER</span></td><td><span style="color:#9a8f7a">no smart-money tag on this page</span></td><td><a href="trade_desk.html" style="font-weight:700;color:#5b6b8c;text-decoration:none">Trade plan &#8599;</a></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=HNST" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">HNST</a></td><td><span style="color:#2f6c46;font-weight:700">LONG</span> &middot; Small cap</td><td><span class="pill pill-amber">MEDIUM</span> <span style="color:#9a8a5c">ENTER</span></td><td><span style="color:#9a8f7a">no smart-money tag on this page</span></td><td><a href="trade_desk.html" style="font-weight:700;color:#5b6b8c;text-decoration:none">Trade plan &#8599;</a></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=TITN" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">TITN</a></td><td><span style="color:#2f6c46;font-weight:700">LONG</span> &middot; Small cap</td><td><span class="pill pill-amber">MEDIUM</span> <span style="color:#9a8a5c">ENTER</span></td><td><span style="color:#9a8f7a">no smart-money tag on this page</span></td><td><a href="trade_desk.html" style="font-weight:700;color:#5b6b8c;text-decoration:none">Trade plan &#8599;</a></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=ANET" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">ANET</a></td><td><span style="color:#2f6c46;font-weight:700">LONG</span> &middot; Lottery</td><td><span class="pill pill-grey">LOW</span> <span style="color:#9a8a5c">OPTIONAL</span></td><td><span style="color:#9a8f7a">no smart-money tag on this page</span></td><td><a href="trade_desk.html" style="font-weight:700;color:#5b6b8c;text-decoration:none">Trade plan &#8599;</a></td></tr>
+  </tbody>
+</table>
+<div class="interp">These are the <strong>8</strong> live trades from the Trade Desk, the one place every trade plan lives. <strong>1</strong> of them also light up a smart-money signal on this page, insider buying or unusual options, which is the extra conviction to look for. <strong>BBD</strong> stands out: a desk trade that is also clean setup at the buy. Click Trade plan to act.</div>
+<details class="how-to-read">
+  <summary class="how-to-read-label">How to read</summary>
+  <div class="how-to-read-text">Trades come straight from the Trade Desk's nightly selection, we never re-pick here. The smart-money column tags each trade with any insider or options signal it also fired on this page. Trades carrying a tag rank first. Entry, stop and target stay on the Trade Desk.</div>
+</details>
+</section><section id="buys">
+<div class="card-meta">
+  <span class="card-num">01</span>
+  <div class="card-text">
+    <div class="card-eyebrow">Open-market purchases (2026-10-16)</div>
+    <div class="card-title">Insider Buys </div>
+  </div>
+</div>
+
+<div class="ai-take">
+  <div class="ai-take-label">AI read</div>
+  <div class="ai-take-text"><p>LEN is the largest insider open-market buy and the price is the message. A <strong>10%</strong> holder put <strong>$595.3M</strong> to work at <strong>$79.96</strong>, which is not a nibble.</p><p>CRBG with <strong>$213.3M</strong> at <strong>$34.4</strong> and KOD with <strong>$157.0M</strong> at <strong>$81.58</strong> round out the top three, and the sizes say these buyers want exposure at these levels. Watch whether LEN holds above the <strong>$79.96</strong> buy price; a break below it flips the read.</p></div>
+</div>
+<div class="kpi-strip"><div><div class="kpi-label">Largest buy</div><div class="kpi-value"><strong>$595.3M</strong></div></div><div><div class="kpi-label">Names buying</div><div class="kpi-value"><strong>49</strong></div></div><div><div class="kpi-label">Buys over $10M</div><div class="kpi-value"><strong>19</strong></div></div></div><div class="chip-bar">Top names: <span class="chip">LEN</span><span class="chip">CRBG</span><span class="chip">KOD</span><span class="chip">SAFX</span><span class="chip">GPI</span><span class="chip">GME</span></div>
+
+<table class="data-table">
+  <thead><tr><th>Ticker</th><th>Insider</th><th>Role</th><th>$ bought</th><th>Avg price</th><th>Txns</th></tr></thead>
+  <tbody>
+    <tr><td><a href="https://www.tradingview.com/chart/?symbol=LEN" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">LEN</a></td><td>Berkshire Hathaway Inc</td><td>10%</td><td><span style="color:#2f6c46;font-weight:700">$595.3M</span> <span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span></td><td>$79.96</td><td>4</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=CRBG" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">CRBG</a></td><td>Nippon Life Insurance Co</td><td>10%</td><td><span style="color:#2f6c46;font-weight:700">$213.3M</span> <span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span></td><td>$34.40</td><td>21</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=KOD" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">KOD</a></td><td>Baker Bros. Advisors Lp</td><td>Dir, 10%</td><td><span style="color:#2f6c46;font-weight:700">$157.0M</span> <span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span></td><td>$81.58</td><td>3</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=SAFX" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">SAFX</a></td><td>Eeme Energy Spv I, Llc</td><td>10%</td><td><span style="color:#2f6c46;font-weight:700">$142.1M</span> <span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span></td><td>$1.19</td><td>1</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=GPI" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">GPI</a></td><td>Conifer Management, L.L.C.</td><td>10%</td><td><span style="color:#2f6c46;font-weight:700">$114.7M</span> <span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span></td><td>$249.52</td><td>3</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=GME" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">GME</a></td><td>Cohen Ryan</td><td>Pres, CEO, COB</td><td><span style="color:#2f6c46;font-weight:700">$76.8M</span> <span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span></td><td>$24.45</td><td>4</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=BORR" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">BORR</a></td><td>Troim Tor Olav</td><td>Dir</td><td><span style="color:#2f6c46;font-weight:700">$47.3M</span> <span class="dots"><span style="color:#b7791f">&#9679;&#9679;</span><span class="off">&#9675;</span></span></td><td>$4.50</td><td>8</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=BBD" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">BBD</a></td><td>Alvarez Denise Aguiar</td><td>Dir</td><td><span style="color:#2f6c46;font-weight:700">$41.7M</span> <span class="dots"><span style="color:#b7791f">&#9679;&#9679;</span><span class="off">&#9675;</span></span></td><td>$17.30</td><td>3</td></tr>
+  </tbody>
+</table>
+</section><section id="confluence">
+<div class="card-meta">
+  <span class="card-num">02</span>
+  <div class="card-text">
+    <div class="card-eyebrow">Insider buying meeting bullish options flow</div>
+    <div class="card-title">Insider x Options Confluence </div>
+  </div>
+</div>
+
+<div class="ai-take">
+  <div class="ai-take-label">AI read</div>
+  <div class="ai-take-text"><p>SBLK is the leader where insider buying meets bullish options flow. A strong confluence tag with a cluster means two independent smart-money reads agree on the same ticker, which is the highest-confidence setup on the desk.</p><p>BWMX, HEI, BBD, and WIX also carry strong confluence with clusters. SBLK is the first name to act on.</p></div>
+</div>
+
+
+<table class="data-table">
+  <thead><tr><th>Ticker</th><th>Signal</th><th>Cluster buy</th><th>Avg buy size</th><th>Insider to flow gap</th></tr></thead>
+  <tbody>
+    <tr><td><a href="https://www.tradingview.com/chart/?symbol=SBLK" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">SBLK</a></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">strong</span></td><td>yes</td><td>$865K</td><td>0d</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=BWMX" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">BWMX</a></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">strong</span></td><td>yes</td><td>$765K</td><td>0d</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=HEI" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">HEI</a></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">strong</span></td><td>yes</td><td>$175K</td><td>0d</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=BBD" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">BBD</a></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">strong</span></td><td>yes</td><td>$18.1M</td><td>0d</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=WIX" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">WIX</a></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">strong</span></td><td>yes</td><td>$31K</td><td>2d</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=INBX" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">INBX</a></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">strong</span></td><td>yes</td><td>$1.2M</td><td>0d</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=RWT" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">RWT</a></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">strong</span></td><td>yes</td><td>$262K</td><td>0d</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=BORR" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">BORR</a></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">strong</span></td><td>no</td><td>$1.7M</td><td>5d</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=HHH" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">HHH</a></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">strong</span></td><td>no</td><td>$834K</td><td>0d</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=COO" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">COO</a></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">strong</span></td><td>yes</td><td>$470K</td><td>0d</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=KRMN" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">KRMN</a></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">strong</span></td><td>yes</td><td>$345K</td><td>1d</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=GME" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">GME</a></td><td><span class="dots"><span style="color:#b7791f">&#9679;&#9679;</span><span class="off">&#9675;</span></span><span class="dot-label" style="color:#b7791f">elevated</span></td><td>yes</td><td>$15.7M</td><td>2d</td></tr>
+  </tbody>
+</table>
+</section><section id="bets">
+<div class="card-meta">
+  <span class="card-num">03</span>
+  <div class="card-text">
+    <div class="card-eyebrow">Where the biggest options money went</div>
+    <div class="card-title">Biggest Options Bets </div>
+  </div>
+</div>
+
+<div class="ai-take">
+  <div class="ai-take-label">AI read</div>
+  <div class="ai-take-text"><p>MU carries the largest premium at <strong>$2.9B</strong> with a call lean. SNDK is the counterweight at <strong>$1.7B</strong> with a put lean, so the memory trade is crowded on both sides. NVDA at <strong>$1.6B</strong> calls and SMH at <strong>$1.1B</strong> puts show the same split in semis: single names bid, the index hedged.</p></div>
+</div>
+<div class="kpi-strip"><div><div class="kpi-label">Top premium</div><div class="kpi-value"><strong>$2.9B</strong></div></div><div><div class="kpi-label">Single names</div><div class="kpi-value"><strong>20</strong></div></div><div><div class="kpi-label">Call vs put lean</div><div class="kpi-value"><span class="pill pill-green">10 calls</span> <span class="pill pill-red">9 puts</span></div></div></div><div class="chip-bar">Top names: <span class="chip">MU</span><span class="chip">SNDK</span><span class="chip">NVDA</span><span class="chip">SMH</span><span class="chip">AMD</span><span class="chip">TSLA</span></div>
+
+<table class="data-table">
+  <thead><tr><th>Ticker</th><th>Total premium</th><th>Calls $</th><th>Puts $</th><th>Lean</th></tr></thead>
+  <tbody>
+    <tr><td><a href="https://www.tradingview.com/chart/?symbol=MU" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">MU</a></td><td><strong>$2.9B</strong></td><td>$1.8B</td><td>$1.1B</td><td><span class="pill pill-green">calls</span></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=SNDK" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">SNDK</a></td><td><strong>$1.7B</strong></td><td>$707.4M</td><td>$948.5M</td><td><span class="pill pill-red">puts</span></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=NVDA" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">NVDA</a></td><td><strong>$1.6B</strong></td><td>$1.1B</td><td>$447.9M</td><td><span class="pill pill-green">calls</span></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=SMH" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">SMH</a></td><td><strong>$1.1B</strong></td><td>$166.6M</td><td>$896.5M</td><td><span class="pill pill-red">puts</span></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=AMD" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">AMD</a></td><td><strong>$1.0B</strong></td><td>$665.5M</td><td>$375.3M</td><td><span class="pill pill-green">calls</span></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=TSLA" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">TSLA</a></td><td><strong>$779.3M</strong></td><td>$464.3M</td><td>$315.0M</td><td><span class="pill pill-green">calls</span></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=META" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">META</a></td><td><strong>$677.5M</strong></td><td>$540.0M</td><td>$137.5M</td><td><span class="pill pill-green">calls</span></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=NBIS" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">NBIS</a></td><td><strong>$674.9M</strong></td><td>$432.0M</td><td>$242.9M</td><td><span class="pill pill-green">calls</span></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=SPCX" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">SPCX</a></td><td><strong>$640.9M</strong></td><td>$356.7M</td><td>$284.2M</td><td><span class="pill pill-grey">balanced</span></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=INTC" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">INTC</a></td><td><strong>$621.2M</strong></td><td>$361.9M</td><td>$259.3M</td><td><span class="pill pill-green">calls</span></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=CRWV" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">CRWV</a></td><td><strong>$598.7M</strong></td><td>$381.2M</td><td>$217.5M</td><td><span class="pill pill-green">calls</span></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=DELL" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">DELL</a></td><td><strong>$584.2M</strong></td><td>$175.9M</td><td>$408.3M</td><td><span class="pill pill-red">puts</span></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=AVGO" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">AVGO</a></td><td><strong>$544.2M</strong></td><td>$216.4M</td><td>$327.8M</td><td><span class="pill pill-red">puts</span></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=LULU" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">LULU</a></td><td><strong>$534.2M</strong></td><td>$7.8M</td><td>$526.3M</td><td><span class="pill pill-red">puts</span></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=GLD" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">GLD</a></td><td><strong>$522.8M</strong></td><td>$166.0M</td><td>$356.7M</td><td><span class="pill pill-red">puts</span></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=TSM" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">TSM</a></td><td><strong>$488.5M</strong></td><td>$208.9M</td><td>$279.6M</td><td><span class="pill pill-red">puts</span></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=SOXL" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">SOXL</a></td><td><strong>$450.8M</strong></td><td>$184.9M</td><td>$265.9M</td><td><span class="pill pill-red">puts</span></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=MSTR" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">MSTR</a></td><td><strong>$434.0M</strong></td><td>$377.8M</td><td>$56.1M</td><td><span class="pill pill-green">calls</span></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=PLTR" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">PLTR</a></td><td><strong>$428.6M</strong></td><td>$361.6M</td><td>$66.9M</td><td><span class="pill pill-green">calls</span></td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=STX" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">STX</a></td><td><strong>$400.5M</strong></td><td>$58.6M</td><td>$341.9M</td><td><span class="pill pill-red">puts</span></td></tr>
+  </tbody>
+</table>
+</section><section id="setups"><details style="margin:6px 0"><summary style="cursor:pointer;color:#5b6b8c;font-weight:700;font-size:.95em;letter-spacing:.3px;padding:6px 0">&#9656; Insider to Setup</summary>
+<div class="card-meta">
+  <span class="card-num">04</span>
+  <div class="card-text">
+    <div class="card-eyebrow">What the system would express at the buy level</div>
+    <div class="card-title">Insider to Setup </div>
+  </div>
+</div>
+<div style="border:1px solid #d8cdbb;border-radius:8px;padding:12px 14px;margin:10px 0;background:#fbf8f2"><div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px"><div><span style="font-weight:700;font-size:1.05em">LEN</span> <span style="color:#5b6b8c;font-weight:600">Bull Call Spread</span></div><div style="font-size:.85em;color:#6b7280">spot $77.08 &middot; insiders bought $595.3M near $79.96</div></div><table style="width:100%;border-collapse:collapse;font-size:.9em;margin:6px 0"><tr style="border-bottom:1px solid #d8cdbb;text-align:left"><th>Action</th><th>Type</th><th>Strike</th><th>Expiry</th><th style="text-align:right">Mid</th></tr><tr><td style="font-weight:700;color:#2f6c46">BUY</td><td>CALL</td><td>$75.00</td><td>2026-11-20</td><td style="text-align:right">4.94</td></tr><tr><td style="font-weight:700;color:#b23b2e">SELL</td><td>CALL</td><td>$95.00</td><td>2026-11-20</td><td style="text-align:right">0.25</td></tr></table><div style="font-size:.9em">Net <strong>debit $469</strong> &middot; max profit <strong>$2K</strong> &middot; max loss <strong>$469</strong> &middot; breakeven <strong>$79.69</strong></div><details style="margin-top:4px"><summary style="cursor:pointer;color:#5b6b8c;font-weight:600">Show math</summary><pre style="white-space:pre-wrap;background:#f3eee4;border:1px solid #d8cdbb;border-radius:6px;padding:10px;font-family:ui-monospace,monospace;font-size:.85em">BUY CALL $75.00 @ 4.94
+SELL CALL $95.00 @ 0.25
+
+Net cost: debit $469  (sum of leg mids x 100)
+Max profit: $2K
+Max loss: $469
+Breakeven: $79.69</pre></details></div><div style="border:1px solid #d8cdbb;border-radius:8px;padding:12px 14px;margin:10px 0;background:#fbf8f2"><div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px"><div><span style="font-weight:700;font-size:1.05em">KOD</span> <span style="color:#5b6b8c;font-weight:600">Bull Call Spread</span></div><div style="font-size:.85em;color:#6b7280">spot $85.75 &middot; insiders bought $157.0M near $81.58</div></div><table style="width:100%;border-collapse:collapse;font-size:.9em;margin:6px 0"><tr style="border-bottom:1px solid #d8cdbb;text-align:left"><th>Action</th><th>Type</th><th>Strike</th><th>Expiry</th><th style="text-align:right">Mid</th></tr><tr><td style="font-weight:700;color:#2f6c46">BUY</td><td>CALL</td><td>$85.00</td><td>2026-11-20</td><td style="text-align:right">9.30</td></tr><tr><td style="font-weight:700;color:#b23b2e">SELL</td><td>CALL</td><td>$105.00</td><td>2026-11-20</td><td style="text-align:right">3.20</td></tr></table><div style="font-size:.9em">Net <strong>debit $610</strong> &middot; max profit <strong>$1K</strong> &middot; max loss <strong>$610</strong> &middot; breakeven <strong>$91.10</strong></div><details style="margin-top:4px"><summary style="cursor:pointer;color:#5b6b8c;font-weight:600">Show math</summary><pre style="white-space:pre-wrap;background:#f3eee4;border:1px solid #d8cdbb;border-radius:6px;padding:10px;font-family:ui-monospace,monospace;font-size:.85em">BUY CALL $85.00 @ 9.30
+SELL CALL $105.00 @ 3.20
+
+Net cost: debit $610  (sum of leg mids x 100)
+Max profit: $1K
+Max loss: $610
+Breakeven: $91.10</pre></details></div><div style="border:1px solid #d8cdbb;border-radius:8px;padding:12px 14px;margin:10px 0;background:#fbf8f2"><div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px"><div><span style="font-weight:700;font-size:1.05em">GME</span> <span style="color:#5b6b8c;font-weight:600">Bull Call Spread</span></div><div style="font-size:.85em;color:#6b7280">spot $26.81 &middot; insiders bought $76.8M near $24.45</div></div><table style="width:100%;border-collapse:collapse;font-size:.9em;margin:6px 0"><tr style="border-bottom:1px solid #d8cdbb;text-align:left"><th>Action</th><th>Type</th><th>Strike</th><th>Expiry</th><th style="text-align:right">Mid</th></tr><tr><td style="font-weight:700;color:#2f6c46">BUY</td><td>CALL</td><td>$27.00</td><td>2026-11-20</td><td style="text-align:right">2.27</td></tr><tr><td style="font-weight:700;color:#b23b2e">SELL</td><td>CALL</td><td>$28.00</td><td>2026-11-20</td><td style="text-align:right">1.95</td></tr></table><div style="font-size:.9em">Net <strong>debit $32</strong> &middot; max profit <strong>$68</strong> &middot; max loss <strong>$32</strong> &middot; breakeven <strong>$27.32</strong></div><details style="margin-top:4px"><summary style="cursor:pointer;color:#5b6b8c;font-weight:600">Show math</summary><pre style="white-space:pre-wrap;background:#f3eee4;border:1px solid #d8cdbb;border-radius:6px;padding:10px;font-family:ui-monospace,monospace;font-size:.85em">BUY CALL $27.00 @ 2.27
+SELL CALL $28.00 @ 1.95
+
+Net cost: debit $32  (sum of leg mids x 100)
+Max profit: $68
+Max loss: $32
+Breakeven: $27.32</pre></details></div><div style="border:1px solid #d8cdbb;border-radius:8px;padding:12px 14px;margin:10px 0;background:#fbf8f2"><div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px"><div><span style="font-weight:700;font-size:1.05em">BORR</span> <span style="color:#5b6b8c;font-weight:600">Risk Reversal</span></div><div style="font-size:.85em;color:#6b7280">spot $4.54 &middot; insiders bought $47.3M near $4.50</div></div><table style="width:100%;border-collapse:collapse;font-size:.9em;margin:6px 0"><tr style="border-bottom:1px solid #d8cdbb;text-align:left"><th>Action</th><th>Type</th><th>Strike</th><th>Expiry</th><th style="text-align:right">Mid</th></tr><tr><td style="font-weight:700;color:#b23b2e">SELL</td><td>PUT</td><td>$4.00</td><td>2026-11-20</td><td style="text-align:right">0.12</td></tr><tr><td style="font-weight:700;color:#2f6c46">BUY</td><td>CALL</td><td>$5.00</td><td>2026-11-20</td><td style="text-align:right">0.22</td></tr></table><div style="font-size:.9em">Net <strong>debit $10</strong> &middot; max profit <strong>unlimited</strong> &middot; max loss <strong>$410</strong> &middot; breakeven <strong>$5.10</strong></div><details style="margin-top:4px"><summary style="cursor:pointer;color:#5b6b8c;font-weight:600">Show math</summary><pre style="white-space:pre-wrap;background:#f3eee4;border:1px solid #d8cdbb;border-radius:6px;padding:10px;font-family:ui-monospace,monospace;font-size:.85em">SELL PUT $4.00 @ 0.12
+BUY CALL $5.00 @ 0.22
+
+Net cost: debit $10  (sum of leg mids x 100)
+Max profit: unlimited
+Max loss: $410
+Breakeven: $5.10</pre></details></div><div style="border:1px solid #d8cdbb;border-radius:8px;padding:12px 14px;margin:10px 0;background:#fbf8f2"><div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px"><div><span style="font-weight:700;font-size:1.05em">BBD</span> <span style="color:#5b6b8c;font-weight:600">Bull Call Spread</span></div><div style="font-size:.85em;color:#6b7280">spot $3.96 &middot; insiders bought $41.7M near $17.30</div></div><table style="width:100%;border-collapse:collapse;font-size:.9em;margin:6px 0"><tr style="border-bottom:1px solid #d8cdbb;text-align:left"><th>Action</th><th>Type</th><th>Strike</th><th>Expiry</th><th style="text-align:right">Mid</th></tr><tr><td style="font-weight:700;color:#2f6c46">BUY</td><td>CALL</td><td>$4.00</td><td>2026-11-20</td><td style="text-align:right">0.35</td></tr><tr><td style="font-weight:700;color:#b23b2e">SELL</td><td>CALL</td><td>$4.50</td><td>2026-11-20</td><td style="text-align:right">0.17</td></tr></table><div style="font-size:.9em">Net <strong>debit $18</strong> &middot; max profit <strong>$32</strong> &middot; max loss <strong>$18</strong> &middot; breakeven <strong>$4.18</strong></div><details style="margin-top:4px"><summary style="cursor:pointer;color:#5b6b8c;font-weight:600">Show math</summary><pre style="white-space:pre-wrap;background:#f3eee4;border:1px solid #d8cdbb;border-radius:6px;padding:10px;font-family:ui-monospace,monospace;font-size:.85em">BUY CALL $4.00 @ 0.35
+SELL CALL $4.50 @ 0.17
+
+Net cost: debit $18  (sum of leg mids x 100)
+Max profit: $32
+Max loss: $18
+Breakeven: $4.18</pre></details></div><div style="border:1px solid #d8cdbb;border-radius:8px;padding:12px 14px;margin:10px 0;background:#fbf8f2"><div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px"><div><span style="font-weight:700;font-size:1.05em">GRAB</span> <span style="color:#5b6b8c;font-weight:600">Risk Reversal</span></div><div style="font-size:.85em;color:#6b7280">spot $2.94 &middot; insiders bought $29.9M near $2.89</div></div><table style="width:100%;border-collapse:collapse;font-size:.9em;margin:6px 0"><tr style="border-bottom:1px solid #d8cdbb;text-align:left"><th>Action</th><th>Type</th><th>Strike</th><th>Expiry</th><th style="text-align:right">Mid</th></tr><tr><td style="font-weight:700;color:#b23b2e">SELL</td><td>PUT</td><td>$3.00</td><td>2026-11-27</td><td style="text-align:right">0.22</td></tr><tr><td style="font-weight:700;color:#2f6c46">BUY</td><td>CALL</td><td>$3.50</td><td>2026-11-27</td><td style="text-align:right">0.07</td></tr></table><div style="font-size:.9em">Net <strong>credit $15</strong> &middot; max profit <strong>unlimited</strong> &middot; max loss <strong>$285</strong> &middot; breakeven <strong>$2.85</strong></div><details style="margin-top:4px"><summary style="cursor:pointer;color:#5b6b8c;font-weight:600">Show math</summary><pre style="white-space:pre-wrap;background:#f3eee4;border:1px solid #d8cdbb;border-radius:6px;padding:10px;font-family:ui-monospace,monospace;font-size:.85em">SELL PUT $3.00 @ 0.22
+BUY CALL $3.50 @ 0.07
+
+Net cost: credit $15  (sum of leg mids x 100)
+Max profit: unlimited
+Max loss: $285
+Breakeven: $2.85</pre></details></div><div style="border:1px solid #d8cdbb;border-radius:8px;padding:12px 14px;margin:10px 0;background:#fbf8f2"><div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px"><div><span style="font-weight:700;font-size:1.05em">PEP</span> <span style="color:#5b6b8c;font-weight:600">Bull Call Spread</span></div><div style="font-size:.85em;color:#6b7280">spot $131.49 &middot; insiders bought $23.7M near $128.28</div></div><table style="width:100%;border-collapse:collapse;font-size:.9em;margin:6px 0"><tr style="border-bottom:1px solid #d8cdbb;text-align:left"><th>Action</th><th>Type</th><th>Strike</th><th>Expiry</th><th style="text-align:right">Mid</th></tr><tr><td style="font-weight:700;color:#2f6c46">BUY</td><td>CALL</td><td>$130.00</td><td>2026-11-20</td><td style="text-align:right">4.47</td></tr><tr><td style="font-weight:700;color:#b23b2e">SELL</td><td>CALL</td><td>$170.00</td><td>2026-11-20</td><td style="text-align:right">0.14</td></tr></table><div style="font-size:.9em">Net <strong>debit $433</strong> &middot; max profit <strong>$4K</strong> &middot; max loss <strong>$433</strong> &middot; breakeven <strong>$134.33</strong></div><details style="margin-top:4px"><summary style="cursor:pointer;color:#5b6b8c;font-weight:600">Show math</summary><pre style="white-space:pre-wrap;background:#f3eee4;border:1px solid #d8cdbb;border-radius:6px;padding:10px;font-family:ui-monospace,monospace;font-size:.85em">BUY CALL $130.00 @ 4.47
+SELL CALL $170.00 @ 0.14
+
+Net cost: debit $433  (sum of leg mids x 100)
+Max profit: $4K
+Max loss: $433
+Breakeven: $134.33</pre></details></div><div style="border:1px solid #d8cdbb;border-radius:8px;padding:12px 14px;margin:10px 0;background:#fbf8f2"><div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px"><div><span style="font-weight:700;font-size:1.05em">NUAI</span> <span style="color:#5b6b8c;font-weight:600">Bull Call Spread</span></div><div style="font-size:.85em;color:#6b7280">spot $3.11 &middot; insiders bought $1.2M near $4.77</div></div><table style="width:100%;border-collapse:collapse;font-size:.9em;margin:6px 0"><tr style="border-bottom:1px solid #d8cdbb;text-align:left"><th>Action</th><th>Type</th><th>Strike</th><th>Expiry</th><th style="text-align:right">Mid</th></tr><tr><td style="font-weight:700;color:#2f6c46">BUY</td><td>CALL</td><td>$3.00</td><td>2026-11-20</td><td style="text-align:right">0.64</td></tr><tr><td style="font-weight:700;color:#b23b2e">SELL</td><td>CALL</td><td>$4.00</td><td>2026-11-20</td><td style="text-align:right">0.35</td></tr></table><div style="font-size:.9em">Net <strong>debit $29</strong> &middot; max profit <strong>$71</strong> &middot; max loss <strong>$29</strong> &middot; breakeven <strong>$3.29</strong></div><details style="margin-top:4px"><summary style="cursor:pointer;color:#5b6b8c;font-weight:600">Show math</summary><pre style="white-space:pre-wrap;background:#f3eee4;border:1px solid #d8cdbb;border-radius:6px;padding:10px;font-family:ui-monospace,monospace;font-size:.85em">BUY CALL $3.00 @ 0.64
+SELL CALL $4.00 @ 0.35
+
+Net cost: debit $29  (sum of leg mids x 100)
+Max profit: $71
+Max loss: $29
+Breakeven: $3.29</pre></details></div><div class="interp">This is the step beyond a flat list. For each liquid name we build the defined-risk structures that express the bullish read behind the buy, keep the one with the best reward-to-risk, and show the full math. Some get paid to buy with a put sale near support, others take capped upside with a call spread, anchored a few percent from spot so the options carry real premium. These are setups to consider, not auto-trades. Size them yourself.</div>
+<div class="ai-take">
+  <div class="ai-take-label">AI read</div>
+  <div class="ai-take-text"><p>PEP has the cleanest reward-to-risk in the defined-risk setups. You risk a <strong>$433</strong> debit to make <strong>$4K</strong>, roughly a 9-to-1 payoff, with a break-even at <strong>$134.33</strong>.</p><p>LEN offers <strong>$469</strong> risk for <strong>$2K</strong> and a <strong>$79.69</strong> break-even, decent but less asymmetric. The PEP spread is the one to put on if you want the best bang for your defined risk.</p></div>
+</div>
+</details></section><section id="sentiment"><details style="margin:6px 0"><summary style="cursor:pointer;color:#5b6b8c;font-weight:700;font-size:.95em;letter-spacing:.3px;padding:6px 0">&#9656; Insider Sentiment</summary>
+<div class="card-meta">
+  <span class="card-num">05</span>
+  <div class="card-text">
+    <div class="card-eyebrow">Buying versus selling</div>
+    <div class="card-title">Insider Sentiment </div>
+  </div>
+</div>
+<div style="display:flex;gap:24px;flex-wrap:wrap;margin:6px 0 12px"><div><div style="font-size:.8em;color:#6b7280">Open-market BUYS (1w)</div><div style="font-size:1.4em;font-weight:700;color:#2f6c46">$355.9M</div><div style="font-size:.8em;color:#6b7280">120 buys</div></div><div><div style="font-size:.8em;color:#6b7280">Open-market SELLS (1w)</div><div style="font-size:1.4em;font-weight:700;color:#b23b2e">$1.7B</div><div style="font-size:.8em;color:#6b7280">375 sells</div></div></div><div class="table-caption">Largest open-market sells this week (context, often mechanical)</div>
+
+<table class="data-table">
+  <thead><tr><th>Ticker</th><th>Insider</th><th>Role</th><th>$ sold</th><th>Avg price</th></tr></thead>
+  <tbody>
+    <tr><td><a href="https://www.tradingview.com/chart/?symbol=MDLN" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">MDLN</a></td><td>Gic Private Ltd</td><td>10%</td><td><span style="color:#b23b2e;font-weight:700">$996.4M</span></td><td>$35.02</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=IHT" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">IHT</a></td><td>Berg Marc E</td><td>EVP, Secretary, Tr</td><td><span style="color:#b23b2e;font-weight:700">$361.5M</span></td><td>$22,593.60</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=ACCV" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">ACCV</a></td><td>Ogp Viii, Llc</td><td>10%</td><td><span style="color:#b23b2e;font-weight:700">$360.0M</span></td><td>$18.00</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=ESTC" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">ESTC</a></td><td>Schuurman Steven</td><td>Dir</td><td><span style="color:#b23b2e;font-weight:700">$323.5M</span></td><td>$92.14</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=NVDA" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">NVDA</a></td><td>Stevens Mark A</td><td>Dir</td><td><span style="color:#b23b2e;font-weight:700">$300.1M</span></td><td>$219.73</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=MDLN" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">MDLN</a></td><td>Gic Private Ltd</td><td>10%</td><td><span style="color:#b23b2e;font-weight:700">$274.8M</span></td><td>$35.15</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=AVGO" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">AVGO</a></td><td>Samueli Henry</td><td>Dir</td><td><span style="color:#b23b2e;font-weight:700">$250.0M</span></td><td>$356.04</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=UMC" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">UMC</a></td><td>Liu Chitung</td><td>CFO, SVP</td><td><span style="color:#b23b2e;font-weight:700">$228.8M</span></td><td>$143.00</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=TH" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">TH</a></td><td>Tdr Capital Ii Investments Lp</td><td>10%</td><td><span style="color:#b23b2e;font-weight:700">$202.4M</span></td><td>$18.40</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=ESTC" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">ESTC</a></td><td>Schuurman Steven</td><td>Dir</td><td><span style="color:#b23b2e;font-weight:700">$188.3M</span></td><td>$94.15</td></tr>
+  </tbody>
+</table>
+<div class="interp">Insiders sold <strong>$1.7B</strong> and bought <strong>$355.9M</strong> on the open market this week. Dollar selling almost always dwarfs buying, that is structural, executives are paid in stock and sell to diversify. So the sell total is mostly background noise. The signal that matters is the buy side and its breadth: <strong>120</strong> distinct buys this week.</div>
+<details class="how-to-read">
+  <summary class="how-to-read-label">How to read</summary>
+  <div class="how-to-read-text">Buys are the rare informative event, sells are mostly mechanical (10b5-1 plans, diversification). Watch clusters of buying and unusually large one-off sells, not the raw ratio.</div>
+</details>
+
+<div class="ai-take">
+  <div class="ai-take-label">AI read</div>
+  <div class="ai-take-text"><p>Selling dwarfs buying in dollar terms, but that is structural, not directional. Insiders sold <strong>$1.7B</strong> across <strong>375</strong> filings versus <strong>$355.9M</strong> bought across <strong>120</strong>. The buy side is where the signal lives, so ignore the gross sell number and track the <strong>120</strong> buys.</p></div>
+</div>
+</details></section><section id="prints"><details style="margin:6px 0"><summary style="cursor:pointer;color:#5b6b8c;font-weight:700;font-size:.95em;letter-spacing:.3px;padding:6px 0">&#9656; Unusual Options Premium</summary>
+<div class="card-meta">
+  <span class="card-num">06</span>
+  <div class="card-text">
+    <div class="card-eyebrow">Options money that is unusual for the name itself</div>
+    <div class="card-title">Unusual Options Premium </div>
+  </div>
+</div>
+<div class="kpi-strip"><div><div class="kpi-label">Most out of character</div><div class="kpi-value"><strong>BIRK</strong> <span class="sub">284x norm</span></div></div><div><div class="kpi-label">Names flagged</div><div class="kpi-value"><strong>20</strong></div></div><div><div class="kpi-label">Heavy side</div><div class="kpi-value"><span class="pill pill-green">10 calls</span> <span class="pill pill-red">10 puts</span></div></div></div><div class="chip-bar">Top names: <span class="chip">BIRK</span><span class="chip">CMBT</span><span class="chip">WK</span><span class="chip">DEO</span><span class="chip">PPG</span><span class="chip">RBA</span></div>
+
+<table class="data-table">
+  <thead><tr><th>Ticker</th><th>Heavy side</th><th>Premium today</th><th>vs own norm</th><th>Trend</th><th>From 52-wk high</th></tr></thead>
+  <tbody>
+    <tr><td><a href="https://www.tradingview.com/chart/?symbol=BIRK" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">BIRK</a></td><td><span class="pill pill-red">puts</span></td><td><strong>$21.6M</strong></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">284x</span></td><td><span style="color:#b7791f;font-weight:600">below 21-wk</span></td><td>-27%</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=CMBT" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">CMBT</a></td><td><span class="pill pill-green">calls</span></td><td><strong>$6.6M</strong></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">107x</span></td><td><span style="color:#2f6c46;font-weight:600">above 21-wk</span></td><td>-14%</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=WK" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">WK</a></td><td><span class="pill pill-red">puts</span></td><td><strong>$3.1M</strong></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">99x</span></td><td><span style="color:#2f6c46;font-weight:600">above 21-wk</span></td><td>-17%</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=DEO" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">DEO</a></td><td><span class="pill pill-green">calls</span></td><td><strong>$12.1M</strong></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">87x</span></td><td><span style="color:#2f6c46;font-weight:600">above 21-wk</span></td><td>-8%</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=PPG" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">PPG</a></td><td><span class="pill pill-red">puts</span></td><td><strong>$1.7M</strong></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">82x</span></td><td><span style="color:#b7791f;font-weight:600">below 21-wk</span></td><td>-18%</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=RBA" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">RBA</a></td><td><span class="pill pill-red">puts</span></td><td><strong>$1.6M</strong></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">75x</span></td><td><span style="color:#b7791f;font-weight:600">below 21-wk</span></td><td>-27%</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=OLLI" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">OLLI</a></td><td><span class="pill pill-green">calls</span></td><td><strong>$50.9M</strong></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">71x</span></td><td><span style="color:#2f6c46;font-weight:600">above 21-wk</span></td><td>-26%</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=CBRL" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">CBRL</a></td><td><span class="pill pill-green">calls</span></td><td><strong>$41.7M</strong></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">61x</span></td><td><span style="color:#2f6c46;font-weight:600">above 21-wk</span></td><td>+0%</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=EOG" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">EOG</a></td><td><span class="pill pill-green">calls</span></td><td><strong>$32.6M</strong></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">51x</span></td><td><span style="color:#2f6c46;font-weight:600">above 21-wk</span></td><td>-1%</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=NB" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">NB</a></td><td><span class="pill pill-red">puts</span></td><td><strong>$1.2M</strong></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">50x</span></td><td><span style="color:#b7791f;font-weight:600">below 21-wk</span></td><td>-66%</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=MAN" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">MAN</a></td><td><span class="pill pill-red">puts</span></td><td><strong>$466K</strong></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">45x</span></td><td><span style="color:#b7791f;font-weight:600">below 21-wk</span></td><td>-31%</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=SGI" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">SGI</a></td><td><span class="pill pill-green">calls</span></td><td><strong>$4.0M</strong></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">34x</span></td><td><span style="color:#b7791f;font-weight:600">below 21-wk</span></td><td>-34%</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=ROST" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">ROST</a></td><td><span class="pill pill-red">puts</span></td><td><strong>$9.6M</strong></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">33x</span></td><td><span style="color:#2f6c46;font-weight:600">above 21-wk</span></td><td>-8%</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=TRDA" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">TRDA</a></td><td><span class="pill pill-green">calls</span></td><td><strong>$752K</strong></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">32x</span></td><td><span style="color:#b7791f;font-weight:600">below 21-wk</span></td><td>-70%</td></tr><tr><td><a href="https://www.tradingview.com/chart/?symbol=TGB" target="_blank" rel="noopener" style="font-weight:700;color:#5b6b8c">TGB</a></td><td><span class="pill pill-red">puts</span></td><td><strong>$728K</strong></td><td><span class="dots"><span style="color:#2f6c46">&#9679;&#9679;&#9679;</span><span class="off"></span></span><span class="dot-label" style="color:#2f6c46">32x</span></td><td><span style="color:#2f6c46;font-weight:600">above 21-wk</span></td><td>-16%</td></tr>
+  </tbody>
+</table>
+<div class="interp">These are the names where options money today is most out of character versus their own recent norm, single stocks only. <strong>BIRK</strong> leads with <strong>$21.6M</strong> of put premium, <strong>284x</strong> its 20-session average, the stock trading below its 21-week line. Heavy put premium is the loud part. We cannot tell from this data whether those contracts were bought or sold, so a put spike can be fear OR someone selling puts to get long. This is a name to go read, not a direction.</div>
+<details class="how-to-read">
+  <summary class="how-to-read-label">How to read</summary>
+  <div class="how-to-read-text">For each name we compare today's call and put premium to that name's own trailing 20-session average and keep the side that is both large in dollars and well above its norm. The 21-week line and distance from the 52-week high give the chart backdrop. End-of-day aggregate per ticker, no strike, no bought-versus-sold. Read the direction yourself.</div>
+</details>
+
+<div class="ai-take">
+  <div class="ai-take-label">AI read</div>
+  <div class="ai-take-text"><p>BIRK is the most anomalous print, with put premium at <strong>284</strong> times its own norm at <strong>$21.6M</strong> and the chart below its 21-week line. CMBT at <strong>107</strong> times norm with calls at <strong>$6.6M</strong> and above its 21-week line is the bullish mirror. We cannot tell bought from sold on either, so pull the trade-by-trade and confirm direction before you act.</p></div>
+</div>
+</details></section><section id="earnings"><details style="margin:6px 0"><summary style="cursor:pointer;color:#5b6b8c;font-weight:700;font-size:.95em;letter-spacing:.3px;padding:6px 0">&#9656; Pre-Earnings Buildup</summary>
+<div class="card-meta">
+  <span class="card-num">07</span>
+  <div class="card-text">
+    <div class="card-eyebrow">Options building up before the report</div>
+    <div class="card-title">Pre-Earnings Buildup </div>
+  </div>
+</div>
+<div class="interp">No names reporting in the next two weeks show an options buildup yet.</div>
+<div class="ai-take">
+  <div class="ai-take-label">AI read</div>
+  <div class="ai-take-text"><p>Nothing is building yet into any report. The pre-earnings slate is empty today. Watch for the first name to show a lean in the days ahead.</p></div>
+</div>
+</details></section><section id="novelty"><details style="margin:6px 0"><summary style="cursor:pointer;color:#5b6b8c;font-weight:700;font-size:.95em;letter-spacing:.3px;padding:6px 0">&#9656; Novel & Dormant</summary>
+<div class="card-meta">
+  <span class="card-num">08</span>
+  <div class="card-text">
+    <div class="card-eyebrow">First-ever and reawakened options flow</div>
+    <div class="card-title">Novel &amp; Dormant Tickers </div>
+  </div>
+</div>
+<div class="interp">No first-ever or reawakened names in today's options tape.</div>
+<div class="ai-take">
+  <div class="ai-take-label">AI read</div>
+  <div class="ai-take-text"><p>The tape is quiet on first-ever or reawakened flow. No novelty flags fired today. Nothing suddenly trading size that the tape has never touched before.</p></div>
+</div>
+</details></section><div style="margin:28px 0 4px;padding-top:18px;border-top:2px solid #d8cdbb"><div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8a7a5c">Money Flow</div><div style="font-size:14px;color:#6b5d44;margin-top:2px">Non-options, daily OHLCV proxies (smart vs dumb money, accumulation, 13F).</div></div><div class="interp"><strong>How this page is built.</strong> Every signal here comes from daily price and volume (the data the system already has). It is a set of money-flow proxies: where a stock closes in its range times its volume, summed over time, plus 13F fund filings. It is non-options and readable. It is <strong>not</strong> a true dark-pool index or a tick-level order-flow imbalance, those need off-exchange trade data the current Polygon plan does not include. Treat these as attention and conviction reads, not proven edges.</div><section id="conviction"><details style="margin:6px 0"><summary style="cursor:pointer;color:#5b6b8c;font-weight:700;font-size:.95em;letter-spacing:.3px;padding:6px 0">&#9656; Conviction Board</summary><div class="card-meta"><span class="card-num">&#9733;</span><div class="card-text"><div class="card-eyebrow">Where multiple real flows line up</div><div class="card-title">Conviction Board</div></div></div>
+
+<table class="data-table">
+  <thead><tr><th>Ticker</th><th>Price</th><th>Aligned</th><th>Flows lit</th></tr></thead>
+  <tbody>
+    <tr><td><strong>KOD</strong></td><td>$85.75</td><td><span style="color:#2f6c46;font-weight:600">3 flows</span></td><td><span style="color:#5b6b8c;font-weight:600">Insider &middot; Accumulation &middot; RS Leader</span></td></tr><tr><td><strong>AMAT</strong></td><td>$409.29</td><td><span style="color:#2f6c46;font-weight:600">2 flows</span></td><td><span style="color:#5b6b8c;font-weight:600">13F &middot; Accumulation</span></td></tr><tr><td><strong>AMD</strong></td><td>$528.75</td><td><span style="color:#2f6c46;font-weight:600">2 flows</span></td><td><span style="color:#5b6b8c;font-weight:600">13F &middot; Accumulation</span></td></tr><tr><td><strong>CRWD</strong></td><td>$227.39</td><td><span style="color:#2f6c46;font-weight:600">2 flows</span></td><td><span style="color:#5b6b8c;font-weight:600">13F &middot; Accumulation</span></td></tr><tr><td><strong>GME</strong></td><td>$26.81</td><td><span style="color:#2f6c46;font-weight:600">2 flows</span></td><td><span style="color:#5b6b8c;font-weight:600">Insider &middot; Accumulation</span></td></tr><tr><td><strong>KLAC</strong></td><td>$165.74</td><td><span style="color:#2f6c46;font-weight:600">2 flows</span></td><td><span style="color:#5b6b8c;font-weight:600">13F &middot; Accumulation</span></td></tr><tr><td><strong>LRCX</strong></td><td>$263.94</td><td><span style="color:#2f6c46;font-weight:600">2 flows</span></td><td><span style="color:#5b6b8c;font-weight:600">13F &middot; Accumulation</span></td></tr><tr><td><strong>PANW</strong></td><td>$342.00</td><td><span style="color:#2f6c46;font-weight:600">2 flows</span></td><td><span style="color:#5b6b8c;font-weight:600">13F &middot; Accumulation</span></td></tr><tr><td><strong>STX</strong></td><td>$639.01</td><td><span style="color:#2f6c46;font-weight:600">2 flows</span></td><td><span style="color:#5b6b8c;font-weight:600">13F &middot; Accumulation</span></td></tr><tr><td><strong>TSM</strong></td><td>$412.61</td><td><span style="color:#2f6c46;font-weight:600">2 flows</span></td><td><span style="color:#5b6b8c;font-weight:600">13F &middot; Accumulation</span></td></tr><tr><td><strong>ASX</strong></td><td>$39.53</td><td><span style="color:#2f6c46;font-weight:600">2 flows</span></td><td><span style="color:#5b6b8c;font-weight:600">Accumulation &middot; RS Leader</span></td></tr><tr><td><strong>AUGO</strong></td><td>$87.20</td><td><span style="color:#2f6c46;font-weight:600">2 flows</span></td><td><span style="color:#5b6b8c;font-weight:600">Accumulation &middot; RS Leader</span></td></tr><tr><td><strong>CDNA</strong></td><td>$64.00</td><td><span style="color:#2f6c46;font-weight:600">2 flows</span></td><td><span style="color:#5b6b8c;font-weight:600">Accumulation &middot; RS Leader</span></td></tr><tr><td><strong>FIGS</strong></td><td>$19.12</td><td><span style="color:#2f6c46;font-weight:600">2 flows</span></td><td><span style="color:#5b6b8c;font-weight:600">Accumulation &middot; RS Leader</span></td></tr><tr><td><strong>FTNT</strong></td><td>$169.13</td><td><span style="color:#2f6c46;font-weight:600">2 flows</span></td><td><span style="color:#5b6b8c;font-weight:600">Accumulation &middot; RS Leader</span></td></tr><tr><td><strong>IOVA</strong></td><td>$13.62</td><td><span style="color:#2f6c46;font-weight:600">2 flows</span></td><td><span style="color:#5b6b8c;font-weight:600">Accumulation &middot; RS Leader</span></td></tr><tr><td><strong>KEYS</strong></td><td>$331.21</td><td><span style="color:#2f6c46;font-weight:600">2 flows</span></td><td><span style="color:#5b6b8c;font-weight:600">Accumulation &middot; RS Leader</span></td></tr><tr><td><strong>MRNA</strong></td><td>$218.01</td><td><span style="color:#2f6c46;font-weight:600">2 flows</span></td><td><span style="color:#5b6b8c;font-weight:600">Accumulation &middot; RS Leader</span></td></tr><tr><td><strong>NTRA</strong></td><td>$393.44</td><td><span style="color:#2f6c46;font-weight:600">2 flows</span></td><td><span style="color:#5b6b8c;font-weight:600">Accumulation &middot; RS Leader</span></td></tr><tr><td><strong>VLO</strong></td><td>$444.71</td><td><span style="color:#2f6c46;font-weight:600">2 flows</span></td><td><span style="color:#5b6b8c;font-weight:600">Accumulation &middot; RS Leader</span></td></tr>
+  </tbody>
+</table>
+
+<div class="ai-take">
+  <div class="ai-take-label">AI read</div>
+  <div class="ai-take-text"><p>KOD is the single cleanest name on the board, with <strong>3</strong> independent flows stacked in its favor at <strong>$85.75</strong>. Insider open-market buying, steady accumulation, and a full year of market leadership now pulling back to a usable entry is the full package.</p><p>Twenty names carry at least <strong>2</strong> aligned flows, so this is not a one-off; the deeper question is whether <strong>3</strong> signals is genuinely rare or just the cap that today&#x27;s data allows. Watch whether KOD holds the pullback level on light volume, because that is what separates an entry from a trap.</p></div>
+</div>
+
+<details class="how-to-read">
+  <summary class="how-to-read-label">How to read</summary>
+  <div class="how-to-read-text">Each name is scored by how many independent flows it triggers: insider buying, fund 13F buying, daily accumulation, a volume surge with buyers, and relative-strength leadership. Insider and 13F weigh most. Two or more aligned is the bar.</div>
+</details>
+</details></section><section id="smart-dumb"><details style="margin:6px 0"><summary style="cursor:pointer;color:#5b6b8c;font-weight:700;font-size:.95em;letter-spacing:.3px;padding:6px 0">&#9656; Smart vs Dumb Money</summary>
+<div class="card-meta">
+  <span class="card-num">01</span>
+  <div class="card-text">
+    <div class="card-eyebrow">Who owns the tape</div>
+    <div class="card-title">Smart vs Dumb Money </div>
+  </div>
+</div>
+
+
+<table class="data-table">
+  <thead><tr><th>Ticker</th><th>Regime (last 60 sessions)</th><th>Overnight</th><th>Intraday</th><th>Buy &amp; hold</th></tr></thead>
+  <tbody>
+    <tr><td><strong>SPY</strong></td><td>BTFD overnight, STFR intraday</td><td><span style="color:#2f6c46;font-weight:600">+5.9%</span></td><td><span style="color:#b23b2e;font-weight:600">-2.3%</span></td><td>+3.4%</td></tr><tr><td><strong>QQQ</strong></td><td>BTFD overnight, STFR intraday</td><td><span style="color:#2f6c46;font-weight:600">+3.9%</span></td><td><span style="color:#b23b2e;font-weight:600">-1.3%</span></td><td>+2.6%</td></tr><tr><td><strong>IWM</strong></td><td>BTFD overnight, STFR intraday</td><td><span style="color:#2f6c46;font-weight:600">+5.2%</span></td><td><span style="color:#b23b2e;font-weight:600">-12.0%</span></td><td>-7.4%</td></tr><tr><td><strong>XLK</strong></td><td>BTFD overnight, STFR intraday</td><td><span style="color:#2f6c46;font-weight:600">+7.7%</span></td><td><span style="color:#b23b2e;font-weight:600">-4.5%</span></td><td>+2.8%</td></tr><tr><td><strong>XLF</strong></td><td>BTFD overnight, STFR intraday</td><td><span style="color:#2f6c46;font-weight:600">+1.6%</span></td><td><span style="color:#b23b2e;font-weight:600">-2.1%</span></td><td>-0.6%</td></tr><tr><td><strong>XLE</strong></td><td>Both regimes positive</td><td><span style="color:#2f6c46;font-weight:600">+2.4%</span></td><td><span style="color:#2f6c46;font-weight:600">+12.2%</span></td><td>+14.9%</td></tr><tr><td><strong>XLV</strong></td><td>Both regimes positive</td><td><span style="color:#2f6c46;font-weight:600">+3.2%</span></td><td><span style="color:#2f6c46;font-weight:600">+6.0%</span></td><td>+9.5%</td></tr><tr><td><strong>XLY</strong></td><td>BTFD overnight, STFR intraday</td><td><span style="color:#2f6c46;font-weight:600">+6.9%</span></td><td><span style="color:#b23b2e;font-weight:600">-3.3%</span></td><td>+3.4%</td></tr><tr><td><strong>XLI</strong></td><td>BTFD overnight, STFR intraday</td><td><span style="color:#2f6c46;font-weight:600">+6.4%</span></td><td><span style="color:#b23b2e;font-weight:600">-13.3%</span></td><td>-7.8%</td></tr>
+  </tbody>
+</table>
+
+<div class="ai-take">
+  <div class="ai-take-label">AI read</div>
+  <div class="ai-take-text"><p>Overnight buyers own this market and intraday sellers have been paying them for it. SPY has handed the overnight session <strong>+5.9%</strong> while the intraday session has bled <strong>-2.3%</strong>, a regime that rewards buying weakness into the close and selling strength into the open. Run entries late rather than chasing the first hour; the carry lives overnight, and the single thing that flips this read is the first session where the intraday number turns positive and holds.</p></div>
+</div>
+
+<details class="how-to-read">
+  <summary class="how-to-read-label">How to read</summary>
+  <div class="how-to-read-text">Overnight return = open divided by prior close. Intraday = close divided by same-day open. A large, persistent overnight share is the classic institutional footprint.</div>
+</details>
+</details></section><section id="accumulation"><details style="margin:6px 0"><summary style="cursor:pointer;color:#5b6b8c;font-weight:700;font-size:.95em;letter-spacing:.3px;padding:6px 0">&#9656; Accumulation Radar</summary>
+<div class="card-meta">
+  <span class="card-num">03</span>
+  <div class="card-text">
+    <div class="card-eyebrow">Stealth buying and selling</div>
+    <div class="card-title">Accumulation Radar </div>
+  </div>
+</div>
+<div class="table-caption">Quiet accumulation (steady inflow, price still flat)</div>
+
+<table class="data-table">
+  <thead><tr><th>Ticker</th><th>Price</th><th>Mkt cap</th><th>Money flow 40d</th><th>Money flow 20d</th><th>40d move</th><th>RVOL</th></tr></thead>
+  <tbody>
+    <tr><td><strong>ONC</strong></td><td>$369.06</td><td>$31.1B</td><td><span style="color:#2f6c46;font-weight:600">+0.22</span></td><td><span style="color:#2f6c46;font-weight:600">+0.28</span></td><td>-1.4%</td><td>1.1x</td></tr><tr><td><strong>SLF</strong></td><td>$79.35</td><td>$40.2B</td><td><span style="color:#2f6c46;font-weight:600">+0.17</span></td><td><span style="color:#b23b2e;font-weight:600">-0.03</span></td><td>+0.5%</td><td>0.8x</td></tr><tr><td><strong>RPRX</strong></td><td>$60.96</td><td>$23.9B</td><td><span style="color:#2f6c46;font-weight:600">+0.16</span></td><td><span style="color:#2f6c46;font-weight:600">+0.07</span></td><td>-0.6%</td><td>1.9x</td></tr><tr><td><strong>ENTG</strong></td><td>$138.74</td><td>$21.3B</td><td><span style="color:#2f6c46;font-weight:600">+0.21</span></td><td><span style="color:#2f6c46;font-weight:600">+0.26</span></td><td>-3.4%</td><td>1.2x</td></tr><tr><td><strong>NGG</strong></td><td>$81.22</td><td>$85.4B</td><td><span style="color:#2f6c46;font-weight:600">+0.16</span></td><td><span style="color:#2f6c46;font-weight:600">+0.27</span></td><td>+1.8%</td><td>1.8x</td></tr><tr><td><strong>NXPI</strong></td><td>$229.33</td><td>$83.1B</td><td><span style="color:#2f6c46;font-weight:600">+0.16</span></td><td><span style="color:#2f6c46;font-weight:600">+0.22</span></td><td>+1.7%</td><td>1.4x</td></tr><tr><td><strong>RMBS</strong></td><td>$87.25</td><td>$16.1B</td><td><span style="color:#2f6c46;font-weight:600">+0.21</span></td><td><span style="color:#2f6c46;font-weight:600">+0.17</span></td><td>-4.4%</td><td>0.8x</td></tr><tr><td><strong>DNOW</strong></td><td>$15.68</td><td>$2.4B</td><td><span style="color:#2f6c46;font-weight:600">+0.13</span></td><td><span style="color:#2f6c46;font-weight:600">+0.19</span></td><td>+0.0%</td><td>2.0x</td></tr><tr><td><strong>JXN</strong></td><td>$130.58</td><td>$7.2B</td><td><span style="color:#2f6c46;font-weight:600">+0.13</span></td><td><span style="color:#2f6c46;font-weight:600">+0.11</span></td><td>+0.5%</td><td>1.1x</td></tr><tr><td><strong>AVT</strong></td><td>$90.03</td><td>$7.1B</td><td><span style="color:#2f6c46;font-weight:600">+0.14</span></td><td><span style="color:#2f6c46;font-weight:600">+0.06</span></td><td>+1.6%</td><td>0.8x</td></tr><tr><td><strong>PGR</strong></td><td>$218.49</td><td>$114.9B</td><td><span style="color:#2f6c46;font-weight:600">+0.12</span></td><td><span style="color:#2f6c46;font-weight:600">+0.17</span></td><td>-0.4%</td><td>0.8x</td></tr><tr><td><strong>MRX</strong></td><td>$70.50</td><td>$3.9B</td><td><span style="color:#2f6c46;font-weight:600">+0.16</span></td><td><span style="color:#2f6c46;font-weight:600">+0.11</span></td><td>-3.4%</td><td>0.7x</td></tr><tr><td><strong>FTS</strong></td><td>$55.76</td><td>$28.9B</td><td><span style="color:#2f6c46;font-weight:600">+0.13</span></td><td><span style="color:#2f6c46;font-weight:600">+0.22</span></td><td>+1.6%</td><td>0.9x</td></tr><tr><td><strong>TTC</strong></td><td>$100.58</td><td>$8.9B</td><td><span style="color:#2f6c46;font-weight:600">+0.13</span></td><td><span style="color:#2f6c46;font-weight:600">+0.18</span></td><td>+1.1%</td><td>0.8x</td></tr><tr><td><strong>TXN</strong></td><td>$276.48</td><td>$288.9B</td><td><span style="color:#2f6c46;font-weight:600">+0.18</span></td><td><span style="color:#2f6c46;font-weight:600">+0.29</span></td><td>+4.6%</td><td>1.5x</td></tr>
+  </tbody>
+</table>
+<div class="table-caption">Distribution (steady outflow)</div>
+
+<table class="data-table">
+  <thead><tr><th>Ticker</th><th>Price</th><th>Mkt cap</th><th>Money flow 40d</th><th>Money flow 20d</th><th>40d move</th><th>RVOL</th></tr></thead>
+  <tbody>
+    <tr><td><strong>BZH</strong></td><td>$33.45</td><td>$683M</td><td><span style="color:#b23b2e;font-weight:600">-0.42</span></td><td><span style="color:#b23b2e;font-weight:600">-0.39</span></td><td>+1.0%</td><td>1.6x</td></tr><tr><td><strong>ITGR</strong></td><td>$126.70</td><td>$3.0B</td><td><span style="color:#b23b2e;font-weight:600">-0.36</span></td><td><span style="color:#b23b2e;font-weight:600">-0.33</span></td><td>+1.2%</td><td>0.8x</td></tr><tr><td><strong>LNTH</strong></td><td>$99.70</td><td>$6.5B</td><td><span style="color:#b23b2e;font-weight:600">-0.32</span></td><td><span style="color:#b23b2e;font-weight:600">-0.47</span></td><td>-0.3%</td><td>1.7x</td></tr><tr><td><strong>RAMP</strong></td><td>$37.44</td><td>$2.3B</td><td><span style="color:#b23b2e;font-weight:600">-0.31</span></td><td><span style="color:#b23b2e;font-weight:600">-0.52</span></td><td>-0.4%</td><td>0.8x</td></tr><tr><td><strong>CBZ</strong></td><td>$54.78</td><td>$1.7B</td><td><span style="color:#b23b2e;font-weight:600">-0.30</span></td><td><span style="color:#b23b2e;font-weight:600">-0.35</span></td><td>+0.2%</td><td>1.6x</td></tr><tr><td><strong>ATKR</strong></td><td>$94.96</td><td>$2.8B</td><td><span style="color:#b23b2e;font-weight:600">-0.28</span></td><td><span style="color:#b23b2e;font-weight:600">-0.21</span></td><td>+1.5%</td><td>1.7x</td></tr><tr><td><strong>ACA</strong></td><td>$147.06</td><td>$6.2B</td><td><span style="color:#b23b2e;font-weight:600">-0.28</span></td><td><span style="color:#b23b2e;font-weight:600">-0.14</span></td><td>+1.5%</td><td>0.6x</td></tr><tr><td><strong>CZR</strong></td><td>$28.80</td><td>$5.9B</td><td><span style="color:#b23b2e;font-weight:600">-0.32</span></td><td><span style="color:#b23b2e;font-weight:600">-0.33</span></td><td>-3.2%</td><td>2.7x</td></tr><tr><td><strong>SUI</strong></td><td>$118.08</td><td>$15.4B</td><td><span style="color:#b23b2e;font-weight:600">-0.31</span></td><td><span style="color:#b23b2e;font-weight:600">-0.19</span></td><td>-2.9%</td><td>1.0x</td></tr><tr><td><strong>TM</strong></td><td>$194.61</td><td>$247.8B</td><td><span style="color:#b23b2e;font-weight:600">-0.26</span></td><td><span style="color:#b23b2e;font-weight:600">-0.15</span></td><td>-1.4%</td><td>2.1x</td></tr><tr><td><strong>SCI</strong></td><td>$81.37</td><td>$10.6B</td><td><span style="color:#b23b2e;font-weight:600">-0.28</span></td><td><span style="color:#b23b2e;font-weight:600">-0.24</span></td><td>-2.3%</td><td>0.5x</td></tr><tr><td><strong>BORR</strong></td><td>$4.54</td><td>$1.6B</td><td><span style="color:#b23b2e;font-weight:600">-0.23</span></td><td><span style="color:#b23b2e;font-weight:600">-0.28</span></td><td>+0.9%</td><td>1.1x</td></tr><tr><td><strong>EPD</strong></td><td>$36.82</td><td>$82.2B</td><td><span style="color:#b23b2e;font-weight:600">-0.28</span></td><td><span style="color:#b23b2e;font-weight:600">-0.36</span></td><td>-3.1%</td><td>1.1x</td></tr><tr><td><strong>TDS</strong></td><td>$33.90</td><td>$4.5B</td><td><span style="color:#b23b2e;font-weight:600">-0.22</span></td><td><span style="color:#b23b2e;font-weight:600">-0.27</span></td><td>+0.9%</td><td>0.9x</td></tr><tr><td><strong>BWIN</strong></td><td>$31.91</td><td>$1.9B</td><td><span style="color:#b23b2e;font-weight:600">-0.20</span></td><td><span style="color:#b23b2e;font-weight:600">-0.36</span></td><td>+0.0%</td><td>0.5x</td></tr>
+  </tbody>
+</table>
+
+<div class="ai-take">
+  <div class="ai-take-label">AI read</div>
+  <div class="ai-take-text"><p>ONC is the stealth name: flat price, steady buying, the kind of footprint that shows up in volume before it shows up in the quote. With <strong>15</strong> names under accumulation and <strong>15</strong> under distribution, the market is split right down the middle, which makes ONC&#x27;s persistence more notable than any single day&#x27;s move. Sizing should stay cautious while breadth is this balanced; the tell is whether ONC&#x27;s price finally follows its volume or the accumulation quietly stops.</p></div>
+</div>
+
+<details class="how-to-read">
+  <summary class="how-to-read-label">How to read</summary>
+  <div class="how-to-read-text">Money flow 40d/20d range from -1 (heavy selling) to +1 (heavy buying). Accumulation = positive flow with a flat 40-day move. Distribution = negative flow.</div>
+</details>
+</details></section><section id="today"><details style="margin:6px 0"><summary style="cursor:pointer;color:#5b6b8c;font-weight:700;font-size:.95em;letter-spacing:.3px;padding:6px 0">&#9656; Today's Money Flow</summary>
+<div class="card-meta">
+  <span class="card-num">04</span>
+  <div class="card-text">
+    <div class="card-eyebrow">Where money showed up (2026-10-16)</div>
+    <div class="card-title">Today&#x27;s Money Flow &amp; Attention </div>
+  </div>
+</div>
+<div class="table-caption">Volume surge, buyers in control (closed near the high)</div>
+
+<table class="data-table">
+  <thead><tr><th>Ticker</th><th>Price</th><th>RVOL</th><th>Close in range</th><th>Money flow (signed $vol)</th></tr></thead>
+  <tbody>
+    <tr><td><strong>TRV</strong></td><td>$389.54</td><td>2.6x</td><td><span style="color:#2f6c46;font-weight:600">+0.88</span></td><td><span style="color:#2f6c46;font-weight:600">$1.1B</span></td></tr><tr><td><strong>VRNS</strong></td><td>$48.72</td><td>11.1x</td><td><span style="color:#2f6c46;font-weight:600">+0.50</span></td><td><span style="color:#2f6c46;font-weight:600">$883M</span></td></tr><tr><td><strong>LHX</strong></td><td>$248.51</td><td>2.1x</td><td><span style="color:#2f6c46;font-weight:600">+0.96</span></td><td><span style="color:#2f6c46;font-weight:600">$808M</span></td></tr><tr><td><strong>BTI</strong></td><td>$60.00</td><td>2.7x</td><td><span style="color:#2f6c46;font-weight:600">+0.96</span></td><td><span style="color:#2f6c46;font-weight:600">$769M</span></td></tr><tr><td><strong>AVTR</strong></td><td>$16.42</td><td>3.2x</td><td><span style="color:#2f6c46;font-weight:600">+0.88</span></td><td><span style="color:#2f6c46;font-weight:600">$424M</span></td></tr><tr><td><strong>CRGY</strong></td><td>$13.77</td><td>2.2x</td><td><span style="color:#2f6c46;font-weight:600">+0.96</span></td><td><span style="color:#2f6c46;font-weight:600">$301M</span></td></tr><tr><td><strong>USB</strong></td><td>$58.73</td><td>2.1x</td><td><span style="color:#2f6c46;font-weight:600">+0.28</span></td><td><span style="color:#2f6c46;font-weight:600">$293M</span></td></tr><tr><td><strong>TALO</strong></td><td>$17.77</td><td>2.1x</td><td><span style="color:#2f6c46;font-weight:600">+0.95</span></td><td><span style="color:#2f6c46;font-weight:600">$105M</span></td></tr><tr><td><strong>FMX</strong></td><td>$126.46</td><td>2.8x</td><td><span style="color:#2f6c46;font-weight:600">+0.40</span></td><td><span style="color:#2f6c46;font-weight:600">$77M</span></td></tr><tr><td><strong>WES</strong></td><td>$44.62</td><td>2.0x</td><td><span style="color:#2f6c46;font-weight:600">+0.79</span></td><td><span style="color:#2f6c46;font-weight:600">$73M</span></td></tr><tr><td><strong>NSIT</strong></td><td>$160.47</td><td>2.1x</td><td><span style="color:#2f6c46;font-weight:600">+0.62</span></td><td><span style="color:#2f6c46;font-weight:600">$71M</span></td></tr><tr><td><strong>GVA</strong></td><td>$109.82</td><td>2.3x</td><td><span style="color:#2f6c46;font-weight:600">+0.30</span></td><td><span style="color:#2f6c46;font-weight:600">$53M</span></td></tr>
+  </tbody>
+</table>
+<div class="table-caption">Volume surge, sellers in control (closed near the low)</div>
+
+<table class="data-table">
+  <thead><tr><th>Ticker</th><th>Price</th><th>RVOL</th><th>Close in range</th><th>Money flow (signed $vol)</th></tr></thead>
+  <tbody>
+    <tr><td><strong>CRWV</strong></td><td>$61.39</td><td>2.4x</td><td><span style="color:#b23b2e;font-weight:600">-0.56</span></td><td><span style="color:#b23b2e;font-weight:600">-$3.3B</span></td></tr><tr><td><strong>OKTA</strong></td><td>$187.26</td><td>2.0x</td><td><span style="color:#b23b2e;font-weight:600">-0.83</span></td><td><span style="color:#b23b2e;font-weight:600">-$1.1B</span></td></tr><tr><td><strong>CCC</strong></td><td>$7.61</td><td>3.2x</td><td><span style="color:#b23b2e;font-weight:600">-1.00</span></td><td><span style="color:#b23b2e;font-weight:600">-$809M</span></td></tr><tr><td><strong>MCHP</strong></td><td>$73.85</td><td>2.1x</td><td><span style="color:#b23b2e;font-weight:600">-0.42</span></td><td><span style="color:#b23b2e;font-weight:600">-$573M</span></td></tr><tr><td><strong>AA</strong></td><td>$41.45</td><td>2.9x</td><td><span style="color:#b23b2e;font-weight:600">-0.77</span></td><td><span style="color:#b23b2e;font-weight:600">-$443M</span></td></tr><tr><td><strong>CZR</strong></td><td>$28.80</td><td>2.7x</td><td><span style="color:#b23b2e;font-weight:600">-0.83</span></td><td><span style="color:#b23b2e;font-weight:600">-$415M</span></td></tr><tr><td><strong>SAP</strong></td><td>$224.29</td><td>2.3x</td><td><span style="color:#b23b2e;font-weight:600">-0.37</span></td><td><span style="color:#b23b2e;font-weight:600">-$391M</span></td></tr><tr><td><strong>FROG</strong></td><td>$84.31</td><td>2.6x</td><td><span style="color:#b23b2e;font-weight:600">-0.95</span></td><td><span style="color:#b23b2e;font-weight:600">-$374M</span></td></tr><tr><td><strong>RF</strong></td><td>$27.45</td><td>2.3x</td><td><span style="color:#b23b2e;font-weight:600">-0.49</span></td><td><span style="color:#b23b2e;font-weight:600">-$351M</span></td></tr><tr><td><strong>GRMN</strong></td><td>$284.79</td><td>2.0x</td><td><span style="color:#b23b2e;font-weight:600">-0.73</span></td><td><span style="color:#b23b2e;font-weight:600">-$345M</span></td></tr><tr><td><strong>RMD</strong></td><td>$238.97</td><td>2.4x</td><td><span style="color:#b23b2e;font-weight:600">-0.53</span></td><td><span style="color:#b23b2e;font-weight:600">-$324M</span></td></tr><tr><td><strong>ECL</strong></td><td>$288.89</td><td>2.7x</td><td><span style="color:#b23b2e;font-weight:600">-0.30</span></td><td><span style="color:#b23b2e;font-weight:600">-$298M</span></td></tr>
+  </tbody>
+</table>
+
+<div class="ai-take">
+  <div class="ai-take-label">AI read</div>
+  <div class="ai-take-text"><p>Money showed up in <strong>24</strong> names today, and TRV took the buyer&#x27;s side while CRWV drew the sellers. A 24-name day is decent participation without being broad, so the money is concentrated in specific stories rather than spreading across the market. Follow TRV&#x27;s bid for confirmation over the next session and treat CRWV&#x27;s supply as a warning until it clears.</p></div>
+</div>
+
+<details class="how-to-read">
+  <summary class="how-to-read-label">How to read</summary>
+  <div class="how-to-read-text">RVOL = today volume divided by the 20-day average. Close in range from -1 (closed at the low) to +1 (closed at the high). Signed dollar volume = close-location times dollar volume.</div>
+</details>
+</details></section><section id="rs-leaders"><details style="margin:6px 0"><summary style="cursor:pointer;color:#5b6b8c;font-weight:700;font-size:.95em;letter-spacing:.3px;padding:6px 0">&#9656; RS Leaders Dip</summary>
+<div class="card-meta">
+  <span class="card-num">05</span>
+  <div class="card-text">
+    <div class="card-eyebrow">Strong stocks offering an entry</div>
+    <div class="card-title">RS Leaders Dip </div>
+  </div>
+</div>
+
+
+<table class="data-table">
+  <thead><tr><th>Ticker</th><th>Price</th><th>1y vs SPY</th><th>20d vs SPY</th><th>Off 20d high</th></tr></thead>
+  <tbody>
+    <tr><td><strong>MRNA</strong></td><td>$218.01</td><td><span style="color:#2f6c46;font-weight:600">+672%</span></td><td><span style="color:#2f6c46;font-weight:600">+41.3%</span></td><td>-7.8%</td></tr><tr><td><strong>IOVA</strong></td><td>$13.62</td><td><span style="color:#2f6c46;font-weight:600">+493%</span></td><td><span style="color:#2f6c46;font-weight:600">+32.7%</span></td><td>-8.1%</td></tr><tr><td><strong>KOD</strong></td><td>$85.75</td><td><span style="color:#2f6c46;font-weight:600">+462%</span></td><td><span style="color:#2f6c46;font-weight:600">+161.9%</span></td><td>-14.1%</td></tr><tr><td><strong>CDNA</strong></td><td>$64.00</td><td><span style="color:#2f6c46;font-weight:600">+321%</span></td><td><span style="color:#2f6c46;font-weight:600">+18.7%</span></td><td>-8.4%</td></tr><tr><td><strong>IBRX</strong></td><td>$9.18</td><td><span style="color:#2f6c46;font-weight:600">+241%</span></td><td><span style="color:#2f6c46;font-weight:600">+8.0%</span></td><td>-12.7%</td></tr><tr><td><strong>ASX</strong></td><td>$39.53</td><td><span style="color:#2f6c46;font-weight:600">+217%</span></td><td><span style="color:#b23b2e;font-weight:600">-5.2%</span></td><td>-17.0%</td></tr><tr><td><strong>PBF</strong></td><td>$84.52</td><td><span style="color:#2f6c46;font-weight:600">+183%</span></td><td><span style="color:#2f6c46;font-weight:600">+9.3%</span></td><td>-7.3%</td></tr><tr><td><strong>MANE</strong></td><td>$108.82</td><td><span style="color:#2f6c46;font-weight:600">+174%</span></td><td><span style="color:#2f6c46;font-weight:600">+1.7%</span></td><td>-16.9%</td></tr><tr><td><strong>RNG</strong></td><td>$75.44</td><td><span style="color:#2f6c46;font-weight:600">+168%</span></td><td><span style="color:#2f6c46;font-weight:600">+4.8%</span></td><td>-5.6%</td></tr><tr><td><strong>ILMN</strong></td><td>$262.54</td><td><span style="color:#2f6c46;font-weight:600">+168%</span></td><td><span style="color:#2f6c46;font-weight:600">+9.4%</span></td><td>-10.6%</td></tr><tr><td><strong>VLO</strong></td><td>$444.71</td><td><span style="color:#2f6c46;font-weight:600">+162%</span></td><td><span style="color:#2f6c46;font-weight:600">+7.4%</span></td><td>-3.3%</td></tr><tr><td><strong>INSW</strong></td><td>$109.99</td><td><span style="color:#2f6c46;font-weight:600">+135%</span></td><td><span style="color:#b23b2e;font-weight:600">-1.2%</span></td><td>-12.0%</td></tr><tr><td><strong>FIGS</strong></td><td>$19.12</td><td><span style="color:#2f6c46;font-weight:600">+135%</span></td><td><span style="color:#2f6c46;font-weight:600">+46.2%</span></td><td>-2.1%</td></tr><tr><td><strong>HAE</strong></td><td>$118.28</td><td><span style="color:#2f6c46;font-weight:600">+129%</span></td><td><span style="color:#2f6c46;font-weight:600">+8.9%</span></td><td>-3.1%</td></tr><tr><td><strong>DINO</strong></td><td>$125.29</td><td><span style="color:#2f6c46;font-weight:600">+126%</span></td><td><span style="color:#2f6c46;font-weight:600">+7.9%</span></td><td>-2.3%</td></tr>
+  </tbody>
+</table>
+
+<div class="ai-take">
+  <div class="ai-take-label">AI read</div>
+  <div class="ai-take-text"><p>MRNA leads all relative-strength names with <strong>+672%</strong> over the past year, and that is precisely the kind of move that eventually pulls back to a buyable level. Strength this persistent tends to attract buyers on any dip because the trend has already survived every prior pullback; the risk is that the first meaningful break is not a dip at all. Watch for the pullback to arrive on shrinking volume, because that is the signal that holders are not exiting.</p></div>
+</div>
+
+<details class="how-to-read">
+  <summary class="how-to-read-label">How to read</summary>
+  <div class="how-to-read-text">1y vs SPY = how much the stock beat the market over a year (leadership). 20d vs SPY = is the relative strength still holding. Off 20d high = how deep the current pullback is.</div>
+</details>
+</details></section><section id="inst13f"><details style="margin:6px 0"><summary style="cursor:pointer;color:#5b6b8c;font-weight:700;font-size:.95em;letter-spacing:.3px;padding:6px 0">&#9656; Institutional 13F</summary>
+<div class="card-meta">
+  <span class="card-num">06</span>
+  <div class="card-text">
+    <div class="card-eyebrow">What the funds did (filed 2026-09-02)</div>
+    <div class="card-title">Institutional 13F Flow </div>
+  </div>
+</div>
+<div class="table-caption">Biggest net buying across tracked funds</div>
+
+<table class="data-table">
+  <thead><tr><th>Ticker</th><th>Company</th><th>Net change</th><th>Funds</th><th>Added / Trimmed</th></tr></thead>
+  <tbody>
+    <tr><td><strong>MU</strong></td><td>Micron Technology Inc - Us</td><td><span style="color:#2f6c46;font-weight:600">$46.8B</span></td><td>31</td><td>+12 / -17</td></tr><tr><td><strong>SPCX</strong></td><td>Space Exploration Techn Co</td><td><span style="color:#2f6c46;font-weight:600">$31.5B</span></td><td>11</td><td>+10 / -0</td></tr><tr><td><strong>AMD</strong></td><td>Advanced Micro Devices Inc</td><td><span style="color:#2f6c46;font-weight:600">$20.3B</span></td><td>37</td><td>+20 / -16</td></tr><tr><td><strong>GOOGL</strong></td><td>Alphabet, Inc.</td><td><span style="color:#2f6c46;font-weight:600">$18.7B</span></td><td>56</td><td>+23 / -28</td></tr><tr><td><strong>INTC</strong></td><td>Intel Corporation</td><td><span style="color:#2f6c46;font-weight:600">$18.2B</span></td><td>31</td><td>+17 / -13</td></tr><tr><td><strong>IVV</strong></td><td>Ishares Core S&amp;P 500 Etf -</td><td><span style="color:#2f6c46;font-weight:600">$18.2B</span></td><td>11</td><td>+10 / -1</td></tr><tr><td><strong>GOOG</strong></td><td>Alphabet, Inc. - C Shares</td><td><span style="color:#2f6c46;font-weight:600">$15.5B</span></td><td>39</td><td>+18 / -17</td></tr><tr><td><strong>SPY</strong></td><td>State Street Spdr S&amp;P 500 </td><td><span style="color:#2f6c46;font-weight:600">$14.2B</span></td><td>28</td><td>+14 / -13</td></tr><tr><td><strong>SNDK</strong></td><td>Sandisk Corp/De - Us</td><td><span style="color:#2f6c46;font-weight:600">$13.6B</span></td><td>26</td><td>+9 / -15</td></tr><tr><td><strong>AAPL</strong></td><td>Apple, Inc.</td><td><span style="color:#2f6c46;font-weight:600">$13.6B</span></td><td>38</td><td>+14 / -17</td></tr><tr><td><strong>AMZN</strong></td><td>Amazon.Com, Inc.</td><td><span style="color:#2f6c46;font-weight:600">$11.5B</span></td><td>56</td><td>+33 / -21</td></tr><tr><td><strong>GE</strong></td><td>General Electric Co - Us</td><td><span style="color:#2f6c46;font-weight:600">$9.4B</span></td><td>22</td><td>+5 / -15</td></tr><tr><td><strong>CAT</strong></td><td>Caterpillar, Inc.</td><td><span style="color:#2f6c46;font-weight:600">$9.4B</span></td><td>24</td><td>+9 / -11</td></tr><tr><td><strong>STX</strong></td><td>Seagate Technology Holding</td><td><span style="color:#2f6c46;font-weight:600">$9.1B</span></td><td>28</td><td>+20 / -7</td></tr><tr><td><strong>NVDA</strong></td><td>Nvidia Corp - Us</td><td><span style="color:#2f6c46;font-weight:600">$8.8B</span></td><td>43</td><td>+16 / -24</td></tr>
+  </tbody>
+</table>
+<div class="table-caption">Biggest net selling</div>
+
+<table class="data-table">
+  <thead><tr><th>Ticker</th><th>Company</th><th>Net change</th><th>Funds</th><th>Added / Trimmed</th></tr></thead>
+  <tbody>
+    <tr><td><strong>CVX</strong></td><td>Chevron Corp.</td><td><span style="color:#b23b2e;font-weight:600">-$6.0B</span></td><td>24</td><td>+8 / -11</td></tr><tr><td><strong>OXY</strong></td><td>Occidental Petroleum Corp.</td><td><span style="color:#b23b2e;font-weight:600">-$5.9B</span></td><td>17</td><td>+8 / -8</td></tr><tr><td><strong>NFLX</strong></td><td>Netflix Inc - Us</td><td><span style="color:#b23b2e;font-weight:600">-$4.7B</span></td><td>32</td><td>+14 / -15</td></tr><tr><td><strong>GOOGN</strong></td><td>Alphabet Inc</td><td><span style="color:#b23b2e;font-weight:600">-$4.3B</span></td><td>1</td><td>+0 / -1</td></tr><tr><td><strong>ASND</strong></td><td>Ascendis Pharma A/S - Adr</td><td><span style="color:#b23b2e;font-weight:600">-$4.0B</span></td><td>15</td><td>+2 / -12</td></tr><tr><td><strong>COP</strong></td><td>Conocophillips - Us</td><td><span style="color:#b23b2e;font-weight:600">-$3.8B</span></td><td>24</td><td>+12 / -11</td></tr><tr><td><strong>XOM</strong></td><td>Exxonmobil Holdings Corp -</td><td><span style="color:#b23b2e;font-weight:600">-$3.2B</span></td><td>21</td><td>+10 / -9</td></tr><tr><td><strong>CTRA</strong></td><td>Coterra Energy, Inc.</td><td><span style="color:#b23b2e;font-weight:600">-$2.7B</span></td><td>15</td><td>+0 / -15</td></tr><tr><td><strong>GLD</strong></td><td>Spdr Gold Shares - Us Etp</td><td><span style="color:#b23b2e;font-weight:600">-$2.3B</span></td><td>18</td><td>+7 / -8</td></tr><tr><td><strong>BABA</strong></td><td>Alibaba Group Holding, Ltd</td><td><span style="color:#b23b2e;font-weight:600">-$2.2B</span></td><td>21</td><td>+10 / -11</td></tr><tr><td><strong>CNQ</strong></td><td>Canadian Natural Resources</td><td><span style="color:#b23b2e;font-weight:600">-$2.2B</span></td><td>14</td><td>+8 / -6</td></tr><tr><td><strong>FDX</strong></td><td>Fedex Corp - Us</td><td><span style="color:#b23b2e;font-weight:600">-$2.0B</span></td><td>26</td><td>+13 / -11</td></tr><tr><td><strong>CRH</strong></td><td>Crh Plc - Us</td><td><span style="color:#b23b2e;font-weight:600">-$2.0B</span></td><td>25</td><td>+13 / -10</td></tr><tr><td><strong>HON</strong></td><td>Honeywell International, I</td><td><span style="color:#b23b2e;font-weight:600">-$1.9B</span></td><td>17</td><td>+0 / -17</td></tr><tr><td><strong>CHTR</strong></td><td>Charter Communications, In</td><td><span style="color:#b23b2e;font-weight:600">-$1.9B</span></td><td>17</td><td>+13 / -4</td></tr>
+  </tbody>
+</table>
+
+<div class="ai-take">
+  <div class="ai-take-label">AI read</div>
+  <div class="ai-take-text"><p>Funds added MU and trimmed CVX last quarter, a rotation that says institutions were still leaning into the memory cycle and away from energy as of 2026-09-02. These filings are slow, lagged money: they tell you what large managers believed weeks ago, not what they are doing now. Use them as context for the sector tilt, and do not treat any 13F buy as a fresh signal; the thing to watch is whether the next filing shows the MU add continuing or reversing.</p></div>
+</div>
+
+<details class="how-to-read">
+  <summary class="how-to-read-label">How to read</summary>
+  <div class="how-to-read-text">Net change = sum of position value added minus trimmed across all tracked funds this quarter. 13F filings lag the trade by up to 45 days, so treat it as positioning, not timing.</div>
+</details>
+</details></section><section id="receipts"><details style="margin:6px 0"><summary style="cursor:pointer;color:#5b6b8c;font-weight:700;font-size:.95em;letter-spacing:.3px;padding:6px 0">&#9656; Receipts</summary>
+<div class="card-meta">
+  <span class="card-num">07</span>
+  <div class="card-text">
+    <div class="card-eyebrow">Dated calls, tracked over time</div>
+    <div class="card-title">Receipts </div>
+  </div>
+</div>
+
+
+<table class="data-table">
+  <thead><tr><th>Called</th><th>Source</th><th>Ticker</th><th>Entry</th><th>Now</th><th>Return</th></tr></thead>
+  <tbody>
+    <tr><td>2026-10-16</td><td>Accumulation</td><td><strong>SLF</strong></td><td>$79.35</td><td>$79.35</td><td><span style="color:#2f6c46;font-weight:600">+0.0%</span></td></tr><tr><td>2026-10-16</td><td>Accumulation</td><td><strong>RPRX</strong></td><td>$60.96</td><td>$60.96</td><td><span style="color:#2f6c46;font-weight:600">+0.0%</span></td></tr><tr><td>2026-10-16</td><td>Accumulation</td><td><strong>ONC</strong></td><td>$369.06</td><td>$369.06</td><td><span style="color:#2f6c46;font-weight:600">+0.0%</span></td></tr><tr><td>2026-10-16</td><td>Accumulation</td><td><strong>NGG</strong></td><td>$81.22</td><td>$81.22</td><td><span style="color:#2f6c46;font-weight:600">+0.0%</span></td></tr><tr><td>2026-10-16</td><td>Accumulation</td><td><strong>ENTG</strong></td><td>$138.74</td><td>$138.74</td><td><span style="color:#2f6c46;font-weight:600">+0.0%</span></td></tr><tr><td>2026-10-16</td><td>Attention</td><td><strong>VRNS</strong></td><td>$48.72</td><td>$48.72</td><td><span style="color:#2f6c46;font-weight:600">+0.0%</span></td></tr><tr><td>2026-10-16</td><td>Attention</td><td><strong>TRV</strong></td><td>$389.54</td><td>$389.54</td><td><span style="color:#2f6c46;font-weight:600">+0.0%</span></td></tr><tr><td>2026-10-16</td><td>Attention</td><td><strong>LHX</strong></td><td>$248.51</td><td>$248.51</td><td><span style="color:#2f6c46;font-weight:600">+0.0%</span></td></tr><tr><td>2026-10-16</td><td>Conviction</td><td><strong>KOD</strong></td><td>$85.75</td><td>$85.75</td><td><span style="color:#2f6c46;font-weight:600">+0.0%</span></td></tr><tr><td>2026-10-16</td><td>Conviction</td><td><strong>GME</strong></td><td>$26.81</td><td>$26.81</td><td><span style="color:#2f6c46;font-weight:600">+0.0%</span></td></tr><tr><td>2026-10-16</td><td>Conviction</td><td><strong>CRWD</strong></td><td>$227.39</td><td>$227.39</td><td><span style="color:#2f6c46;font-weight:600">+0.0%</span></td></tr><tr><td>2026-10-16</td><td>Conviction</td><td><strong>AMD</strong></td><td>$528.75</td><td>$528.75</td><td><span style="color:#2f6c46;font-weight:600">+0.0%</span></td></tr><tr><td>2026-10-16</td><td>Conviction</td><td><strong>AMAT</strong></td><td>$409.29</td><td>$409.29</td><td><span style="color:#2f6c46;font-weight:600">+0.0%</span></td></tr><tr><td>2026-10-16</td><td>Insider</td><td><strong>LEN</strong></td><td>$77.08</td><td>$77.08</td><td><span style="color:#2f6c46;font-weight:600">+0.0%</span></td></tr><tr><td>2026-10-16</td><td>Insider</td><td><strong>KOD</strong></td><td>$85.75</td><td>$85.75</td><td><span style="color:#2f6c46;font-weight:600">+0.0%</span></td></tr><tr><td>2026-10-16</td><td>Insider</td><td><strong>CRBG</strong></td><td>$34.43</td><td>$34.43</td><td><span style="color:#2f6c46;font-weight:600">+0.0%</span></td></tr><tr><td>2026-10-16</td><td>RS Leader</td><td><strong>MRNA</strong></td><td>$218.01</td><td>$218.01</td><td><span style="color:#2f6c46;font-weight:600">+0.0%</span></td></tr><tr><td>2026-10-16</td><td>RS Leader</td><td><strong>KOD</strong></td><td>$85.75</td><td>$85.75</td><td><span style="color:#2f6c46;font-weight:600">+0.0%</span></td></tr><tr><td>2026-10-16</td><td>RS Leader</td><td><strong>IOVA</strong></td><td>$13.62</td><td>$13.62</td><td><span style="color:#2f6c46;font-weight:600">+0.0%</span></td></tr><tr><td>2026-10-16</td><td>RS Leader</td><td><strong>IBRX</strong></td><td>$9.18</td><td>$9.18</td><td><span style="color:#2f6c46;font-weight:600">+0.0%</span></td></tr><tr><td>2026-10-16</td><td>RS Leader</td><td><strong>CDNA</strong></td><td>$64.00</td><td>$64.00</td><td><span style="color:#2f6c46;font-weight:600">+0.0%</span></td></tr><tr><td>2026-10-14</td><td>Accumulation</td><td><strong>TECK</strong></td><td>$64.80</td><td>$64.62</td><td><span style="color:#b23b2e;font-weight:600">-0.3%</span></td></tr><tr><td>2026-10-14</td><td>Accumulation</td><td><strong>RMBS</strong></td><td>$92.11</td><td>$87.25</td><td><span style="color:#b23b2e;font-weight:600">-5.3%</span></td></tr><tr><td>2026-10-14</td><td>Accumulation</td><td><strong>PGR</strong></td><td>$213.46</td><td>$218.49</td><td><span style="color:#2f6c46;font-weight:600">+2.4%</span></td></tr><tr><td>2026-10-14</td><td>Accumulation</td><td><strong>PFE</strong></td><td>$29.21</td><td>$29.58</td><td><span style="color:#2f6c46;font-weight:600">+1.3%</span></td></tr><tr><td>2026-10-14</td><td>Accumulation</td><td><strong>MRX</strong></td><td>$69.38</td><td>$70.50</td><td><span style="color:#2f6c46;font-weight:600">+1.6%</span></td></tr><tr><td>2026-10-14</td><td>Attention</td><td><strong>PGR</strong></td><td>$213.46</td><td>$218.49</td><td><span style="color:#2f6c46;font-weight:600">+2.4%</span></td></tr><tr><td>2026-10-14</td><td>Attention</td><td><strong>FAST</strong></td><td>$52.00</td><td>$51.02</td><td><span style="color:#b23b2e;font-weight:600">-1.9%</span></td></tr><tr><td>2026-10-14</td><td>Attention</td><td><strong>BAC</strong></td><td>$51.39</td><td>$51.23</td><td><span style="color:#b23b2e;font-weight:600">-0.3%</span></td></tr><tr><td>2026-10-14</td><td>Conviction</td><td><strong>MRVL</strong></td><td>$245.28</td><td>$227.83</td><td><span style="color:#b23b2e;font-weight:600">-7.1%</span></td></tr><tr><td>2026-10-14</td><td>Conviction</td><td><strong>LRCX</strong></td><td>$286.92</td><td>$263.94</td><td><span style="color:#b23b2e;font-weight:600">-8.0%</span></td></tr><tr><td>2026-10-14</td><td>Conviction</td><td><strong>CRWD</strong></td><td>$249.29</td><td>$227.39</td><td><span style="color:#b23b2e;font-weight:600">-8.8%</span></td></tr><tr><td>2026-10-14</td><td>Conviction</td><td><strong>AMD</strong></td><td>$570.82</td><td>$528.75</td><td><span style="color:#b23b2e;font-weight:600">-7.4%</span></td></tr><tr><td>2026-10-14</td><td>Conviction</td><td><strong>AMAT</strong></td><td>$446.63</td><td>$409.29</td><td><span style="color:#b23b2e;font-weight:600">-8.4%</span></td></tr><tr><td>2026-10-14</td><td>Insider</td><td><strong>LEN</strong></td><td>$73.53</td><td>$77.08</td><td><span style="color:#2f6c46;font-weight:600">+4.8%</span></td></tr><tr><td>2026-10-14</td><td>Insider</td><td><strong>KOD</strong></td><td>$81.09</td><td>$85.75</td><td><span style="color:#2f6c46;font-weight:600">+5.7%</span></td></tr><tr><td>2026-10-14</td><td>Insider</td><td><strong>GPI</strong></td><td>$228.37</td><td>$242.22</td><td><span style="color:#2f6c46;font-weight:600">+6.1%</span></td></tr><tr><td>2026-10-14</td><td>Insider</td><td><strong>CRBG</strong></td><td>$33.95</td><td>$34.43</td><td><span style="color:#2f6c46;font-weight:600">+1.4%</span></td></tr><tr><td>2026-10-14</td><td>RS Leader</td><td><strong>SLS</strong></td><td>$11.88</td><td>$9.98</td><td><span style="color:#b23b2e;font-weight:600">-16.0%</span></td></tr><tr><td>2026-10-14</td><td>RS Leader</td><td><strong>MU</strong></td><td>$914.13</td><td>$878.84</td><td><span style="color:#b23b2e;font-weight:600">-3.9%</span></td></tr><tr><td>2026-10-14</td><td>RS Leader</td><td><strong>IOVA</strong></td><td>$14.21</td><td>$13.62</td><td><span style="color:#b23b2e;font-weight:600">-4.2%</span></td></tr><tr><td>2026-10-14</td><td>RS Leader</td><td><strong>IBRX</strong></td><td>$9.91</td><td>$9.18</td><td><span style="color:#b23b2e;font-weight:600">-7.4%</span></td></tr><tr><td>2026-10-14</td><td>RS Leader</td><td><strong>CDNA</strong></td><td>$64.69</td><td>$64.00</td><td><span style="color:#b23b2e;font-weight:600">-1.1%</span></td></tr><tr><td>2026-10-13</td><td>Accumulation</td><td><strong>YMM</strong></td><td>$8.76</td><td>$8.75</td><td><span style="color:#b23b2e;font-weight:600">-0.1%</span></td></tr><tr><td>2026-10-13</td><td>Accumulation</td><td><strong>WPM</strong></td><td>$136.03</td><td>$134.18</td><td><span style="color:#b23b2e;font-weight:600">-1.4%</span></td></tr>
+  </tbody>
+</table>
+<div class="interp">Every pick the page surfaces is logged with its entry the day it appears, then tracked. <strong>1941</strong> calls on the board so far. These are dated receipts, the wins and the losses side by side, no cherry-picking and no win-rate spin. Let the record build over time.</div>
+<details class="how-to-read">
+  <summary class="how-to-read-label">How to read</summary>
+  <div class="how-to-read-text">Each row is a pick logged on its date at that day's close, with the return to the latest close. Insider and accumulation calls play out over weeks, attention surges over days.</div>
+</details>
+</details></section><section id="flow-report"><details style="margin:6px 0"><summary style="cursor:pointer;color:#5b6b8c;font-weight:700;font-size:.95em;letter-spacing:.3px;padding:6px 0">&#9656; Flow Report</summary>
+<div class="card-meta">
+  <span class="card-num">08</span>
+  <div class="card-text">
+    <div class="card-eyebrow">Ready to paste into your newsletter</div>
+    <div class="card-title">Flow Report </div>
+  </div>
+</div>
+<button onclick="navigator.clipboard.writeText(document.getElementById('frsrc').textContent)" style="background:#2f2a26;color:#f7f3ec;border:0;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:.85em;margin-bottom:10px">Copy for newsletter</button><pre id="frsrc" style="white-space:pre-wrap;background:#f3eee4;border:1px solid #d8cdbb;border-radius:8px;padding:16px;font-family:ui-monospace,monospace;font-size:.9em;line-height:1.55"># Flow Report, week of 2026-10-16
+
+The through-line this week is alignment. KOD stacks **3** separate flows, and **20** other names carry at least **2**, while overnight buyers keep collecting from intraday sellers. When insider buying, fund filings, accumulation, and leadership point at the same ticker, that is worth a look.
+
+**KOD** near **$85.75**. Insiders are buying in the open market, the volume shows steady accumulation, and it has led for a year while pulling back to an entry. This is the rare name where every signal agrees, and the only question left is whether the pullback holds.
+
+**AMAT** near **$409.29**. Funds added last quarter and the tape shows steady accumulation. Two institutional footprints without insider confirmation, so the read is a quiet institutional bid that has not yet been tested by a real selloff.
+
+**AMD** near **$528.75**. Same setup as AMAT: fund additions plus steady accumulation. Large managers were adding into strength, which historically means they expect the trend to continue rather than fade.
+
+**CRWD** near **$227.39**. Funds added and accumulation is steady. This is the kind of name where the accumulation is doing the talking while the price has yet to fully reflect it.
+
+**GME** near **$26.81**. Insider open-market buying plus steady accumulation. One executive buying at market prices carries more weight than a dozen announcements, though a single buyer is a starting point rather than a crowd.
+
+Use these as starting points for your own work, not as signals to chase. The alignment is the edge; the entry is still yours to find.</pre><div class="interp">This block is written from the Conviction Board in the author's voice, no jargon and no win-rate. Copy it, tighten it, ship it. The names change as the flows change.</div></details></section>
+    <footer class="page-footer">Insider data snapshot 2026-10-16, options flow 2026-10-15, money-flow proxies 2026-10-16. Structures are defined-risk expressions anchored at the insider buy level, math is deterministic spread arithmetic on last-price mids, approximate. Built 2026-10-17 00:03 UTC. Not financial advice.</footer>
+  </main>
+</div>
+<script>
+(function() {
+  // Highlight the active TOC link based on visible section, no scroll animation on click
+  function setActive(id) {
+    document.querySelectorAll('nav.toc a').forEach(a => {
+      const href = a.getAttribute('href') || '';
+      a.classList.toggle('active', href === '#' + id);
+    });
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('nav.toc a').forEach(a => {
+      a.addEventListener('click', function(e) {
+        const href = this.getAttribute('href') || '';
+        const id = href.replace(/^#/, '');
+        if (!id) return;
+        e.preventDefault();
+        const target = document.getElementById(id);
+        if (target) {
+          // Instant jump (no scroll animation)
+          target.scrollIntoView({ behavior: 'auto', block: 'start' });
+          history.replaceState(null, '', '#' + id);
+          setActive(id);
+        }
+      });
+    });
+    // Initial highlight from hash
+    const initial = (window.location.hash || '').replace(/^#/, '');
+    if (initial) setActive(initial);
+  });
+})();
+</script>
+</body></html>

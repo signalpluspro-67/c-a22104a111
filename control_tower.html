@@ -1,0 +1,163 @@
+<!doctype html><html lang=en><head><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>Control Tower, research + decide</title>
+<style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;--panel:#fffdf7;
+--green:#2f6c46;--red:#a23b30;--amber:#9a7d2e;--blue:#3a6b8a;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;padding-bottom:80px}
+.layout{display:grid;grid-template-columns:230px 1fr;max-width:1320px;margin:0 auto}
+.side{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:22px 16px;border-right:1px solid var(--line);background:var(--card)}
+.side .brand{font:800 17px/1.2 Georgia,serif;margin-bottom:4px}
+.side .back{display:block;color:var(--green);text-decoration:none;font-size:12px;font-weight:600;margin-bottom:16px}
+.side h3{font:800 10px/1 sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin:16px 0 7px;border-bottom:1px solid var(--line);padding-bottom:5px}
+.side a{display:block;color:var(--ink);text-decoration:none;font-size:13px;padding:4px 0}
+.side a:hover{color:var(--green)}
+.side .eod{margin-top:20px;font:700 11px/1.3 monospace;color:var(--mut)}
+main{padding:26px 30px;min-width:0}
+h1{font:700 26px/1.2 Georgia,serif;margin:0 0 6px}
+.lede{font-size:15px;max-width:760px;margin:0 0 10px}
+.lede b{font-weight:700}
+.thesis{font:600 14px/1.45 Georgia,serif;color:var(--green);border-left:3px solid var(--green);padding:6px 0 6px 12px;margin:0 0 18px;max-width:760px}
+.nrow{display:block;padding:9px 12px;background:var(--card);border:1px solid var(--line);border-radius:8px;margin-bottom:7px}
+.nrow-top{display:flex;align-items:center;gap:12px}
+.nrow-title{flex:1;font-size:13px;color:var(--ink)}
+.nrow-found{font-size:12.5px;color:var(--mut);margin-top:5px;line-height:1.4}
+h2{font:800 13px/1 sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin:30px 0 6px;border-bottom:2px solid var(--line);padding-bottom:8px;scroll-margin-top:14px}
+h2 .n{color:var(--ink);background:var(--line);border-radius:20px;font-size:11px;padding:2px 9px;margin-left:6px}
+.hint{color:var(--mut);font-size:12px;margin:0 0 14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:13px 15px}
+.card.night{border-left:4px solid var(--blue)}
+.card.step{border-left:4px solid var(--amber)}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.card-title{font-weight:700;font-size:14px;line-height:1.35}
+.date{font:700 11px/1 monospace;color:var(--mut);white-space:nowrap}
+.badgerow{margin-top:8px}
+.badge{display:inline-block;font:700 11px/1 sans-serif;border-radius:20px;padding:5px 11px}
+.badge.v-good{background:#e7f0e9;color:#235638}.badge.v-dead{background:#f3e6e3;color:#8f3327}
+.badge.v-soft{background:#f4eeda;color:#7c6420}.badge.v-neutral{background:#efe9dd;color:#6b6358}
+.n-sum{font-size:13px;margin-top:8px;color:var(--ink)}
+.n-rawwrap{margin-top:8px}
+.n-rawwrap summary{font-size:11px;color:var(--mut);cursor:pointer}
+.n-raw{font:11.5px/1.45 ui-monospace,Menlo,monospace;margin-top:6px;padding:6px 9px;border-radius:6px;background:#f1ebe0;color:var(--mut);word-break:break-word}
+.n-raw.v-good{background:#e7f0e9;color:#235638}.n-raw.v-dead{background:#f3e6e3;color:#8f3327}
+.n-raw.v-soft{background:#f4eeda;color:#7c6420}.n-raw.v-neutral{background:#efe9dd;color:#6b6358}
+.n-meta{font-size:11px;color:var(--mut);margin-top:8px}.n-meta .rep{font-family:monospace}
+.th-row{display:flex;gap:9px;margin-top:7px;font-size:12.5px}
+.th-lbl{flex:0 0 62px;color:var(--mut);font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;padding-top:2px}
+.th-val{flex:1;color:var(--ink)}
+.tag-prop{font:700 9px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:#fff;background:var(--green);border-radius:20px;padding:3px 8px;white-space:nowrap}
+.acts{display:flex;gap:8px;margin-top:11px;padding-top:11px;border-top:1px dotted var(--line)}
+.acts button{border:1px solid var(--line);background:#fff;border-radius:7px;padding:6px 16px;font-size:12.5px;font-weight:700;cursor:pointer;transition:.1s}
+.acts .go{color:var(--green)} .acts .nogo{color:var(--mut)}
+.acts button:hover{border-color:var(--ink)}
+.card.sel-go{border-color:var(--green);box-shadow:inset 3px 0 0 var(--green)}
+.card.sel-go .go{background:var(--green);color:#fff;border-color:var(--green)}
+.card.sel-nogo{opacity:.4}
+.card.sel-nogo .nogo{background:var(--mut);color:#fff;border-color:var(--mut)}
+.empty{color:var(--mut);font-style:italic;font-size:12px;padding:10px 2px}
+.bar{position:fixed;bottom:0;left:0;right:0;background:var(--ink);color:#f4efe6;padding:11px 20px;display:flex;align-items:center;gap:16px;font-size:13px;z-index:9}
+.bar b{color:#fff}
+.bar button{background:#2f6c46;color:#fff;border:none;border-radius:7px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer}
+.bar button.clear{background:transparent;border:1px solid #6b6258;color:#cfc6b8}
+#export{display:none;margin:14px 0 0}
+#export textarea{width:100%;height:200px;border:1px solid var(--line);border-radius:8px;padding:12px;font:13px/1.5 monospace;background:var(--card);color:var(--ink)}
+@media(max-width:680px){.layout{grid-template-columns:1fr}.side{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line)}main{padding:20px}}
+/* Last night, one headline + folded detail */
+.latest{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:10px;padding:13px 15px;margin-bottom:10px}
+.latest-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:7px}
+.latest-sum{font-size:14px;line-height:1.45}
+.nights-more{margin-top:2px}
+.nights-more>summary{cursor:pointer;color:var(--mut);font-size:13px;font-weight:700;padding:6px 0;list-style:none}
+.nights-more>summary::-webkit-details-marker{display:none}
+.nights-more>summary:before{content:"▸ ";color:var(--mut)}
+.nights-more[open]>summary:before{content:"▾ "}
+.nights-more .nights-list{margin-top:10px}
+.step-line{font-size:13px;margin-top:7px;color:var(--ink);line-height:1.45}
+.cl{font-size:13px;margin-top:8px;line-height:1.45;color:var(--ink)}
+.cl-k{display:block;font:700 10px/1.3 sans-serif;text-transform:uppercase;letter-spacing:.04em;color:var(--mut);margin-bottom:2px}
+</style></head><body>
+<div class=layout>
+<nav class=side>
+  <div class=brand>🗼 Control Tower</div>
+  <a class=back href="ceo_dashboard.html">← CEO dashboard</a>
+  <h3>Sections</h3>
+  <a href="#lastnight">Last night</a>
+  <a href="#decisions">Run tonight</a>
+  <a href="#suggestions">New ideas</a>
+  <h3>Related</h3>
+  <a href="night_findings.html">Research log</a>
+  <div class=eod>2026-10-16</div>
+</nav>
+<main>
+<section id=overview>
+<h1>Control Tower</h1>
+<p class=lede>Each night, the research agent takes <b>one</b> trading idea and tests whether it really makes money or just got lucky. Below: last night's result, and what to run next.</p>
+</section>
+
+<h2 id=lastnight>🌙 Last night</h2>
+<div class=hint>What the agent found, and what to do about it.</div>
+<div class="latest"><div class="latest-top"><span class="badge v-good">✅ Looks real</span><span class="date">2026-10-15</span></div><div class="cl"><span class="cl-k">What we found</span> Nine new strategies stress-tested hard: only one (K4_022-B) even looked solid, and it weakened to marginal (excess +0.84%, weak 2003-2012 record, coin-flip on random dates).</div><div class="cl"><span class="cl-k">Next step</span> Drop all nine. No production candidate emerged, stop allocating time to this batch.</div></div><details class="nights-more"><summary>See the 7 earlier nights</summary><div class="nights-list"><div class="nrow"><div class="nrow-top"><span class="badge v-good">✅ Looks real</span><span class="nrow-title">signal_outcome.db extended, drift alert built</span><span class="date">2026-10-12</span></div><div class="nrow-found">Database now tracks 7 screeners and 17,512 signals, Telegram path works, but only 1 of 7 was testable at 20-session blocks (BOTTOM_V5 weak, z -0.76) and the daily cron was never installed.</div></div><div class="nrow"><div class="nrow-top"><span class="badge v-dead">❌ Dead end</span><span class="nrow-title">HMM 3-state regime adaptive sizing</span><span class="date">2026-10-08</span></div><div class="nrow-found">Regime-based sizing barely beat equal weight (Sharpe 2.87 vs 2.66) and only won 2 of 4 windows, well within luck. Not real.</div></div><div class="nrow"><div class="nrow-top"><span class="badge v-good">✅ Looks real</span><span class="nrow-title">Kerberos strict-valid stock confluences</span><span class="date">2026-10-05</span></div><div class="nrow-found">72 confluence setups from Kerberos threads produced zero strict winners. The lone marginal (SKEW x BOTTOM_V5, +3.65%) failed correction, and 40 could not even be tested (xMarket never fired, USDTRY always on).</div></div><div class="nrow"><div class="nrow-top"><span class="badge v-dead">❌ Dead end</span><span class="nrow-title">Variance risk premium vs bottom and pullback</span><span class="date">2026-10-01</span></div><div class="nrow-found">Filtering BOTTOM with VRP gave weak Sharpe 0.53, and filtering PULLBACK made it worse (-0.90) than PULLBACK alone at every horizon. The VRP filter destroys the edge.</div></div><div class="nrow"><div class="nrow-top"><span class="badge v-neutral">⏳ Just ran</span><span class="nrow-title">Intraday Polygon backfill for ORB</span><span class="date">2026-09-24</span></div><div class="nrow-found">The 4-year intraday Polygon backfill for 15-minute ORB never completed. The background task was still running, no result produced.</div></div><div class="nrow"><div class="nrow-top"><span class="badge v-dead">❌ Dead end</span><span class="nrow-title">Kerberos hedging coordination index KHCI</span><span class="date">2026-09-21</span></div><div class="nrow-found">KHCI&gt;=3 flagged only 2 of 8 documented crashes in 30 days, below the 5-of-8 bar, and only 9 events in 11.5 years. Lower thresholds gave the wrong direction (Sharpe -3 to -12).</div></div><div class="nrow"><div class="nrow-top"><span class="badge v-good">✅ Looks real</span><span class="nrow-title">Kerberos euphoria pulse KEP</span><span class="date">2026-09-17</span></div><div class="nrow-found">All 8 sub-tests hit insufficient data (only 3 to 8 episodes 2019-2026), so nothing could be confirmed or rejected. Crash cross-check also unresolved for lack of events.</div></div></div></details>
+
+<h2 id=decisions>🎯 Run tonight: your call <span class=n>3</span></h2>
+<div class=hint>Tap <b>GO</b> on what to run tonight, <b>NOGO</b> to skip, then <b>Copy plan</b> and paste it back to me. That is all you need to do here.</div>
+<div class=grid><div class="card step" data-id="s0"><div class="card-top"><span class="card-title">Kerberos funnel forward eval, 8 weeks</span></div><div class="cl"><span class="cl-k">What it tests</span> Runs kerberos_funnel_forward_eval.py on the 8-week live window, checking whether the funnel leaders beat SPY and whether adding confluence beats raw leaders, without survivorship bias.</div><div class="cl"><span class="cl-k">Why it matters</span> If leaders beat SPY, it becomes a live forward-tested screen Daniel can trade; if not, the funnel is dropped.</div><div class="acts"><button class="go" data-id="s0" data-act="go">✓ GO</button><button class="nogo" data-id="s0" data-act="nogo">✕ NOGO</button></div></div><div class="card step" data-id="s1"><div class="card-top"><span class="card-title">MOAJ confluence deep re-validation</span></div><div class="cl"><span class="cl-k">What it tests</span> Re-runs moaj_confluence_backtest.py on Stars Aligned plus NASI divergence (breadth gauge built from a Polygon proxy), which previously had too few 2022+ samples to judge.</div><div class="cl"><span class="cl-k">Why it matters</span> A clear result either revives MOAJ as a tradeable confluence or lets Daniel drop it for good.</div><div class="acts"><button class="go" data-id="s1" data-act="go">✓ GO</button><button class="nogo" data-id="s1" data-act="nogo">✕ NOGO</button></div></div><div class="card step" data-id="s2"><div class="card-top"><span class="card-title">Minsky DISTRESS vs LPPL for drawdowns</span></div><div class="cl"><span class="cl-k">What it tests</span> Builds 2008-2026 stage history from lib/minsky_stage (LPPL bubble + insider distribution + credit panic) and compares P(10% SPX drawdown in 60/120 days) for DISTRESS versus LPPL-only EUPHORIA, run through 5000-iteration MCPT and block bootstrap.</div><div class="cl"><span class="cl-k">Why it matters</span> If DISTRESS beats LPPL alone, Daniel gets a new crash early-warning to size down on; if not, it stays an observation only.</div><div class="acts"><button class="go" data-id="s2" data-act="go">✓ GO</button><button class="nogo" data-id="s2" data-act="nogo">✕ NOGO</button></div></div></div>
+
+<h2 id="suggestions">💡 New ideas to try</h2><div class=hint>Fresh angles the agent found overnight. GO to queue one, same as above.</div><div class="grid"><div class="card step prop" data-id="p0"><div class="card-top"><span class="card-title">💡 Minsky DISTRESS live drawdown watch</span><span class="tag-prop">AI suggests</span></div><div class="cl"><span class="cl-k">What it tests</span> Wire the lib/minsky_stage DISTRESS stage (LPPL + insider distribution + credit panic) into a daily monitor that flags elevated SPX drawdown probability over 60 and 120 days.</div><div class="cl"><span class="cl-k">Why it matters</span> If validated, Daniel gains an early warning to cut exposure before drops; if not, it is dropped.</div><div class="acts"><button class="go" data-id="p0" data-act="go">✓ GO</button><button class="nogo" data-id="p0" data-act="nogo">✕ NOGO</button></div></div><div class="card step prop" data-id="p1"><div class="card-top"><span class="card-title">💡 Finish 4-year intraday Polygon ORB backfill</span><span class="tag-prop">AI suggests</span></div><div class="cl"><span class="cl-k">What it tests</span> Complete the stalled 15-minute ORB backfill from 4 years of Polygon intraday data, then test the opening-range breakout on the full sample.</div><div class="cl"><span class="cl-k">Why it matters</span> A finished backfill tells Daniel whether the 15m ORB is a tradeable intraday edge or not.</div><div class="acts"><button class="go" data-id="p1" data-act="go">✓ GO</button><button class="nogo" data-id="p1" data-act="nogo">✕ NOGO</button></div></div><div class="card step prop" data-id="p2"><div class="card-top"><span class="card-title">💡 Telegram drift alert cron install</span><span class="tag-prop">AI suggests</span></div><div class="cl"><span class="cl-k">What it tests</span> Install the 06:00 VPS cron running lab/live_drift_monitor.py, comparing live 60d Sharpe against screener_validity backtest expectation per screener.</div><div class="cl"><span class="cl-k">Why it matters</span> Daily drift alerts let Daniel catch a screener decaying live instead of discovering it after losses.</div><div class="acts"><button class="go" data-id="p2" data-act="go">✓ GO</button><button class="nogo" data-id="p2" data-act="nogo">✕ NOGO</button></div></div></div>
+
+<div id=export><textarea readonly></textarea></div>
+</main>
+</div>
+
+<div class=bar>
+  <span><b id=gocount>0</b> GO queued</span>
+  <button class=clear onclick="ntReset()">Reset</button>
+  <button onclick="ntCopy()">📋 Copy plan for Claude Code</button>
+</div>
+
+<script>
+const KEY="night_board_v1";
+const FRAG={"s0": {"title": "Kerberos Funnel, éval forward (8 sem)", "base": "python lab/research/kerberos_funnel_forward_eval.py --hold 10"}, "s1": {"title": "MOAJ confluence (Stars Aligned + NASI divergence), re-validation profonde", "base": "python lab/research/moaj_confluence_backtest.py"}, "s2": {"title": "Minsky DISTRESS vs LPPL-seul, A/B drawdown", "base": "claude: backteste lib/minsky_stage, stade DISTRESS vs EUPHORIA(LPPL-seul) sur drawdowns SPX 2008-2026, doctrine 8 étapes + block bootstrap, rapport Wiki/reports/. N petit = OBSERVATION, jamais sizer."}, "p0": {"title": "Minsky DISTRESS live drawdown watch", "base": "Use lib/minsky_stage DISTRESS vs LPPL-only EUPHORIA, backtest P(SPX drawdown 10% in 60/120d) 2008-2026, MCPT 5000 + Bonferroni + block bootstrap len>=horizon. Low N = flag honestly, do not wire into scoring if bootstrap fails. VERDICT: to produce."}, "p1": {"title": "Finish 4-year intraday Polygon ORB backfill", "base": "Resume the stalled intraday Polygon backfill for 15m ORB (4 years), verify data integrity, rerun ORB backtest on full sample. VERDICT: finish backfill, then judge."}, "p2": {"title": "Telegram drift alert cron install", "base": "Install cron 0 6 * * 1-5 lab/live_drift_monitor.py, confirm Telegram delivery, backfill signal_archive to 2024, watch BOTTOM_V5 as first testable screener. VERDICT: install and monitor."}};
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){return {}}}
+function save(o){localStorage.setItem(KEY,JSON.stringify(o))}
+function paint(){
+  const st=load();let g=0;
+  document.querySelectorAll(".card.step").forEach(c=>{
+    const s=st[c.dataset.id];
+    c.classList.toggle("sel-go",s==="go");
+    c.classList.toggle("sel-nogo",s==="nogo");
+    if(s==="go")g++;
+  });
+  document.getElementById("gocount").textContent=g;
+}
+document.querySelectorAll(".acts button").forEach(b=>b.addEventListener("click",()=>{
+  const st=load(),id=b.dataset.id,act=b.dataset.act;
+  st[id]=(st[id]===act)?undefined:act;   // re-click same = clear
+  if(!st[id])delete st[id];
+  save(st);paint();
+}));
+function ntCopy(){
+  const st=load(),go=[];
+  document.querySelectorAll(".card.step").forEach(c=>{
+    if(st[c.dataset.id]==="go"&&FRAG[c.dataset.id])go.push(FRAG[c.dataset.id]);
+  });
+  let txt;
+  if(!go.length){txt="No GO selected. Hit GO on the next steps you want the night agent to run.";}
+  else{
+    txt="Queue these for the research night agent, turn each into a research_queue.md brief "
+      +"(house rigor: permutation \u22655000, Bonferroni, block bootstrap, 8-crisis cross-check, "
+      +"end with a VERDICT line) and append them to the TOP of the VPS queue "
+      +"(/opt/screeners/lab/research_queue.md):\n\n"
+      +go.map((f,i)=>(i+1)+") "+f.title+(f.base?"\n   base: "+f.base:"")).join("\n\n");
+  }
+  const ex=document.getElementById("export"),ta=ex.querySelector("textarea");
+  ex.style.display="block";ta.value=txt;ta.select();
+  try{navigator.clipboard.writeText(txt);}catch(e){}
+  ex.scrollIntoView({behavior:"smooth"});
+}
+function ntReset(){if(confirm("Clear all GO/NOGO?")){localStorage.removeItem(KEY);paint();}}
+paint();
+</script>
+</body></html>

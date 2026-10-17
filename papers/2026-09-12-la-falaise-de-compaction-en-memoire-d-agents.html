@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La falaise de compaction en mémoire d&#x27;agents</title>
+<style>*{box-sizing:border-box}
+body{margin:0;background:#faf7f2;color:#1c1b1a;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+ line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:820px;margin:0 auto;padding:48px 22px 90px}
+.kicker{color:#b4623a;font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:13px}
+h1{font-size:40px;line-height:1.12;margin:10px 0 14px;font-weight:800}
+.lead{font-size:24px;line-height:1.35;color:#3a3733;margin:0 0 6px;font-weight:600}
+h2{font-size:23px;margin:44px 0 12px;font-weight:750}
+p{margin:0 0 12px}
+.card{background:#fff;border:1px solid #e7e1d8;border-radius:14px;padding:26px 24px;
+ margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.bloc{display:flex;gap:24px;align-items:center}
+.pic{font-size:92px;line-height:1;flex:0 0 auto}
+.bt{font-size:26px;font-weight:750;margin:0 0 6px}
+.bx{color:#55504a;margin:0;font-size:17px}
+.num{color:#b4623a;font-weight:700;font-size:13px;letter-spacing:.04em}
+ul{margin:6px 0 0;padding-left:22px}li{margin:9px 0;font-size:17px}
+.tag{display:inline-block;background:#f6ece6;color:#b4623a;font-size:12px;font-weight:700;
+ padding:4px 10px;border-radius:20px;margin-bottom:10px}
+.mini{color:#8a837a;font-size:14px}
+a{color:#b4623a}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid #e7e1d8;color:#8a837a;font-size:14px}
+.verdict{border-radius:14px;padding:22px 24px;margin:26px 0 8px;border:1px solid}
+.vlabel{font-size:13px;font-weight:800;letter-spacing:.08em;margin-bottom:8px}
+.vtext{margin:0;font-size:18px;line-height:1.5}
+.vp{background:#eef6ee;border-color:#cbe0cb}.vp .vlabel{color:#3c6b3c}
+.vt{background:#fbf3e6;border-color:#ecdcc0}.vt .vlabel{color:#8a6320}
+.vx{background:#f3f1ef;border-color:#e2ded8}.vx .vlabel{color:#6b6660}
+.gros{padding:30px 28px}
+.sst{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+ color:#b4623a;margin:24px 0 8px}.gros .sst:first-child{margin-top:0}
+.etapes{counter-reset:e;list-style:none;padding-left:0;margin:8px 0 0}
+.etapes li{counter-increment:e;position:relative;padding-left:38px;margin:12px 0;font-size:17px}
+.etapes li::before{content:counter(e);position:absolute;left:0;top:1px;width:26px;height:26px;
+ border-radius:50%;background:#f6ece6;color:#b4623a;font-weight:800;font-size:13px;
+ display:flex;align-items:center;justify-content:center}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:640px){h1{font-size:30px}.lead{font-size:20px}.pic{font-size:64px}
+ .bloc{flex-direction:column;align-items:flex-start;gap:12px}.duo{grid-template-columns:1fr}}</style></head><body><div class="wrap">
+<span class="tag">Agents et outillage</span>
+<div class="kicker">Papier de la semaine · samedi 12 septembre</div>
+<h1>La falaise de compaction en mémoire d&#x27;agents</h1>
+<p class="lead">Quand un agent LLM résume son contexte pour tenir dans la fenêtre, les règles de sécurité se font écraser aussi vite que les logs, et il faut les trier par type pour les garder intactes.</p>
+<p class="mini">The Compaction Cliff in Long-Running AI Agent Memory · <a href="https://arxiv.org/abs/2608.22752">arXiv 2608.22752</a></p>
+
+<div class="verdict vx">
+  <div class="vlabel">PASSER</div>
+  <p class="vtext">Le système est un pipeline batch de screeners qui écrivent dans SQLite, les agents LLM y font du mécanique borné et du jugement court, sans long contexte multi-tours à compacter. La falaise de compaction touche les agents conversationnels qui tournent des heures avec des règles de sécurité en fenêtre, cas qui n&#x27;existe pas ici.</p>
+</div>
+
+<h2>Le problème qu'ils attaquent</h2>
+<div class="card"><p class="bx">Un agent qui tourne longtemps accumule du contexte jusqu&#x27;à saturer sa fenêtre. Au moment de compacter, le résumé traite une règle de sécurité comme une ligne de log. La règle perd sa formulation exacte et devient inapplicable. Les compactions naïves à un seul appel LLM font disparaître la moitié des règles dès le premier tour.</p></div>
+
+<h2>Comment ça marche</h2>
+<div class="card"><div class="bloc"><div class="pic">📉</div><div><div class="num">01</div><p class="bt">La falaise après cinq tours</p><p class="bx">Les auteurs mesurent ce qui reste d&#x27;un jeu de règles de sécurité après plusieurs cycles de compaction. Avec le prompt /compact de Claude Code sur Sonnet 4.6, il reste 53 % des règles après un tour et 10 % après cinq. Chaque tour re-résume le résumé du tour précédent. La perte est cumulative et rapide.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🏷️</div><div><div class="num">02</div><p class="bt">Trier chaque ligne par type</p><p class="bx">Leur idée est de classer chaque ligne du contexte selon sa nature. Une règle de sécurité, un fait, un log d&#x27;action et une observation n&#x27;ont pas la même exigence de fidélité. Un classifieur étiquette les lignes une par une. Chaque type reçoit ensuite sa propre politique de compression.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">✂️</div><div><div class="num">03</div><p class="bt">TypeCompact réécrit selon le type</p><p class="bx">Pour compacter, ils appliquent une règle par type au lieu d&#x27;un résumé global. Les règles de sécurité gardent leur formulation exacte, les logs sont agrégés durement. Le compacteur devient déterministe par type. Ils conservent deux à quatre fois plus de règles que le meilleur compacteur LLM à un seul appel.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🧩</div><div><div class="num">04</div><p class="bt">TypeDecompose partitionne les sujets lourds</p><p class="bx">Quand un sujet est trop gros pour tenir compact sans perte, ils le coupent en morceaux thématiques. Les règles de sécurité qui s&#x27;appliquent au sujet sont recopiées dans chaque morceau. Aucun morceau ne se retrouve orphelin de sa contrainte. Le taux de violation de portée tombe à zéro contre 93 % avec un découpage uniforme.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">📥</div><div><div class="num">05</div><p class="bt">TypeRetrieve épingle les règles</p><p class="bx">Pour le rappel depuis un stockage externe, ils épinglent d&#x27;abord les règles en portée, puis complètent avec les items pertinents. Une règle n&#x27;est jamais évincée par un item plus proche sémantiquement. Le rappel à 50 items atteint 100 % contre 73 % pour le meilleur retriever LLM à un seul appel.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🧪</div><div><div class="num">06</div><p class="bt">Testé sur trois domaines aval</p><p class="bx">Ils vérifient sur trois benchmarks de comportement d&#x27;agent. Sur la conformité médicale, ils battent le compacteur Sonnet de production avec un p inférieur à 10 puissance moins 8. Sur les tâches retail et les tâches airline, ils battent aussi les baselines hiérarchiques. Les gains ne sont pas que des chiffres de compression, ils se voient sur les décisions finales.</p></div></div></div>
+
+<h2>Ce qu&#x27;ils ont mesuré</h2><div class="card"><ul><li>Compaction Sonnet 4.6 : 53 % de règles préservées après un tour, 10 % après cinq</li><li>TypeCompact : 96 % de rappel sur les règles après cinq tours, deux à quatre fois mieux que le meilleur compacteur LLM à un seul appel</li><li>Corpus publié AgentArtifactCorpus : 396 934 configurations d&#x27;agents extraites de 54 628 dépôts GitHub publics</li></ul></div>
+<h2>Ce que ça ne prouve pas</h2><div class="card"><ul><li>Le classifieur par type est un composant supplémentaire, sa qualité conditionne tout le reste</li><li>Les benchmarks testés sont conversationnels (médical, retail, airline), pas des pipelines de trading batch qui écrivent en DB</li><li>Le papier montre la préservation des règles, il ne montre pas de gain P&amp;L ni de gain sur des décisions numériques</li></ul></div>
+
+<h2>Chez nous</h2>
+<div class="card gros">
+  <p class="sst">Où ça se branche</p>
+  <p class="bx">Aucun point de branchement clair. Les scripts de screener (PULLBACK, BOTTOM, BREAKOUT, VSA, SMART_FLOW, UNUSUAL_V3, STAGE4_MEANREV, VARIANCE_PREMIUM, KERBEROS_RSI, VVIX_SIGNAL) sont sans état LLM long. lib/llm_gateway.py fait des appels courts. Le Trade Desk nocturne tourne une fois par nuit sans compaction.</p>
+  <p class="sst">Le plan</p>
+  <ol class="etapes"><li>Ne rien coder. Vérifier d&#x27;abord qu&#x27;un agent maison dépasse vraiment sa fenêtre sur un run réel</li><li>Si un futur agent conversationnel apparaît (assistant chat dans l&#x27;app payante), relire le papier à ce moment</li><li>Retenir la seule idée transférable : étiqueter les prompts système comme non-résumables si un jour on ajoute une couche de mémoire</li><li>Sinon, garder le lien du corpus AgentArtifactCorpus pour référence, sans intégration</li></ol>
+  <div class="duo">
+    <div><p class="sst">Effort</p><p class="bx">0 h</p></div>
+    <div><p class="sst">Ça remplace</p><p class="bx">Rien. Aucun composant actuel ne fait de compaction multi-tours qui perdrait des règles</p></div>
+  </div>
+  <p class="sst">Le risque</p>
+  <p class="bx">Perdre du temps à intégrer une brique pour un problème qu&#x27;on n&#x27;a pas. Le signe : impossible de nommer un agent maison qui compacte son contexte plus d&#x27;une fois par session</p>
+</div>
+
+<h2>Le test qui tranche</h2>
+<div class="card"><p class="bx">Lister tous les appels LLM du système et compter ceux qui font plus de trois tours dans une même fenêtre avec des règles de sécurité dedans. Si le compte est zéro, le papier ne s&#x27;applique pas. Seuil de bascule vers PLUS TARD : au moins un agent qui compacte deux fois ou plus par session en production.</p></div>
+
+<h2>Ce que j&#x27;ai simplifié</h2><div class="card"><ul><li>J&#x27;ai résumé les trois opérateurs (TypeCompact, TypeDecompose, TypeRetrieve) comme trois politiques par type, le papier détaille plus finement les garanties de fidélité</li><li>J&#x27;ai traité la notion de règle de sécurité comme un texte à préserver mot pour mot, le papier discute aussi de la portée logique de ces règles</li></ul></div>
+<footer>Veille papers · <a href="index.html">toutes les semaines</a></footer>
+</div></body></html>

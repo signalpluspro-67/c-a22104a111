@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Étude empirique du harnais des agents codeurs</title>
+<style>*{box-sizing:border-box}
+body{margin:0;background:#faf7f2;color:#1c1b1a;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+ line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:820px;margin:0 auto;padding:48px 22px 90px}
+.kicker{color:#b4623a;font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:13px}
+h1{font-size:40px;line-height:1.12;margin:10px 0 14px;font-weight:800}
+.lead{font-size:24px;line-height:1.35;color:#3a3733;margin:0 0 6px;font-weight:600}
+h2{font-size:23px;margin:44px 0 12px;font-weight:750}
+p{margin:0 0 12px}
+.card{background:#fff;border:1px solid #e7e1d8;border-radius:14px;padding:26px 24px;
+ margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.bloc{display:flex;gap:24px;align-items:center}
+.pic{font-size:92px;line-height:1;flex:0 0 auto}
+.bt{font-size:26px;font-weight:750;margin:0 0 6px}
+.bx{color:#55504a;margin:0;font-size:17px}
+.num{color:#b4623a;font-weight:700;font-size:13px;letter-spacing:.04em}
+ul{margin:6px 0 0;padding-left:22px}li{margin:9px 0;font-size:17px}
+.tag{display:inline-block;background:#f6ece6;color:#b4623a;font-size:12px;font-weight:700;
+ padding:4px 10px;border-radius:20px;margin-bottom:10px}
+.mini{color:#8a837a;font-size:14px}
+a{color:#b4623a}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid #e7e1d8;color:#8a837a;font-size:14px}
+.verdict{border-radius:14px;padding:22px 24px;margin:26px 0 8px;border:1px solid}
+.vlabel{font-size:13px;font-weight:800;letter-spacing:.08em;margin-bottom:8px}
+.vtext{margin:0;font-size:18px;line-height:1.5}
+.vp{background:#eef6ee;border-color:#cbe0cb}.vp .vlabel{color:#3c6b3c}
+.vt{background:#fbf3e6;border-color:#ecdcc0}.vt .vlabel{color:#8a6320}
+.vx{background:#f3f1ef;border-color:#e2ded8}.vx .vlabel{color:#6b6660}
+.gros{padding:30px 28px}
+.sst{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+ color:#b4623a;margin:24px 0 8px}.gros .sst:first-child{margin-top:0}
+.etapes{counter-reset:e;list-style:none;padding-left:0;margin:8px 0 0}
+.etapes li{counter-increment:e;position:relative;padding-left:38px;margin:12px 0;font-size:17px}
+.etapes li::before{content:counter(e);position:absolute;left:0;top:1px;width:26px;height:26px;
+ border-radius:50%;background:#f6ece6;color:#b4623a;font-weight:800;font-size:13px;
+ display:flex;align-items:center;justify-content:center}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:640px){h1{font-size:30px}.lead{font-size:20px}.pic{font-size:64px}
+ .bloc{flex-direction:column;align-items:flex-start;gap:12px}.duo{grid-template-columns:1fr}}</style></head><body><div class="wrap">
+<span class="tag">Agents et outillage</span>
+<div class="kicker">Papier de la semaine · samedi 19 septembre</div>
+<h1>Étude empirique du harnais des agents codeurs</h1>
+<p class="lead">Le papier démonte le harnais qui fait tourner un agent codeur en trois briques et mesure lesquelles servent vraiment selon le modèle et le budget.</p>
+<p class="mini">An Empirical Study of Harness Design for Coding Agents · <a href="https://arxiv.org/abs/2609.20804">arXiv 2609.20804</a></p>
+
+<div class="verdict vx">
+  <div class="vlabel">PASSER</div>
+  <p class="vtext">Ton harnais d&#x27;agents à toi ne tourne pas des agents codeurs long-horizon dans un SWE-Bench, il lance des scripts Python bornés qui appellent un LLM une fois ou deux, postent dans Discord et écrivent du HTML. Les leviers du papier (plan, action space, gestion de contexte) ne mordent que quand un agent enchaîne des dizaines d&#x27;appels d&#x27;outils, ce que ton système ne fait pas.</p>
+</div>
+
+<h2>Le problème qu'ils attaquent</h2>
+<div class="card"><p class="bx">Un agent codeur, ce n&#x27;est pas juste le modèle. Autour, il y a un harnais qui gère le plan, les outils dispo, et la mémoire quand la conversation devient trop longue. Les gens comparent les harnais entiers, comme des boîtes noires, donc personne ne sait quelle brique tire quoi. Ce papier isole chaque brique et la teste seule.</p></div>
+
+<h2>Comment ça marche</h2>
+<div class="card"><div class="bloc"><div class="pic">🧱</div><div><div class="num">01</div><p class="bt">Trois briques dans le harnais</p><p class="bx">Le harnais fait tourner un agent en boucle. Les auteurs figent la boucle et bougent trois choses seulement : le plan que l&#x27;agent se fait avant d&#x27;agir, les outils qu&#x27;il a le droit d&#x27;appeler, et la façon dont on rogne le contexte quand ça déborde. Chaque brique est testée en gardant les deux autres constantes. Ça donne des chiffres par brique.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">📦</div><div><div class="num">02</div><p class="bt">Gérer le contexte quand ça sature</p><p class="bx">Le modèle a une fenêtre de contexte finie. Quand la trajectoire devient longue, il faut virer des vieux morceaux ou les résumer, sinon l&#x27;agent plante par débordement. Le papier teste cinq stratégies et quatre tailles de fenêtre. Plus la fenêtre est petite, plus la gestion du contexte devient utile, et l&#x27;essentiel du gain vient juste d&#x27;éviter le crash.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">✂️</div><div><div class="num">03</div><p class="bt">Élaguer par règle d&#x27;abord</p><p class="bx">Deux façons de rogner : une règle bête qui coupe des blocs (sortie de commande énorme, fichier déjà lu), et un résumé fait par le LLM. La combinaison gagnante fait passer la règle en premier, puis le LLM ne résume que le reste. Rendre les morceaux coupés récupérables plus tard ajoute du plombier pour rien, les modèles ne s&#x27;en servent presque pas.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🗺️</div><div><div class="num">04</div><p class="bt">Le plan, ça change de rôle</p><p class="bx">Forcer l&#x27;agent à écrire un plan avant d&#x27;agir aide un modèle faible à faire moins d&#x27;erreurs. Sur un modèle fort, la précision bouge peu, mais le plan raccourcit la trajectoire et coûte moins cher. Autrement dit, un même bout de harnais a deux usages selon le modèle qui tourne derrière.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🛠️</div><div><div class="num">05</div><p class="bt">Outils prédéfinis ou bash brut</p><p class="bx">Deux options pour agir sur la machine : des outils bien nommés (lire fichier, éditer, chercher), ou juste un shell bash. Les modèles qui savent mal manier bash font mieux avec des outils prédéfinis. Ceux qui parlent bash couramment tournent avec bash seul, et ça coûte franchement moins cher, surtout sur les tâches très ligne de commande.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🎬</div><div><div class="num">06</div><p class="bt">Ce que chaque brique bouge</p><p class="bx">L&#x27;analyse des trajectoires explique les chiffres. La gestion du contexte allonge la durée de vie de l&#x27;agent sans changer sa façon de faire. Le plan change surtout le moment où l&#x27;agent décide d&#x27;arrêter. L&#x27;action space change la granularité, un bash brut fait de gros pas, un outil prédéfini fait des pas fins.</p></div></div></div>
+
+<h2>Ce qu&#x27;ils ont mesuré</h2><div class="card"><ul><li>176 configurations comparées, chacune tenue égale par ailleurs</li><li>5 stratégies de gestion de contexte et 4 tailles de fenêtre testées</li><li>4 modèles évalués sur SWE-Bench Verified et Terminal-Bench 2.1</li></ul></div>
+<h2>Ce que ça ne prouve pas</h2><div class="card"><ul><li>Testé sur du code Python et du terminal, pas sur un pipeline quantitatif ni sur du trading</li><li>Pas de coût dollar par tâche public dans le résumé, seulement des tendances</li><li>La boucle d&#x27;exécution est figée, les vrais harnais de prod bougent aussi la boucle</li></ul></div>
+
+<h2>Chez nous</h2>
+<div class="card gros">
+  <p class="sst">Où ça se branche</p>
+  <p class="bx">aucun fichier de ton système ne correspond, ni lib/llm_gateway.py ni model_tier.py ni les screeners, parce que ce sont des jobs one-shot et pas des agents en boucle</p>
+  <p class="sst">Le plan</p>
+  <ol class="etapes"><li>ne rien coder côté prod</li><li>garder le papier en tête si un jour tu montes un vrai agent qui tourne longtemps sur ta codebase, par exemple un agent de review automatique du repo scripts-screener</li><li>ce jour-là, appliquer la règle élaguer d&#x27;abord par règle puis résumer par LLM sur la mémoire de l&#x27;agent</li><li>et choisir bash brut si le modèle sait, outils prédéfinis sinon</li></ol>
+  <div class="duo">
+    <div><p class="sst">Effort</p><p class="bx">0 h maintenant, ~8 h si un jour tu construis un agent long-horizon interne</p></div>
+    <div><p class="sst">Ça remplace</p><p class="bx">rien, ton llm_gateway reste tel quel</p></div>
+  </div>
+  <p class="sst">Le risque</p>
+  <p class="bx">le vrai risque c&#x27;est de le brancher quand même par curiosité et d&#x27;ajouter de la plomberie de contexte pour des jobs qui font 2 appels, ce serait de l&#x27;over-engineering pur</p>
+</div>
+
+<h2>Le test qui tranche</h2>
+<div class="card"><p class="bx">avant de rebrancher ce papier un jour, mesure la longueur moyenne des trajectoires de ton pipeline. Si un job fait moins de 10 appels d&#x27;outils, les résultats du papier ne s&#x27;appliquent pas et tu passes. Seuil pour que ça devienne intéressant : trajectoire médiane au-dessus de 30 appels d&#x27;outils par tâche.</p></div>
+
+<h2>Ce que j&#x27;ai simplifié</h2><div class="card"><ul><li>j&#x27;ai regroupé les cinq stratégies de contexte en règle bête plus résumé LLM, le papier en distingue plus finement</li><li>j&#x27;ai dit fenêtre finie comme si c&#x27;était binaire, en vrai le papier teste quatre budgets différents et les effets sont graduels</li></ul></div>
+<footer>Veille papers · <a href="index.html">toutes les semaines</a></footer>
+</div></body></html>

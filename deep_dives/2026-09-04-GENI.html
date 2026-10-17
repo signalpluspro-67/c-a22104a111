@@ -1,0 +1,243 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Sports Data Tollbooth at a Discount — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Sports Data Tollbooth at a Discount</h1>
+<div class="subtitle">Genius Sports holds the rail over live sports data and it&#x27;s trading 45% below its high with the sector in momentum.</div>
+<div class="meta">EOD 2026-09-04 · GENI · written from the desk · model deepseek-v4-pro</div>
+<div class="chips"><span class="chip">GENI</span>
+<span class="chip">Communication Services</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-09-04: entry <b>$6.85</b> &rarr; <b>$7.49</b> (as of 2026-09-04) · <span class="pos">+9.3%</span> · STRONG HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Communication Services is running. The sector sits in <strong>MOMENTUM</strong> and is still <strong>RIDING</strong>, meaning the trend is accelerating, not fading. That tailwind alone puts a stock like Genius Sports in front of you with the wind at its back.</p>
+<p>Live sports data has become infrastructure. Every regulated sportsbook in the Americas and Europe needs a clean, low-latency feed of ball position, player tracking, and odds movement. Genius Sports is one of the two or three companies that can supply it at scale. The leagues want integrity monitoring, the books want instant data, and the media companies want highlight clips and interactive overlays. This company sits at all three intersections.</p>
+<p>The backdrop rewards this name because it operates as a tollbooth. The market is expanding, the sector is in acceleration, and the stock is cheap relative to its own history. You&#x27;re not buying a concept here. You&#x27;re buying a contracted data pipeline at a discount.</p>
+<h2>Introducing GENI</h2>
+<p>Genius Sports Limited runs the plumbing between live sports and the gambling and media machines that monetize them. It collects optical tracking data from thousands of live events, packages it, and delivers it to sportsbooks, leagues, and broadcasters. The company has about <strong>2,000</strong> employees and is headquartered in London.</p>
+<p>The core engine is data distribution. Genius captures live event data from leagues, integrates it, and sells feeds to betting operators who need pre-game and in-game odds. A second segment handles streaming and automated production, letting smaller leagues commercialize their video without a broadcast truck. The integrity business monitors suspicious betting patterns for leagues using statistical processes. Then you have FanHub for advertising and BetVision, an interactive single-screen streaming product that overlays live odds and stats onto game broadcasts.</p>
+<p>The edge is simple. Genius has long-term deals with major leagues and federations. Those contracts are hard to replicate. The company has spent two decades wiring itself into stadiums, arenas, and betting platforms. A new entrant can&#x27;t just show up and offer the same feed quality on the same day.</p>
+<h2>The Thesis</h2>
+<p>The stock holds above its <strong>30</strong>-week moving average while sitting <strong>44.7%</strong> below its 52-week high. RSI has reset to <strong>49.4</strong> after a <strong>-4.3%</strong> month. That&#x27;s a pullback inside a recovery, not a breakdown.</p>
+<p>The desk&#x27;s internal pullback score clocks in at <strong>90</strong>, and the risk-adjusted return test reads <strong>1.10</strong> with a tested verdict. A separate moving-average cross signal agrees at <strong>88</strong>. Two independent desk reads land on the same setup. That confluence matters because it&#x27;s rare for a small cap to score that high on both signals at the same time.</p>
+<p>Conviction is <strong>MEDIUM</strong>. The risk-to-reward ratio is <strong>1.8</strong> to <strong>1</strong> using the entry at <strong>6.85</strong>, stop at <strong>5.99</strong>, and target at <strong>8.38</strong>. That&#x27;s a sound ratio, but the stock is small and volatile. You size it like a small-cap tactical position, not a core holding.</p>
+<p>The ranking among the desk&#x27;s picks is third. The stock has the sector tailwind working for it, but the longer-term trend line is deteriorating faster than the other two picks. That&#x27;s the tradeoff you&#x27;re accepting here. You get a fresh RSI reset and a high pullback score, but the trend base under the stock is soft.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-09-04-GENI.png" alt="GENI weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=GENI&interval=1W" target="_blank" rel="noopener">📈 Open the GENI weekly chart on TradingView ↗</a><figcaption>GENI weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $8.38 · mark support near $5.99.</figcaption></figure>
+<p>The stock closed at <strong>7.49</strong>. It&#x27;s <strong>44.7%</strong> below the 52-week high of <strong>13.73</strong> and <strong>91.1%</strong> above the 52-week low of <strong>3.83</strong>. You&#x27;re buying the middle of a wide range, in the bottom <strong>37%</strong> of the yearly range. That means there&#x27;s still plenty of recovery room above, but the stock hasn&#x27;t proven it can escape the range yet.</p>
+<p>The <strong>30</strong>-week line is still rising on the chart, and GENI closed above it. The RSI at <strong>49.4</strong> is neutral, not overbought, after the <strong>-4.3%</strong> pullback over the last month. That&#x27;s the setup. A trend that&#x27;s still technically alive, with momentum reset to a level where buyers can step in without chasing.</p>
+<p>The daily picture is mixed. The swing high sits at <strong>8.38</strong> and the swing low at <strong>5.44</strong>. The support and resistance zone is defined by the desk levels: entry at <strong>6.85</strong>, stop at <strong>5.99</strong>, target at <strong>8.38</strong>. A secondary target sits at <strong>8.79</strong>. The current price at <strong>7.49</strong> gives you <strong>12.6%</strong> of downside risk to the stop and <strong>22.3%</strong> of upside to the first target. The secondary target offers <strong>28.3%</strong>.</p>
+<p>The stock is outperforming the broad market. That&#x27;s meaningful because small caps often lag when the index chops. GENI is beating the index while still trading at a deep discount to its own high.</p>
+<p>Volume confirmation would look like a push through <strong>8.38</strong> on above-average daily volume. The 20-day average is about <strong>4.6 million</strong> shares. A breakout day should print meaningfully more than that. The options flow from September 3 is thin: <strong>395</strong> call contracts and zero puts, with only <strong>$0.06 million</strong> in call premium. That&#x27;s a trickle, not a signal. The options market isn&#x27;t front-running this move yet.</p>
+<p>The chart&#x27;s weak spot is the slope of the 30-week line. It&#x27;s still falling at <strong>-14.7%</strong>, the steepest decay among the desk&#x27;s picks. The trend base remains tilted downward even as price sits above it. That&#x27;s the reason conviction is medium and not high.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$2.00B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$2.71B</td></tr><tr><td class="k">52-week range</td><td class="v">$3.83 - $13.73</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">1.88</td></tr><tr><td class="k">Forward P/E</td><td class="v">7.0</td></tr><tr><td class="k">Price / sales</td><td class="v">2.5</td></tr><tr><td class="k">Price / book</td><td class="v">2.9</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$790M  (+64.7% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$2.97</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$-182M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">-0.67 / 1.07</td></tr><tr><td class="k">Gross margin</td><td class="v">27.4%</td></tr><tr><td class="k">Operating margin</td><td class="v">-12.4%</td></tr><tr><td class="k">Profit margin</td><td class="v">-23.0%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$-0.12</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$0.60</td></tr><tr><td class="k">Total cash / share</td><td class="v">$0.58</td></tr><tr><td class="k">Debt / equity</td><td class="v">1.2</td></tr><tr><td class="k">Current ratio</td><td class="v">0.97</td></tr><tr><td class="k">Return on equity</td><td class="v">-25.9%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">strong buy - mean target $11.03 (20 analysts)</td></tr></tbody></table>
+<p>The top-line story is strong. That&#x27;s exceptional growth for a company with a market cap of about <strong>$2 billion</strong>. The forward P/E of <strong>7.0</strong> reflects how cheap this looks on next year&#x27;s earnings estimates. Analysts expect forward EPS of <strong>$1.07</strong> versus a trailing EPS of <strong>-$0.67</strong>.</p>
+<p>The profitability picture is where the story gets complicated. Operating margin is <strong>-12.4%</strong>. The company is not generating cash from its core operations yet. That divergence typically points to heavy non-cash charges like stock-based compensation and depreciation. You have to accept that the accounting is messy while the underlying business scales.</p>
+<p>Debt to equity is <strong>1.2</strong>, which is manageable for a growth company, but the current ratio of <strong>0.97</strong> and quick ratio of <strong>0.81</strong> are tight. The company has <strong>$0.58</strong> per share in cash. Liquidity is adequate but not comfortable.</p>
+<p>The weak spot is return on equity at <strong>-25.9%</strong>. The company is burning shareholder value on a book basis while it grows. That&#x27;s typical for data infrastructure companies in their scaling phase, but you&#x27;re buying a stock that hasn&#x27;t demonstrated sustained profitability.</p>
+<h2>Why Now</h2>
+<p>There is no scheduled near-term catalyst baked into this setup. The next earnings date is on the calendar in 2026, but nothing in the data points to a specific event driving the next leg. That&#x27;s honest. You&#x27;re not buying this for an earnings pop. You&#x27;re buying it because the sector is in momentum and the stock has reset.</p>
+<p>The timing case rests on the sector state. Communication Services is one of the two sectors in force right now. GENI&#x27;s relative strength versus the S&amp;P over the last 63 days is <strong>21.9%</strong>, which shows the stock is already catching the wind. The recent pullback of <strong>-4.3%</strong> over 21 days has brought RSI down to <strong>49.4</strong>, a neutral zone that gives buyers room to enter without chasing.</p>
+<p>The options flow is quiet. <strong>395</strong> calls and zero puts on September 3, with negligible premium. There&#x27;s no short squeeze setup and no heavy call buying. That can be a positive. The move hasn&#x27;t been front-run. But it also means there&#x27;s no positioning tailwind to push you through resistance at <strong>8.38</strong>. You&#x27;re relying on genuine buying pressure, not a gamma event.</p>
+<p>The moving-average cross at <strong>88</strong> and the pullback score at <strong>90</strong> indicate the desk&#x27;s timing models see a high-probability window. Both signals agree. When two independent desk reads align on a small cap at the same time, you pay attention. The lack of a hard catalyst is the main reason conviction stays at medium.</p>
+<h2>Risk Factors</h2>
+<p>The biggest risk is the falling 30-week line. The slope is <strong>-14.7%</strong>, the steepest decay among the current picks. The base under this stock is soft. Price may be above the line today, but the line itself is still tilted down. If GENI fails to hold <strong>6.85</strong>, the next logical support is the swing low at <strong>5.44</strong>, which sits below the stop at <strong>5.99</strong>. A break of the stop would mean the trend has rolled over.</p>
+<p>Small-cap liquidity is a real hazard. Average daily volume is about <strong>4.6 million</strong> shares, which translates to roughly <strong>$32.9 million</strong> a day in dollar terms. In a fast market, gaps can hurt. You can&#x27;t assume you&#x27;ll get filled at your stop. The spread can widen in the first minute after bad news.</p>
+<p>The fundamental risk is equally loud. The company is losing money on an operating basis. Revenue growth of <strong>64.7%</strong> is impressive, but if growth stalls while operating expenses stay high, the market will punish the stock. The forward EPS estimate of <strong>$1.07</strong> implies a major profitability inflection. If that inflection slips by even one quarter, the support at <strong>6.85</strong> will give way.</p>
+<p>The single invalidation is a close below <strong>5.99</strong>. That level anchors the stop. A weekly close below it means the pullback score was wrong, the sector tailwind didn&#x27;t translate, and the trend has failed. You exit. Timing risk around the catalyst is muted because there is no catalyst. The stock could drift sideways for weeks before the next leg. Small caps with no event on the horizon require patience, and patience costs you time decay if you use options.</p>
+<h2>Bringing It All Together</h2>
+<p>- GENI operates a high-margin data tollbooth across sports betting, media, and league integrity, sectors that are growing together.<br>- The sector is in <strong>MOMENTUM</strong> and still <strong>RIDING</strong>, and GENI&#x27;s relative strength versus the S&amp;P over 63 days is <strong>21.9%</strong>.</p>
+<p>- The pullback score of <strong>90</strong> and moving-average cross of <strong>88</strong> agree on timing, with RSI reset to <strong>49.4</strong> after a <strong>44.7%</strong> drawdown from the high.<br>- Entry at <strong>6.85</strong>, stop at <strong>5.99</strong>, first target at <strong>8.38</strong>, secondary target at <strong>8.79</strong>, for a risk-to-reward of <strong>1.8</strong> to <strong>1</strong>.</p>
+<h2>Conclusion</h2>
+<p>Genius Sports is a leveraged bet on the expansion of regulated sports betting and data-driven fan engagement. The stock is cheap on forward earnings, the sector is in acceleration, and the timing signals align. You accept a medium conviction, a soft trend base, and messy accounting in exchange for a favorable entry below the swing high and a clear stop above the January low. The stop at <strong>5.99</strong> defines the trade. If price holds above it and pushes through <strong>8.38</strong>, the next leg targets <strong>8.79</strong>. If it fails, you get out and wait for the 30-week line to flatten. The setup rewards discipline over enthusiasm.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Genius Sports Limited (GENI) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $2.00B; 52-week range $4-$14; Revenue $790M +65% YoY; Net income $-182M; Free cash flow/share $0.60; Debt-to-equity 1.2; Return on equity -26%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Genius Sports Limited (GENI) inside the Communication Services space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Genius Sports holds above its **30**-week line **44.7%** below the 52-week high, with RSI at **49.4** after a **-4.3%** month. Pullback scores **90** on a **tested · risk-adjusted return 1.10 · tested verdict, with a moving-average cross at. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Sports Data Tollbooth at a Discount
+
+*Genius Sports holds the rail over live sports data and it&#x27;s trading 45% below its high with the sector in momentum.*
+
+## The Big Picture
+
+Communication Services is running. The sector sits in **MOMENTUM** and is still **RIDING**, meaning the trend is accelerating, not fading. That tailwind alone puts a stock like Genius Sports in front of you with the wind at its back.
+
+Live sports data has become infrastructure. Every regulated sportsbook in the Americas and Europe needs a clean, low-latency feed of ball position, player tracking, and odds movement. Genius Sports is one of the two or three companies that can supply it at scale. The leagues want integrity monitoring, the books want instant data, and the media companies want highlight clips and interactive overlays. This company sits at all three intersections.
+
+The backdrop rewards this name because it operates as a tollbooth. The market is expanding, the sector is in acceleration, and the stock is cheap relative to its own history. You&#x27;re not buying a concept here. You&#x27;re buying a contracted data pipeline at a discount.
+
+## Introducing GENI
+
+Genius Sports Limited runs the plumbing between live sports and the gambling and media machines that monetize them. It collects optical tracking data from thousands of live events, packages it, and delivers it to sportsbooks, leagues, and broadcasters. The company has about **2,000** employees and is headquartered in London.
+
+The core engine is data distribution. Genius captures live event data from leagues, integrates it, and sells feeds to betting operators who need pre-game and in-game odds. A second segment handles streaming and automated production, letting smaller leagues commercialize their video without a broadcast truck. The integrity business monitors suspicious betting patterns for leagues using statistical processes. Then you have FanHub for advertising and BetVision, an interactive single-screen streaming product that overlays live odds and stats onto game broadcasts.
+
+The edge is simple. Genius has long-term deals with major leagues and federations. Those contracts are hard to replicate. The company has spent two decades wiring itself into stadiums, arenas, and betting platforms. A new entrant can&#x27;t just show up and offer the same feed quality on the same day.
+
+## The Thesis
+
+The stock holds above its **30**-week moving average while sitting **44.7%** below its 52-week high. RSI has reset to **49.4** after a **-4.3%** month. That&#x27;s a pullback inside a recovery, not a breakdown.
+
+The desk&#x27;s internal pullback score clocks in at **90**, and the risk-adjusted return test reads **1.10** with a tested verdict. A separate moving-average cross signal agrees at **88**. Two independent desk reads land on the same setup. That confluence matters because it&#x27;s rare for a small cap to score that high on both signals at the same time.
+
+Conviction is **MEDIUM**. The risk-to-reward ratio is **1.8** to **1** using the entry at **6.85**, stop at **5.99**, and target at **8.38**. That&#x27;s a sound ratio, but the stock is small and volatile. You size it like a small-cap tactical position, not a core holding.
+
+The ranking among the desk&#x27;s picks is third. The stock has the sector tailwind working for it, but the longer-term trend line is deteriorating faster than the other two picks. That&#x27;s the tradeoff you&#x27;re accepting here. You get a fresh RSI reset and a high pullback score, but the trend base under the stock is soft.
+
+## Technical Analysis
+
+&gt; 📈 Insert the GENI weekly chart here (TradingView): GENI weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $8.38 · mark support near $5.99.
+
+The stock closed at **7.49**. It&#x27;s **44.7%** below the 52-week high of **13.73** and **91.1%** above the 52-week low of **3.83**. You&#x27;re buying the middle of a wide range, in the bottom **37%** of the yearly range. That means there&#x27;s still plenty of recovery room above, but the stock hasn&#x27;t proven it can escape the range yet.
+
+The **30**-week line is still rising on the chart, and GENI closed above it. The RSI at **49.4** is neutral, not overbought, after the **-4.3%** pullback over the last month. That&#x27;s the setup. A trend that&#x27;s still technically alive, with momentum reset to a level where buyers can step in without chasing.
+
+The daily picture is mixed. The swing high sits at **8.38** and the swing low at **5.44**. The support and resistance zone is defined by the desk levels: entry at **6.85**, stop at **5.99**, target at **8.38**. A secondary target sits at **8.79**. The current price at **7.49** gives you **12.6%** of downside risk to the stop and **22.3%** of upside to the first target. The secondary target offers **28.3%**.
+
+The stock is outperforming the broad market. That&#x27;s meaningful because small caps often lag when the index chops. GENI is beating the index while still trading at a deep discount to its own high.
+
+Volume confirmation would look like a push through **8.38** on above-average daily volume. The 20-day average is about **4.6 million** shares. A breakout day should print meaningfully more than that. The options flow from September 3 is thin: **395** call contracts and zero puts, with only **$0.06 million** in call premium. That&#x27;s a trickle, not a signal. The options market isn&#x27;t front-running this move yet.
+
+The chart&#x27;s weak spot is the slope of the 30-week line. It&#x27;s still falling at **-14.7%**, the steepest decay among the desk&#x27;s picks. The trend base remains tilted downward even as price sits above it. That&#x27;s the reason conviction is medium and not high.
+
+## Fundamentals
+
+| Metric | Value |
+|---|---|
+| Market cap | $2.00B |
+| Enterprise value | $2.71B |
+| 52-week range | $3.83 - $13.73 |
+| Dividend yield | None |
+| Beta | 1.88 |
+| Forward P/E | 7.0 |
+| Price / sales | 2.5 |
+| Price / book | 2.9 |
+| Revenue (TTM) | $790M  (+64.7% YoY) |
+| Revenue / share | $2.97 |
+| Net income (TTM) | $-182M |
+| EPS (TTM / fwd) | -0.67 / 1.07 |
+| Gross margin | 27.4% |
+| Operating margin | -12.4% |
+| Profit margin | -23.0% |
+| Operating cash flow / share | $-0.12 |
+| Free cash flow / share | $0.60 |
+| Total cash / share | $0.58 |
+| Debt / equity | 1.2 |
+| Current ratio | 0.97 |
+| Return on equity | -25.9% |
+| Analyst consensus | strong buy - mean target $11.03 (20 analysts) |
+
+The top-line story is strong. That&#x27;s exceptional growth for a company with a market cap of about **$2 billion**. The forward P/E of **7.0** reflects how cheap this looks on next year&#x27;s earnings estimates. Analysts expect forward EPS of **$1.07** versus a trailing EPS of **-$0.67**.
+
+The profitability picture is where the story gets complicated. Operating margin is **-12.4%**. The company is not generating cash from its core operations yet. That divergence typically points to heavy non-cash charges like stock-based compensation and depreciation. You have to accept that the accounting is messy while the underlying business scales.
+
+Debt to equity is **1.2**, which is manageable for a growth company, but the current ratio of **0.97** and quick ratio of **0.81** are tight. The company has **$0.58** per share in cash. Liquidity is adequate but not comfortable.
+
+The weak spot is return on equity at **-25.9%**. The company is burning shareholder value on a book basis while it grows. That&#x27;s typical for data infrastructure companies in their scaling phase, but you&#x27;re buying a stock that hasn&#x27;t demonstrated sustained profitability.
+
+## Why Now
+
+There is no scheduled near-term catalyst baked into this setup. The next earnings date is on the calendar in 2026, but nothing in the data points to a specific event driving the next leg. That&#x27;s honest. You&#x27;re not buying this for an earnings pop. You&#x27;re buying it because the sector is in momentum and the stock has reset.
+
+The timing case rests on the sector state. Communication Services is one of the two sectors in force right now. GENI&#x27;s relative strength versus the S&amp;P over the last 63 days is **21.9%**, which shows the stock is already catching the wind. The recent pullback of **-4.3%** over 21 days has brought RSI down to **49.4**, a neutral zone that gives buyers room to enter without chasing.
+
+The options flow is quiet. **395** calls and zero puts on September 3, with negligible premium. There&#x27;s no short squeeze setup and no heavy call buying. That can be a positive. The move hasn&#x27;t been front-run. But it also means there&#x27;s no positioning tailwind to push you through resistance at **8.38**. You&#x27;re relying on genuine buying pressure, not a gamma event.
+
+The moving-average cross at **88** and the pullback score at **90** indicate the desk&#x27;s timing models see a high-probability window. Both signals agree. When two independent desk reads align on a small cap at the same time, you pay attention. The lack of a hard catalyst is the main reason conviction stays at medium.
+
+## Risk Factors
+
+The biggest risk is the falling 30-week line. The slope is **-14.7%**, the steepest decay among the current picks. The base under this stock is soft. Price may be above the line today, but the line itself is still tilted down. If GENI fails to hold **6.85**, the next logical support is the swing low at **5.44**, which sits below the stop at **5.99**. A break of the stop would mean the trend has rolled over.
+
+Small-cap liquidity is a real hazard. Average daily volume is about **4.6 million** shares, which translates to roughly **$32.9 million** a day in dollar terms. In a fast market, gaps can hurt. You can&#x27;t assume you&#x27;ll get filled at your stop. The spread can widen in the first minute after bad news.
+
+The fundamental risk is equally loud. The company is losing money on an operating basis. Revenue growth of **64.7%** is impressive, but if growth stalls while operating expenses stay high, the market will punish the stock. The forward EPS estimate of **$1.07** implies a major profitability inflection. If that inflection slips by even one quarter, the support at **6.85** will give way.
+
+The single invalidation is a close below **5.99**. That level anchors the stop. A weekly close below it means the pullback score was wrong, the sector tailwind didn&#x27;t translate, and the trend has failed. You exit. Timing risk around the catalyst is muted because there is no catalyst. The stock could drift sideways for weeks before the next leg. Small caps with no event on the horizon require patience, and patience costs you time decay if you use options.
+
+## Bringing It All Together
+
+- GENI operates a high-margin data tollbooth across sports betting, media, and league integrity, sectors that are growing together.
+- The sector is in **MOMENTUM** and still **RIDING**, and GENI&#x27;s relative strength versus the S&amp;P over 63 days is **21.9%**.
+
+- The pullback score of **90** and moving-average cross of **88** agree on timing, with RSI reset to **49.4** after a **44.7%** drawdown from the high.
+- Entry at **6.85**, stop at **5.99**, first target at **8.38**, secondary target at **8.79**, for a risk-to-reward of **1.8** to **1**.
+
+## Conclusion
+
+Genius Sports is a leveraged bet on the expansion of regulated sports betting and data-driven fan engagement. The stock is cheap on forward earnings, the sector is in acceleration, and the timing signals align. You accept a medium conviction, a soft trend base, and messy accounting in exchange for a favorable entry below the swing high and a clear stop above the January low. The stop at **5.99** defines the trade. If price holds above it and pushes through **8.38**, the next leg targets **8.79**. If it fails, you get out and wait for the 30-week line to flatten. The setup rewards discipline over enthusiasm.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

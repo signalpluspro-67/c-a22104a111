@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Ton bouton Substack, pas à pas</title>
+<style>
+  :root{--bg:#f4efe6;--card:#fbf8f1;--ink:#2b2620;--mute:#857c6e;--line:#e3dac8;
+        --accent:#9a6a3a;--good:#3f7d4e;--bad:#9b3b34;--orange:#e8722c}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:17px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+  .wrap{max-width:620px;margin:0 auto;padding:40px 18px 80px}
+  .prog{display:flex;gap:6px;margin-bottom:26px}
+  .prog i{flex:1;height:5px;border-radius:3px;background:var(--line)}
+  .prog i.on{background:var(--accent)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px 26px;min-height:290px}
+  .card .cnt{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);font-weight:700}
+  .card h2{font-size:1.42rem;margin:8px 0 14px;line-height:1.25}
+  .card p{margin:0 0 14px}
+  .card p:last-child{margin-bottom:0}
+  .card .hint{color:var(--mute);font-size:.92rem}
+  .kbd{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:6px;
+       padding:3px 11px;font-weight:700;font-size:.95rem;white-space:nowrap}
+  .box{background:#fff;border:1px solid var(--line);border-radius:11px;padding:14px 16px;margin:14px 0}
+  .box .val{font-family:ui-monospace,Menlo,monospace;font-size:.95rem;color:#3a352c;word-break:break-all}
+  .box.textblock{max-height:230px;overflow:auto;font:14.5px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+  .box.textblock p{margin:0 0 11px}
+  .box.textblock ul{margin:0 0 11px;padding-left:22px}
+  .box.textblock li{margin:0 0 9px}
+  button.copy{border:0;background:var(--accent);color:#fff;border-radius:8px;
+        padding:9px 18px;font-size:.9rem;font-weight:700;cursor:pointer;margin-top:12px}
+  button.copy.done{background:var(--good)}
+  button.copy.warn{background:var(--bad)}
+  .nav{display:flex;align-items:center;gap:12px;margin-top:20px}
+  .nav button{border:1px solid var(--accent);background:transparent;color:var(--accent);
+        border-radius:9px;padding:11px 20px;font-size:.95rem;font-weight:700;cursor:pointer}
+  .nav button.main{background:var(--accent);color:#fff}
+  .nav button:disabled{opacity:.35;cursor:default}
+  .nav .sp{margin-left:auto}
+  a.link{display:inline-block;background:var(--orange);color:#fff;text-decoration:none;font-weight:700;
+        border-radius:8px;padding:11px 22px;margin-top:6px}
+  details{margin-top:26px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px}
+  details summary{cursor:pointer;font-weight:700;color:var(--accent)}
+  details p{margin:12px 0 0;font-size:.95rem}
+  .done-big{text-align:center;padding:14px 0}
+  .done-big .tick{font-size:2.6rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="prog" id="prog"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button id="prev" onclick="go(-1)">Retour</button>
+  <button id="next" class="main sp" onclick="go(1)">Suivant</button>
+</div>
+
+<details open>
+  <summary>Avant d'écrire « forever », une case à cocher</summary>
+  <p>Ton coupon actuel est réglé sur <b>12 mois</b>, pas à vie. Si le bouton dit forever, le lecteur repasse plein tarif au treizième mois et il le verra.</p>
+  <p>Le correctif prend dix secondes : dans Substack, <b>Settings, Payments, tes coupons</b>, crée le coupon avec la durée réglée sur <b>forever</b>. Ensuite le mot est vrai et tu le gardes dans tous tes posts.</p>
+  <p>Donne-moi le nouveau lien quand c'est fait, je mets le guide à jour.</p>
+</details>
+
+</div>
+<script>
+var STEPS = [
+ {t:"Ouvre un brouillon Substack",
+  h:"<p>Nouveau post, vide. Laisse-le ouvert dans un onglet.</p><p class='hint'>Tout ce qui suit se passe dedans. On fait ça une seule fois.</p><p><a class='link' href='https://philosopherinvestor.substack.com/publish/post?type=newsletter' target='_blank'>Ouvrir un brouillon</a></p>"},
+
+ {t:"Colle ton bloc de texte",
+  h:"<p>Copie ce texte et colle-le dans le brouillon.</p>" +
+    "<div class='box textblock' id='blk'>" +
+    "<p>🖥 <strong>Get the app.</strong> Every subscriber gets this letter. Paid readers also get the app it is written on.</p>" +
+    "<p><strong>What is inside:</strong></p><ul>" +
+    "<li><strong>Twenty-six screeners.</strong> They run every night on 12,000+ US stocks. Every name lands with its levels and the price that says the idea is wrong.</li>" +
+    "<li><strong>Sectors and themes.</strong> What is rotating, and twenty-six themes by basket: AI agents, defense tech, drones, critical minerals, the power grid.</li>" +
+    "<li><strong>Who is buying.</strong> 13F books from 100+ funds, activist stakes, Congress disclosures, insider clusters, buybacks.</li>" +
+    "<li><strong>Your desk.</strong> Build your watchlist, set your price alerts, analyze your positions, keep your trading journal.</li>" +
+    "<li><strong>The Academy, our private trading course.</strong> 35 lessons, 101 terms explained.</li>" +
+    "</ul><p>Start your 7-day free trial. Then $20 a month or $200 a year.</p></div>" +
+    "<button class='copy' onclick=\"copyEl('blk',this)\">Copier le texte</button>"},
+
+ {t:"Clique Button dans la barre d'outils",
+  h:"<p>En haut de l'éditeur, à droite des icônes de liste, il y a <span class='kbd'>Button ▾</span>.</p><p>Clique dessus.</p><p class='hint'>Substack va te demander deux choses : un libellé et un lien. C'est les deux étapes suivantes.</p>"},
+
+ {t:"Le libellé du bouton",
+  h:"<p>Colle ça dans le champ du libellé.</p><div class='box'><div class='val'>Upgrade to paid</div><button class='copy' onclick='copyBox(this)'>Copier</button></div>"},
+
+ {t:"Le lien du bouton",
+  h:"<p>Colle ça dans le champ du lien, puis valide.</p><div class='box'><div class='val'>https://philosopherinvestor.substack.com/subscribe</div><button class='copy' onclick='copyBox(this)'>Copier</button></div><p class='hint'>Le lien normal, celui qui ne périme jamais.</p>"},
+
+ {t:"Sélectionne le tout",
+  h:"<p>Ton texte <b>et</b> ton bouton. Du premier mot jusqu'en dessous du bouton.</p><p class='hint'>Clique avant le premier mot, puis Maj-clic après le bouton.</p>"},
+
+ {t:"Enregistre le modèle",
+  h:"<p>Dans la barre d'outils, clique <span class='kbd'>Template ▾</span>, puis l'option d'enregistrement.</p><p>Nomme-le :</p><div class='box'><div class='val'>Plug app</div><button class='copy' onclick='copyBox(this)'>Copier</button></div>"},
+
+ {t:"Le template est prêt",
+  h:"<div class='done-big'><div class='tick'>✅</div></div><p>Dans n'importe quel post : curseur, <span class='kbd'>Template ▾</span>, <b>Plug app</b>.</p><p class='hint'>Fini. Les trois étapes suivantes servent uniquement les jours où tu as une promo. Tu n'as pas de second template à créer.</p>"},
+
+ {t:"Jour de promo : insère le template",
+  h:"<p>Comme d'habitude : <span class='kbd'>Template ▾</span>, <b>Plug app</b>.</p><p>Tu ne changeras que les <b>deux dernières lignes</b>, la ligne de prix et le bouton. Le reste ne bouge jamais.</p>"},
+
+ {t:"Remplace la ligne de prix",
+  h:"<p>Efface <i>Start your 7-day free trial. Then $20 a month or $200 a year.</i> et colle celle-ci.</p><div class='box'><div class='val'>We have a promotion running right now: 25% off, and you keep that price for as long as you stay a subscriber. It closes on Sunday, August 23.</div><button class='copy' onclick='copyBox(this)'>Copier</button></div><p class='hint'>La date se change à la main à chaque promo. C'est la seule chose que tu réécris.</p>"},
+
+ {t:"Change le bouton",
+  h:"<p>Clique le bouton, remplace ses deux champs.</p><div class='box'><div class='val'>Get 25% off forever</div><button class='copy' onclick='copyBox(this)'>Copier le libellé</button></div><div class='box'><div class='val'>https://philosopherinvestor.substack.com/c371c1af</div><button class='copy' onclick='copyBox(this)'>Copier le lien</button></div><p class='hint'>Après la promo, tu reprends le template normal, il n'a jamais été modifié.</p>"}
+];
+
+var i = 0;
+function render(){
+  var s = STEPS[i];
+  document.getElementById('card').innerHTML =
+    "<div class='cnt'>Étape " + (i+1) + " sur " + STEPS.length + "</div><h2>" + s.t + "</h2>" + s.h;
+  var p = "";
+  for (var k=0;k<STEPS.length;k++) p += "<i class='" + (k<=i ? "on" : "") + "'></i>";
+  document.getElementById('prog').innerHTML = p;
+  document.getElementById('prev').disabled = (i===0);
+  document.getElementById('next').textContent = (i===STEPS.length-1) ? "Recommencer" : "Suivant";
+}
+function go(d){
+  if (i===STEPS.length-1 && d===1) i = 0; else i = Math.max(0, Math.min(STEPS.length-1, i+d));
+  render(); window.scrollTo(0,0);
+}
+function copySel(el, btn){
+  var ok=false, sel=window.getSelection(), r=document.createRange();
+  r.selectNodeContents(el); sel.removeAllRanges(); sel.addRange(r);
+  try { ok = document.execCommand('copy'); } catch(e){ ok=false; }
+  sel.removeAllRanges(); if(btn.blur) btn.blur();
+  var old = btn.getAttribute('data-l') || btn.textContent;
+  btn.setAttribute('data-l', old);
+  btn.textContent = ok ? 'Copié ✓' : 'Sélectionne + Cmd-C';
+  btn.classList.add(ok ? 'done' : 'warn');
+  setTimeout(function(){ btn.textContent=old; btn.classList.remove('done','warn'); },1600);
+}
+function copyBox(btn){ copySel(btn.closest('.box').querySelector('.val'), btn); }
+function copyEl(id, btn){ copySel(document.getElementById(id), btn); }
+render();
+</script>
+</body>
+</html>

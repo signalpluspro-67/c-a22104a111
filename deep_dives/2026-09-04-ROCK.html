@@ -1,0 +1,222 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Residential Rebuild Nobody Is Watching — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>The Residential Rebuild Nobody Is Watching</h1>
+<div class="subtitle">Gibraltar Industries trades 36.6% under its high with a 2-to-1 payoff and a free cash flow yield that dwarfs its multiple.</div>
+<div class="meta">EOD 2026-09-04 · ROCK · written from the desk · model deepseek-v4-pro</div>
+<div class="chips"><span class="chip">ROCK</span>
+<span class="chip">Industrials</span>
+<span class="chip hi">HIGH conviction</span></div>
+<div class="track">Tracking since 2026-09-04: entry <b>$47.25</b> &rarr; <b>$47.25</b> (as of 2026-09-04) · <span class="pos">+0.0%</span> · HOLD</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Industrials have flatlined. The sector shows no acceleration and sits in neutral, while small caps as a group lost <strong>0.8%</strong> over the past month. You are not buying momentum here. You are buying a company that cleaned up its balance sheet and earnings at a price nobody wants to pay.</p>
+<p>Homebuilding stays structurally undersupplied. You have a decade of underbuilding after 2008, millennial household formation running hot, and fixed mortgage rates still above recent norms. That setup rewards suppliers to residential construction who can sell into repair and remodel demand without needing new housing starts to rip higher.</p>
+<p>Gibraltar Industries fits that slot. It sells roof ventilation, gutters, mail systems, and drywall trim into residential work. It also runs an infrastructure segment for bridges and highways, plus agtech greenhouses. The macro backdrop rewards the pick-and-shovel supplier over the homebuilder, especially when the supplier trades at a discount.</p>
+<h2>Introducing ROCK</h2>
+<p>Gibraltar Industries builds things you never notice but every house needs. Roof ventilation, foundation vents, gutters, downspouts, soffits, drywall corner beads, metal roofing accessories, mailboxes, and retractable awnings. The Residential segment sells through home improvement retailers, wholesalers, and distributors, so the end market is both new construction and repair or remodel.</p>
+<p>The Infrastructure segment makes expansion joints, structural bearings, seals, elastomeric concrete, and bridge cable protection systems. This is the steady, federally funded side of the business. You get highway and bridge spending without the timing risk of a single mega-project.</p>
+<p>The Agtech segment designs and builds controlled environment agriculture structures, custom greenhouses, and canopies. It serves growers of fruits, vegetables, flowers, and car wash applications. That is the optionality leg. If greenhouse buildouts accelerate, ROCK benefits. If they do not, the other two segments carry the weight.</p>
+<h2>The Thesis</h2>
+<p>ROCK is a cash machine hiding inside a forgotten small cap. The pullback signal scores <strong>95</strong> out of <strong>100</strong>, the strongest in the small-cap set, and grades as tested with a risk-adjusted return of <strong>1.10</strong>. A moving-average cross scores a full <strong>100</strong>. Two separate desk reads both flagged it. The desk sees this as the cleanest pullback setup among small caps right now.</p>
+<p>The numbers back the signal. ROCK sits <strong>36.6%</strong> below its 52-week high yet holds above its 30-week moving average despite a <strong>-7.0%</strong> month. RSI sits at <strong>54.4</strong>, which is not overbought. It has outrun SPY by <strong>23.4%</strong> over three months, so relative strength is intact even during the recent dip.</p>
+<p>The prize is the valuation mismatch. Forward PE of <strong>8.9</strong> against free cash flow per share of <strong>10.37</strong>. Analyst consensus target sits at <strong>75.25</strong>, which would be above the 52-week high. You are paying for stagnation and getting optionality on a housing recovery.</p>
+<h2>Technical Analysis</h2>
+<figure class="chart"><img src="img/2026-09-04-ROCK.png" alt="ROCK weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=ROCK&interval=1W" target="_blank" rel="noopener">📈 Open the ROCK weekly chart on TradingView ↗</a><figcaption>ROCK weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $54.86 · mark support near $43.51.</figcaption></figure>
+<p>That is the tension in this chart. Price is above the line, yet the line is rolling over. You want to see that slope flatten and turn positive to confirm a new uptrend.</p>
+<p>The 8-week and 21-week exponential moving averages are in the middle of a fresh cross, which is why the moving-average signal scores <strong>100</strong>. The pullback over the past month was <strong>-7.0%</strong>, while the prior three months delivered <strong>+27.8%</strong>. This is a pullback within a larger advance, not a breakdown.</p>
+<p>Levels matter here. Entry at <strong>47.25</strong>, stop at <strong>43.51</strong>, target at <strong>54.86</strong>. That gives you a <strong>2.0</strong> to <strong>1</strong> reward-to-risk ratio. The risk to stop is <strong>7.9%</strong>, upside to target is <strong>16.1%</strong>. The 52-week range runs from <strong>33.56</strong> to <strong>75.08</strong>. ROCK sits at <strong>33%</strong> of that yearly range, meaning in the bottom third. That is exactly where you want to buy a pullback candidate, provided the 30-week line holds.</p>
+<p>RSI sits at <strong>54.4</strong>, near neutral but leaning positive. Average true range of <strong>1.87</strong> means the stop at <strong>43.51</strong> is roughly two ATRs away.</p>
+<h2>Fundamentals</h2>
+<table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$1.27B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$2.69B</td></tr><tr><td class="k">52-week range</td><td class="v">$33.56 - $75.08</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">1.22</td></tr><tr><td class="k">Trailing P/E</td><td class="v">21.2</td></tr><tr><td class="k">Forward P/E</td><td class="v">8.9</td></tr><tr><td class="k">Price / sales</td><td class="v">0.9</td></tr><tr><td class="k">Price / book</td><td class="v">1.4</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$1.45B  (+64.6% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$48.58</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$60M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">2.02 / 4.81</td></tr><tr><td class="k">Gross margin</td><td class="v">25.4%</td></tr><tr><td class="k">Operating margin</td><td class="v">12.3%</td></tr><tr><td class="k">Profit margin</td><td class="v">-10.4%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$2.40</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$10.37</td></tr><tr><td class="k">Total cash / share</td><td class="v">$0.51</td></tr><tr><td class="k">Debt / equity</td><td class="v">1.54</td></tr><tr><td class="k">Current ratio</td><td class="v">1.46</td></tr><tr><td class="k">Return on equity</td><td class="v">6.2%</td></tr><tr><td class="k">Analyst consensus</td><td class="v">none - mean target $75.25 (4 analysts)</td></tr></tbody></table>
+<p>Revenue grew <strong>64.6%</strong> to <strong>$1.45B</strong> over the trailing twelve months. That is a serious top-line acceleration for a building products company. Earnings per share sit at <strong>2.02</strong> trailing, with forward EPS of <strong>4.81</strong>, which is why the forward PE compresses to <strong>8.9</strong>. You are paying less than nine times next year&#x27;s earnings for a company with a <strong>21.2</strong> trailing multiple. The market is pricing in an earnings ramp it does not believe yet.</p>
+<p>The balance sheet has a wrinkle. That is high for a small cap. If FCF is boosted by one-time items or receivable timing, the cash yield overstates the run-rate.</p>
+<p>Margins are mixed. Gross margin of <strong>25.4%</strong> and operating margin of <strong>12.3%</strong> are respectable for a distributor-heavy industrial. Return on equity of <strong>6.2%</strong> is weak, held down by the debt load. Return on assets of <strong>4.5%</strong> is acceptable. The balance sheet leverage is the main weak spot, and you should watch the quick ratio of <strong>0.61</strong>, which shows the company relies on inventory and receivables to cover short-term obligations.</p>
+<p>The valuation is the story. Price to sales of <strong>0.9</strong> and price to book of <strong>1.4</strong>, with book value per share of <strong>29.69</strong>. Four analysts cover the name, so the target is not a thick consensus. But the disconnect between the target and the price tells you how far this has fallen out of favor.</p>
+<h2>Why Now</h2>
+<p>The timing here is not a single catalyst. There is no earnings date in the near term that acts as a binary event, and no specific announced catalyst. The setup is the combination of valuation, relative strength, and the pullback score. Two independent desk reads flagged it on the same desk review.</p>
+<p>The relative strength is the tell. Beating the market by <strong>23.4%</strong> over three months while the broader small-cap group lost <strong>0.8%</strong> over the past month means ROCK is doing something different from the average small cap. It has a fundamental driver: the forward earnings estimate of <strong>4.81</strong> versus trailing <strong>2.02</strong> implies the market sees a sharp recovery coming.</p>
+<p>No options flow data is available for this name, so there is no positioning tell to read. That is typical for a <strong>$9.1M</strong> daily turnover small cap. You are buying based on price action and fundamentals, not derivatives activity.</p>
+<h2>Risk Factors</h2>
+<p>The first risk is liquidity. Daily turnover of <strong>$9.1M</strong> means you cannot exit quickly if the trade goes wrong. A market selloff in small caps would widen the spread and you would take more slippage than you planned. This is a position to size smaller than you would for a mega-cap.</p>
+<p>The second risk is the earnings trajectory. Earnings growth over the trailing period is <strong>-68.6%</strong>, and net margin is <strong>-10.4%</strong>. The forward estimate of <strong>4.81</strong> implies a sharp reversal. If that reversal does not materialize, the forward PE of <strong>8.9</strong> is a trap, not a bargain.</p>
+<p>The third risk is the chart. The 30-week moving average slope is negative at <strong>-3.8%</strong>. If price closes below <strong>43.51</strong>, the stop, the pullback thesis is invalidated and you are out. A break of that level would put the swing low of <strong>39.32</strong> in play.</p>
+<p>The fourth risk is the balance sheet. Debt to equity of <strong>1.54</strong> leaves little room for error if rates stay high and free cash flow slips. A sustained decline in residential repair and remodel spending would pressure revenue and make the leverage uncomfortable.</p>
+<h2>Bringing It All Together</h2>
+<p>- <strong>Dual focus</strong>: Residential and infrastructure segments give you exposure to both cyclical housing and steady federal spending.<br>- <strong>Market need</strong>: Ventilation, gutters, drywall trim, and bridge components are non-discretionary in most build and repair cycles.<br>- <strong>Fundamentals</strong>: Forward PE of <strong>8.9</strong>, free cash flow per share of <strong>10.37</strong>, and a <strong>64.6%</strong> revenue growth rate.<br>- <strong>Catalyst</strong>: No single binary event, but the <strong>2-to-1</strong> reward-to-risk entry at <strong>47.25</strong> with a stop at <strong>43.51</strong> and target at <strong>54.86</strong>.<br>- <strong>Levels</strong>: Hold above the 30-week line with RSI at <strong>54.4</strong> and relative strength beating the market by <strong>23.4%</strong>.</p>
+<h2>Conclusion</h2>
+<p>ROCK is a cheap, overlooked supplier to the residential rebuild with a balance sheet that demands attention and a valuation that prices in failure. You buy the pullback with a defined risk of <strong>7.9%</strong> and target upside of <strong>16.1%</strong>. Two desk reads agree, the relative strength is real, and the cash flow is the safety net. The stop at <strong>43.51</strong> is the only number that matters if the thesis breaks. Keep the position small given the <strong>$9.1M</strong> daily liquidity.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Gibraltar Industries, Inc. (ROCK) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $1.27B; 52-week range $34-$75; Revenue $1.45B +65% YoY; Net income $60M; Free cash flow/share $10.37; Debt-to-equity 1.54; Return on equity 6%. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Gibraltar Industries, Inc. (ROCK) inside the Industrials space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Gibraltar sits **36.6%** under its 52-week high yet holds above its **30**-week line, with RSI at **54.4** after a **-7.0%** month. The pullback signal scores **95** and grades **tested · risk-adjusted return 1.10 · tested, joined by a movi. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># The Residential Rebuild Nobody Is Watching
+
+*Gibraltar Industries trades 36.6% under its high with a 2-to-1 payoff and a free cash flow yield that dwarfs its multiple.*
+
+## The Big Picture
+Industrials have flatlined. The sector shows no acceleration and sits in neutral, while small caps as a group lost **0.8%** over the past month. You are not buying momentum here. You are buying a company that cleaned up its balance sheet and earnings at a price nobody wants to pay.
+
+Homebuilding stays structurally undersupplied. You have a decade of underbuilding after 2008, millennial household formation running hot, and fixed mortgage rates still above recent norms. That setup rewards suppliers to residential construction who can sell into repair and remodel demand without needing new housing starts to rip higher.
+
+Gibraltar Industries fits that slot. It sells roof ventilation, gutters, mail systems, and drywall trim into residential work. It also runs an infrastructure segment for bridges and highways, plus agtech greenhouses. The macro backdrop rewards the pick-and-shovel supplier over the homebuilder, especially when the supplier trades at a discount.
+
+## Introducing ROCK
+Gibraltar Industries builds things you never notice but every house needs. Roof ventilation, foundation vents, gutters, downspouts, soffits, drywall corner beads, metal roofing accessories, mailboxes, and retractable awnings. The Residential segment sells through home improvement retailers, wholesalers, and distributors, so the end market is both new construction and repair or remodel.
+
+The Infrastructure segment makes expansion joints, structural bearings, seals, elastomeric concrete, and bridge cable protection systems. This is the steady, federally funded side of the business. You get highway and bridge spending without the timing risk of a single mega-project.
+
+The Agtech segment designs and builds controlled environment agriculture structures, custom greenhouses, and canopies. It serves growers of fruits, vegetables, flowers, and car wash applications. That is the optionality leg. If greenhouse buildouts accelerate, ROCK benefits. If they do not, the other two segments carry the weight.
+
+## The Thesis
+ROCK is a cash machine hiding inside a forgotten small cap. The pullback signal scores **95** out of **100**, the strongest in the small-cap set, and grades as tested with a risk-adjusted return of **1.10**. A moving-average cross scores a full **100**. Two separate desk reads both flagged it. The desk sees this as the cleanest pullback setup among small caps right now.
+
+The numbers back the signal. ROCK sits **36.6%** below its 52-week high yet holds above its 30-week moving average despite a **-7.0%** month. RSI sits at **54.4**, which is not overbought. It has outrun SPY by **23.4%** over three months, so relative strength is intact even during the recent dip.
+
+The prize is the valuation mismatch. Forward PE of **8.9** against free cash flow per share of **10.37**. Analyst consensus target sits at **75.25**, which would be above the 52-week high. You are paying for stagnation and getting optionality on a housing recovery.
+
+## Technical Analysis
+&gt; 📈 Insert the ROCK weekly chart here (TradingView): ROCK weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $54.86 · mark support near $43.51.
+
+That is the tension in this chart. Price is above the line, yet the line is rolling over. You want to see that slope flatten and turn positive to confirm a new uptrend.
+
+The 8-week and 21-week exponential moving averages are in the middle of a fresh cross, which is why the moving-average signal scores **100**. The pullback over the past month was **-7.0%**, while the prior three months delivered **+27.8%**. This is a pullback within a larger advance, not a breakdown.
+
+Levels matter here. Entry at **47.25**, stop at **43.51**, target at **54.86**. That gives you a **2.0** to **1** reward-to-risk ratio. The risk to stop is **7.9%**, upside to target is **16.1%**. The 52-week range runs from **33.56** to **75.08**. ROCK sits at **33%** of that yearly range, meaning in the bottom third. That is exactly where you want to buy a pullback candidate, provided the 30-week line holds.
+
+RSI sits at **54.4**, near neutral but leaning positive. Average true range of **1.87** means the stop at **43.51** is roughly two ATRs away.
+
+## Fundamentals
+| Metric | Value |
+|---|---|
+| Market cap | $1.27B |
+| Enterprise value | $2.69B |
+| 52-week range | $33.56 - $75.08 |
+| Dividend yield | None |
+| Beta | 1.22 |
+| Trailing P/E | 21.2 |
+| Forward P/E | 8.9 |
+| Price / sales | 0.9 |
+| Price / book | 1.4 |
+| Revenue (TTM) | $1.45B  (+64.6% YoY) |
+| Revenue / share | $48.58 |
+| Net income (TTM) | $60M |
+| EPS (TTM / fwd) | 2.02 / 4.81 |
+| Gross margin | 25.4% |
+| Operating margin | 12.3% |
+| Profit margin | -10.4% |
+| Operating cash flow / share | $2.40 |
+| Free cash flow / share | $10.37 |
+| Total cash / share | $0.51 |
+| Debt / equity | 1.54 |
+| Current ratio | 1.46 |
+| Return on equity | 6.2% |
+| Analyst consensus | none - mean target $75.25 (4 analysts) |
+
+Revenue grew **64.6%** to **$1.45B** over the trailing twelve months. That is a serious top-line acceleration for a building products company. Earnings per share sit at **2.02** trailing, with forward EPS of **4.81**, which is why the forward PE compresses to **8.9**. You are paying less than nine times next year&#x27;s earnings for a company with a **21.2** trailing multiple. The market is pricing in an earnings ramp it does not believe yet.
+
+The balance sheet has a wrinkle. That is high for a small cap. If FCF is boosted by one-time items or receivable timing, the cash yield overstates the run-rate.
+
+Margins are mixed. Gross margin of **25.4%** and operating margin of **12.3%** are respectable for a distributor-heavy industrial. Return on equity of **6.2%** is weak, held down by the debt load. Return on assets of **4.5%** is acceptable. The balance sheet leverage is the main weak spot, and you should watch the quick ratio of **0.61**, which shows the company relies on inventory and receivables to cover short-term obligations.
+
+The valuation is the story. Price to sales of **0.9** and price to book of **1.4**, with book value per share of **29.69**. Four analysts cover the name, so the target is not a thick consensus. But the disconnect between the target and the price tells you how far this has fallen out of favor.
+
+## Why Now
+The timing here is not a single catalyst. There is no earnings date in the near term that acts as a binary event, and no specific announced catalyst. The setup is the combination of valuation, relative strength, and the pullback score. Two independent desk reads flagged it on the same desk review.
+
+The relative strength is the tell. Beating the market by **23.4%** over three months while the broader small-cap group lost **0.8%** over the past month means ROCK is doing something different from the average small cap. It has a fundamental driver: the forward earnings estimate of **4.81** versus trailing **2.02** implies the market sees a sharp recovery coming.
+
+No options flow data is available for this name, so there is no positioning tell to read. That is typical for a **$9.1M** daily turnover small cap. You are buying based on price action and fundamentals, not derivatives activity.
+
+## Risk Factors
+The first risk is liquidity. Daily turnover of **$9.1M** means you cannot exit quickly if the trade goes wrong. A market selloff in small caps would widen the spread and you would take more slippage than you planned. This is a position to size smaller than you would for a mega-cap.
+
+The second risk is the earnings trajectory. Earnings growth over the trailing period is **-68.6%**, and net margin is **-10.4%**. The forward estimate of **4.81** implies a sharp reversal. If that reversal does not materialize, the forward PE of **8.9** is a trap, not a bargain.
+
+The third risk is the chart. The 30-week moving average slope is negative at **-3.8%**. If price closes below **43.51**, the stop, the pullback thesis is invalidated and you are out. A break of that level would put the swing low of **39.32** in play.
+
+The fourth risk is the balance sheet. Debt to equity of **1.54** leaves little room for error if rates stay high and free cash flow slips. A sustained decline in residential repair and remodel spending would pressure revenue and make the leverage uncomfortable.
+
+## Bringing It All Together
+- **Dual focus**: Residential and infrastructure segments give you exposure to both cyclical housing and steady federal spending.
+- **Market need**: Ventilation, gutters, drywall trim, and bridge components are non-discretionary in most build and repair cycles.
+- **Fundamentals**: Forward PE of **8.9**, free cash flow per share of **10.37**, and a **64.6%** revenue growth rate.
+- **Catalyst**: No single binary event, but the **2-to-1** reward-to-risk entry at **47.25** with a stop at **43.51** and target at **54.86**.
+- **Levels**: Hold above the 30-week line with RSI at **54.4** and relative strength beating the market by **23.4%**.
+
+## Conclusion
+ROCK is a cheap, overlooked supplier to the residential rebuild with a balance sheet that demands attention and a valuation that prices in failure. You buy the pullback with a defined risk of **7.9%** and target upside of **16.1%**. Two desk reads agree, the relative strength is real, and the cash flow is the safety net. The stop at **43.51** is the only number that matters if the thesis breaks. Keep the position small given the **$9.1M** daily liquidity.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

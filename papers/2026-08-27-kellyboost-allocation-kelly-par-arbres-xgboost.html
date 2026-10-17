@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KellyBoost : allocation Kelly par arbres XGBoost</title>
+<style>*{box-sizing:border-box}
+body{margin:0;background:#faf7f2;color:#1c1b1a;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+ line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:820px;margin:0 auto;padding:48px 22px 90px}
+.kicker{color:#b4623a;font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:13px}
+h1{font-size:40px;line-height:1.12;margin:10px 0 14px;font-weight:800}
+.lead{font-size:24px;line-height:1.35;color:#3a3733;margin:0 0 6px;font-weight:600}
+h2{font-size:23px;margin:44px 0 12px;font-weight:750}
+p{margin:0 0 12px}
+.card{background:#fff;border:1px solid #e7e1d8;border-radius:14px;padding:26px 24px;
+ margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.bloc{display:flex;gap:24px;align-items:center}
+.pic{font-size:92px;line-height:1;flex:0 0 auto}
+.bt{font-size:26px;font-weight:750;margin:0 0 6px}
+.bx{color:#55504a;margin:0;font-size:17px}
+.num{color:#b4623a;font-weight:700;font-size:13px;letter-spacing:.04em}
+ul{margin:6px 0 0;padding-left:22px}li{margin:9px 0;font-size:17px}
+.tag{display:inline-block;background:#f6ece6;color:#b4623a;font-size:12px;font-weight:700;
+ padding:4px 10px;border-radius:20px;margin-bottom:10px}
+.mini{color:#8a837a;font-size:14px}
+a{color:#b4623a}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid #e7e1d8;color:#8a837a;font-size:14px}
+.verdict{border-radius:14px;padding:22px 24px;margin:26px 0 8px;border:1px solid}
+.vlabel{font-size:13px;font-weight:800;letter-spacing:.08em;margin-bottom:8px}
+.vtext{margin:0;font-size:18px;line-height:1.5}
+.vp{background:#eef6ee;border-color:#cbe0cb}.vp .vlabel{color:#3c6b3c}
+.vt{background:#fbf3e6;border-color:#ecdcc0}.vt .vlabel{color:#8a6320}
+.vx{background:#f3f1ef;border-color:#e2ded8}.vx .vlabel{color:#6b6660}
+.gros{padding:30px 28px}
+.sst{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+ color:#b4623a;margin:24px 0 8px}.gros .sst:first-child{margin-top:0}
+.etapes{counter-reset:e;list-style:none;padding-left:0;margin:8px 0 0}
+.etapes li{counter-increment:e;position:relative;padding-left:38px;margin:12px 0;font-size:17px}
+.etapes li::before{content:counter(e);position:absolute;left:0;top:1px;width:26px;height:26px;
+ border-radius:50%;background:#f6ece6;color:#b4623a;font-weight:800;font-size:13px;
+ display:flex;align-items:center;justify-content:center}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:640px){h1{font-size:30px}.lead{font-size:20px}.pic{font-size:64px}
+ .bloc{flex-direction:column;align-items:flex-start;gap:12px}.duo{grid-template-columns:1fr}}</style></head><body><div class="wrap">
+<span class="tag">Marchés</span>
+<div class="kicker">Papier de la semaine · jeudi 27 août</div>
+<h1>KellyBoost : allocation Kelly par arbres XGBoost</h1>
+<p class="lead">Un seul modèle XGBoost apprend directement à répartir ton portefeuille entre plusieurs actifs pour maximiser la croissance à long terme, en optimisant l&#x27;objectif de Kelly au lieu de prédire les rendements.</p>
+<p class="mini">KellyBoost: Growth-Optimal Portfolio Construction with Gradient-Boosted Trees · <a href="https://arxiv.org/abs/2608.23393">arXiv 2608.23393</a></p>
+
+<div class="verdict vt">
+  <div class="vlabel">PLUS TARD</div>
+  <p class="vtext">Ton système raisonne signal par signal sur 5500 tickers indépendants, pas allocation de portefeuille multi-actifs conjointe, donc KellyBoost ne se branche sur aucun screener existant. Il devient utile le jour où tu construis un vrai book multi-positions avec sizing conjoint, ce qui n&#x27;est pas la brique actuelle.</p>
+</div>
+
+<h2>Le problème qu'ils attaquent</h2>
+<div class="card"><p class="bx">Construire un portefeuille se fait en deux temps d&#x27;habitude. Un modèle prédit les rendements, puis un solveur calcule les poids optimaux. Les erreurs du premier étage s&#x27;amplifient dans le second, et l&#x27;objectif du modèle (RMSE sur les rendements) n&#x27;est pas ce qui te rend riche. Les auteurs veulent que le modèle sorte directement les poids qui font croître ton capital le plus vite.</p></div>
+
+<h2>Comment ça marche</h2>
+<div class="card"><div class="bloc"><div class="pic">🎯</div><div><div class="num">01</div><p class="bt">Un modèle sort les poids</p><p class="bx">Le modèle prend tes features en entrée et sort un vecteur de poids qui somme à un, un par actif. La couche finale est un softmax, ce qui garantit que la somme fait 100% et que chaque poids est positif. Tu ne prédis pas les rendements pour les convertir ensuite en poids, tu apprends les poids directement.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">📈</div><div><div class="num">02</div><p class="bt">Kelly comme fonction de perte</p><p class="bx">La perte à minimiser est moins log(1 + w·y), où w sont les poids et y les rendements réalisés sur la période. Minimiser ça revient à maximiser le log de la croissance du capital, ce qui est le critère de Kelly. Le modèle est donc récompensé quand ses poids font grossir le portefeuille au sens géométrique, pas quand il prédit bien un chiffre.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🌳</div><div><div class="num">03</div><p class="bt">XGBoost au lieu d&#x27;un réseau</p><p class="bx">L&#x27;estimateur est un XGBoost multi-sorties, un arbre de gradient boosting qui produit plusieurs valeurs à la fois. XGBoost a besoin du gradient et de la Hessienne de la perte pour construire chaque split. Les auteurs dérivent les deux à la main sur la perte Kelly softmax, forme fermée, puis vérifient par différences finies que c&#x27;est juste.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🧮</div><div><div class="num">04</div><p class="bt">Hessienne complète en dur</p><p class="bx">Ils fournissent la Hessienne diagonale et la Hessienne complète en formule fermée. La diagonale suffit à XGBoost standard, mais la complète capture les corrélations entre poids et rend l&#x27;optimisation plus stable quand les actifs bougent ensemble. Le tout tourne dans un moteur de référence sans dépendance externe.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🔗</div><div><div class="num">05</div><p class="bt">Fin à fin sans solveur</p><p class="bx">Tu retires l&#x27;étage d&#x27;optimisation classique de type mean-variance. Le modèle mange les features, sort les poids, et c&#x27;est fini. Cela évite que la sensibilité du solveur aux inputs bruités transforme un signal faible en allocation extrême.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">⚠️</div><div><div class="num">06</div><p class="bt">Kelly plein est agressif</p><p class="bx">Kelly maximise la croissance espérée mais accepte des drawdowns brutaux. En pratique tout le monde tourne à demi-Kelly ou quart-Kelly pour rester supportable psychologiquement et par mandat. Le papier optimise la version pleine, il faut donc scaler les poids en sortie ou pénaliser la perte.</p></div></div></div>
+
+<h2>Ce qu&#x27;ils ont mesuré</h2><div class="card"><ul><li>Le résumé ne donne pas de Sharpe, de CAGR ni de drawdown, seulement la dérivation analytique du gradient et de la Hessienne</li><li>Ils vérifient les dérivées par différences finies contre la formule fermée, mais aucune valeur d&#x27;erreur n&#x27;est citée dans le résumé</li><li>Aucun univers d&#x27;actifs, aucune période de backtest, aucune taille d&#x27;échantillon n&#x27;apparaît dans le résumé fourni</li></ul></div>
+<h2>Ce que ça ne prouve pas</h2><div class="card"><ul><li>Le résumé ne prouve rien empiriquement, il vend surtout la propreté mathématique de la perte et de ses dérivées</li><li>Kelly plein casse dès que les rendements estimés sont biaisés, un petit biais suffit à sortir des poids extrêmes qui plombent l&#x27;équity</li><li>Multi-actifs simultanés implique de la data alignée par barre pour tous les tickers, ce qui limite l&#x27;univers exploitable et introduit du survivorship si tu n&#x27;y fais pas attention</li></ul></div>
+
+<h2>Chez nous</h2>
+<div class="card gros">
+  <p class="sst">Où ça se branche</p>
+  <p class="bx">Rien dans scripts-screener aujourd&#x27;hui. Le candidat théorique serait un futur module de sizing au-dessus de la sélection Trade Desk (model_tier.trade_desk_*) qui combine plusieurs picks en un portefeuille, mais ce module n&#x27;existe pas.</p>
+  <p class="sst">Le plan</p>
+  <ol class="etapes"><li>Construire d&#x27;abord un backtester de portefeuille multi-positions au-dessus de signal_outcomes qui prend N signaux en même temps et suit l&#x27;equity conjointe</li><li>Définir un univers restreint (top 20 picks Trade Desk du jour) avec rendements alignés par barre depuis market_data.ohlcv</li><li>Coder la perte moins log(1 + w·y) et ses dérivées, brancher sur un XGBoost multi-sortie sur cet univers restreint</li><li>Comparer sur signal_outcomes le CAGR et max drawdown contre un sizing équipondéré et un sizing par ATR déjà en place</li></ol>
+  <div class="duo">
+    <div><p class="sst">Effort</p><p class="bx">3 à 5 jours si le backtester portefeuille existe déjà, 2 semaines sinon</p></div>
+    <div><p class="sst">Ça remplace</p><p class="bx">Ajoute une couche de sizing conjoint au-dessus des picks, ne remplace aucun screener</p></div>
+  </div>
+  <p class="sst">Le risque</p>
+  <p class="bx">Poids concentrés sur un seul ticker à cause d&#x27;un biais d&#x27;estimation, signe : la volatilité réalisée du portefeuille backtesté explose vs le sizing équipondéré sur la même sélection</p>
+</div>
+
+<h2>Le test qui tranche</h2>
+<div class="card"><p class="bx">Sur les picks Trade Desk EOD des 3 dernières années, comparer CAGR net de slippage et max drawdown d&#x27;un sizing KellyBoost contre équipondéré. Invalidé si le drawdown dépasse 1,5x celui de l&#x27;équipondéré pour un CAGR inférieur, ou si le Deflated Sharpe passe sous 0.5.</p></div>
+
+<h2>Ce que j&#x27;ai simplifié</h2><div class="card"><ul><li>J&#x27;ai décrit la sortie softmax comme des poids longs seuls, le papier peut aussi couvrir des extensions long-short, mais le résumé ne le précise pas</li><li>J&#x27;ai parlé de Kelly plein comme agressif sans détailler que le papier pourrait inclure une régularisation implicite via l&#x27;arbre lui-même</li></ul></div>
+<footer>Veille papers · <a href="index.html">toutes les semaines</a></footer>
+</div></body></html>
