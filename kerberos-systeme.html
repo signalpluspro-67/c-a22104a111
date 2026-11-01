@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le système de Kerberos007 — le cours</title>
+<style>
+  :root{
+    --paper:#f3ead9; --paper2:#eaddc6; --card:#fbf6ec; --card2:#f7efe0;
+    --ink:#352b21; --ink2:#6a5c49; --muted:#9d8c74; --line:#e4d7bf; --line2:#d8c8ab;
+    --gold:#bd8524; --gold-soft:rgba(189,133,36,.16);
+    --buy:#2e7d5b; --buy-soft:rgba(46,125,91,.14);
+    --sell:#b0472c; --sell-soft:rgba(176,71,44,.14);
+    --bar:#a2814f; --bar2:#6f5535;
+    --blue:#3a6b8a; --blue-soft:rgba(58,107,138,.14);
+    --shadow:0 1px 2px rgba(60,45,25,.06),0 6px 20px rgba(60,45,25,.07);
+    --mono:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font:16px/1.65 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px;margin:0 auto;padding:0 22px}
+
+  nav.top{position:sticky;top:0;z-index:20;background:rgba(243,234,217,.93);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line2)}
+  nav.top .wrap{display:flex;align-items:center;gap:14px;height:52px;overflow-x:auto}
+  nav.top a{color:var(--ink2);text-decoration:none;font-size:13px;white-space:nowrap;font-family:var(--mono);letter-spacing:.02em}
+  nav.top a:hover{color:var(--gold)}
+  nav.top .brand{font-weight:700;color:var(--ink);font-family:inherit;font-size:15px}
+
+  header.hero{padding:60px 0 26px;border-bottom:1px solid var(--line)}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+  h1{font-size:clamp(30px,5vw,46px);line-height:1.1;margin:0 0 16px;font-weight:700;letter-spacing:-.01em}
+  .sub{font-size:19px;color:var(--ink2);margin:0;max-width:640px}
+
+  section{padding:52px 0;border-bottom:1px solid var(--line)}
+  .modnum{font-family:var(--mono);font-size:13px;color:var(--gold);letter-spacing:.12em;margin:0 0 6px}
+  h2{font-size:29px;line-height:1.15;margin:0 0 8px;font-weight:700;letter-spacing:-.01em}
+  h3{font-size:20px;margin:34px 0 10px;font-weight:700;color:var(--ink)}
+  h4{font-size:16px;margin:22px 0 6px;font-weight:700;color:var(--ink2);font-family:var(--mono);letter-spacing:.02em}
+  p{margin:0 0 15px}
+  .lead{font-size:18px;color:var(--ink2);margin-bottom:22px}
+  strong{color:var(--ink);font-weight:700}
+  em{color:var(--bar2)}
+  a.inl{color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold-soft)}
+  ul,ol{margin:0 0 16px;padding-left:22px}
+  li{margin:0 0 8px}
+
+  figure{margin:26px 0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 18px 12px;box-shadow:var(--shadow);overflow-x:auto}
+  figure svg{display:block;width:100%;height:auto;min-width:520px}
+  figcaption{font-size:13.5px;color:var(--muted);margin-top:10px;font-family:var(--mono);line-height:1.5}
+  figcaption b{color:var(--ink2)}
+
+  blockquote{margin:22px 0;padding:16px 20px;background:var(--card2);border-left:3px solid var(--gold);border-radius:0 10px 10px 0}
+  blockquote p{margin:0 0 6px;font-style:italic;color:var(--ink)}
+  blockquote cite{font-style:normal;font-family:var(--mono);font-size:12px;color:var(--muted);display:block;margin-top:6px}
+
+  .box{border-radius:12px;padding:18px 20px;margin:22px 0;border:1px solid var(--line)}
+  .box .bt{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;margin:0 0 8px;font-weight:700}
+  .box p:last-child{margin-bottom:0}
+  .verdict{background:linear-gradient(180deg,#fbf3e2,#f6ecd6);border-color:var(--line2)}
+  .verdict .bt{color:var(--gold)}
+  .tip{background:var(--buy-soft);border-color:rgba(46,125,91,.3)}
+  .tip .bt{color:var(--buy)}
+  .warn{background:var(--sell-soft);border-color:rgba(176,71,44,.3)}
+  .warn .bt{color:var(--sell)}
+  .note{background:var(--blue-soft);border-color:rgba(58,107,138,.3)}
+  .note .bt{color:var(--blue)}
+
+  .bricks{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:24px 0}
+  .brick{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 15px}
+  .brick .b-tag{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--gold);margin:0 0 4px}
+  .brick .b-name{font-weight:700;font-size:15px;margin:0 0 5px}
+  .brick p{font-size:13.5px;color:var(--ink2);margin:0;line-height:1.5}
+
+  .tbl{width:100%;border-collapse:collapse;margin:22px 0;font-size:14px;overflow:hidden;border-radius:10px;box-shadow:var(--shadow)}
+  .tbl th,.tbl td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  .tbl th{background:var(--paper2);font-family:var(--mono);font-size:11.5px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink2)}
+  .tbl tr:last-child td{border-bottom:none}
+  .tbl td.name{font-weight:700}
+  .tbl .num{font-family:var(--mono);font-size:13px;white-space:nowrap}
+  .pill{display:inline-block;padding:1px 8px;border-radius:20px;font-family:var(--mono);font-size:11px;font-weight:700;white-space:nowrap}
+  .pill.v{background:var(--buy-soft);color:var(--buy)}
+  .pill.r{background:var(--sell-soft);color:var(--sell)}
+  .pill.o{background:var(--gold-soft);color:var(--gold)}
+
+  .st{font-family:var(--mono);font-size:12px;fill:var(--ink2)}
+  .stl{font-family:var(--mono);font-size:11px;fill:var(--muted)}
+  .stb{font-family:var(--mono);font-size:12px;fill:var(--ink);font-weight:700}
+  .stw{font-family:var(--mono);font-size:12px;fill:#fff;font-weight:700}
+  .title-s{font-family:var(--mono);font-size:13px;fill:var(--ink);font-weight:700}
+
+  .cheat{background:var(--card);border:2px solid var(--gold);border-radius:14px;padding:8px 4px}
+  .cheat h3{margin:14px 16px 8px}
+  .cheat .row{display:grid;grid-template-columns:200px 1fr;gap:10px;padding:9px 16px;border-top:1px solid var(--line);font-size:14.5px}
+  .cheat .row .k{font-weight:700;font-family:var(--mono);font-size:13px;color:var(--gold)}
+  .cheat .row .v{color:var(--ink2)}
+
+  footer{padding:40px 0 70px;color:var(--muted);font-size:13px;font-family:var(--mono)}
+  .toc-mini{columns:2;column-gap:26px;margin:18px 0 0}
+  .toc-mini a{display:block;color:var(--ink2);text-decoration:none;font-size:14px;padding:4px 0}
+  .toc-mini a:hover{color:var(--gold)}
+  .toc-mini a b{color:var(--gold);font-family:var(--mono);font-size:12px;margin-right:8px}
+  @media(max-width:640px){.cheat .row{grid-template-columns:1fr}.toc-mini{columns:1}}
+</style>
+</head>
+<body>
+
+<nav class="top"><div class="wrap">
+  <span class="brand">Kerberos007</span>
+  <a href="#m0">0·Qui</a>
+  <a href="#m1">1·Philosophie</a>
+  <a href="#m2">2·5 dimensions</a>
+  <a href="#m3">3·Backwardation</a>
+  <a href="#m4">4·Stars Aligned</a>
+  <a href="#m5">5·Jaws</a>
+  <a href="#m6">6·Options</a>
+  <a href="#m7">7·Signaux validés</a>
+  <a href="#m8">8·Rejetés</a>
+  <a href="#m9">9·Track record</a>
+  <a href="#m10">10·Ton système</a>
+  <a href="#m11">11·Cheat sheet</a>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <p class="kicker">Cours complet · d'après l'archive @kerberos007 (2018-2022)</p>
+  <h1>Le système de<br>Kerberos007, décodé</h1>
+  <p class="sub">Un trader macro anonyme qui a appelé le crash COVID une semaine avant, et qui s'est aussi trompé la moitié du temps. Voici sa méthode, ses vrais signaux, et la ligne qui sépare son génie de son bruit.</p>
+
+  <div class="box verdict" style="margin-top:34px">
+    <p class="bt">Le fil rouge du cours</p>
+    <p>Kerb, c'est <strong>deux choses qu'il faut séparer</strong>. D'un côté un <em>framework</em> de lecture du marché (term structure du VIX, cross-asset, breadth, positionnement) dont une partie résiste aux backtests les plus stricts. De l'autre, un <em>timing</em> de tweets qui déclenche trop tôt et trop souvent, avec un hit rate réel de 14 %.</p>
+    <p style="margin-top:10px"><strong>La leçon en une phrase : garde ses signaux validés, ignore le calendrier de ses tweets.</strong> Ce cours t'apprend à faire exactement ça, avec les chiffres.</p>
+  </div>
+
+  <div class="toc-mini">
+    <a href="#m0"><b>00</b>Qui est Kerb</a>
+    <a href="#m1"><b>01</b>La philosophie</a>
+    <a href="#m2"><b>02</b>La méthode en 5 dimensions</a>
+    <a href="#m3"><b>03</b>Backwardation : la boucle de peur</a>
+    <a href="#m4"><b>04</b>Cross-asset &amp; Stars Aligned</a>
+    <a href="#m5"><b>05</b>Breadth &amp; les Jaws</a>
+    <a href="#m6"><b>06</b>Les options comme radar</a>
+    <a href="#m7"><b>07</b>Les signaux validés</a>
+    <a href="#m8"><b>08</b>Le cimetière des rejetés</a>
+    <a href="#m9"><b>09</b>Le track record, sans filtre</a>
+    <a href="#m10"><b>10</b>Comment tu l'utilises</a>
+    <a href="#m11"><b>11</b>Glossaire &amp; cheat sheet</a>
+  </div>
+</div></header>
+
+<main class="wrap">
+
+<!-- ===== MODULE 0 ===== -->
+<section id="m0">
+  <p class="modnum">MODULE 00</p>
+  <h2>Qui est Kerberos007</h2>
+  <p class="lead">Un compte Twitter anonyme, actif de 2018 à 2022, qui mélange trois métiers que la plupart des gens gardent séparés : l'analyse technique, le quant, et la lecture de flux.</p>
+
+  <p>Kerb n'est ni un chartiste pur, ni un quant pur, ni un tape reader pur. C'est un <strong>macro-technicien</strong> : il lit le marché comme une machine à sentiment et à positionnement, et il cherche les moments où tout le monde est du même côté du bateau. Son terrain de jeu, ce sont les <em>extrêmes</em>, pas la tendance tranquille.</p>
+
+  <p>On a archivé <strong>76 threads</strong> de lui (2018-2022) et backtesté ses idées une par une avec le protocole le plus strict (Bonferroni, block bootstrap, walk-forward). Ce cours s'appuie sur ce travail. Il te donne les deux faces : ce qui marche vraiment, et ce qui n'a jamais tenu la route.</p>
+
+  <div class="box warn">
+    <p class="bt">Avertissement honnête, tout de suite</p>
+    <p>Sur 37 appels directionnels testés, son hit rate strict est de <strong>14 %</strong>. Ça a l'air catastrophique. Ça ne l'est pas, parce que ses ratés sont concentrés en marché haussier (où il est baissier trop tôt) et ses réussites sont concentrées aux <em>retournements</em> (COVID, 2022). C'est un <strong>crash caller</strong>, pas un suiveur de tendance. Tout le cours sert à exploiter ce profil sans se faire piéger par lui.</p>
+  </div>
+</section>
+
+<!-- ===== MODULE 1 ===== -->
+<section id="m1">
+  <p class="modnum">MODULE 01</p>
+  <h2>La philosophie : 4 principes</h2>
+  <p class="lead">Chez Kerb, l'edge ne vient jamais d'un signal isolé. Il vient de la structure : plusieurs signaux indépendants qui pointent dans la même direction en même temps.</p>
+
+  <div class="bricks">
+    <div class="brick"><p class="b-tag">PRINCIPE 1</p><p class="b-name">Composite &gt; solo</p><p>Un signal seul, c'est du bruit. Trois signaux indépendants qui s'alignent, c'est un edge. Confirmé en test : 1 brique = faux positifs, 2+ = vrai signal.</p></div>
+    <div class="brick"><p class="b-tag">PRINCIPE 2</p><p class="b-name">Buffer 3 jours, hard cliff</p><p>Un trigger doit tenir <strong>3 jours</strong> en zone avant de compter, puis c'est binaire (ON/OFF). Moins = faux positifs. Plus = on rate les corrections éclair.</p></div>
+    <div class="brick"><p class="b-tag">PRINCIPE 3</p><p class="b-name">Haven filter</p><p>Pour valider un vrai risk-off, une couche défensive doit bouger d'accord : l'or ne chute pas (GLD 60j ≥ -2 %), le crédit ne surperforme pas. Sinon c'est un faux stress.</p></div>
+    <div class="brick"><p class="b-tag">PRINCIPE 4</p><p class="b-name">Cross-asset alignment</p><p>La vraie signature du stress, c'est plusieurs classes qui bougent ensemble : SPX, VIX/VVIX, or, obligations, FX, secteurs. Un seul actif qui panique ne suffit pas.</p></div>
+  </div>
+
+  <h3>L'edge philosophique : fade the dumb money</h3>
+  <p>Sous ces 4 principes, une conviction contrarian classique. Kerb la résume sans détour :</p>
+  <blockquote>
+    <p>« Fade the dumb money (les conseillers financiers). Follow the smart money. Scale in long quand les spéculateurs sont all-in short. »</p>
+    <cite>Kerberos007 — sur le positionnement COT</cite>
+  </blockquote>
+  <p>Il traque le positionnement extrême via les données COT (Commitment of Traders) : quand les « large specs » (l'argent bête) sont tous du même côté, il se prépare à parier contre. C'est le socle sentiment de tout le reste.</p>
+
+  <figure>
+    <svg viewBox="0 0 760 250" role="img" aria-label="Un signal solo est du bruit, trois signaux alignés forment un edge">
+      <text x="60" y="26" class="title-s">1 signal seul = bruit</text>
+      <text x="440" y="26" class="title-s">3 signaux alignés = edge</text>
+      <!-- solo: scattered dots -->
+      <g>
+        <circle cx="90" cy="90" r="7" fill="#a2814f" opacity=".5"/>
+        <circle cx="150" cy="140" r="7" fill="#a2814f" opacity=".5"/>
+        <circle cx="120" cy="180" r="7" fill="#a2814f" opacity=".5"/>
+        <text x="200" y="135" class="stl">directions incohérentes,</text>
+        <text x="200" y="150" class="stl">pas de conviction</text>
+      </g>
+      <line x1="380" y1="50" x2="380" y2="210" stroke="#e4d7bf"/>
+      <!-- composite: 3 arrows converge -->
+      <g stroke="#2e7d5b" stroke-width="3" fill="none">
+        <path d="M440 80 L560 130"/><path d="M440 180 L560 130"/><path d="M470 130 L560 130"/>
+      </g>
+      <g fill="#2e7d5b"><path d="M560 130 l-12 -5 l0 10 z"/></g>
+      <circle cx="580" cy="130" r="20" fill="var(--buy-soft)" stroke="#2e7d5b" stroke-width="2"/>
+      <text x="580" y="135" class="stb" text-anchor="middle" fill="#2e7d5b">GO</text>
+      <text x="440" y="78" class="stl">VIX</text>
+      <text x="440" y="196" class="stl">breadth</text>
+      <text x="430" y="127" class="stl">cross-asset</text>
+      <text x="612" y="134" class="st">signal réel</text>
+    </svg>
+    <figcaption><b>Le cœur de la méthode.</b> Kerb ne trade jamais une brique isolée. Il attend que plusieurs mesures indépendantes (volatilité, largeur du marché, cross-asset) racontent la même histoire. C'est ce qui a fait le détecteur de crash COVID.</figcaption>
+  </figure>
+</section>
+
+<!-- ===== MODULE 2 ===== -->
+<section id="m2">
+  <p class="modnum">MODULE 02</p>
+  <h2>La méthode en 5 dimensions</h2>
+  <p class="lead">En 2019, Kerb publie son cadre pour lire une séance. Cinq couches, de la plus visible à la plus cachée. La dernière est celle qui décide.</p>
+
+  <figure>
+    <svg viewBox="0 0 760 300" role="img" aria-label="Les cinq dimensions du trading empilées, la cinquième au sommet">
+      <!-- stacked layers, pyramid feel -->
+      <g font-family="var(--mono)">
+        <rect x="130" y="230" width="500" height="42" rx="6" fill="#a2814f" opacity=".55"/>
+        <text x="150" y="256" class="stb">1 · Price action 15M + volume</text>
+        <text x="470" y="256" class="stl">chart, S/R, patterns</text>
+
+        <rect x="160" y="182" width="440" height="42" rx="6" fill="#a2814f" opacity=".68"/>
+        <text x="180" y="208" class="stb">2 · Liquidity flows</text>
+        <text x="440" y="208" class="stl">accumulation / distribution</text>
+
+        <rect x="190" y="134" width="380" height="42" rx="6" fill="#a2814f" opacity=".82"/>
+        <text x="210" y="160" class="stb">3 · Options (gamma / delta / vega)</text>
+
+        <rect x="220" y="86" width="320" height="42" rx="6" fill="#a2814f"/>
+        <text x="240" y="112" class="stw">4 · S/R majeurs + Max Pain</text>
+
+        <rect x="250" y="38" width="260" height="42" rx="6" fill="#bd8524"/>
+        <text x="270" y="64" class="stw">5 · Imbalances offre / demande</text>
+      </g>
+      <text x="524" y="64" class="stb" fill="#bd8524">★ le graal</text>
+    </svg>
+    <figcaption><b>Les 4 premières couches sont des <i>inputs</i>. La 5ème est la <i>décision</i>.</b> Les déséquilibres offre/demande sur les niveaux clés déterminent si un support tient ou casse. « Finding clues from 1st to 4th dimension on liquidity imbalances ties all the pieces together. »</figcaption>
+  </figure>
+
+  <p>Le message : le prix et le volume (couche 1) ne sont qu'un point de départ. Ce qui compte, c'est <em>où se cache la vraie liquidité</em> (couche 2), <em>comment les dealers sont positionnés</em> via les options (couche 3), <em>où le prix va chasser les stops</em> (couche 4, max pain), et finalement <em>de quel côté penche le déséquilibre</em> (couche 5). Une EMA ne voit que la couche 1. Kerb regarde les cinq.</p>
+
+  <div class="box note">
+    <p class="bt">Le pont avec ton autre cours</p>
+    <p>La couche 4 (max pain, S/R où la liquidité se cache) et la couche 5 (déséquilibres offre/demande) sont exactement ce que le <a class="inl" href="volume-profile-dalton.html">Volume Profile</a> te donne visuellement. Kerb et Dalton parlent de la même chose par deux chemins : où le marché accepte ou refuse un prix.</p>
+  </div>
+</section>
+
+<!-- ===== MODULE 3 ===== -->
+<section id="m3">
+  <p class="modnum">MODULE 03</p>
+  <h2>Backwardation : la boucle de peur</h2>
+  <p class="lead">Si tu ne retiens qu'un concept de Kerb, c'est celui-là. La term structure du VIX qui s'inverse déclenche une boucle qui s'auto-alimente. « Fear begets fear. »</p>
+
+  <p>En temps normal, la term structure du VIX est en <strong>contango</strong> : la volatilité attendue dans 3 mois (VXV) est plus haute que la volatilité du moment (VIX). C'est le régime calme. Quand ça s'inverse (VIX du moment &gt; VIX à 3 mois), on est en <strong>backwardation</strong> : le marché price plus de peur <em>maintenant</em> que plus tard. C'est le régime de panique.</p>
+
+  <figure>
+    <svg viewBox="0 0 760 260" role="img" aria-label="Term structure du VIX en contango descendant contre backwardation inversée">
+      <line x1="60" y1="200" x2="360" y2="200" stroke="#d8c8ab"/>
+      <line x1="60" y1="40" x2="60" y2="200" stroke="#d8c8ab"/>
+      <text x="60" y="24" class="title-s">Contango (calme)</text>
+      <polyline points="80,170 160,150 240,135 330,125" fill="none" stroke="#2e7d5b" stroke-width="2.5"/>
+      <g fill="#2e7d5b"><circle cx="80" cy="170" r="4"/><circle cx="160" cy="150" r="4"/><circle cx="240" cy="135" r="4"/><circle cx="330" cy="125" r="4"/></g>
+      <text x="70" y="192" class="stl">spot</text><text x="300" y="192" class="stl">3 mois</text>
+      <text x="80" y="220" class="stl">la vol lointaine coûte plus cher</text>
+
+      <line x1="420" y1="200" x2="720" y2="200" stroke="#d8c8ab"/>
+      <line x1="420" y1="40" x2="420" y2="200" stroke="#d8c8ab"/>
+      <text x="420" y="24" class="title-s">Backwardation (panique)</text>
+      <polyline points="440,70 520,105 600,135 690,155" fill="none" stroke="#b0472c" stroke-width="2.5"/>
+      <g fill="#b0472c"><circle cx="440" cy="70" r="4"/><circle cx="520" cy="105" r="4"/><circle cx="600" cy="135" r="4"/><circle cx="690" cy="155" r="4"/></g>
+      <text x="430" y="192" class="stl">spot</text><text x="660" y="192" class="stl">3 mois</text>
+      <text x="440" y="220" class="stl">la peur du MOMENT explose le spot</text>
+    </svg>
+    <figcaption><b>La courbe s'inverse quand la peur devient immédiate.</b> Kerb : « Steep backwardation = extreme fear, panic, capitulation. » C'est le signal-mère de tout son système de détection de stress.</figcaption>
+  </figure>
+
+  <h3>Pourquoi ça s'auto-alimente</h3>
+  <p>Le vrai génie de Kerb, c'est d'avoir décrit la <strong>boucle réflexive</strong>. La backwardation ne fait pas que signaler la peur, elle la fabrique :</p>
+
+  <figure>
+    <svg viewBox="0 0 760 300" role="img" aria-label="Boucle réflexive de la peur en cinq étapes qui se rebouclent">
+      <g font-family="var(--mono)" font-size="12">
+        <!-- 5 nodes around a loop -->
+        <g><rect x="300" y="20" width="160" height="46" rx="8" fill="var(--sell-soft)" stroke="#b0472c"/><text x="380" y="41" class="stb" text-anchor="middle" fill="#b0472c">Backwardation</text><text x="380" y="57" class="stl" text-anchor="middle">la courbe s'inverse</text></g>
+        <g><rect x="560" y="110" width="170" height="46" rx="8" fill="var(--card2)" stroke="#d8c8ab"/><text x="645" y="131" class="stb" text-anchor="middle">Margin calls</text><text x="645" y="147" class="stl" text-anchor="middle">longs FOMO liquidés</text></g>
+        <g><rect x="470" y="215" width="180" height="46" rx="8" fill="var(--card2)" stroke="#d8c8ab"/><text x="560" y="236" class="stb" text-anchor="middle">Achat de puts</text><text x="560" y="252" class="stl" text-anchor="middle">chasse aux primes</text></g>
+        <g><rect x="110" y="215" width="180" height="46" rx="8" fill="var(--card2)" stroke="#d8c8ab"/><text x="200" y="236" class="stb" text-anchor="middle">VIX spike</text><text x="200" y="252" class="stl" text-anchor="middle">la vol explose</text></g>
+        <g><rect x="30" y="110" width="180" height="46" rx="8" fill="var(--card2)" stroke="#d8c8ab"/><text x="120" y="131" class="stb" text-anchor="middle">Shorts FX unwind</text><text x="120" y="147" class="stl" text-anchor="middle">le carry se dénoue</text></g>
+      </g>
+      <!-- arrows clockwise -->
+      <g stroke="#b0472c" stroke-width="2" fill="none">
+        <path d="M462 48 C 540 60, 590 85, 630 108"/>
+        <path d="M640 158 C 630 185, 610 200, 585 213"/>
+        <path d="M468 250 C 400 265, 350 265, 292 250"/>
+        <path d="M150 213 C 120 195, 108 180, 112 158"/>
+        <path d="M150 108 C 200 70, 260 55, 298 46"/>
+      </g>
+      <g fill="#b0472c">
+        <path d="M630 108 l-9 -1 l4 8 z"/><path d="M585 213 l1 -9 l-8 4 z"/>
+        <path d="M292 250 l8 -5 l-2 9 z"/><path d="M112 158 l-4 -8 l8 1 z"/><path d="M298 46 l-6 6 l-2 -9 z"/>
+      </g>
+      <text x="380" y="150" class="stb" text-anchor="middle" fill="#b0472c">fear</text>
+      <text x="380" y="167" class="stb" text-anchor="middle" fill="#b0472c">begets fear</text>
+    </svg>
+    <figcaption><b>La boucle de Kerb.</b> La backwardation déclenche les margin calls sur les longs sur-effet de levier, plus le dénouement des shorts FX record, ce qui accélère la baisse du SPX, donc plus d'achat de puts, ce qui pousse les primes et fait spiker le VIX encore plus, ce qui renforce la backwardation. La peur nourrit la peur.</figcaption>
+  </figure>
+
+  <div class="box tip">
+    <p class="bt">Ce que le backtest en dit (2026)</p>
+    <p>La backwardation VXV/VIX est <strong>l'un des rares signaux qui passe le test le plus strict</strong> : SPY <strong>+7,23 %</strong> sur 60 jours après un trigger (n=151, p&lt;0,0001), et jusqu'à <strong>+11,7 %</strong> en régime bear. Combinée à un drawdown du crédit (HYG), elle monte à +10,8 % sur 60 j. Ce n'est pas du folklore, c'est un edge mesuré. Détails au <a class="inl" href="#m7">module 7</a>.</p>
+  </div>
+</section>
+
+<!-- ===== MODULE 4 ===== -->
+<section id="m4">
+  <p class="modnum">MODULE 04</p>
+  <h2>Cross-asset &amp; « Stars Aligned »</h2>
+  <p class="lead">Kerb ne regarde jamais le SPX seul. Il regarde comment les actions, l'or, le VIX et les devises bougent ensemble. Son setup le plus célèbre, « Stars Aligned », vient de là. Il est aussi un bon exemple de mythe à nuancer.</p>
+
+  <p>L'idée de « Stars Aligned » : normalement, quand le SPX monte, le VIX baisse et l'or reste plat (personne ne se couvre, tout le monde est long). Le drapeau rouge, c'est quand le marché monte <strong>et</strong> se couvre en même temps. Kerb le mesure avec 3 corrélations :</p>
+
+  <figure>
+    <svg viewBox="0 0 760 220" role="img" aria-label="Trois cadrans de corrélation qui doivent s'aligner pour Stars Aligned">
+      <g font-family="var(--mono)">
+        <!-- 3 gauges -->
+        <g transform="translate(130,110)">
+          <path d="M-70 0 A70 70 0 0 1 70 0" fill="none" stroke="#e4d7bf" stroke-width="10"/>
+          <path d="M-70 0 A70 70 0 0 1 55 -43" fill="none" stroke="#bd8524" stroke-width="10"/>
+          <text x="0" y="30" class="stb" text-anchor="middle">SPX ↔ Or</text>
+          <text x="0" y="48" class="stl" text-anchor="middle">50j ≥ +0,70</text>
+        </g>
+        <g transform="translate(380,110)">
+          <path d="M-70 0 A70 70 0 0 1 70 0" fill="none" stroke="#e4d7bf" stroke-width="10"/>
+          <path d="M-70 0 A70 70 0 0 1 30 -63" fill="none" stroke="#bd8524" stroke-width="10"/>
+          <text x="0" y="30" class="stb" text-anchor="middle">SPX ↔ VIX</text>
+          <text x="0" y="48" class="stl" text-anchor="middle">7j ≥ +0,25</text>
+        </g>
+        <g transform="translate(630,110)">
+          <path d="M-70 0 A70 70 0 0 1 70 0" fill="none" stroke="#e4d7bf" stroke-width="10"/>
+          <path d="M-70 0 A70 70 0 0 1 35 -60" fill="none" stroke="#bd8524" stroke-width="10"/>
+          <text x="0" y="30" class="stb" text-anchor="middle">SPX ↔ VVIX</text>
+          <text x="0" y="48" class="stl" text-anchor="middle">7j ≥ +0,30</text>
+        </g>
+      </g>
+      <text x="380" y="180" class="st" text-anchor="middle">2/3 alignées → &gt;70 % · 3/3 alignées → &gt;85 % (claim Kerb)</text>
+    </svg>
+    <figcaption><b>Le paradoxe du hedge.</b> Quand le marché est au plus haut ET que l'or, le VIX et le VVIX montent en corrélation avec lui, ça veut dire que tout le monde est long <i>et</i> se couvre. Kerb y voit un présage de left-tail.</figcaption>
+  </figure>
+
+  <div class="box warn">
+    <p class="bt">Honnêteté : Stars Aligned en solo est REJETÉ</p>
+    <p>Testé sur 11 ans, le seuil strict 3/3 n'a produit <strong>zéro trigger</strong>, et le 2/3 a un hit rate d'environ 20 %. Il n'a détecté ni COVID, ni Q4 2018, ni 2015. Verdict : <strong>observation seulement, jamais en trade solo</strong> (poids ~6 % dans le composite crash). Son mérite réel : quand il s'allume (rare), il te dit en temps réel que les institutions se couvrent. C'est un <em>check narratif</em>, pas un déclencheur.</p>
+  </div>
+
+  <h3>Les devises comme thermomètre risk-off</h3>
+  <p>Kerb utilise le FX comme signal avancé. Refuge : <strong>USD, JPY, CHF</strong>. Euphorie : <strong>EUR, AUD, NZD</strong>. Sa paire fétiche, l'<strong>AUDJPY</strong>, qu'il appelle « la meilleure corrélation risk-off des 20 dernières années », avec 6 épisodes de « Jaws » documentés (2000, 2008, 2015, 2018, 2019...). Quand le carry trade se dénoue, le yen se renforce en premier. C'est d'ailleurs devenu un signal validé en 2026 (JPY Lead, +9,8 % SPY 60j en confluence).</p>
+</section>
+
+<!-- ===== MODULE 5 ===== -->
+<section id="m5">
+  <p class="modnum">MODULE 05</p>
+  <h2>Breadth &amp; les « Jaws »</h2>
+  <p class="lead">Le marché peut monter pendant que la majorité des actions baissent. Kerb appelle cet écart les « Jaws » (les mâchoires). Quand elles s'ouvrent trop, le sommet approche.</p>
+
+  <p>Un indice pondéré par la capitalisation peut être tiré vers le haut par une poignée de méga-caps (les FANG+) pendant que le reste du marché s'effondre. La <strong>breadth</strong> (la largeur) mesure cette participation réelle. Quand l'indice fait un nouveau plus haut mais que la breadth diverge, la hausse est creuse.</p>
+
+  <figure>
+    <svg viewBox="0 0 760 260" role="img" aria-label="Deux courbes qui divergent formant des mâchoires, prix qui monte et largeur qui baisse">
+      <line x1="60" y1="220" x2="720" y2="220" stroke="#d8c8ab"/>
+      <line x1="60" y1="30" x2="60" y2="220" stroke="#d8c8ab"/>
+      <!-- price up -->
+      <polyline points="70,170 200,150 340,120 480,95 620,70 710,60" fill="none" stroke="#2e7d5b" stroke-width="2.5"/>
+      <text x="600" y="52" class="stb" fill="#2e7d5b">indice (FANG+)</text>
+      <!-- breadth down -->
+      <polyline points="70,120 200,135 340,150 480,175 620,200 710,208" fill="none" stroke="#b0472c" stroke-width="2.5"/>
+      <text x="568" y="226" class="stb" fill="#b0472c">breadth (participation)</text>
+      <!-- jaws fill -->
+      <path d="M480 95 L710 60 L710 208 L480 175 Z" fill="var(--sell-soft)" opacity=".6"/>
+      <text x="600" y="140" class="stb" text-anchor="middle" fill="#b0472c">les Jaws</text>
+      <text x="600" y="156" class="stl" text-anchor="middle">s'ouvrent</text>
+      <text x="70" y="248" class="stl">l'indice monte, la participation s'effondre → hausse creuse</text>
+    </svg>
+    <figcaption><b>Les mâchoires.</b> Kerb : « Jaws en jan/fév 2018 → Volmageddon. Jaws en 2019 &amp; jan 2020 → pandémie. » La divergence entre l'indice et la largeur est un de ses signaux de sommet les plus cités. La version validée s'appelle <b>Composite Divergence</b> (module 7).</figcaption>
+  </figure>
+
+  <p>Son indicateur de largeur préféré : le <strong>pourcentage d'actions du Russell-3000 au-dessus de leur moyenne 20 jours</strong>. Sous 20 %, c'est la zone de peur (capitulation possible, contrarian long). L'écart FANG+ vs reste, lui, prévient des sommets. C'est le fameux « Mother of All Jaws » d'octobre 2020, qui fut aussi son plus gros raté de timing (voir <a class="inl" href="#m9">module 9</a>).</p>
+</section>
+
+<!-- ===== MODULE 6 ===== -->
+<section id="m6">
+  <p class="modnum">MODULE 06</p>
+  <h2>Les options comme radar</h2>
+  <p class="lead">Kerb lit le marché des options comme un cartographe lit un terrain. Le positionnement des dealers y trahit ce que le prix ne montre pas encore.</p>
+
+  <p>Trois outils reviennent en boucle chez lui :</p>
+  <ul>
+    <li><strong>Max Pain</strong> : le niveau où les dealers sont le mieux couverts, donc un aimant à prix en fin d'expiration. C'est là que la liquidité se concentre.</li>
+    <li><strong>Put/Call Ratio (PCR)</strong> par open interest : un indicateur avancé du sentiment. Le SPY PCR agrégé a une corrélation de <strong>-60 %</strong> avec le prix (l'achat de puts précède les selloffs).</li>
+    <li><strong>Corrélations IV / VIX</strong> : la volatilité implicite de certaines actions prédit le VIX. Sa trouvaille marquante : l'IV-30 de <strong>JPM corrèle à 98 % avec le VIX</strong>, celle d'AAPL à 85 %.</li>
+  </ul>
+
+  <blockquote>
+    <p>« Excellent predicting power for future VIX price, if finding the 'magic' combination of stocks. »</p>
+    <cite>Kerberos007 — nov. 2020, sur les corrélations IV/VIX</cite>
+  </blockquote>
+
+  <div class="box note">
+    <p class="bt">À garder en tête</p>
+    <p>La « magic combination » et le « magic leading indicator » sont des tics de langage de Kerb. Séduisants, mais c'est exactement le genre de trouvaille sur-ajustée que ton propre système traite avec méfiance (une corrélation à 98 % sur un historique court se retourne vite). Utilise l'idée comme radar, pas comme certitude.</p>
+  </div>
+</section>
+
+<!-- ===== MODULE 7 ===== -->
+<section id="m7">
+  <p class="modnum">MODULE 07</p>
+  <h2>Les signaux validés</h2>
+  <p class="lead">Voici la partie sérieuse. Sur les 22 signaux narratifs testés au protocole Bonferroni le plus strict, ceux-ci ont survécu. Ce sont les vrais edges. Cite les verdicts, pas le folklore.</p>
+
+  <table class="tbl">
+    <thead><tr><th>Signal</th><th>Ce qu'il mesure</th><th>Verdict chiffré</th></tr></thead>
+    <tbody>
+      <tr><td class="name">Composite Divergence</td><td>SPY nouveau plus haut + divergence breadth + divergence A/D cumulée (3 briques)</td><td class="num">TOP · SPY -0,38pp/10j · p&lt;0,0001 · n=1259</td></tr>
+      <tr><td class="name">RSI Breadth capitulation</td><td>% d'actions en RSI &lt; 30 atteint un extrême (contrarian long)</td><td class="num">BOTTOM · SPY +13 %/60j · p&lt;0,0001 · n=24</td></tr>
+      <tr><td class="name">SKEW tail risk</td><td>Indice SKEW extrême (prix de la convexité négative)</td><td class="num">SPY -3,9 %/60j · p&lt;0,0001</td></tr>
+      <tr><td class="name">Max Optimism Stack</td><td>4 briques : XLY/WMT + NYSE short interest + breadth + haven GLD/TLT</td><td class="num">+260 % vs +160 % baseline / 8 ans</td></tr>
+      <tr><td class="name">VIX Spike Detector</td><td>Confluence 4 tiers : VIX/VVIX + VRP + term structure + breadth</td><td class="num">P(VIX +50 % en 60j) = 69 %</td></tr>
+      <tr><td class="name">VXV/VIX Backwardation</td><td>Term structure VIX inversée (le signal-mère du module 3)</td><td class="num">SPY +7,23 %/60j · p&lt;0,0001 · n=151</td></tr>
+      <tr><td class="name">DXY z-score &gt; 1,5</td><td>Force extrême du dollar (le plus robuste cross-régime)</td><td class="num">Lift crash ~2,9× · p&lt;0,0001 · n=439</td></tr>
+    </tbody>
+  </table>
+
+  <p>Deux choses à comprendre sur ce tableau.</p>
+  <p><strong>1. La direction compte autant que le signal.</strong> Certains sont des signaux de sommet (Composite Divergence, SKEW), d'autres de creux (RSI Breadth capitulation, +13 % sur 60 jours après). Ne les mélange pas.</p>
+  <p><strong>2. Le DXY est le plus fiable.</strong> C'est le seul (avec sa variante z&gt;2) qui reste robuste en test walk-forward sur le régime récent 2023-2026 : Sharpe qui passe de ~2,5 en entraînement à ~4,4 en test. Un dollar fort qui décolle reste le meilleur signal pré-crash structurel.</p>
+
+  <div class="box tip">
+    <p class="bt">Les crashs ne se signalent pas tous pareil</p>
+    <p>Une leçon fine du backtest : chaque type de crash a <strong>son</strong> signal. Crash structurel (fin de cycle) → <strong>DXY z&gt;1,5</strong> (2/2 : Q4 2018, bear 2022). Choc exogène (COVID, SVB) → <strong>stress financier STLFSI</strong> (3/4). Mini-correction (-5 à -15 %) → <strong>term structure VIX3M/VIX</strong>. N'utilise pas l'un pour l'autre.</p>
+  </div>
+</section>
+
+<!-- ===== MODULE 8 ===== -->
+<section id="m8">
+  <p class="modnum">MODULE 08</p>
+  <h2>Le cimetière des signaux rejetés</h2>
+  <p class="lead">C'est le module le plus utile pour ne pas te faire piéger. Plus de la moitié des idées séduisantes de Kerb échouent au test rigoureux. En voici la raison, cas par cas.</p>
+
+  <table class="tbl">
+    <thead><tr><th>Signal rejeté</th><th>Pourquoi il échoue</th></tr></thead>
+    <tbody>
+      <tr><td class="name">Stars Aligned (solo)</td><td>0 trigger en 11 ans au seuil strict 3/3. Rate COVID, Q4 2018, 2015. Utile en observation, pas en trade.</td></tr>
+      <tr><td class="name">Stallman Polished Triplet</td><td>0/10 paires passent le test. Le pattern est ultra-convaincant à l'œil : c'est justement le <strong>biais visuel</strong> qui domine, pas un edge.</td></tr>
+      <tr><td class="name">Sector Jaws (10 ans)</td><td>Direction inverse sur 10 ans vs 5 ans. Le 5 ans biaisait vers le régime récent. Un signal qui flippe selon la fenêtre n'est pas un signal.</td></tr>
+      <tr><td class="name">Timing triggers 1-30j</td><td>290 tests pour trouver le <em>jour</em> du crash. 0 survit au walk-forward. Le timing court terme n'a pas d'edge prouvé.</td></tr>
+      <tr><td class="name">SMH/SPY, IWM/SPY z&lt;-1,5</td><td>Baissiers avant 2022, devenus haussiers (BTFD) en 2023-2026 : +7 à +10 %. Le régime a changé sous le signal.</td></tr>
+      <tr><td class="name">Courbe des taux T10Y2Y &lt; 0</td><td>Signal de récession classique, devenu BTFD (+5,5 %) sur le régime récent. Le mythe macro ne tient pas au test.</td></tr>
+    </tbody>
+  </table>
+
+  <p>Quatre pièges reviennent, et ce sont les tiens à éviter aussi :</p>
+  <div class="bricks">
+    <div class="brick"><p class="b-tag">PIÈGE 1</p><p class="b-name">Biais visuel</p><p>Un pattern « évident » sur un chart annoté est souvent choisi après coup. Stallman en est le cas d'école : 0/10 au test.</p></div>
+    <div class="brick"><p class="b-tag">PIÈGE 2</p><p class="b-name">Small-N</p><p>5 ou 6 événements extrêmes = fragile. Il faut n ≥ 15. Le COT passait sur 5 ans (n=5), échouait sur 12 ans (n=15).</p></div>
+    <div class="brick"><p class="b-tag">PIÈGE 3</p><p class="b-name">Biais de fenêtre</p><p>Un signal qui change de direction entre 5 et 10 ans capte juste le régime récent. Il faut 10 ans et 2 vrais bear cycles.</p></div>
+    <div class="brick"><p class="b-tag">PIÈGE 4</p><p class="b-name">Régime qui tourne</p><p>Un edge réel peut s'inverser quand la dynamique change (SMH/SPY, taux). Le walk-forward est là pour l'attraper.</p></div>
+  </div>
+
+  <div class="box warn">
+    <p class="bt">Ta règle personnelle</p>
+    <p>Un REJECT reste un REJECT. Ne ressuscite jamais un de ces signaux sans un nouveau backtest complet (MCPT + Bonferroni + block bootstrap). Le fait que Kerb en parle avec conviction ne le rend pas valide. C'est toute la différence entre son <em>framework</em> et son <em>marketing</em>.</p>
+  </div>
+</section>
+
+<!-- ===== MODULE 9 ===== -->
+<section id="m9">
+  <p class="modnum">MODULE 09</p>
+  <h2>Le track record, sans filtre</h2>
+  <p class="lead">On a backtesté ses 37 appels directionnels contre le SPY à 60 jours. Le résultat brut est dur. Mais lu par régime, il révèle exactement comment utiliser Kerb.</p>
+
+  <figure>
+    <svg viewBox="0 0 760 280" role="img" aria-label="Hit rate de Kerberos par régime de marché en barres">
+      <line x1="70" y1="230" x2="720" y2="230" stroke="#d8c8ab"/>
+      <line x1="70" y1="40" x2="70" y2="230" stroke="#d8c8ab"/>
+      <text x="70" y="26" class="title-s">Hit rate des appels, par régime</text>
+      <!-- gridlines -->
+      <g stroke="#efe0c6" stroke-width="1">
+        <line x1="70" y1="135" x2="720" y2="135"/><line x1="70" y1="40" x2="720" y2="40"/>
+      </g>
+      <text x="64" y="234" class="stl" text-anchor="end">0%</text>
+      <text x="64" y="139" class="stl" text-anchor="end">50%</text>
+      <text x="64" y="44" class="stl" text-anchor="end">100%</text>
+      <!-- bars: Q4'18 33, 2019 0, COVID 100, post-COVID 5, 2021 0, 2022 33 -->
+      <g>
+        <rect x="100" y="167" width="70" height="63" rx="3" fill="#a2814f"/><text x="135" y="248" class="stl" text-anchor="middle">Q4 2018</text><text x="135" y="160" class="stb" text-anchor="middle">33%</text>
+        <rect x="200" y="228" width="70" height="2" rx="1" fill="#b0472c"/><text x="235" y="248" class="stl" text-anchor="middle">2019</text><text x="235" y="222" class="stb" text-anchor="middle" fill="#b0472c">0%</text>
+        <rect x="300" y="40" width="70" height="190" rx="3" fill="#2e7d5b"/><text x="335" y="248" class="stl" text-anchor="middle">COVID</text><text x="335" y="33" class="stb" text-anchor="middle" fill="#2e7d5b">100%</text>
+        <rect x="400" y="221" width="70" height="9" rx="3" fill="#b0472c"/><text x="435" y="248" class="stl" text-anchor="middle">post-COVID</text><text x="435" y="214" class="stb" text-anchor="middle" fill="#b0472c">5%</text>
+        <rect x="500" y="228" width="70" height="2" rx="1" fill="#b0472c"/><text x="535" y="248" class="stl" text-anchor="middle">2021</text><text x="535" y="222" class="stb" text-anchor="middle" fill="#b0472c">0%</text>
+        <rect x="600" y="167" width="70" height="63" rx="3" fill="#a2814f"/><text x="635" y="248" class="stl" text-anchor="middle">2022</text><text x="635" y="160" class="stb" text-anchor="middle">33%</text>
+      </g>
+    </svg>
+    <figcaption><b>Tout est dans ce graphe.</b> 0 % en marché haussier tranquille (2019, post-COVID, 2021). 33 à 100 % aux retournements (Q4 2018, COVID, 2022). Kerb voit les crashs, pas les tendances. Suivre ses appels en bull, c'est saigner ; les écouter aux inflexions, c'est de l'or.</figcaption>
+  </figure>
+
+  <h3>Ses 5 vrais appels vérifiés</h3>
+  <table class="tbl">
+    <thead><tr><th>Date</th><th>Appel</th><th>Résultat à 60j</th></tr></thead>
+    <tbody>
+      <tr><td class="num">21 oct. 2018</td><td>Selloff Q4 imminent</td><td class="num">SPY -10 %</td></tr>
+      <tr><td class="num">15 fév. 2020</td><td>« 1001 warnings » avant COVID (moqué à l'époque)</td><td class="num">SPY -17,5 % · DD -34 %</td></tr>
+      <tr><td class="num">6 mars 2020</td><td>« GFC Lehman », 8 jours avant le bottom</td><td class="num">DD -25 %</td></tr>
+      <tr><td class="num">23 avr. 2020</td><td>BTFD haussier post-COVID (son seul call long)</td><td class="num">SPY +11 % (+22 % à 120j)</td></tr>
+      <tr><td class="num">26 mars 2022</td><td>Thèse bear 2022 confirmée</td><td class="num">SPY -12,8 %</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Son plus gros raté</h3>
+  <div class="box warn">
+    <p class="bt">« Mother of All Jaws » — octobre 2020</p>
+    <p>4 threads baissiers consécutifs sur la divergence FANG+, suivis de 11 autres pendant l'été 2020. Résultat : le SPY a monté de +6 à +14 % à chaque fois. Il avait <strong>14 mois d'avance</strong>. Le concept était juste, le timing catastrophique. C'est LA raison de ne jamais trader ses appels baissiers solo en marché haussier.</p>
+  </div>
+
+  <h3>Quelques calls documentés (pour situer le personnage)</h3>
+  <ul>
+    <li><strong>COVID (fév. 2020)</strong> : averti une semaine avant le sommet, ridiculisé, puis -34 %.</li>
+    <li><strong>$COIN (juil. 2022)</strong> : contrarian short depuis 368 $ → plus bas à 40 $, -89 %.</li>
+    <li><strong>$TSLA (jan. 2023)</strong> : « achat du siècle » vers 100 $ → 214 $ en un mois, +110 %.</li>
+  </ul>
+  <p style="color:var(--muted);font-size:14px">Ce sont ses claims narratifs, pas un P&amp;L audité (sélection ex-post possible). À citer pour la crédibilité, jamais comme stratégie.</p>
+</section>
+
+<!-- ===== MODULE 10 ===== -->
+<section id="m10">
+  <p class="modnum">MODULE 10</p>
+  <h2>Comment tu l'utilises</h2>
+  <p class="lead">Le framework de Kerb est déjà câblé dans ton système. La question n'est pas « faut-il l'écouter », c'est « quelle partie, et quand ».</p>
+
+  <p>Ton pipeline embarque déjà ses signaux validés : le <strong>VIX Spike Detector</strong>, la <strong>backwardation VXV/VIX</strong>, le <strong>Max Optimism Stack</strong>, la <strong>Composite Divergence</strong>, le <strong>DXY z-score</strong>. Ils vivent dans ton dashboard Kerberos et ton cockpit macro. Le travail de backtest a déjà fait le tri entre ce qui tient et ce qui ne tient pas.</p>
+
+  <div class="box verdict">
+    <p class="bt">La règle d'or, méta</p>
+    <p><strong>Le signal engineering (le framework) n'est pas le market timing (les tweets).</strong> Suis les signaux qui ont passé Bonferroni, avec le buffer 3 jours et le haven filter. Ignore le calendrier de ses appels : il est baissier trop tôt en bull, et il ne prédit pas les tendances. Son edge est réel aux <em>extrêmes</em>, nulle part ailleurs.</p>
+  </div>
+
+  <h3>Kerb + Volume Profile : les deux moitiés</h3>
+  <p>Tes deux cours se complètent parfaitement. Kerb répond à <strong>« quand »</strong> : est-ce le moment d'être offensif ou défensif sur le marché entier (le régime macro, le risque de crash, la peur cross-asset). Le <a class="inl" href="volume-profile-dalton.html">Volume Profile</a> répond à <strong>« où »</strong> : à quels niveaux entrer et sortir sur un titre précis. Le macro te dit quand le vent tourne, la structure te dit où te placer.</p>
+
+  <div class="box tip">
+    <p class="bt">Le workflow concret</p>
+    <p><strong>1.</strong> Régime macro (Kerb) : la backwardation, le DXY, la breadth te disent si on est en risk-on ou risk-off. <strong>2.</strong> Si un signal validé s'allume avec confluence (2+) et passe le buffer 3j → tu ajustes ton exposition globale. <strong>3.</strong> Pour l'exécution titre par titre → Volume Profile (POC, value area, niveaux). Kerb cadre le portefeuille, le VP cadre le trade.</p>
+  </div>
+</section>
+
+<!-- ===== MODULE 11 ===== -->
+<section id="m11">
+  <p class="modnum">MODULE 11</p>
+  <h2>Glossaire &amp; cheat sheet</h2>
+  <p class="lead">La page à garder sous les yeux. Tout le vocabulaire de Kerb, une ligne chacun.</p>
+
+  <div class="cheat">
+    <h3>Les concepts</h3>
+    <div class="row"><span class="k">Backwardation</span><span class="v">Term structure VIX inversée (spot &gt; 3 mois). Panique. « Fear begets fear. » Signal validé (+7,2 %/60j).</span></div>
+    <div class="row"><span class="k">Contango</span><span class="v">Term structure normale (3 mois &gt; spot). Régime calme.</span></div>
+    <div class="row"><span class="k">Jaws</span><span class="v">Mâchoires : l'indice monte, la breadth baisse. Hausse creuse, sommet possible.</span></div>
+    <div class="row"><span class="k">Stars Aligned</span><span class="v">3 corrélations cross-asset (SPX/Or, SPX/VIX, SPX/VVIX) alignées. Observation, REJETÉ en solo.</span></div>
+    <div class="row"><span class="k">Composite Divergence</span><span class="v">Nouveau plus haut + divergence breadth + divergence A/D. Signal de sommet VALIDÉ.</span></div>
+    <div class="row"><span class="k">Max Optimism Stack</span><span class="v">4 briques d'euphorie (XLY/WMT, short interest, breadth, haven). VALIDÉ, +260 %/8 ans.</span></div>
+    <div class="row"><span class="k">Max Pain</span><span class="v">Niveau où les dealers sont couverts. Aimant à prix en fin d'expiration.</span></div>
+    <div class="row"><span class="k">Haven filter</span><span class="v">Or et crédit doivent confirmer un vrai risk-off, sinon faux stress.</span></div>
+    <div class="row"><span class="k">Buffer 3j hard cliff</span><span class="v">Un trigger tient 3 jours avant de compter, puis binaire ON/OFF.</span></div>
+
+    <h3>Les 5 dimensions</h3>
+    <div class="row"><span class="k">1 · Price action</span><span class="v">Chart 15M + volume, S/R, patterns.</span></div>
+    <div class="row"><span class="k">2 · Liquidity flows</span><span class="v">Où est le vrai volume (accumulation / distribution).</span></div>
+    <div class="row"><span class="k">3 · Options</span><span class="v">Gamma / delta / vega : le positionnement des dealers.</span></div>
+    <div class="row"><span class="k">4 · S/R + Max Pain</span><span class="v">Où la liquidité se chasse.</span></div>
+    <div class="row"><span class="k">5 · Imbalances</span><span class="v">Le déséquilibre offre/demande qui décide. Le graal.</span></div>
+
+    <h3>Les signaux validés (à suivre)</h3>
+    <div class="row"><span class="k">DXY z &gt; 1,5</span><span class="v">Dollar fort. Le plus robuste cross-régime. Crash structurel.</span></div>
+    <div class="row"><span class="k">VXV/VIX backwardation</span><span class="v">+7,2 %/60j, n=151, p&lt;0,0001.</span></div>
+    <div class="row"><span class="k">VIX Spike Detector</span><span class="v">4 tiers. P(VIX +50 %/60j) = 69 %.</span></div>
+    <div class="row"><span class="k">RSI Breadth capitulation</span><span class="v">Creux contrarian. SPY +13 %/60j.</span></div>
+    <div class="row"><span class="k">STLFSI (stress)</span><span class="v">Chocs exogènes (COVID, SVB). 3/4.</span></div>
+
+    <h3>Le réflexe track record</h3>
+    <div class="row"><span class="k">Crash caller</span><span class="v">Excellent aux retournements (COVID 100 %, 2022 33 %), nul en bull (0-5 %).</span></div>
+    <div class="row"><span class="k">Jamais bearish solo en bull</span><span class="v">« Mother of All Jaws » = 14 mois trop tôt. Attends la confluence.</span></div>
+    <div class="row"><span class="k">Framework ≠ timing</span><span class="v">Suis les signaux validés, ignore le calendrier des tweets.</span></div>
+  </div>
+
+  <div class="box verdict" style="margin-top:28px">
+    <p class="bt">Si tu ne retiens qu'une chose</p>
+    <p>Kerb t'a donné une <strong>machine à détecter la peur cross-asset</strong> aux extrêmes du marché. Elle est précieuse quand le vent tourne, inutile le reste du temps. Prends la machine (les signaux validés, le buffer, la confluence), laisse le pilote (le timing de ses tweets). C'est ça, utiliser Kerberos007 intelligemment.</p>
+  </div>
+</section>
+
+</main>
+
+<footer><div class="wrap">
+  Cours perso · d'après l'archive @kerberos007 (76 threads, 2018-2022) + les backtests Bonferroni de ton système.<br>
+  Les signaux VALID sont cités avec leurs verdicts. Les REJECT ne sont jamais présentés comme tradables.
+</div></footer>
+
+</body>
+</html>

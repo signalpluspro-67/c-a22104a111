@@ -1,0 +1,199 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>An Owner Bets on a Pullback That Math Can See — Deep Dive</title><style>
+:root{--bg:#f4efe6;--ink:#2b2622;--mut:#8a8175;--line:#ddd3c4;--card:#fbf8f1;
+--green:#2f6c46;--amber:#9a7d2e;--red:#a23b30;--blue:#2b6cb0;--rust:#b4582f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 -apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:30px 20px 80px}
+a{color:var(--blue)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font:800 14px/1 Georgia,serif;color:var(--mut)}
+.backs a{font-size:12px;margin-left:12px;text-decoration:none}
+h1{font:800 34px/1.15 Georgia,serif;margin:6px 0 4px}
+h2{font:800 22px/1.2 Georgia,serif;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font:800 16px/1.2 Georgia,serif;margin:22px 0 6px}
+.subtitle{font:400 18px/1.45 Georgia,serif;color:#5a5246;font-style:italic;margin-bottom:8px}
+.meta{font-size:12px;color:var(--mut);margin-bottom:14px}
+.chips{margin:8px 0 18px}
+.chip{display:inline-block;font:800 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.04em;
+border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-right:6px;background:#fff;color:var(--mut)}
+.chip.hi{color:var(--green);border-color:var(--green);background:#eef6ef}
+.chip.med{color:var(--amber);border-color:var(--amber);background:#f6efda}
+.chip.lo{color:var(--red);border-color:var(--red);background:#faeeec}
+.track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 20px;
+font:600 13px/1.5 monospace}
+.track .pos{color:var(--green)} .track .neg{color:var(--red)}
+.art p{margin:0 0 16px}
+.art strong{font-weight:800}
+.art em{color:#5a5246}
+figure.chart{margin:14px 0 18px;text-align:center}
+figure.chart img{max-width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;display:block;margin:0 auto 10px}
+figure.chart figcaption{font-size:12px;color:var(--mut);margin-top:8px}
+a.tvlink{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;
+font:800 13px/1 sans-serif;padding:13px 20px;border-radius:8px}
+a.tvlink:hover{background:var(--rust)}
+table.fund{width:100%;border-collapse:collapse;margin:6px 0 16px;background:#fff;border:1px solid var(--line);
+border-radius:10px;overflow:hidden;font:600 14px/1.5 sans-serif}
+table.fund td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.fund tr:last-child td{border-bottom:none}
+table.fund td.k{color:var(--mut);width:48%}
+table.fund td.v{font-weight:800;text-align:right}
+.visuals{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:26px 0}
+.visuals h3{margin:0 0 4px}
+.visuals .lead{font-size:13px;color:var(--mut);margin:0 0 12px}
+.vbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 14px;margin:10px 0}
+.vbox .vt{font:800 12px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--rust);margin-bottom:6px}
+.vbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:6px;padding:8px;
+font:500 12px/1.5 monospace;color:var(--ink);background:#fbf8f1;resize:vertical}
+.cbtn{font:800 12px/1 sans-serif;background:var(--ink);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin-top:8px}
+.cnote{font-size:11px;color:var(--mut);margin-left:8px}
+.copybar{margin:24px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.foot{color:var(--mut);font-size:11px;margin-top:36px;border-top:1px solid var(--line);padding-top:12px;line-height:1.6}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:10px 0}
+.card h3{margin:0 0 2px}.card .sub{font-size:13px;color:#5a5246;font-style:italic}
+.card .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{font:800 11px/1 sans-serif;border-radius:10px;padding:4px 9px}
+.badge.pos{background:#e6f3ea;color:var(--green)}.badge.neg{background:#faeeec;color:var(--red)}.badge.na{background:#eee;color:var(--mut)}
+.tk{font:800 17px/1 sans-serif}
+.sect{font:800 13px/1 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:28px 0 6px}
+.board{width:100%;border-collapse:collapse;font:600 12.5px/1.4 monospace;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board th{text-align:left;font:700 10px/1.2 sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:9px 10px;background:#f3eee2;border-bottom:2px solid var(--line)}
+.board td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.board tr:last-child td{border-bottom:none}.board .num{text-align:right}
+.board .pos{color:var(--green);font-weight:800}.board .neg{color:var(--red);font-weight:800}.board .warn{color:var(--amber);font-weight:800}
+.board .tk a{font:800 13px/1 sans-serif;color:var(--ink);text-decoration:none}
+.table-scroll{overflow-x:auto;border-radius:10px;margin-bottom:8px}
+</style></head>
+<body><div class="wrap">
+<div class="top"><span class="brand">The Philosopher Investor · Deep Dive</span>
+<span class="backs"><a href="../deep_dives.html">← All deep dives</a><a href="../trade_desk.html">Trade Desk</a></span></div>
+<h1>An Owner Bets on a Pullback That Math Can See</h1>
+<div class="subtitle">GSHD has given back 28.6% from its high. A 10% holder just bought $11.3M near $60.57. The desk read says that pattern works.</div>
+<div class="meta">EOD 2026-08-18 · GSHD · written from the desk · model deepseek-v4-pro</div>
+<div class="chips"><span class="chip">GSHD</span>
+<span class="chip">Financial Services</span>
+<span class="chip med">MEDIUM conviction</span></div>
+<div class="track">Tracking since 2026-08-18: entry <b>$59.70</b> &rarr; <b>$70.72</b> (as of 2026-08-21) · <span class="pos">+18.5%</span> · 🟢 CLOSED — target hit</div>
+<div class="art"><h2>The Big Picture</h2>
+<p>Insurance distribution is a quiet compounder hiding inside Financial Services. People need coverage in every rate cycle. When borrowing costs rise, they still pay premiums. When the economy slows, they cut streaming before they drop homeowner or auto policies. That steady demand creates a predictable fee stream for the brokers who place the business. GSHD built a franchise model on top of that stream. It collects royalties and fees from agents who sell under its brand. The capital is light. The returns can be high. And right now the broad Financials sector is stuck in neutral, which means stock selection matters more than sector beta.</p>
+<p>The macro snapshot shows no tailwind and no headwind for Financial Services. The sector is rated <strong>NEUTRAL</strong> with <strong>NEUTRAL</strong> acceleration. That backdrop rewards idiosyncratic stories. If you can find a name where the underlying business is growing and an informed insider is committing fresh capital, you don&#x27;t need the sector to bail you out. GSHD fits. The company grew revenue <strong>20.7%</strong> over the trailing twelve months. Earnings jumped <strong>122.2%</strong>. An owner just put <strong>$11.3M</strong> to work at <strong>$60.57</strong>, a level you could buy near today. The market is giving you a chance to partner with someone who knows the books better than you do, at roughly the same price.</p>
+<h2>Introducing GSHD</h2>
+<p>Goosehead Insurance is a personal lines insurance agency. It sells homeowner, auto, flood, umbrella, and small business policies. The company operates through two channels. Corporate agents work directly for Goosehead. Franchise agents own their own books and pay Goosehead a royalty. The model is built to scale. A franchisee funds the local office and does the selling. Goosehead provides the brand, the carrier relationships, the technology, and the back office support. It earns a high-margin royalty on every policy that franchisee writes. The corporate channel gives Goosehead full economics in key markets and a laboratory to refine its playbook before franchisees adopt it. The result is a capital-light distribution network with a growing footprint.</p>
+<p>The company went public in 2018 and has expanded its agent count steadily. Headquartered in Westlake, Texas, it employs roughly <strong>1600</strong> people. The stock is a small cap with a <strong>1.35</strong> beta, meaning it swings harder than the broad market. That amplifies both gains and drawdowns. The current price is <strong>$64.78</strong>. A 52-week range that stretches from <strong>$33.68</strong> to <strong>$90.79</strong> tells you the ride has been anything but smooth. The opportunity today sits in the gap between that <strong>$90.79</strong> high and where the stock now trades.</p>
+<h2>The Thesis</h2>
+<p>This is a dip-buy inside a strong but interrupted advance. A <strong>10%</strong> holder just bought <strong>$11.3M</strong> worth of stock near <strong>$60.57</strong>. That purchase happened close to where you can transact today. The desk has a proven read for this setup. Over <strong>383</strong> trades, buying a pullback in a rising stock when an owner adds size has produced a <strong>1.10</strong> risk-adjusted return. The signal is repeatable enough to act. The current entry level sits at <strong>$59.70</strong>. You are not chasing. You are being handed a defined level.</p>
+<p>Conviction is <strong>MEDIUM</strong>. You size accordingly. The risk/reward is <strong>1.6</strong> to <strong>1</strong>. The target is <strong>$70.72</strong>, a prior swing high. A secondary target at <strong>$74.95</strong> offers <strong>25.5%</strong> upside from current levels. The stop sits at <strong>$52.91</strong>. That gives you a <strong>11.4%</strong> risk to stop from the entry level. A clear floor exists. The three-month relative strength versus SPY roars at <strong>+49.8%</strong>. This stock has been crushing the market even as it pulls back from its 52-week high. That kind of relative power inside a correction is what durable trends are made of.</p>
+<h2>Technical Analysis</h2>
+<p><figure class="chart"><img src="img/2026-08-18-GSHD.png" alt="GSHD weekly chart" onerror="this.remove()"><a class="tvlink" href="https://www.tradingview.com/chart/?symbol=GSHD&interval=1W" target="_blank" rel="noopener">📈 Open the GSHD weekly chart on TradingView ↗</a><figcaption>GSHD weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $70.72 · mark support near $52.91.</figcaption></figure><br>The trend is intact but wounded. Price at <strong>$64.78</strong> holds above the declining 30-week moving average, satisfying one condition of the Weinstein method. The slope of that average tells a different story. It is falling at <strong>-11.1%</strong>. A rising price above a falling moving average is a transitional state. It can resolve as a bear flag or as the beginning of a base. You need the slope to flatten and turn up for confirmation. The shorter-term averages are more constructive. The stock returned <strong>13.2%</strong> over the last 21 days and <strong>53.7%</strong> over 63 days. That momentum is not dead. The 14-day RSI sits at <strong>56.8</strong>. That is mid-range, neither overbought nor oversold. It leaves room for the stock to run before exhaustion sets in.</p>
+<p>The 52-week high is <strong>$90.79</strong>. Price is <strong>28.6%</strong> below that peak. You are buying a correction, not a breakdown. The swing high at <strong>$70.72</strong> matches the primary target. That level matters as both resistance and an objective. A push through <strong>$70.72</strong> opens the path to the secondary target of <strong>$74.95</strong>. You want to see volume expand on any move above <strong>$70.72</strong>. A high-volume breakout through that swing high is your confirmation that institutions are participating. A low-volume drift higher keeps the trade suspect. The entry zone near <strong>$59.70</strong> aligns with the area where the insider added. That is your support. The stop at <strong>$52.91</strong> sits below the swing low, giving the trade room to breathe without structural damage.</p>
+<p>Three-month relative strength versus SPY is <strong>+49.8%</strong>. The stock is in the top decile of performers over that window. That kind of outperformance says the pullback is a rest within an uptrend, not a distribution top. The 52-week range position is <strong>54.5%</strong>. The stock is slightly above the midpoint of its yearly band. It has recovered from the low at <strong>$33.68</strong> and is consolidating. The pattern shows a strong rally, a steep correction, and now a potential higher low near <strong>$59.70</strong>. If that higher low holds, the trend resumes.</p>
+<h2>Fundamentals</h2>
+<p><table class="fund"><tbody><tr><td class="k">Market cap</td><td class="v">$2.30B</td></tr><tr><td class="k">Enterprise value</td><td class="v">$1.85B</td></tr><tr><td class="k">52-week range</td><td class="v">$33.68 - $90.79</td></tr><tr><td class="k">Dividend yield</td><td class="v">None</td></tr><tr><td class="k">Beta</td><td class="v">1.35</td></tr><tr><td class="k">Trailing P/E</td><td class="v">47.0</td></tr><tr><td class="k">Forward P/E</td><td class="v">23.8</td></tr><tr><td class="k">Price / sales</td><td class="v">7.6</td></tr><tr><td class="k">Price / book</td><td class="v">-13.6</td></tr><tr><td class="k">Revenue (TTM)</td><td class="v">$402M  (+20.7% YoY)</td></tr><tr><td class="k">Revenue / share</td><td class="v">$16.41</td></tr><tr><td class="k">Net income (TTM)</td><td class="v">$35M</td></tr><tr><td class="k">EPS (TTM / fwd)</td><td class="v">1.37 / 2.7</td></tr><tr><td class="k">Gross margin</td><td class="v">49.6%</td></tr><tr><td class="k">Operating margin</td><td class="v">23.4%</td></tr><tr><td class="k">Profit margin</td><td class="v">8.8%</td></tr><tr><td class="k">Operating cash flow / share</td><td class="v">$3.62</td></tr><tr><td class="k">Free cash flow / share</td><td class="v">$1.55</td></tr><tr><td class="k">Total cash / share</td><td class="v">$0.99</td></tr><tr><td class="k">Current ratio</td><td class="v">1.54</td></tr><tr><td class="k">Analyst consensus</td><td class="v">buy - mean target $68.92 (12 analysts)</td></tr></tbody></table><br>The business is growing fast and generating real cash. Earnings growth is even sharper at <strong>122.2%</strong>. That profit inflection comes from operating leverage as the franchise base matures. Gross margins are a healthy <strong>49.6%</strong>. Operating margins hit <strong>23.4%</strong>. Those are high-quality numbers for a distribution business. The company does not manufacture anything. It collects a spread and a royalty. That margin structure suggests the model works when it scales.</p>
+<p>Cash generation backs the income statement. On a per-share basis, that is <strong>$3.62</strong> in operating cash and <strong>$1.55</strong> in free cash. The gap between OCF and FCF reflects reinvestment that will convert to higher earnings down the line. The current ratio of <strong>1.54</strong> and quick ratio of <strong>1.21</strong> indicate adequate short-term liquidity. Cash per share is only <strong>$0.99</strong>. The company runs lean on cash and reinvests aggressively.</p>
+<p>The weak spot is negative tangible book value. Book value per share is <strong>-$4.72</strong>, leading to a price-to-book ratio of <strong>-13.6</strong>. That negative book value is common in franchise royalty models where intangibles and franchise agreements are the true assets, not hard equity. Still, it means you cannot anchor your downside to liquidation value. The trailing P/E of <strong>47.0</strong> looks high. The forward P/E of <strong>23.8</strong> reflects the earnings ramp expected by the analyst community. Twelve analysts rate the stock a consensus <strong>buy</strong> with a mean target of <strong>$68.92</strong>. Their target sits below the desk target of <strong>$70.72</strong>. If the trade works, you exit into that strength while the Street is still catching up.</p>
+<p>The return on assets is <strong>13.8%</strong>. That is strong for an asset-light financial services firm. A high ROA combined with revenue growth north of <strong>20%</strong> creates the compounder math that attracts growth investors. The next earnings date falls in late 2026. You have time to establish the position ahead of that catalyst.</p>
+<h2>Why Now</h2>
+<p>The timing comes down to two signals. First, the insider buy. A <strong>10%</strong> holder transacted at <strong>$60.57</strong>, close to the desk entry of <strong>$59.70</strong>. When a major owner adds at these levels, it is a statement about intrinsic value. Insiders sell for many reasons. They buy for one. That capital commitment narrows the downside gap.</p>
+<p>Second, the desk read itself. A tested dip-buy pattern with a <strong>1.10</strong> risk-adjusted return across <strong>383</strong> instances creates a statistical edge. The current setup matches the template. Price is <strong>28.6%</strong> below the 52-week high. RSI is mid-range at <strong>56.8</strong>. Relative strength is explosive at <strong>+49.8%</strong> three-month. The stock is giving back gains inside a powerful uptrend. That combination has paid out before. There is no defined earnings catalyst in the immediate window, and no options flow to read. The trade stands on price structure and insider conviction. The absence of speculation in the options market means the move, if it comes, may not yet be priced into derivatives.</p>
+<h2>Risk Factors</h2>
+<p>The most direct way this loses money is a break of the 30-week moving average that accelerates to the downside. The average slope is already negative at <strong>-11.1%</strong>. If price cannot hold above the line and starts to fall with it, the trend flips from corrective to bearish. The stop at <strong>$52.91</strong> is your invalidation. If price closes below that level with conviction, the thesis is wrong. You exit and preserve capital.</p>
+<p>Financial small caps gap on credit news. GSHD is an insurance broker, not a carrier. It does not take underwriting risk. But its franchisees and end customers are sensitive to the economic cycle. A sharp rise in unemployment or a credit freeze would slow policy sales and hit royalty revenue. The market prices that fear fast and hard. Position sizing must account for a gap through the stop, not just a slow drift. The <strong>1.35</strong> beta means a 1% move in the broad market can translate to a 1.35% move in GSHD. You are riding a levered instrument in a neutral sector. That amplifies both the upside and the headline risk.</p>
+<p>The negative book value removes a traditional value floor. In a severe drawdown, there is no hard asset backstop. The stock could reprice purely on sentiment and growth expectations. You are buying an earnings stream, not a pile of net assets. If the earnings trajectory falters, the re-rating downward could be swift.</p>
+<h2>Bringing It All Together</h2>
+<p>- A <strong>10%</strong> holder just bought <strong>$11.3M</strong> near <strong>$60.57</strong>. Price is <strong>$64.78</strong>. Your entry sits at <strong>$59.70</strong>. You are not late.<br>- Revenue grew <strong>20.7%</strong>, earnings jumped <strong>122.2%</strong>, and operating margins are <strong>23.4%</strong>. The business is scaling with real cash generation.<br>- The desk read has a <strong>1.10</strong> risk-adjusted return over <strong>383</strong> trades. The pattern is a pullback inside a strong uptrend with an insider buying. That combination has history.<br>- Source: three-month relative strength of <strong>+49.8%</strong> versus SPY confirms the trend is up, even as price corrects <strong>28.6%</strong> from the high.<br>- Risk/reward is <strong>1.6</strong> to <strong>1</strong> with a defined stop at <strong>$52.91</strong> and a primary target at <strong>$70.72</strong>. A secondary target at <strong>$74.95</strong> offers <strong>25.5%</strong> upside.<br>- The main risk is a break of the declining 30-week moving average and a macro credit shock hitting small cap financials. Size the trade for a gap.</p>
+<h2>Conclusion</h2>
+<p>GSHD is a growth story inside a neutral sector, and an owner is telling you the pullback is a gift. The desk read says listen. You have a clear level to enter, a clear level to cut, and a clear target that matches a prior swing high. The math is straightforward. The edge is repeatable. You are buying a proven dip-buy signal in a company that doubles earnings and grows revenue above <strong>20%</strong>. The price you pay sits near where a 10% holder committed fresh capital. If the structure holds at the entry zone, the path to <strong>$70.72</strong> and then <strong>$74.95</strong> is open. If the stop breaks, you move on.</p>
+<p><em>This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.</em></p></div>
+<div class="visuals"><h3>📐 Visuals to generate</h3><div class="lead">Open the chart on TradingView with the link above (screenshot it for the post). For the infographics, paste a prompt below into your image AI, then drop the image in.</div><div class="vbox"><div class="vt">Fundamentals snapshot card</div><textarea id="ig0" readonly>Create a clean financial infographic card titled &quot;Goosehead Insurance, Inc. (GSHD) - Fundamentals&quot;. Lay out these metrics as a tidy labeled grid with small line icons: Market cap $2.30B; 52-week range $34-$91; Revenue $402M +21% YoY; Net income $35M; Free cash flow/share $1.55. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig0',this)">📋 Copy prompt</button></div><div class="vbox"><div class="vt">Sector / thesis diagram</div><textarea id="ig1" readonly>Create a clean conceptual infographic that illustrates the investment thesis for Goosehead Insurance, Inc. (GSHD) inside the Financial Services space. Show a central labeled node for the company, three inbound tailwind arrows for the structural drivers, and one node for the stock setup. Context to translate into the diagram (do not write paragraphs): Insurance distributor pulling back hard inside a big advance, with an owner adding size. The dip-buy desk read grades tested with risk-adjusted return **1.10** over **383** trades, and a **10%** holder bought **$11.3M** near **$60.57**, clo. Editorial finance-newsletter aesthetic, warm sepia/cream background (#f4efe6), dark charcoal ink, a single rust accent. Clean flat vector, generous spacing, bold legible numbers, no company logos, no stock photos, no extra paragraphs, high resolution, 4:3.</textarea><button class="cbtn" onclick="cp('ig1',this)">📋 Copy prompt</button></div></div>
+<div class="copybar"><button class="cbtn" onclick="cp('artmd',this)">📋 Copy article (markdown)</button>
+<span class="cnote">paste into Substack, then add the chart + infographics</span></div>
+<textarea id="artmd" style="display:none"># An Owner Bets on a Pullback That Math Can See
+
+*GSHD has given back 28.6% from its high. A 10% holder just bought $11.3M near $60.57. The desk read says that pattern works.*
+
+## The Big Picture
+Insurance distribution is a quiet compounder hiding inside Financial Services. People need coverage in every rate cycle. When borrowing costs rise, they still pay premiums. When the economy slows, they cut streaming before they drop homeowner or auto policies. That steady demand creates a predictable fee stream for the brokers who place the business. GSHD built a franchise model on top of that stream. It collects royalties and fees from agents who sell under its brand. The capital is light. The returns can be high. And right now the broad Financials sector is stuck in neutral, which means stock selection matters more than sector beta.
+
+The macro snapshot shows no tailwind and no headwind for Financial Services. The sector is rated **NEUTRAL** with **NEUTRAL** acceleration. That backdrop rewards idiosyncratic stories. If you can find a name where the underlying business is growing and an informed insider is committing fresh capital, you don&#x27;t need the sector to bail you out. GSHD fits. The company grew revenue **20.7%** over the trailing twelve months. Earnings jumped **122.2%**. An owner just put **$11.3M** to work at **$60.57**, a level you could buy near today. The market is giving you a chance to partner with someone who knows the books better than you do, at roughly the same price.
+
+## Introducing GSHD
+Goosehead Insurance is a personal lines insurance agency. It sells homeowner, auto, flood, umbrella, and small business policies. The company operates through two channels. Corporate agents work directly for Goosehead. Franchise agents own their own books and pay Goosehead a royalty. The model is built to scale. A franchisee funds the local office and does the selling. Goosehead provides the brand, the carrier relationships, the technology, and the back office support. It earns a high-margin royalty on every policy that franchisee writes. The corporate channel gives Goosehead full economics in key markets and a laboratory to refine its playbook before franchisees adopt it. The result is a capital-light distribution network with a growing footprint.
+
+The company went public in 2018 and has expanded its agent count steadily. Headquartered in Westlake, Texas, it employs roughly **1600** people. The stock is a small cap with a **1.35** beta, meaning it swings harder than the broad market. That amplifies both gains and drawdowns. The current price is **$64.78**. A 52-week range that stretches from **$33.68** to **$90.79** tells you the ride has been anything but smooth. The opportunity today sits in the gap between that **$90.79** high and where the stock now trades.
+
+## The Thesis
+This is a dip-buy inside a strong but interrupted advance. A **10%** holder just bought **$11.3M** worth of stock near **$60.57**. That purchase happened close to where you can transact today. The desk has a proven read for this setup. Over **383** trades, buying a pullback in a rising stock when an owner adds size has produced a **1.10** risk-adjusted return. The signal is repeatable enough to act. The current entry level sits at **$59.70**. You are not chasing. You are being handed a defined level.
+
+Conviction is **MEDIUM**. You size accordingly. The risk/reward is **1.6** to **1**. The target is **$70.72**, a prior swing high. A secondary target at **$74.95** offers **25.5%** upside from current levels. The stop sits at **$52.91**. That gives you a **11.4%** risk to stop from the entry level. A clear floor exists. The three-month relative strength versus SPY roars at **+49.8%**. This stock has been crushing the market even as it pulls back from its 52-week high. That kind of relative power inside a correction is what durable trends are made of.
+
+## Technical Analysis
+&gt; 📈 Insert the GSHD weekly chart here (TradingView): GSHD weekly candlestick · add the 8-week and 21-week EMAs · mark resistance near $70.72 · mark support near $52.91.
+The trend is intact but wounded. Price at **$64.78** holds above the declining 30-week moving average, satisfying one condition of the Weinstein method. The slope of that average tells a different story. It is falling at **-11.1%**. A rising price above a falling moving average is a transitional state. It can resolve as a bear flag or as the beginning of a base. You need the slope to flatten and turn up for confirmation. The shorter-term averages are more constructive. The stock returned **13.2%** over the last 21 days and **53.7%** over 63 days. That momentum is not dead. The 14-day RSI sits at **56.8**. That is mid-range, neither overbought nor oversold. It leaves room for the stock to run before exhaustion sets in.
+
+The 52-week high is **$90.79**. Price is **28.6%** below that peak. You are buying a correction, not a breakdown. The swing high at **$70.72** matches the primary target. That level matters as both resistance and an objective. A push through **$70.72** opens the path to the secondary target of **$74.95**. You want to see volume expand on any move above **$70.72**. A high-volume breakout through that swing high is your confirmation that institutions are participating. A low-volume drift higher keeps the trade suspect. The entry zone near **$59.70** aligns with the area where the insider added. That is your support. The stop at **$52.91** sits below the swing low, giving the trade room to breathe without structural damage.
+
+Three-month relative strength versus SPY is **+49.8%**. The stock is in the top decile of performers over that window. That kind of outperformance says the pullback is a rest within an uptrend, not a distribution top. The 52-week range position is **54.5%**. The stock is slightly above the midpoint of its yearly band. It has recovered from the low at **$33.68** and is consolidating. The pattern shows a strong rally, a steep correction, and now a potential higher low near **$59.70**. If that higher low holds, the trend resumes.
+
+## Fundamentals
+| Metric | Value |
+|---|---|
+| Market cap | $2.30B |
+| Enterprise value | $1.85B |
+| 52-week range | $33.68 - $90.79 |
+| Dividend yield | None |
+| Beta | 1.35 |
+| Trailing P/E | 47.0 |
+| Forward P/E | 23.8 |
+| Price / sales | 7.6 |
+| Price / book | -13.6 |
+| Revenue (TTM) | $402M  (+20.7% YoY) |
+| Revenue / share | $16.41 |
+| Net income (TTM) | $35M |
+| EPS (TTM / fwd) | 1.37 / 2.7 |
+| Gross margin | 49.6% |
+| Operating margin | 23.4% |
+| Profit margin | 8.8% |
+| Operating cash flow / share | $3.62 |
+| Free cash flow / share | $1.55 |
+| Total cash / share | $0.99 |
+| Current ratio | 1.54 |
+| Analyst consensus | buy - mean target $68.92 (12 analysts) |
+The business is growing fast and generating real cash. Earnings growth is even sharper at **122.2%**. That profit inflection comes from operating leverage as the franchise base matures. Gross margins are a healthy **49.6%**. Operating margins hit **23.4%**. Those are high-quality numbers for a distribution business. The company does not manufacture anything. It collects a spread and a royalty. That margin structure suggests the model works when it scales.
+
+Cash generation backs the income statement. On a per-share basis, that is **$3.62** in operating cash and **$1.55** in free cash. The gap between OCF and FCF reflects reinvestment that will convert to higher earnings down the line. The current ratio of **1.54** and quick ratio of **1.21** indicate adequate short-term liquidity. Cash per share is only **$0.99**. The company runs lean on cash and reinvests aggressively.
+
+The weak spot is negative tangible book value. Book value per share is **-$4.72**, leading to a price-to-book ratio of **-13.6**. That negative book value is common in franchise royalty models where intangibles and franchise agreements are the true assets, not hard equity. Still, it means you cannot anchor your downside to liquidation value. The trailing P/E of **47.0** looks high. The forward P/E of **23.8** reflects the earnings ramp expected by the analyst community. Twelve analysts rate the stock a consensus **buy** with a mean target of **$68.92**. Their target sits below the desk target of **$70.72**. If the trade works, you exit into that strength while the Street is still catching up.
+
+The return on assets is **13.8%**. That is strong for an asset-light financial services firm. A high ROA combined with revenue growth north of **20%** creates the compounder math that attracts growth investors. The next earnings date falls in late 2026. You have time to establish the position ahead of that catalyst.
+
+## Why Now
+The timing comes down to two signals. First, the insider buy. A **10%** holder transacted at **$60.57**, close to the desk entry of **$59.70**. When a major owner adds at these levels, it is a statement about intrinsic value. Insiders sell for many reasons. They buy for one. That capital commitment narrows the downside gap.
+
+Second, the desk read itself. A tested dip-buy pattern with a **1.10** risk-adjusted return across **383** instances creates a statistical edge. The current setup matches the template. Price is **28.6%** below the 52-week high. RSI is mid-range at **56.8**. Relative strength is explosive at **+49.8%** three-month. The stock is giving back gains inside a powerful uptrend. That combination has paid out before. There is no defined earnings catalyst in the immediate window, and no options flow to read. The trade stands on price structure and insider conviction. The absence of speculation in the options market means the move, if it comes, may not yet be priced into derivatives.
+
+## Risk Factors
+The most direct way this loses money is a break of the 30-week moving average that accelerates to the downside. The average slope is already negative at **-11.1%**. If price cannot hold above the line and starts to fall with it, the trend flips from corrective to bearish. The stop at **$52.91** is your invalidation. If price closes below that level with conviction, the thesis is wrong. You exit and preserve capital.
+
+Financial small caps gap on credit news. GSHD is an insurance broker, not a carrier. It does not take underwriting risk. But its franchisees and end customers are sensitive to the economic cycle. A sharp rise in unemployment or a credit freeze would slow policy sales and hit royalty revenue. The market prices that fear fast and hard. Position sizing must account for a gap through the stop, not just a slow drift. The **1.35** beta means a 1% move in the broad market can translate to a 1.35% move in GSHD. You are riding a levered instrument in a neutral sector. That amplifies both the upside and the headline risk.
+
+The negative book value removes a traditional value floor. In a severe drawdown, there is no hard asset backstop. The stock could reprice purely on sentiment and growth expectations. You are buying an earnings stream, not a pile of net assets. If the earnings trajectory falters, the re-rating downward could be swift.
+
+## Bringing It All Together
+- A **10%** holder just bought **$11.3M** near **$60.57**. Price is **$64.78**. Your entry sits at **$59.70**. You are not late.
+- Revenue grew **20.7%**, earnings jumped **122.2%**, and operating margins are **23.4%**. The business is scaling with real cash generation.
+- The desk read has a **1.10** risk-adjusted return over **383** trades. The pattern is a pullback inside a strong uptrend with an insider buying. That combination has history.
+- Source: three-month relative strength of **+49.8%** versus SPY confirms the trend is up, even as price corrects **28.6%** from the high.
+- Risk/reward is **1.6** to **1** with a defined stop at **$52.91** and a primary target at **$70.72**. A secondary target at **$74.95** offers **25.5%** upside.
+- The main risk is a break of the declining 30-week moving average and a macro credit shock hitting small cap financials. Size the trade for a gap.
+
+## Conclusion
+GSHD is a growth story inside a neutral sector, and an owner is telling you the pullback is a gift. The desk read says listen. You have a clear level to enter, a clear level to cut, and a clear target that matches a prior swing high. The math is straightforward. The edge is repeatable. You are buying a proven dip-buy signal in a company that doubles earnings and grows revenue above **20%**. The price you pay sits near where a 10% holder committed fresh capital. If the structure holds at the entry zone, the path to **$70.72** and then **$74.95** is open. If the stop breaks, you move on.
+
+*This is not financial advice. I may hold positions in securities mentioned. Always do your own research and manage your risk.*</textarea>
+<div class="foot">Research piece written from the desk's signals. Prices, levels and fundamentals are computed from end-of-day data and the company filings cache. Not financial advice.</div>
+</div>
+<script>
+function cp(id,btn){navigator.clipboard.writeText(document.getElementById(id).value)
+.then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1500);});}
+</script></body></html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RouteWeaver : router les LLM par mode et par modèle</title>
+<style>*{box-sizing:border-box}
+body{margin:0;background:#faf7f2;color:#1c1b1a;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+ line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:820px;margin:0 auto;padding:48px 22px 90px}
+.kicker{color:#b4623a;font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:13px}
+h1{font-size:40px;line-height:1.12;margin:10px 0 14px;font-weight:800}
+.lead{font-size:24px;line-height:1.35;color:#3a3733;margin:0 0 6px;font-weight:600}
+h2{font-size:23px;margin:44px 0 12px;font-weight:750}
+p{margin:0 0 12px}
+.card{background:#fff;border:1px solid #e7e1d8;border-radius:14px;padding:26px 24px;
+ margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.bloc{display:flex;gap:24px;align-items:center}
+.pic{font-size:92px;line-height:1;flex:0 0 auto}
+.bt{font-size:26px;font-weight:750;margin:0 0 6px}
+.bx{color:#55504a;margin:0;font-size:17px}
+.num{color:#b4623a;font-weight:700;font-size:13px;letter-spacing:.04em}
+ul{margin:6px 0 0;padding-left:22px}li{margin:9px 0;font-size:17px}
+.tag{display:inline-block;background:#f6ece6;color:#b4623a;font-size:12px;font-weight:700;
+ padding:4px 10px;border-radius:20px;margin-bottom:10px}
+.mini{color:#8a837a;font-size:14px}
+a{color:#b4623a}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid #e7e1d8;color:#8a837a;font-size:14px}
+.verdict{border-radius:14px;padding:22px 24px;margin:26px 0 8px;border:1px solid}
+.vlabel{font-size:13px;font-weight:800;letter-spacing:.08em;margin-bottom:8px}
+.vtext{margin:0;font-size:18px;line-height:1.5}
+.vp{background:#eef6ee;border-color:#cbe0cb}.vp .vlabel{color:#3c6b3c}
+.vt{background:#fbf3e6;border-color:#ecdcc0}.vt .vlabel{color:#8a6320}
+.vx{background:#f3f1ef;border-color:#e2ded8}.vx .vlabel{color:#6b6660}
+.gros{padding:30px 28px}
+.sst{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+ color:#b4623a;margin:24px 0 8px}.gros .sst:first-child{margin-top:0}
+.etapes{counter-reset:e;list-style:none;padding-left:0;margin:8px 0 0}
+.etapes li{counter-increment:e;position:relative;padding-left:38px;margin:12px 0;font-size:17px}
+.etapes li::before{content:counter(e);position:absolute;left:0;top:1px;width:26px;height:26px;
+ border-radius:50%;background:#f6ece6;color:#b4623a;font-weight:800;font-size:13px;
+ display:flex;align-items:center;justify-content:center}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:640px){h1{font-size:30px}.lead{font-size:20px}.pic{font-size:64px}
+ .bloc{flex-direction:column;align-items:flex-start;gap:12px}.duo{grid-template-columns:1fr}}</style></head><body><div class="wrap">
+<span class="tag">Agents et outillage</span>
+<div class="kicker">Papier de la semaine · samedi 24 octobre</div>
+<h1>RouteWeaver : router les LLM par mode et par modèle</h1>
+<p class="lead">Un seul routeur apprend à choisir le mode d&#x27;exécution (un coup, plusieurs coups, agent) ET le modèle à appeler pour chaque question.</p>
+<p class="mini">RouteWeaver: Weaving Mode Selection and Execution into Unified LLM Routing · <a href="https://arxiv.org/abs/2610.19705">arXiv 2610.19705</a></p>
+
+<div class="verdict vx">
+  <div class="vlabel">PASSER</div>
+  <p class="vtext">Mon routing LLM est déjà résolu par llm_gateway.py avec une table statique PROTECTED, jugement sur Claude et mécanique sur deepseek, et ça coûte peu à maintenir. Entraîner une politique RL pour arbitrer entre single-round, multi-round et agent n&#x27;apporte rien à des screeners qui tournent sur des données chiffrées, pas sur des questions NLP ouvertes.</p>
+</div>
+
+<h2>Le problème qu'ils attaquent</h2>
+<div class="card"><p class="bx">Les routeurs LLM actuels fixent d&#x27;avance le mode d&#x27;exécution. Tu décides une fois pour toutes qu&#x27;on fera du single-round, ou du multi-round, ou de l&#x27;agentique, et après le routeur choisit juste le modèle dedans. Du coup une question simple paye le coût d&#x27;un agent, et une question dure est coincée en un seul coup. Les auteurs veulent un routeur qui bascule entre les modes selon la question.</p></div>
+
+<h2>Comment ça marche</h2>
+<div class="card"><div class="bloc"><div class="pic">🧭</div><div><div class="num">01</div><p class="bt">Un routeur, deux décisions couplées</p><p class="bx">Pour chaque requête, le routeur sort deux choix. Le premier choix dit comment exécuter : un seul appel, un dialogue en plusieurs tours, ou un agent qui boucle avec des outils. Le deuxième choix dit quel modèle appeler dans ce mode. Les deux choix sont faits par la même politique entraînée.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🎯</div><div><div class="num">02</div><p class="bt">COMET-GRPO sépare le crédit</p><p class="bx">Quand une trajectoire réussit ou rate, il faut savoir à qui donner la note. Leur algo coupe l&#x27;avantage global en deux signaux. Un signal note le choix du mode, l&#x27;autre note le choix du modèle à l&#x27;intérieur du mode. Chaque décision reçoit son propre feedback, ce qui stabilise l&#x27;apprentissage.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">📚</div><div><div class="num">03</div><p class="bt">On apprend les modes avant de choisir</p><p class="bx">Au début de l&#x27;entraînement, le mode est imposé de l&#x27;extérieur. Le routeur se contente d&#x27;apprendre à bien exécuter dans chaque mode. Petit à petit on lui rend la main sur le choix du mode. Sans cette montée en douceur, le routeur se replie sur le single-round pour toutes les questions.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🧪</div><div><div class="num">04</div><p class="bt">Testé sur cinq domaines</p><p class="bx">Ils évaluent sur maths, code, connaissance, raisonnement logique, et rappel factuel. L&#x27;idée est de couvrir des questions qui n&#x27;ont pas la même forme de solution. Une question de rappel se résout en un coup, un problème de code peut avoir besoin d&#x27;un agent avec exécution. Le routeur doit s&#x27;adapter domaine par domaine.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">💰</div><div><div class="num">05</div><p class="bt">Gain d&#x27;exactitude sur le meilleur baseline</p><p class="bx">Ils comparent à des routeurs fixés sur un seul mode. Leur système bat le meilleur de ces routeurs sur chacun des cinq domaines, pas juste en moyenne. Le point clé est que le gain vient de pouvoir changer de mode, pas juste de mieux choisir le modèle.</p></div></div></div>
+
+<h2>Ce qu&#x27;ils ont mesuré</h2><div class="card"><ul><li>Exactitude moyenne 61,4% pour RouteWeaver</li><li>Gain relatif de 11,03% sur le meilleur baseline</li><li>Évalué sur cinq domaines : maths, code, connaissance, raisonnement logique, rappel factuel</li></ul></div>
+<h2>Ce que ça ne prouve pas</h2><div class="card"><ul><li>Zéro mention d&#x27;un critère coût-par-requête, ils optimisent l&#x27;exactitude</li><li>Pas de données financières ni de signal numérique dans l&#x27;éval, uniquement du NLP</li><li>L&#x27;ablation montre un effondrement sur single-round sans leur astuce, donc la méthode est fragile</li><li>Taille d&#x27;échantillon et budget d&#x27;entraînement pas donnés dans le résumé</li></ul></div>
+
+<h2>Chez nous</h2>
+<div class="card gros">
+  <p class="sst">Où ça se branche</p>
+  <p class="bx">Rien de pertinent. Les candidats seraient lib/llm_gateway.py et lib/model_tier.py, mais aucun des deux n&#x27;a besoin d&#x27;un mode agent vs single-round appris, le routage y est déterministe par type de job.</p>
+  <p class="sst">Le plan</p>
+  <ol class="etapes"><li>Ne pas brancher</li><li>Garder llm_gateway.py tel quel</li><li>Relire ce papier seulement si un jour le harness LLM gère des questions utilisateur ouvertes qui pourraient demander un agent</li></ol>
+  <div class="duo">
+    <div><p class="sst">Effort</p><p class="bx">0 h</p></div>
+    <div><p class="sst">Ça remplace</p><p class="bx">Rien, le routage actuel reste meilleur pour ce cas d&#x27;usage</p></div>
+  </div>
+  <p class="sst">Le risque</p>
+  <p class="bx">Si tu l&#x27;intègres quand même, le signe de l&#x27;erreur sera un entraînement RL qui coûte plus cher par mois que l&#x27;économie de tokens côté inference</p>
+</div>
+
+<h2>Le test qui tranche</h2>
+<div class="card"><p class="bx">Pas de test à lancer, le papier ne s&#x27;applique pas. Si un jour tu veux retester : mesurer sur un mois le pourcentage d&#x27;appels dans llm_gateway qui bénéficieraient d&#x27;un mode multi-tour, et laisser tomber en dessous de 20%.</p></div>
+
+<h2>Ce que j&#x27;ai simplifié</h2><div class="card"><ul><li>J&#x27;ai mis COMET-GRPO et GRPO dans le même sac, c&#x27;est une variante de reinforcement learning sur politique</li><li>J&#x27;ai parlé d&#x27;agent sans détailler les outils que leur mode agentique utilise réellement</li></ul></div>
+<footer>Veille papers · <a href="index.html">toutes les semaines</a></footer>
+</div></body></html>

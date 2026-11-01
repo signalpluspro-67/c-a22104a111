@@ -1,0 +1,93 @@
+<!doctype html><meta charset=utf-8><title>Macro Plumbing composite — backtest</title>
+<style>
+body{font:15px/1.65 -apple-system,system-ui,Segoe UI,Roboto;max-width:900px;margin:42px auto;padding:0 18px;color:#2b2b28;background:#faf8f4}
+h1{font-size:25px;margin-bottom:4px} h2{font-size:18px;margin-top:34px;border-bottom:1px solid #e3ddd2;padding-bottom:5px}
+.sub{color:#777;font-size:13px;margin-top:0}
+.v{padding:15px 19px;border-radius:8px;font-weight:600;margin:20px 0;line-height:1.55}
+.v.no{background:#f6e7e7;border-left:5px solid #a33}
+.v.mid{background:#faf3e0;border-left:5px solid #b8860b}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:13.5px}
+td,th{border:1px solid #ddd;padding:6px 9px;text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{background:#f0ebe1;font-weight:600}
+.ok{background:#e4f3e8} .marg{background:#faf3e0} .rej{background:#f6e7e7} .ins{background:#eee}
+.tag{display:inline-block;padding:1px 7px;border-radius:4px;font-size:11.5px;font-weight:700}
+.tag.ok{background:#1b7a3d;color:#fff} .tag.marg{background:#b8860b;color:#fff}
+.tag.rej{background:#a33;color:#fff} .tag.ins{background:#888;color:#fff}
+small,.note{color:#777;font-size:12.5px}
+ol{padding-left:22px} li{margin:5px 0}
+.k{background:#f3efe6;padding:1px 5px;border-radius:3px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px}
+.warn{background:#fdf6e3;border:1px solid #e8dcc0;border-radius:7px;padding:12px 16px;margin:14px 0;font-size:13.5px}
+.big{font-size:17px}
+</style>
+
+<h1>Macro Plumbing composite — un edge prouvé, ou un joli tableau de bord ?</h1>
+<p class="sub">Backtest doctrine 8 étapes · index = ^GSPC (proxy SPY) · 2015-07-31 → 2026-05-29 · 2 723 jours avec les 5 forces renseignées · sign-flip 5000× + Bonferroni n=8 + <b>block bootstrap (block ≥ horizon)</b> + walk-forward · généré 2026-06-01</p>
+
+<div class="v no big">
+VERDICT FINAL — <b>PAS D'EDGE.</b> Le verdict composite n'est <u>pas</u> un signal directionnel : pire, il pointe dans le <b>mauvais sens</b>. « 4-5/5 risk-on » (HIGH) ne bat PAS « 0-2/5 défensif » (LOW) — il fait <b>moins bien</b> : spread HIGH−LOW = <b>−0,32%</b> à 20j et <b>−2,55%</b> à 60j (jamais positif). À 60j, le bucket défensif LOW rend <b>+3,98%</b> contre seulement <b>+1,43%</b> pour le bucket risk-on HIGH. Le seul cellule STRICT_VALID est « LOW à 60j » — c'est juste le marché qui monte (bêta), pas un edge du composite. Reste un <b>tableau de bord</b> de contexte, pas un signal à sizer.
+</div>
+
+<h2>La question</h2>
+<p>La page « Macro Plumbing » affiche une checklist composite « 5 forces » (credit · liquidity · gamma · labor · divergences) = un compte de voyants verts de 0 à 5. La question, tranchée rigoureusement : <b>ce compte a-t-il un edge ?</b> Est-ce que « 4-5/5 risk-on » prédit vraiment de meilleurs rendements forward de SPY que « 0-2/5 défensif » ? Tant que ce n'est pas backtesté, c'est de la décoration. C'est LE test qui sépare un vrai signal d'un dashboard.</p>
+
+<h2>Méthodologie (doctrine 8 étapes)</h2>
+<ol>
+<li><b>Reconstruction du composite historique</b> aux <i>mêmes seuils</i> que <span class="k">lib/macro_plumbing.compute_snapshot</span> : credit (credit-impulse&gt;0 ET SLOOS&lt;30), liquidity (Δ Net Fed Liquidity sur 21j ouvrés &gt; +50B), gamma (proxy VVIX, cf. limite), labor (Δ Temp Help 3 mois &gt; 0), divergences (corr rolling 30j sur 4 couples, vert si 0 divergence). Séries mensuelles/hebdo/trimestrielles <b>ffillées en journalier</b> (réalité : ces données persistent jusqu'à la prochaine publication). <span class="k">green_count(t)</span> ∈ [0,5] = nombre de forces vertes, uniquement les jours où les 5 forces sont renseignées.</li>
+<li><b>Outcome</b> = rendement forward de l'indice à h = <b>20j et 60j</b> (close-to-close, %). Univers = l'indice lui-même.</li>
+<li><b>Buckets</b> : HIGH (green≥4) vs MID (=3) vs LOW (green≤2), plus le <b>spread HIGH−LOW</b> (la vraie affirmation).</li>
+<li><b>Permutation sign-flip 5000×</b> (one-sided dans le sens observé) pour les buckets ; permutation de labels (diff-in-means) pour le spread.</li>
+<li><b>Bonferroni</b> sur n=8 tests (4 cellules × 2 horizons).</li>
+<li>🚨 <b>BLOCK BOOTSTRAP, block_len ≥ horizon (20 et 60)</b> — le <b>gate décisif</b>. Les rendements forward chevauchants (~98% de recouvrement) fabriquent des faux positifs sans ça. Une cellule n'est STRICT_VALID que si elle survit le block bootstrap, pas juste le sign-flip.</li>
+<li><b>Walk-forward</b> : split train ≤2022-12-31 / test ≥2023 ; le signe doit tenir.</li>
+<li><b>DSR</b> (Bailey/López 2014, n_trials = 8) : déflate le Sharpe pour le multiple-testing.</li>
+</ol>
+<p><b>Verdict par cellule</b> : <span class="tag ok">STRICT_VALID</span> (survit tout, dont le block bootstrap) · <span class="tag marg">MARGINAL</span> (sign-flip OK mais block KO = clustering, pas edge stationnaire) · <span class="tag rej">REJECT</span> · <span class="tag ins">INSUFFICIENT</span> (N&lt;30).</p>
+
+<h2>Distribution du composite (2 723 jours)</h2>
+<table>
+<tr><th>green_count</th><th>0/5</th><th>1/5</th><th>2/5</th><th>3/5</th><th>4/5</th><th>5/5</th></tr>
+<tr><td>jours</td><td>105</td><td>488</td><td>785</td><td>891</td><td>408</td><td>46</td></tr>
+</table>
+<p class="note">Le « tout vert » (5/5) est rare (46 jours). Le gros de la distribution est en 2-3/5. Baseline rendement forward inconditionnel : <b>20j = +1,06%</b>, <b>60j = +3,10%</b>.</p>
+
+<h2>Résultats par bucket × horizon</h2>
+<table>
+<tr><th>cellule</th><th>h</th><th>N</th><th>moyenne %</th><th>vs&nbsp;baseline</th><th>WR %</th><th>Sharpe</th><th>WF&nbsp;signe</th><th>p&nbsp;Bonf</th><th>p&nbsp;block</th><th>DSR</th><th>verdict</th></tr>
+<tr class="marg"><td>HIGH (≥4)</td><td>20</td><td>447</td><td>+0,75</td><td>−0,31</td><td>64</td><td>0,84</td><td>oui</td><td>0,000</td><td>0,022</td><td>0,17</td><td><span class="tag marg">MARGINAL</span></td></tr>
+<tr class="marg"><td>HIGH (≥4)</td><td>60</td><td>425</td><td>+1,43</td><td>−1,67</td><td>71</td><td>0,49</td><td>oui</td><td>0,000</td><td>0,079</td><td>0,17</td><td><span class="tag marg">MARGINAL</span></td></tr>
+<tr class="marg"><td>MID (=3)</td><td>20</td><td>878</td><td>+1,20</td><td>+0,14</td><td>70</td><td>1,04</td><td>oui</td><td>0,000</td><td>0,001</td><td>0,24</td><td><span class="tag marg">MARGINAL</span></td></tr>
+<tr class="marg"><td>MID (=3)</td><td>60</td><td>863</td><td>+2,51</td><td>−0,58</td><td>73</td><td>0,72</td><td>oui</td><td>0,000</td><td>0,013</td><td>0,30</td><td><span class="tag marg">MARGINAL</span></td></tr>
+<tr class="marg"><td>LOW (≤2)</td><td>20</td><td>1378</td><td>+1,07</td><td>+0,01</td><td>69</td><td>0,76</td><td>oui</td><td>0,000</td><td>0,013</td><td>0,17</td><td><span class="tag marg">MARGINAL</span></td></tr>
+<tr class="ok"><td>LOW (≤2)</td><td>60</td><td>1375</td><td>+3,98</td><td>+0,88</td><td>78</td><td>1,22</td><td>oui</td><td>0,000</td><td>0,000</td><td>0,55</td><td><span class="tag ok">STRICT_VALID</span></td></tr>
+<tr class="rej"><td><b>HIGH − LOW</b></td><td>20</td><td>447</td><td><b>−0,32</b></td><td>—</td><td>—</td><td>—</td><td>non</td><td>1,000</td><td>0,108</td><td>0,17</td><td><span class="tag rej">REJECT</span></td></tr>
+<tr class="marg"><td><b>HIGH − LOW</b></td><td>60</td><td>425</td><td><b>−2,55</b></td><td>—</td><td>—</td><td>oui</td><td>0,000</td><td>0,016</td><td>0,17</td><td><span class="tag marg">MARGINAL</span></td></tr>
+</table>
+<p class="note">Spread HIGH−LOW = moyenne(bucket HIGH) − moyenne(bucket LOW). Un edge « risk-on » exigerait un spread <b>positif et significatif</b>. Ici il est <b>négatif</b> aux deux horizons. La cellule « HIGH−LOW 60j » est MARGINAL <i>dans le mauvais sens</i> : sa significativité confirme que HIGH sous-performe LOW, ce n'est pas une bonne nouvelle pour le signal.</p>
+
+<h2>Lecture</h2>
+<p>Le composite se comporte comme une <b>jauge de sentiment / momentum proche des sommets</b>, pas comme un feu vert risk-on :</p>
+<ul>
+<li><b>Le sens est inversé.</b> Plus le tableau est « vert » (risk-on), <i>moins</i> bon est le rendement forward. À 60j : HIGH = +1,43% (le pire bucket) vs LOW = +3,98% (le meilleur). Acheter quand « tout va bien » selon la plomberie = acheter haut.</li>
+<li><b>Le seul STRICT_VALID est trompeur.</b> « LOW 60j » survit tout parce que N=1 375 (≈ la moitié de l'échantillon) et que 2015-2026 est un marché haussier — c'est du <b>bêta</b>, pas un edge du composite. Son edge vs baseline n'est que +0,88pp et son DSR (0,55) est à la limite.</li>
+<li><b>Tous les buckets sont juste « long le marché ».</b> WR 64-78%, Sharpe 0,5-1,2 partout — cohérent avec un marché qui monte la plupart du temps. Le composite ne <i>discrimine</i> pas les bons des mauvais moments dans le bon sens.</li>
+<li><b>Pattern méta maison confirmé.</b> Comme ~tous les composites narratifs de ce système, ça passe le sign-flip (Bonferroni) mais ça ne raconte rien d'exploitable une fois le sens et le bêta retirés. Le block bootstrap fait son travail : il ne « sauve » aucun spread risk-on (il n'y en a pas).</li>
+</ul>
+
+<div class="warn">
+<b>⚠️ Limite GAMMA (à prendre au sérieux).</b> Le GEX (gamma dealer) n'a <b>aucun historique</b> dans le cache (snapshot du jour uniquement). Pour la reconstruction, la force « gamma » est <b>approximée par VVIX seul</b> : vert si VVIX&lt;100, rouge si &gt;120, neutre sinon. C'est une approximation honnête mais imparfaite — la vraie force gamma de la page combine GEX <i>et</i> VVIX. Le composite testé ici n'est donc pas strictement identique au composite live sur la composante gamma. Conclusion : même avec un GEX historique, il faudrait un signal radicalement différent pour renverser un spread aussi nettement négatif — l'approximation gamma n'explique pas le verdict.
+</div>
+
+<div class="warn">
+<b>⚠️ Autres limites data.</b>
+<ul style="margin:6px 0">
+<li><b>Index = ^GSPC</b> (proxy SPY) : SPY ne remonte qu'à 2022 dans le cache (1 095 barres) ; ^GSPC remonte à 2015 (2 752 barres) → utilisé comme proxy indice, comme prévu.</li>
+<li><b>Couple Copper/Gold (HG=F/GC=F)</b> : seulement 208 barres (depuis 2025-08) → cette divergence est <b>quasi inactive historiquement</b>, la force « divergences » repose surtout sur les 3 autres couples (bond/vol, NetLiq, HY) sur la majeure partie de l'échantillon.</li>
+<li><b>HY OAS / Net Liquidity</b> : HY OAS daily mais peu profond ; WALCL/TGA hebdo → Net Liquidity ffillée en journalier (réalité du calendrier de publication).</li>
+</ul>
+</div>
+
+<h2>Conclusion tranchée</h2>
+<p class="big"><b>Le verdict composite « 5 forces » n'est pas un edge.</b> Il ne prédit pas mieux les rendements forward de SPY en « risk-on » qu'en « défensif » — il fait pire. Garder la page comme <b>contexte macro lisible</b> (elle reste utile pour raconter l'état de la plomberie), mais <b>ne jamais sizer ni recommander un trade</b> sur la base du compte de voyants verts, et surtout <b>ne pas l'interpréter comme bullish quand il est au vert</b>. Si quoi que ce soit, un composite très vert (4-5/5) est un léger signal de prudence à 60j (contrarian), pas un feu vert — mais l'effet est trop faible et trop bêta-dépendant pour être tradé.</p>
+
+<p class="note">Fichiers : script <span class="k">lab/research/macro_plumbing_composite_backtest.py</span> · résultats <span class="k">lab/research/macro_plumbing_composite_backtest_results.json</span>. Aucune table prod modifiée, aucun fichier de la page Macro Plumbing touché.</p>
