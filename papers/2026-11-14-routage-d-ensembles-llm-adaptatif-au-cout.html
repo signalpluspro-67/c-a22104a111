@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Routage d&#x27;ensembles LLM adaptatif au coût</title>
+<style>*{box-sizing:border-box}
+body{margin:0;background:#faf7f2;color:#1c1b1a;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+ line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:820px;margin:0 auto;padding:48px 22px 90px}
+.kicker{color:#b4623a;font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:13px}
+h1{font-size:40px;line-height:1.12;margin:10px 0 14px;font-weight:800}
+.lead{font-size:24px;line-height:1.35;color:#3a3733;margin:0 0 6px;font-weight:600}
+h2{font-size:23px;margin:44px 0 12px;font-weight:750}
+p{margin:0 0 12px}
+.card{background:#fff;border:1px solid #e7e1d8;border-radius:14px;padding:26px 24px;
+ margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.bloc{display:flex;gap:24px;align-items:center}
+.pic{font-size:92px;line-height:1;flex:0 0 auto}
+.bt{font-size:26px;font-weight:750;margin:0 0 6px}
+.bx{color:#55504a;margin:0;font-size:17px}
+.num{color:#b4623a;font-weight:700;font-size:13px;letter-spacing:.04em}
+ul{margin:6px 0 0;padding-left:22px}li{margin:9px 0;font-size:17px}
+.tag{display:inline-block;background:#f6ece6;color:#b4623a;font-size:12px;font-weight:700;
+ padding:4px 10px;border-radius:20px;margin-bottom:10px}
+.mini{color:#8a837a;font-size:14px}
+a{color:#b4623a}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid #e7e1d8;color:#8a837a;font-size:14px}
+.verdict{border-radius:14px;padding:22px 24px;margin:26px 0 8px;border:1px solid}
+.vlabel{font-size:13px;font-weight:800;letter-spacing:.08em;margin-bottom:8px}
+.vtext{margin:0;font-size:18px;line-height:1.5}
+.vp{background:#eef6ee;border-color:#cbe0cb}.vp .vlabel{color:#3c6b3c}
+.vt{background:#fbf3e6;border-color:#ecdcc0}.vt .vlabel{color:#8a6320}
+.vx{background:#f3f1ef;border-color:#e2ded8}.vx .vlabel{color:#6b6660}
+.gros{padding:30px 28px}
+.sst{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+ color:#b4623a;margin:24px 0 8px}.gros .sst:first-child{margin-top:0}
+.etapes{counter-reset:e;list-style:none;padding-left:0;margin:8px 0 0}
+.etapes li{counter-increment:e;position:relative;padding-left:38px;margin:12px 0;font-size:17px}
+.etapes li::before{content:counter(e);position:absolute;left:0;top:1px;width:26px;height:26px;
+ border-radius:50%;background:#f6ece6;color:#b4623a;font-weight:800;font-size:13px;
+ display:flex;align-items:center;justify-content:center}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:640px){h1{font-size:30px}.lead{font-size:20px}.pic{font-size:64px}
+ .bloc{flex-direction:column;align-items:flex-start;gap:12px}.duo{grid-template-columns:1fr}}</style></head><body><div class="wrap">
+<span class="tag">Agents et outillage</span>
+<div class="kicker">Papier de la semaine · samedi 14 novembre</div>
+<h1>Routage d&#x27;ensembles LLM adaptatif au coût</h1>
+<p class="lead">Ce papier propose un aiguilleur qui choisit à chaque question quel modèle LLM utiliser, et parfois plusieurs modèles en même temps, pour trouver le meilleur compromis entre qualité de réponse et coût d&#x27;appel.</p>
+<p class="mini">Ensemble Routing for Prompt-Adaptive Cost-Aware LLM Inference · <a href="https://arxiv.org/abs/2611.10193">arXiv 2611.10193</a></p>
+
+<div class="verdict vt">
+  <div class="vlabel">PLUS TARD</div>
+  <p class="vtext">Le harnais LLM actuel a déjà une règle simple, du modèle bon marché pour la mécanique et Claude pour le jugement, et cette règle suffit tant qu&#x27;il n&#x27;y a que deux étages. Ça vaudra le coup quand le nombre de modèles disponibles via la passerelle dépassera trois ou quatre et que la facture mensuelle devient visible.</p>
+</div>
+
+<h2>Le problème qu'ils attaquent</h2>
+<div class="card"><p class="bx">Quand tu utilises des LLM dans un service, tu as le choix entre plusieurs modèles de prix et de qualité différents. Les solutions existantes envoient chaque question à un seul modèle fixe, ou appellent toujours le même groupe de modèles. Le premier type ignore qu&#x27;une question simple pourrait aller sur un modèle moins cher. Le second paie toujours le prix fort même quand un seul modèle aurait suffi.</p></div>
+
+<h2>Comment ça marche</h2>
+<div class="card"><div class="bloc"><div class="pic">🧭</div><div><div class="num">01</div><p class="bt">Deviner la difficulté du prompt</p><p class="bx">La méthode range chaque question dans plusieurs familles floues en même temps, avec un pourcentage d&#x27;appartenance à chacune. Une question de code est à soixante pour cent code et à quarante pour cent raisonnement par exemple. Ces pourcentages servent ensuite à prédire, pour chaque modèle disponible, sa probabilité de bien répondre à ce prompt précis.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">💰</div><div><div class="num">02</div><p class="bt">Un curseur qualité contre coût</p><p class="bx">L&#x27;utilisateur fixe un curseur entre deux extrêmes, tout pour la qualité d&#x27;un côté, tout pour le coût de l&#x27;autre. L&#x27;aiguilleur choisit alors le modèle qui maximise un score combinant la qualité attendue et le prix de l&#x27;appel. Tu peux bouger ce curseur au moment de servir la requête, sans réentraîner l&#x27;aiguilleur.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🎭</div><div><div class="num">03</div><p class="bt">Appeler plusieurs modèles ensemble</p><p class="bx">La version étendue peut choisir d&#x27;envoyer la même question à plusieurs modèles en parallèle, puis de garder la meilleure réponse. Elle choisit combien de modèles appeler et lesquels, prompt par prompt. Si un seul modèle suffit, elle n&#x27;en appelle qu&#x27;un. Si la question est dure, elle en paie plusieurs.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🧮</div><div><div class="num">04</div><p class="bt">Un calcul rapide pour trier</p><p class="bx">Tester toutes les combinaisons possibles de modèles coûterait trop cher. Les auteurs utilisent une approximation qui estime vite la probabilité qu&#x27;au moins un modèle du groupe réponde bien. Ça permet de comparer des milliers de groupes candidats en pratique sans explosion de calcul.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">📊</div><div><div class="num">05</div><p class="bt">Testé sur quatre jeux publics</p><p class="bx">Les auteurs comparent leur méthode à d&#x27;autres aiguilleurs sur quatre bancs d&#x27;essai standards du routage de LLM. Ils regardent deux conditions, des questions proches de l&#x27;entraînement et des questions nouvelles. Ils mesurent une surface sous la courbe qualité contre coût, et la qualité moyenne à coût fixé.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🧩</div><div><div class="num">06</div><p class="bt">Pas spécifique aux marchés</p><p class="bx">Le papier parle de services web génériques qui routent du texte entre modèles. Il ne dit rien sur des données financières, des signaux, ou la validation statistique de stratégies. C&#x27;est une brique d&#x27;infrastructure pour un harnais multi-modèles, pas un signal de marché.</p></div></div></div>
+
+<h2>Ce qu&#x27;ils ont mesuré</h2><div class="card"><ul><li>Plus deux virgule zéro neuf points de qualité moyenne sur questions connues, plus deux virgule quatre-vingt-sept points sur questions nouvelles, contre le meilleur concurrent d&#x27;ensemble</li><li>Réduction d&#x27;environ trente-six pour cent et vingt-cinq pour cent du coût moyen à qualité égale, selon la condition</li><li>Évalué sur quatre bancs publics de routage de LLM, taille d&#x27;échantillon non donnée dans le résumé</li></ul></div>
+<h2>Ce que ça ne prouve pas</h2><div class="card"><ul><li>Le résumé ne donne pas les valeurs absolues de qualité ni les modèles exacts dans le pool, seulement des écarts relatifs</li><li>La méthode suppose qu&#x27;on a étiqueté la qualité de chaque modèle sur des exemples passés, ce qui demande un jeu d&#x27;entraînement par modèle</li><li>Rien n&#x27;est dit sur la latence totale quand plusieurs modèles tournent en parallèle, ni sur l&#x27;agrégation des réponses contradictoires</li></ul></div>
+
+<h2>Chez nous</h2>
+<div class="card gros">
+  <p class="sst">Où ça se branche</p>
+  <p class="bx">Le harnais d&#x27;agents LLM lancé par launchd et cron, la couche passerelle qui choisit le modèle avant chaque appel, et les logs d&#x27;appel LLM si tu en gardes une table dédiée</p>
+  <p class="sst">Le plan</p>
+  <ol class="etapes"><li>Logger pour chaque appel LLM actuel le prompt, le modèle choisi, le coût, et une note de qualité a posteriori dans une table llm_calls</li><li>Définir trois ou quatre familles de prompts du harnais, résumé de news, génération de HTML, jugement de signal, écriture Discord, et classer chaque appel passé</li><li>Entraîner un petit classifieur qui prédit la qualité de chaque modèle par famille, puis une règle d&#x27;arbitrage qualité contre coût</li><li>Remplacer le routage en dur de la passerelle par cet aiguilleur, avec un curseur réglable dans la config</li></ol>
+  <div class="duo">
+    <div><p class="sst">Effort</p><p class="bx">20 h</p></div>
+    <div><p class="sst">Ça remplace</p><p class="bx">Remplace la règle fixe modèle bon marché contre Claude par un choix par prompt, et ajoute la possibilité d&#x27;appeler deux modèles en parallèle sur les prompts difficiles</p></div>
+  </div>
+  <p class="sst">Le risque</p>
+  <p class="bx">L&#x27;aiguilleur peut sous-estimer la qualité de Claude sur un type de prompt rare et envoyer du jugement de signal sur un modèle faible. Le signe serait une chute de la précision des alertes Discord ou des pages HTML visiblement moins bonnes</p>
+</div>
+
+<h2>Le test qui tranche</h2>
+<div class="card"><p class="bx">Rejouer deux semaines d&#x27;appels LLM du harnais avec l&#x27;aiguilleur en mode shadow, mesurer le coût total et noter la qualité sur un échantillon de cent appels tirés au hasard. Si le coût baisse de moins de vingt pour cent à qualité égale, on laisse tomber</p></div>
+
+<h2>Ce que j&#x27;ai simplifié</h2><div class="card"><ul><li>J&#x27;ai décrit les familles floues comme des catégories avec pourcentage, le papier parle de soft cluster memberships qui est le même objet en plus formel</li><li>J&#x27;ai présenté l&#x27;agrégation d&#x27;ensemble comme garder la meilleure réponse, le papier utilise un surrogat de succès d&#x27;ensemble qui est une estimation probabiliste de cette idée</li></ul></div>
+<footer>Veille papers · <a href="index.html">toutes les semaines</a></footer>
+</div></body></html>
