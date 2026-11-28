@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Savoir s&#x27;abstenir, confiance calibrée pour Text-to-SQL</title>
+<style>*{box-sizing:border-box}
+body{margin:0;background:#faf7f2;color:#1c1b1a;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+ line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:820px;margin:0 auto;padding:48px 22px 90px}
+.kicker{color:#b4623a;font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:13px}
+h1{font-size:40px;line-height:1.12;margin:10px 0 14px;font-weight:800}
+.lead{font-size:24px;line-height:1.35;color:#3a3733;margin:0 0 6px;font-weight:600}
+h2{font-size:23px;margin:44px 0 12px;font-weight:750}
+p{margin:0 0 12px}
+.card{background:#fff;border:1px solid #e7e1d8;border-radius:14px;padding:26px 24px;
+ margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.bloc{display:flex;gap:24px;align-items:center}
+.pic{font-size:92px;line-height:1;flex:0 0 auto}
+.bt{font-size:26px;font-weight:750;margin:0 0 6px}
+.bx{color:#55504a;margin:0;font-size:17px}
+.num{color:#b4623a;font-weight:700;font-size:13px;letter-spacing:.04em}
+ul{margin:6px 0 0;padding-left:22px}li{margin:9px 0;font-size:17px}
+.tag{display:inline-block;background:#f6ece6;color:#b4623a;font-size:12px;font-weight:700;
+ padding:4px 10px;border-radius:20px;margin-bottom:10px}
+.mini{color:#8a837a;font-size:14px}
+a{color:#b4623a}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid #e7e1d8;color:#8a837a;font-size:14px}
+.verdict{border-radius:14px;padding:22px 24px;margin:26px 0 8px;border:1px solid}
+.vlabel{font-size:13px;font-weight:800;letter-spacing:.08em;margin-bottom:8px}
+.vtext{margin:0;font-size:18px;line-height:1.5}
+.vp{background:#eef6ee;border-color:#cbe0cb}.vp .vlabel{color:#3c6b3c}
+.vt{background:#fbf3e6;border-color:#ecdcc0}.vt .vlabel{color:#8a6320}
+.vx{background:#f3f1ef;border-color:#e2ded8}.vx .vlabel{color:#6b6660}
+.gros{padding:30px 28px}
+.sst{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+ color:#b4623a;margin:24px 0 8px}.gros .sst:first-child{margin-top:0}
+.etapes{counter-reset:e;list-style:none;padding-left:0;margin:8px 0 0}
+.etapes li{counter-increment:e;position:relative;padding-left:38px;margin:12px 0;font-size:17px}
+.etapes li::before{content:counter(e);position:absolute;left:0;top:1px;width:26px;height:26px;
+ border-radius:50%;background:#f6ece6;color:#b4623a;font-weight:800;font-size:13px;
+ display:flex;align-items:center;justify-content:center}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:640px){h1{font-size:30px}.lead{font-size:20px}.pic{font-size:64px}
+ .bloc{flex-direction:column;align-items:flex-start;gap:12px}.duo{grid-template-columns:1fr}}</style></head><body><div class="wrap">
+<span class="tag">Agents et outillage</span>
+<div class="kicker">Papier de la semaine · samedi 28 novembre</div>
+<h1>Savoir s&#x27;abstenir, confiance calibrée pour Text-to-SQL</h1>
+<p class="lead">Le papier apprend à un système qui écrit du SQL à dire « je ne sais pas » avec une garantie mathématique sur le taux d&#x27;erreur de ce qu&#x27;il laisse passer.</p>
+<p class="mini">Know When to Abstain: Conformal Confidence Estimation for Text-to-SQL · <a href="https://arxiv.org/abs/2611.31190">arXiv 2611.31190</a></p>
+
+<div class="verdict vx">
+  <div class="vlabel">PASSER</div>
+  <p class="vtext">Le système ne fait pas de Text-to-SQL, les requêtes sur signal_outcome.db et market_data.db sont écrites à la main par l&#x27;utilisateur et stables. Il n&#x27;y a pas d&#x27;endroit où un LLM traduit une question en SQL en production, donc la mécanique précise du papier ne s&#x27;y branche pas.</p>
+</div>
+
+<h2>Le problème qu'ils attaquent</h2>
+<div class="card"><p class="bx">Les systèmes qui transforment une question en requête SQL produisent souvent du code qui tourne sans erreur mais qui répond à la mauvaise question. Au moment du déploiement on ne peut pas vérifier, puisque la bonne réponse n&#x27;existe pas. Les signaux de confiance classiques comme les probabilités du modèle sont mal calibrés et il manque une garantie chiffrée. Les auteurs veulent un seuil d&#x27;acceptation avec une borne prouvée sur le taux d&#x27;erreur parmi les requêtes acceptées.</p></div>
+
+<h2>Comment ça marche</h2>
+<div class="card"><div class="bloc"><div class="pic">✍️</div><div><div class="num">01</div><p class="bt">Un rédacteur et un juge</p><p class="bx">Un premier modèle écrit la requête SQL à partir de la question et l&#x27;exécute. Un deuxième modèle, différent, lit la question, la requête et le résultat obtenu, puis donne un score de cohérence entre la question et ce qui est sorti. Séparer l&#x27;auteur du relecteur évite que le modèle se note lui-même trop généreusement. Ça coûte deux appels de modèle au lieu d&#x27;un.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🧩</div><div><div class="num">02</div><p class="bt">Plein de signaux fusionnés ensemble</p><p class="bx">Ils combinent plusieurs indices dans une forêt aléatoire. La confiance que le rédacteur annonce à haute voix, l&#x27;incertitude mesurée sur ses jetons, des caractéristiques structurelles de la requête SQL comme sa complexité, et les scores du juge. La forêt aléatoire apprend à peser chaque indice sur un petit jeu étiqueté, puis sort un score unique de confiance par requête.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🎚️</div><div><div class="num">03</div><p class="bt">Seuil avec budget de risque</p><p class="bx">L&#x27;utilisateur choisit un budget d&#x27;erreur, par exemple quinze pour cent de requêtes fausses tolérées parmi celles acceptées. Une procédure appelée Learn-then-Test cherche sur des données de calibration le seuil le plus bas qui respecte ce budget avec une haute probabilité. Le seuil retenu vient avec une garantie statistique finie, pas asymptotique. Si une requête a un score sous le seuil, le système s&#x27;abstient au lieu de répondre.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🛡️</div><div><div class="num">04</div><p class="bt">Garantie sur l&#x27;abstention aussi</p><p class="bx">Refuser trop souvent rend le système inutile. Les auteurs ajoutent une p-valeur conforme qui borne le taux de fausses abstentions, c&#x27;est-à-dire les bonnes requêtes rejetées à tort. On a donc deux cadenas, un sur ce qu&#x27;on laisse passer et un sur ce qu&#x27;on jette. Les deux reposent sur l&#x27;hypothèse que les données de déploiement ressemblent aux données de calibration.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🔀</div><div><div class="num">05</div><p class="bt">La garantie ne voyage pas</p><p class="bx">Calibré sur le jeu Spider, le système marche bien sur Spider. Transféré tel quel sur un autre jeu appelé BIRD, les scores restent informatifs mais la garantie chiffrée tombe. La raison est simple, la distribution a changé donc l&#x27;hypothèse d&#x27;échangeabilité qui fonde la conformité est cassée. Si on change de source de données, il faut recalibrer.</p></div></div></div><div class="card"><div class="bloc"><div class="pic">🧪</div><div><div class="num">06</div><p class="bt">Le juge est interchangeable</p><p class="bx">Ils rejouent l&#x27;expérience avec cinq modèles juges différents et obtiennent des résultats similaires. Ça veut dire que le gain vient de la structure « auteur plus juge plus fusion plus calibration » et pas d&#x27;un modèle magique en particulier. C&#x27;est une bonne nouvelle pour un bricoleur qui veut utiliser des modèles bon marché. Ça suggère aussi que le gain tient tant que le juge a un minimum de compétence.</p></div></div></div>
+
+<h2>Ce qu&#x27;ils ont mesuré</h2><div class="card"><ul><li>AUARC de 0,899 sur Spider avec GPT-OSS-120B comme rédacteur et Gemma-4-31B comme juge</li><li>sans abstention 22,6 pour cent des requêtes sont fausses, avec budget 15 pour cent et delta 0,1 le système en accepte 52,4 pour cent avec 9,1 pour cent d&#x27;erreur observée</li><li>transfert sur BIRD sans réentraînement, AUROC 0,72 contre 0,79 sur Spider, garantie perdue</li></ul></div>
+<h2>Ce que ça ne prouve pas</h2><div class="card"><ul><li>la garantie ne survit pas à un changement de distribution des questions ou du schéma de base</li><li>il faut un jeu de calibration avec des requêtes gold exécutables, donc du travail d&#x27;étiquetage</li><li>le coût est deux appels LLM par question, ce qui pèse à grande échelle</li></ul></div>
+
+<h2>Chez nous</h2>
+<div class="card gros">
+  <p class="sst">Où ça se branche</p>
+  <p class="bx">aucun fichier concerné, pas de pipeline Text-to-SQL dans les screeners PULLBACK, BOTTOM, BREAKOUT, VSA, SMART_FLOW, UNUSUAL_V3, STAGE4_MEANREV, VARIANCE_PREMIUM, KERBEROS_RSI, VVIX_SIGNAL ni dans le harness d&#x27;agents LLM</p>
+  <p class="sst">Le plan</p>
+  <ol class="etapes"><li>ne pas intégrer tant qu&#x27;il n&#x27;existe pas de brique où un LLM génère du SQL sur signal_outcome.db ou market_data.db</li><li>si un jour tu ajoutes un assistant « pose une question en langage naturel à mes bases », revenir ouvrir ce papier</li><li>l&#x27;idée générique « deux LLM, un qui agit et un qui juge, puis calibration conforme » peut être notée pour le harness d&#x27;agents mais ce n&#x27;est plus ce papier précis</li><li>préférer pour le harness une calibration conforme sur les sorties de signaux, pas sur du SQL</li></ol>
+  <div class="duo">
+    <div><p class="sst">Effort</p><p class="bx">0 h pour ce papier tel quel</p></div>
+    <div><p class="sst">Ça remplace</p><p class="bx">ne remplace rien dans le système actuel</p></div>
+  </div>
+  <p class="sst">Le risque</p>
+  <p class="bx">monter une infra lourde pour un cas d&#x27;usage inexistant, signe que ça tourne mal, personne n&#x27;utilise la fonction de requête en langage naturel</p>
+</div>
+
+<h2>Le test qui tranche</h2>
+<div class="card"><p class="bx">pas de test à lancer, le critère de reprise est simple, si un module de type « question en français vers SQL sur market_data.db » apparaît dans la roadmap, alors rouvrir le papier et tester l&#x27;estimateur sur un lot de 200 questions étiquetées avec budget d&#x27;erreur à 10 pour cent</p></div>
+
+<h2>Ce que j&#x27;ai simplifié</h2><div class="card"><ul><li>la forêt aléatoire utilise aussi des caractéristiques plus fines que les trois familles citées, j&#x27;ai regroupé</li><li>Learn-then-Test est une procédure de tests multiples séquentiels, j&#x27;ai juste dit « cherche le seuil le plus bas qui tient la garantie »</li></ul></div>
+<footer>Veille papers · <a href="index.html">toutes les semaines</a></footer>
+</div></body></html>
